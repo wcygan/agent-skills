@@ -1,0 +1,9 @@
+[project]
+name = "agent-skills-maintenance"
+version = "0.1.0"
+description = "Maintenance tooling for the agent-skills collection"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.uv]
+package = false

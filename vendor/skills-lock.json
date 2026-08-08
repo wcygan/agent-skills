@@ -1,0 +1,23 @@
+{
+  "sources": [
+    {
+      "repository": "https://github.com/planetscale/database-skills.git",
+      "branch": "main",
+      "ref": "af0ce0cfb65cca4cc21d18ca0d9cf270ca99d488",
+      "skills": {
+        "mysql": "planetscale-mysql",
+        "postgres": "planetscale-postgres"
+      },
+      "license": "MIT"
+    },
+    {
+      "repository": "https://github.com/github/gh-stack.git",
+      "branch": "main",
+      "ref": "14fc42ed9b6c376a53b2f999f138d3bd26dac546",
+      "skills": {
+        "gh-stack": "gh-stack"
+      },
+      "license": "MIT"
+    }
+  ]
+}

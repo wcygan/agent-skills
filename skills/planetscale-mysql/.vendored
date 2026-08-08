@@ -1,0 +1,3 @@
+source=https://github.com/planetscale/database-skills.git
+upstream_skill=mysql
+revision=af0ce0cfb65cca4cc21d18ca0d9cf270ca99d488

@@ -1,0 +1,105 @@
+#!/usr/bin/env python3
+"""Vendor selected external Agent Skills at reproducible git revisions."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import shutil
+import subprocess
+import tempfile
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+LOCK_PATH = ROOT / "vendor" / "skills-lock.json"
+SKILLS_DIR = ROOT / "skills"
+ATTRIBUTIONS_PATH = ROOT / "vendor" / "ATTRIBUTIONS.md"
+
+
+def run(*args: str, cwd: Path | None = None) -> str:
+    result = subprocess.run(args, cwd=cwd, check=True, text=True, capture_output=True)
+    return result.stdout.strip()
+
+
+def load_lock() -> dict:
+    return json.loads(LOCK_PATH.read_text())
+
+
+def clone_source(source: dict, destination: Path, ref: str | None = None) -> str:
+    run("git", "clone", "--quiet", "--filter=blob:none", source["repository"], str(destination))
+    run("git", "checkout", "--quiet", ref or source["ref"], cwd=destination)
+    return run("git", "rev-parse", "HEAD", cwd=destination)
+
+
+def sync_source(source: dict, update_lock: bool) -> tuple[str, str]:
+    with tempfile.TemporaryDirectory(prefix="agent-skills-") as scratch:
+        checkout = Path(scratch) / "source"
+        revision = clone_source(source, checkout, source.get("branch", "main"))
+        for upstream_name, local_name in source["skills"].items():
+            upstream = checkout / "skills" / upstream_name
+            target = SKILLS_DIR / local_name
+            if not (upstream / "SKILL.md").is_file():
+                raise RuntimeError(f"missing skill file: {upstream}")
+            if target.exists() and not (target / ".vendored").is_file():
+                raise RuntimeError(f"refusing to overwrite non-vendored skill: {target}")
+            if target.exists():
+                shutil.rmtree(target)
+            shutil.copytree(upstream, target)
+            skill_file = target / "SKILL.md"
+            skill_text = skill_file.read_text()
+            skill_text = skill_text.replace("\nname: " + upstream_name + "\n", "\nname: " + local_name + "\n", 1)
+            skill_file.write_text(skill_text)
+            (target / ".vendored").write_text(
+                f"source={source['repository']}\nupstream_skill={upstream_name}\nrevision={revision}\n"
+            )
+        if update_lock:
+            source["ref"] = revision
+    return source["repository"], revision
+
+
+def write_attributions(lock: dict) -> None:
+    lines = ["# Vendored skill attributions", "", "These skills are copied from their upstream repositories.", ""]
+    for source in lock["sources"]:
+        lines.extend([f"## {source['repository']}", "", f"- License: {source['license']}", f"- Revision: `{source['ref']}`", ""])
+        for upstream, local in source["skills"].items():
+            lines.append(f"- `{local}` from `skills/{upstream}`")
+        lines.append("")
+    ATTRIBUTIONS_PATH.write_text("\n".join(lines))
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("command", choices=("update", "check", "validate"))
+    parser.add_argument("source", nargs="?", help="repository URL substring to select")
+    args = parser.parse_args()
+    lock = load_lock()
+    sources = [s for s in lock["sources"] if not args.source or args.source in s["repository"]]
+    if not sources:
+        raise SystemExit("no matching source")
+    if args.command == "validate":
+        for source in sources:
+            for local in source["skills"].values():
+                skill = SKILLS_DIR / local
+                if not (skill / "SKILL.md").is_file():
+                    raise SystemExit(f"missing vendored skill: {skill}")
+                if not (skill / ".vendored").is_file():
+                    raise SystemExit(f"missing provenance marker: {skill}")
+        print(f"validated {sum(len(s['skills']) for s in sources)} vendored skills")
+        return 0
+    for source in sources:
+        if args.command == "check":
+            with tempfile.TemporaryDirectory(prefix="agent-skills-check-") as scratch:
+                revision = clone_source(source, Path(scratch) / "source", source.get("branch", "main"))
+            print(f"{source['repository']}: locked {source['ref']}, available {revision}")
+        else:
+            repository, revision = sync_source(source, update_lock=True)
+            print(f"updated {repository} to {revision}")
+    if args.command == "update":
+        LOCK_PATH.write_text(json.dumps(lock, indent=2) + "\n")
+        write_attributions(lock)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
