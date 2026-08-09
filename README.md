@@ -19,6 +19,7 @@ loaded as a plugin by plugin-capable clients.
 
 | Skill | What it does | Install |
 |-------|--------------|---------|
+| `animate` | Builds production-ready UI animations from a request using deliberate motion, tooling, easing, interruption, and accessibility decisions. | `gh skill install wcygan/agent-skills animate --agent codex --scope user` |
 | `animation-vocabulary` | Names web animation and motion effects from vague descriptions. | `gh skill install wcygan/agent-skills animation-vocabulary --agent codex --scope user` |
 | `audit-observability-path` | Audits whether one scenario can be detected, correlated, explained, and reconstructed across system boundaries. | `gh skill install wcygan/agent-skills audit-observability-path --agent codex --scope user` |
 | `better-colors` | Designs OKLCH palettes, checks contrast, and guides web color systems. | `gh skill install wcygan/agent-skills better-colors --agent codex --scope user` |
@@ -115,7 +116,12 @@ uv run tools/sync_skills.py update planetscale/database-skills
 uv run tools/sync_skills.py validate
 ```
 
-Vendored skills are intentionally namespaced (`planetscale-mysql`,
+A source can declare `remove_frontmatter` in the lock file for upstream,
+client-specific top-level keys that the Agent Skills specification rejects.
+The sync tool applies that compatibility normalization on every update.
+
+Vendored skills keep their upstream names when those names are collision-free.
+Sources with generic names are namespaced (`planetscale-mysql`,
 `planetscale-postgres`, and so on) to avoid collisions with independently
 maintained skills. Updating a source changes the vendored files and lock
 revision; tag the repository afterward to publish a tested collection version.

@@ -32,6 +32,23 @@ def clone_source(source: dict, destination: Path, ref: str | None = None) -> str
     return run("git", "rev-parse", "HEAD", cwd=destination)
 
 
+def normalize_frontmatter(skill_text: str, source: dict) -> str:
+    fields = set(source.get("remove_frontmatter", []))
+    if not fields:
+        return skill_text
+    if not skill_text.startswith("---\n"):
+        raise RuntimeError("skill file is missing YAML frontmatter")
+    frontmatter, separator, body = skill_text.removeprefix("---\n").partition("\n---")
+    if not separator:
+        raise RuntimeError("skill file has unterminated YAML frontmatter")
+    lines = [
+        line
+        for line in frontmatter.splitlines()
+        if line[:1].isspace() or line.partition(":")[0] not in fields
+    ]
+    return "---\n" + "\n".join(lines) + separator + body
+
+
 def sync_source(source: dict, update_lock: bool) -> tuple[str, str]:
     with tempfile.TemporaryDirectory(prefix="agent-skills-") as scratch:
         checkout = Path(scratch) / "source"
@@ -49,7 +66,7 @@ def sync_source(source: dict, update_lock: bool) -> tuple[str, str]:
             skill_file = target / "SKILL.md"
             skill_text = skill_file.read_text()
             skill_text = skill_text.replace("\nname: " + upstream_name + "\n", "\nname: " + local_name + "\n", 1)
-            skill_file.write_text(skill_text)
+            skill_file.write_text(normalize_frontmatter(skill_text, source))
             (target / ".vendored").write_text(
                 f"source={source['repository']}\nupstream_skill={upstream_name}\nrevision={revision}\n"
             )

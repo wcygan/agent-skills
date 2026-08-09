@@ -18,6 +18,22 @@
         "gh-stack": "gh-stack"
       },
       "license": "MIT"
+    },
+    {
+      "repository": "https://github.com/emilkowalski/skills.git",
+      "branch": "main",
+      "ref": "9075d1724a831411ab5cf138dd9b5cd406ffc2e2",
+      "skills": {
+        "animate": "animate",
+        "animation-vocabulary": "animation-vocabulary",
+        "find-animation-opportunities": "find-animation-opportunities",
+        "improve-animations": "improve-animations",
+        "review-animations": "review-animations"
+      },
+      "remove_frontmatter": [
+        "disable-model-invocation"
+      ],
+      "license": "MIT"
     }
   ]
 }

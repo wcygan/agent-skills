@@ -1,6 +1,6 @@
 ---
 name: review-animations
-description: "Reviews animation and motion code against a high craft bar derived from Emil Kowalski's design engineering philosophy. Default to flagging; approval is earned."
+description: Reviews animation and motion code against a high craft bar derived from Emil Kowalski's design engineering philosophy. Default to flagging; approval is earned.
 ---
 
 # Reviewing Animations
@@ -72,14 +72,6 @@ When proposing fixes, prefer earlier moves over later ones:
 8. **Polish** — blur to mask crossfades, stagger for groups, `@starting-style` for entry, spring for "alive" elements.
 9. **Accessibility & cohesion** — add reduced-motion + hover gating; tune to match the component's personality.
 
-## Motion Workflow Loop
-
-For a new animation, start with `find-animation-opportunities` when the right
-candidate is not yet known, then give the accepted recipe to `animate` for
-implementation. Review the resulting diff here. When this review blocks the
-change, send the concrete finding back to `animate`, then review the revised
-diff again. This skill reviews; it does not implement the fix itself.
-
 ## Required Output Format
 
 Two parts, in this order.
@@ -93,7 +85,7 @@ A single markdown table. One row per issue. Never a "Before:/After:" list.
 | `transition: all 300ms` | `transition: transform 200ms ease-out` | Specify exact properties; `all` animates unintended properties off-GPU |
 | `transform: scale(0)` | `transform: scale(0.95); opacity: 0` | Nothing appears from nothing — `scale(0)` looks like it came from nowhere |
 | `ease-in` on dropdown | `ease-out` + custom curve | `ease-in` delays the moment the user watches most; feels sluggish |
-| `transform-origin: center` on popover | `var(--radix-popover-content-transform-origin)` | Popovers scale from their trigger, not center (modals are exempt) |
+| `transform-origin: center` on popover | `var(--transform-origin)` (Base UI) | Popovers scale from their trigger, not center (modals are exempt) |
 
 ### Part 2 — Verdict (REQUIRED)
 

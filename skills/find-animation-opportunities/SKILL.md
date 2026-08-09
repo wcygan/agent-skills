@@ -1,6 +1,6 @@
 ---
 name: find-animation-opportunities
-description: "Search a codebase or UI for places that don't animate but should, and reject everything that shouldn't. Read-only; it proposes motion with exact values, it does not implement it. Use when the user asks \"what could be animated here?\" or wants to \"make this feel more alive\". For fixing existing animations, use improve-animations or review-animations instead."
+description: Search a codebase or UI for places that don't animate but should, and reject everything that shouldn't. Read-only; it proposes motion with exact values, it does not implement it. Use when the user asks "what could be animated here?" or wants to "make this feel more alive". For fixing existing animations, use improve-animations or review-animations instead.
 ---
 
 # Finding Animation Opportunities
@@ -80,7 +80,7 @@ Sweep for these seams — each is a known class of genuine opportunity:
 - List items added/removed with no bridge (and the list isn't high-frequency) → enter/exit transitions; CSS transitions, not keyframes, so rapid triggers retarget smoothly
 
 **Missing spatial story**
-- Panels, popovers, menus that appear with no connection to their trigger → scale in with `transform-origin` at the trigger (Radix: `var(--radix-popover-content-transform-origin)`; Base UI: `var(--transform-origin)`); modals are exempt — they stay centered
+- Panels, popovers, menus that appear with no connection to their trigger → scale in with `transform-origin` at the trigger (Base UI: `var(--transform-origin)`); modals are exempt — they stay centered
 - Dismissable surfaces (toasts, sheets) that exit a different way than they entered → symmetric paths; `translateY(100%)` percentages, not hardcoded pixels
 
 **Group entrances**
@@ -100,11 +100,6 @@ Useful sweeps: grep for conditional renders with no transition (`{isOpen &&`, `d
 2. **Sweep** the hunt list above. Done when every seam class has either yielded candidates with `file:line` evidence or been explicitly cleared.
 3. **Gate** every candidate through all four questions. Be ruthless.
 4. **Report** in the format below. If nothing survives, say so plainly; that's a good result, not a failure.
-
-## Motion Workflow Loop
-
-When an opportunity survives the gate, hand its exact recipe to `animate` to
-implement it. Once the implementation is ready, use `review-animations` on the resulting diff before accepting it. This skill remains read-only: it identifies the candidate and its constraints, then hands off rather than writing the motion.
 
 ## Required Output Format
 
@@ -130,7 +125,7 @@ This section is what separates this skill from an animation wishlist.
 
 ### Part 3 — Verdict
 
-One short paragraph: how much motion this interface actually needs, whether it's already close to right, and which single suggestion has the highest leverage. Close by pointing at the handoff: pass the chosen row to `animate`, then run `review-animations` on the resulting diff. Use `improve-animations plan <suggestion>` when the user wants a self-contained implementation plan instead.
+One short paragraph: how much motion this interface actually needs, whether it's already close to right, and which single suggestion has the highest leverage. Close by pointing at the handoff: `improve-animations plan <suggestion>` to turn any row into a self-contained implementation plan.
 
 ## Tone
 
