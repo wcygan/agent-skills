@@ -20,6 +20,7 @@ loaded as a plugin by plugin-capable clients.
 | Skill | What it does | Install |
 |-------|--------------|---------|
 | `animation-vocabulary` | Names web animation and motion effects from vague descriptions. | `gh skill install wcygan/agent-skills animation-vocabulary --agent codex --scope user` |
+| `audit-observability-path` | Audits whether one scenario can be detected, correlated, explained, and reconstructed across system boundaries. | `gh skill install wcygan/agent-skills audit-observability-path --agent codex --scope user` |
 | `better-colors` | Designs OKLCH palettes, checks contrast, and guides web color systems. | `gh skill install wcygan/agent-skills better-colors --agent codex --scope user` |
 | `better-ui` | Applies design-engineering principles for polished interface details and interactions. | `gh skill install wcygan/agent-skills better-ui --agent codex --scope user` |
 | `effect-ts` | Builds production TypeScript applications with Effect v4, including workflows, services, schemas, configuration, schedules, caches, streams, HTTP clients, and tests. | `gh skill install wcygan/agent-skills effect-ts --agent codex --scope user` |
@@ -28,10 +29,14 @@ loaded as a plugin by plugin-capable clients.
 | `hill-climbing` | Runs a guarded, metric-driven optimization loop using one-variable experiments, a numeric measure, behavioral guard, and plateau rules. | `gh skill install wcygan/agent-skills hill-climbing --agent codex --scope user` |
 | `improve-animations` | Audits animation code and produces prioritized, self-contained improvement plans. | `gh skill install wcygan/agent-skills improve-animations --agent codex --scope user` |
 | `improve-development-loop` | Finds and automates repeated developer and agent work to shorten the path from a change to trustworthy feedback. | `gh skill install wcygan/agent-skills improve-development-loop --agent codex --scope user` |
+| `map-change-impact` | Maps the blast radius, compatibility obligations, rollout risks, and validation needs of a proposed change. | `gh skill install wcygan/agent-skills map-change-impact --agent codex --scope user` |
 | `new-plugin` | Scaffolds a new Agent Skill (or Agent Plugins package) into this repo with valid frontmatter, and validates the result. | `gh skill install wcygan/agent-skills new-plugin --agent codex --scope user` |
 | `pi-coding-agent` | Uses and investigates the Pi coding-agent CLI, including sessions, models, skills, and extensions. | `gh skill install wcygan/agent-skills pi-coding-agent --agent codex --scope user` |
 | `pi-sdk` | Builds, debugs, and explains TypeScript integrations with the Pi coding-agent SDK. | `gh skill install wcygan/agent-skills pi-sdk --agent codex --scope user` |
 | `review-animations` | Reviews animation and motion code against a high craft bar. | `gh skill install wcygan/agent-skills review-animations --agent codex --scope user` |
+| `trace-codepath` | Traces one execution path across functions, services, transports, asynchronous work, and resources with evidence-backed diagrams. | `gh skill install wcygan/agent-skills trace-codepath --agent codex --scope user` |
+| `trace-data-lineage` | Traces a field, record, event, or dataset through transformations, ownership boundaries, copies, and exposures. | `gh skill install wcygan/agent-skills trace-data-lineage --agent codex --scope user` |
+| `trace-failure-path` | Traces a concrete failure through propagation, partial state, retries, recovery, and user or operator outcomes. | `gh skill install wcygan/agent-skills trace-failure-path --agent codex --scope user` |
 | `typst-author` | Generates, edits, and troubleshoots Typst documents and projects. | `gh skill install wcygan/agent-skills typst-author --agent codex --scope user` |
 
 ## Installation
