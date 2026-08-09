@@ -19,7 +19,19 @@ loaded as a plugin by plugin-capable clients.
 
 | Skill | What it does | Install |
 |-------|--------------|---------|
+| `animation-vocabulary` | Names web animation and motion effects from vague descriptions. | `gh skill install wcygan/agent-skills animation-vocabulary --agent codex --scope user` |
+| `better-colors` | Designs OKLCH palettes, checks contrast, and guides web color systems. | `gh skill install wcygan/agent-skills better-colors --agent codex --scope user` |
+| `better-ui` | Applies design-engineering principles for polished interface details and interactions. | `gh skill install wcygan/agent-skills better-ui --agent codex --scope user` |
+| `effect-ts` | Builds production TypeScript applications with Effect v4, including workflows, services, schemas, configuration, schedules, caches, streams, HTTP clients, and tests. | `gh skill install wcygan/agent-skills effect-ts --agent codex --scope user` |
+| `ephemeral-chooser` | Creates, compares, shares, and promotes temporary component variants. | `gh skill install wcygan/agent-skills ephemeral-chooser --agent codex --scope user` |
+| `find-animation-opportunities` | Identifies UI moments that benefit from motion and proposes precise recipes. | `gh skill install wcygan/agent-skills find-animation-opportunities --agent codex --scope user` |
+| `hill-climbing` | Runs a guarded, metric-driven optimization loop using one-variable experiments, a numeric measure, behavioral guard, and plateau rules. | `gh skill install wcygan/agent-skills hill-climbing --agent codex --scope user` |
+| `improve-animations` | Audits animation code and produces prioritized, self-contained improvement plans. | `gh skill install wcygan/agent-skills improve-animations --agent codex --scope user` |
 | `new-plugin` | Scaffolds a new Agent Skill (or Agent Plugins package) into this repo with valid frontmatter, and validates the result. | `gh skill install wcygan/agent-skills new-plugin --agent codex --scope user` |
+| `pi-coding-agent` | Uses and investigates the Pi coding-agent CLI, including sessions, models, skills, and extensions. | `gh skill install wcygan/agent-skills pi-coding-agent --agent codex --scope user` |
+| `pi-sdk` | Builds, debugs, and explains TypeScript integrations with the Pi coding-agent SDK. | `gh skill install wcygan/agent-skills pi-sdk --agent codex --scope user` |
+| `review-animations` | Reviews animation and motion code against a high craft bar. | `gh skill install wcygan/agent-skills review-animations --agent codex --scope user` |
+| `typst-author` | Generates, edits, and troubleshoots Typst documents and projects. | `gh skill install wcygan/agent-skills typst-author --agent codex --scope user` |
 
 ## Installation
 
