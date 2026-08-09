@@ -111,10 +111,19 @@ selected skills, and pinned revisions are recorded in
 Use the `uv`-managed maintenance tool to check or update an external source:
 
 ```bash
+uv run tools/sync_skills.py check
 uv run tools/sync_skills.py check planetscale/database-skills
+uv run tools/sync_skills.py check --jobs 1  # sequential fallback
+uv run tools/sync_skills.py check --color always  # preserve color when piping
 uv run tools/sync_skills.py update planetscale/database-skills
 uv run tools/sync_skills.py validate
 ```
+
+`check` is non-mutating and checks sources concurrently with up to four workers.
+Use `--jobs` to change that bound; output remains in lock-file order. Status
+prefixes are green for up-to-date sources and yellow when an update is
+available. Color defaults to terminal-aware `auto`, respects `NO_COLOR`, and
+can be controlled with `--color always|never`.
 
 A source can declare `remove_frontmatter` in the lock file for upstream,
 client-specific top-level keys that the Agent Skills specification rejects.

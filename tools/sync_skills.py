@@ -5,9 +5,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import subprocess
+import sys
 import tempfile
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 
@@ -15,6 +18,9 @@ ROOT = Path(__file__).resolve().parents[1]
 LOCK_PATH = ROOT / "vendor" / "skills-lock.json"
 SKILLS_DIR = ROOT / "skills"
 ATTRIBUTIONS_PATH = ROOT / "vendor" / "ATTRIBUTIONS.md"
+GREEN = "\033[32m"
+YELLOW = "\033[33m"
+RESET = "\033[0m"
 
 
 def run(*args: str, cwd: Path | None = None) -> str:
@@ -30,6 +36,41 @@ def clone_source(source: dict, destination: Path, ref: str | None = None) -> str
     run("git", "clone", "--quiet", "--filter=blob:none", source["repository"], str(destination))
     run("git", "checkout", "--quiet", ref or source["ref"], cwd=destination)
     return run("git", "rev-parse", "HEAD", cwd=destination)
+
+
+def positive_int(value: str) -> int:
+    parsed = int(value)
+    if parsed < 1:
+        raise argparse.ArgumentTypeError("must be at least 1")
+    return parsed
+
+
+def check_source(source: dict) -> tuple[str, str, str]:
+    with tempfile.TemporaryDirectory(prefix="agent-skills-check-") as scratch:
+        revision = clone_source(source, Path(scratch) / "source", source.get("branch", "main"))
+    return source["repository"], source["ref"], revision
+
+
+def color_enabled(mode: str) -> bool:
+    if mode == "always":
+        return True
+    if mode == "never" or "NO_COLOR" in os.environ:
+        return False
+    return sys.stdout.isatty() and os.environ.get("TERM") != "dumb"
+
+
+def format_check_result(repository: str, locked: str, available: str, color: bool) -> str:
+    if locked == available:
+        prefix = "[UP TO DATE]"
+        detail = f"{repository} @ {locked}"
+        ansi = GREEN
+    else:
+        prefix = "[UPDATE AVAILABLE]"
+        detail = f"{repository}: locked {locked}, available {available}"
+        ansi = YELLOW
+    if color:
+        prefix = f"{ansi}{prefix}{RESET}"
+    return f"{prefix} {detail}"
 
 
 def normalize_frontmatter(skill_text: str, source: dict) -> str:
@@ -89,7 +130,13 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("command", choices=("update", "check", "validate"))
     parser.add_argument("source", nargs="?", help="repository URL substring to select")
+    parser.add_argument("-j", "--jobs", type=positive_int, help="parallel source checks (check only; default: 4)")
+    parser.add_argument("--color", choices=("auto", "always", "never"), help="check output color (default: auto)")
     args = parser.parse_args()
+    if args.command != "check" and args.jobs is not None:
+        parser.error("--jobs can only be used with check")
+    if args.command != "check" and args.color is not None:
+        parser.error("--color can only be used with check")
     lock = load_lock()
     sources = [s for s in lock["sources"] if not args.source or args.source in s["repository"]]
     if not sources:
@@ -104,14 +151,15 @@ def main() -> int:
                     raise SystemExit(f"missing provenance marker: {skill}")
         print(f"validated {sum(len(s['skills']) for s in sources)} vendored skills")
         return 0
+    if args.command == "check":
+        use_color = color_enabled(args.color or "auto")
+        with ThreadPoolExecutor(max_workers=min(args.jobs or 4, len(sources))) as executor:
+            for repository, locked, available in executor.map(check_source, sources):
+                print(format_check_result(repository, locked, available, use_color))
+        return 0
     for source in sources:
-        if args.command == "check":
-            with tempfile.TemporaryDirectory(prefix="agent-skills-check-") as scratch:
-                revision = clone_source(source, Path(scratch) / "source", source.get("branch", "main"))
-            print(f"{source['repository']}: locked {source['ref']}, available {revision}")
-        else:
-            repository, revision = sync_source(source, update_lock=True)
-            print(f"updated {repository} to {revision}")
+        repository, revision = sync_source(source, update_lock=True)
+        print(f"updated {repository} to {revision}")
     if args.command == "update":
         LOCK_PATH.write_text(json.dumps(lock, indent=2) + "\n")
         write_attributions(lock)
