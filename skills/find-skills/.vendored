@@ -1,0 +1,3 @@
+source=https://github.com/vercel-labs/skills.git
+upstream_skill=find-skills
+revision=941a7bcfeca4bf07913b9fb6f8ed81f20ff5297c

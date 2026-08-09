@@ -34,6 +34,38 @@
         "disable-model-invocation"
       ],
       "license": "MIT"
+    },
+    {
+      "repository": "https://github.com/vercel-labs/skills.git",
+      "branch": "main",
+      "ref": "941a7bcfeca4bf07913b9fb6f8ed81f20ff5297c",
+      "skills": {
+        "find-skills": "find-skills"
+      },
+      "license": "MIT"
+    },
+    {
+      "repository": "https://github.com/mattpocock/skills.git",
+      "branch": "main",
+      "ref": "84fdeffd12f2ee307994d1eb6feb48173b6e0502",
+      "skills": {
+        "productivity/handoff": "handoff",
+        "productivity/writing-for-agents": "writing-for-agents",
+        "productivity/wait-what": "wait-what",
+        "productivity/grilling": "grilling",
+        "engineering/grill-with-docs": "grill-with-docs",
+        "engineering/domain-modeling": "domain-modeling",
+        "engineering/codebase-design": "codebase-design",
+        "engineering/improve-codebase-architecture": "improve-codebase-architecture",
+        "engineering/tdd": "tdd",
+        "engineering/code-review": "code-review",
+        "engineering/setup-matt-pocock-skills": "setup-matt-pocock-skills"
+      },
+      "remove_frontmatter": [
+        "argument-hint",
+        "disable-model-invocation"
+      ],
+      "license": "MIT"
     }
   ]
 }

@@ -24,25 +24,43 @@ loaded as a plugin by plugin-capable clients.
 | `audit-observability-path` | Audits whether one scenario can be detected, correlated, explained, and reconstructed across system boundaries. | `gh skill install wcygan/agent-skills audit-observability-path --agent codex --scope user` |
 | `better-colors` | Designs OKLCH palettes, checks contrast, and guides web color systems. | `gh skill install wcygan/agent-skills better-colors --agent codex --scope user` |
 | `better-ui` | Applies design-engineering principles for polished interface details and interactions. | `gh skill install wcygan/agent-skills better-ui --agent codex --scope user` |
+| `code-review` | Reviews changes against repository standards and the originating specification. | `gh skill install wcygan/agent-skills code-review --agent codex --scope user` |
+| `codebase-design` | Designs deep modules and shared vocabulary for maintainable, testable code. | `gh skill install wcygan/agent-skills codebase-design --agent codex --scope user` |
+| `design-verification-strategy` | Designs risk-based proof across test tiers, authoritative oracles, fixtures, environments, held-out checks, and acceptance gates. | `gh skill install wcygan/agent-skills design-verification-strategy --agent codex --scope user` |
+| `domain-modeling` | Builds and sharpens a project's domain model, terminology, decisions, and glossary. | `gh skill install wcygan/agent-skills domain-modeling --agent codex --scope user` |
 | `effect-ts` | Builds production TypeScript applications with Effect v4, including workflows, services, schemas, configuration, schedules, caches, streams, HTTP clients, and tests. | `gh skill install wcygan/agent-skills effect-ts --agent codex --scope user` |
 | `ephemeral-chooser` | Creates, compares, shares, and promotes temporary component variants. | `gh skill install wcygan/agent-skills ephemeral-chooser --agent codex --scope user` |
+| `evaluate-agent-workflow` | Diagnoses agent behavior across model inputs, tool contracts, orchestration, durable events, projections, output, and focused regression evals. | `gh skill install wcygan/agent-skills evaluate-agent-workflow --agent codex --scope user` |
 | `find-animation-opportunities` | Identifies UI moments that benefit from motion and proposes precise recipes. | `gh skill install wcygan/agent-skills find-animation-opportunities --agent codex --scope user` |
+| `find-skills` | Helps users discover and install agent skills for specialized tasks. | `gh skill install wcygan/agent-skills find-skills --agent codex --scope user` |
+| `gh-stack` | Manages stacked branches and pull requests with the GitHub CLI's `gh stack` workflow. | `gh skill install wcygan/agent-skills gh-stack --agent codex --scope user` |
+| `grill-with-docs` | Runs a relentless design interview while creating ADRs and a glossary. | `gh skill install wcygan/agent-skills grill-with-docs --agent codex --scope user` |
+| `grilling` | Relentlessly stress-tests a plan, decision, or idea through a design tree. | `gh skill install wcygan/agent-skills grilling --agent codex --scope user` |
+| `handoff` | Compacts the current conversation into a handoff document for another agent. | `gh skill install wcygan/agent-skills handoff --agent codex --scope user` |
 | `hill-climbing` | Runs a guarded, metric-driven optimization loop using one-variable experiments, a numeric measure, behavioral guard, and plateau rules. | `gh skill install wcygan/agent-skills hill-climbing --agent codex --scope user` |
 | `improve-animations` | Audits animation code and produces prioritized, self-contained improvement plans. | `gh skill install wcygan/agent-skills improve-animations --agent codex --scope user` |
+| `improve-codebase-architecture` | Scans a codebase for deepening opportunities and presents a visual HTML report. | `gh skill install wcygan/agent-skills improve-codebase-architecture --agent codex --scope user` |
 | `improve-development-loop` | Finds and automates repeated developer and agent work to shorten the path from a change to trustworthy feedback. | `gh skill install wcygan/agent-skills improve-development-loop --agent codex --scope user` |
 | `map-change-impact` | Maps the blast radius, compatibility obligations, rollout risks, and validation needs of a proposed change. | `gh skill install wcygan/agent-skills map-change-impact --agent codex --scope user` |
 | `model-concurrency` | Models actors, state, ordering, invariants, and counterexample schedules for concurrent and distributed behavior. | `gh skill install wcygan/agent-skills model-concurrency --agent codex --scope user` |
 | `new-plugin` | Scaffolds a new Agent Skill (or Agent Plugins package) into this repo with valid frontmatter, and validates the result. | `gh skill install wcygan/agent-skills new-plugin --agent codex --scope user` |
+| `operate-kubernetes-gitops` | Diagnoses and safely repairs GitOps-managed Kubernetes systems by reconciling desired, rendered, controller, live, dependency, and user-visible state. | `gh skill install wcygan/agent-skills operate-kubernetes-gitops --agent codex --scope user` |
 | `pi-coding-agent` | Uses and investigates the Pi coding-agent CLI, including sessions, models, skills, and extensions. | `gh skill install wcygan/agent-skills pi-coding-agent --agent codex --scope user` |
 | `pi-sdk` | Builds, debugs, and explains TypeScript integrations with the Pi coding-agent SDK. | `gh skill install wcygan/agent-skills pi-sdk --agent codex --scope user` |
 | `plan-safe-refactor` | Plans staged, behavior-preserving refactors with invariants, checkpoints, compatibility, rollback, and cleanup. | `gh skill install wcygan/agent-skills plan-safe-refactor --agent codex --scope user` |
+| `planetscale-mysql` | Plans and reviews MySQL schemas, indexes, queries, transactions, migrations, and operations. | `gh skill install wcygan/agent-skills planetscale-mysql --agent codex --scope user` |
+| `planetscale-postgres` | Applies PostgreSQL and PlanetScale Postgres practices for schema, queries, performance, connections, and operations. | `gh skill install wcygan/agent-skills planetscale-postgres --agent codex --scope user` |
 | `reproduce-bug` | Turns intermittent or poorly understood symptoms into controlled, repeatable reproductions with reliable regression oracles. | `gh skill install wcygan/agent-skills reproduce-bug --agent codex --scope user` |
 | `review-animations` | Reviews animation and motion code against a high craft bar. | `gh skill install wcygan/agent-skills review-animations --agent codex --scope user` |
 | `skill-intake` | Formalizes rough automation ideas into a skill decision, structured brief, and paste-ready implementation handoff. | `gh skill install wcygan/agent-skills skill-intake --agent codex --scope user` |
+| `setup-matt-pocock-skills` | Configures issue tracking, triage labels, and domain-document layout for Matt Pocock's engineering skills. | `gh skill install wcygan/agent-skills setup-matt-pocock-skills --agent codex --scope user` |
 | `trace-codepath` | Traces one execution path across functions, services, transports, asynchronous work, and resources with evidence-backed diagrams. | `gh skill install wcygan/agent-skills trace-codepath --agent codex --scope user` |
 | `trace-data-lineage` | Traces a field, record, event, or dataset through transformations, ownership boundaries, copies, and exposures. | `gh skill install wcygan/agent-skills trace-data-lineage --agent codex --scope user` |
 | `trace-failure-path` | Traces a concrete failure through propagation, partial state, retries, recovery, and user or operator outcomes. | `gh skill install wcygan/agent-skills trace-failure-path --agent codex --scope user` |
+| `tdd` | Applies test-driven development with a red-green-refactor loop and durable tests. | `gh skill install wcygan/agent-skills tdd --agent codex --scope user` |
 | `typst-author` | Generates, edits, and troubleshoots Typst documents and projects. | `gh skill install wcygan/agent-skills typst-author --agent codex --scope user` |
+| `wait-what` | Requests a clearer re-pitch when the previous message did not land. | `gh skill install wcygan/agent-skills wait-what --agent codex --scope user` |
+| `writing-for-agents` | Guides writing skills, AGENTS.md, CLAUDE.md, and other documents for agents. | `gh skill install wcygan/agent-skills writing-for-agents --agent codex --scope user` |
 
 ## Installation
 
@@ -128,6 +146,8 @@ can be controlled with `--color always|never`.
 A source can declare `remove_frontmatter` in the lock file for upstream,
 client-specific top-level keys that the Agent Skills specification rejects.
 The sync tool applies that compatibility normalization on every update.
+Provider-specific `openai.yaml` manifests are excluded from every vendored
+skill copy and rejected by vendored-skill validation.
 
 Vendored skills keep their upstream names when those names are collision-free.
 Sources with generic names are namespaced (`planetscale-mysql`,

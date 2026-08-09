@@ -27,3 +27,27 @@ These skills are copied from their upstream repositories.
 - `find-animation-opportunities` from `skills/find-animation-opportunities`
 - `improve-animations` from `skills/improve-animations`
 - `review-animations` from `skills/review-animations`
+
+## https://github.com/vercel-labs/skills.git
+
+- License: MIT
+- Revision: `941a7bcfeca4bf07913b9fb6f8ed81f20ff5297c`
+
+- `find-skills` from `skills/find-skills`
+
+## https://github.com/mattpocock/skills.git
+
+- License: MIT
+- Revision: `84fdeffd12f2ee307994d1eb6feb48173b6e0502`
+
+- `handoff` from `skills/productivity/handoff`
+- `writing-for-agents` from `skills/productivity/writing-for-agents`
+- `wait-what` from `skills/productivity/wait-what`
+- `grilling` from `skills/productivity/grilling`
+- `grill-with-docs` from `skills/engineering/grill-with-docs`
+- `domain-modeling` from `skills/engineering/domain-modeling`
+- `codebase-design` from `skills/engineering/codebase-design`
+- `improve-codebase-architecture` from `skills/engineering/improve-codebase-architecture`
+- `tdd` from `skills/engineering/tdd`
+- `code-review` from `skills/engineering/code-review`
+- `setup-matt-pocock-skills` from `skills/engineering/setup-matt-pocock-skills`
