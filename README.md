@@ -88,6 +88,7 @@ loaded as a plugin by plugin-capable clients.
 | `triage` | Categorizes and verifies issues and external pull requests, then moves them through a triage state machine with durable agent briefs. | `gh skill install wcygan/agent-skills triage --agent codex --scope user` |
 | `tdd` | Applies test-driven development with a red-green-refactor loop and durable tests. | `gh skill install wcygan/agent-skills tdd --agent codex --scope user` |
 | `typst-author` | Generates, edits, and troubleshoots Typst documents and projects. | `gh skill install wcygan/agent-skills typst-author --agent codex --scope user` |
+| `uv-python` | Guides Python work with uv across versions, scripts, tools, projects, dependencies, lockfiles, configuration, resolution, and caching. | `gh skill install wcygan/agent-skills uv-python --agent codex --scope user` |
 | `vercel-composition-patterns` | Applies scalable React composition patterns for flexible component libraries and reusable APIs. | `gh skill install wcygan/agent-skills vercel-composition-patterns --agent codex --scope user` |
 | `vercel-react-best-practices` | Applies Vercel React and Next.js performance optimization guidelines. | `gh skill install wcygan/agent-skills vercel-react-best-practices --agent codex --scope user` |
 | `vercel-react-view-transitions` | Implements native-feeling React View Transition animations for routes, components, lists, and shared elements. | `gh skill install wcygan/agent-skills vercel-react-view-transitions --agent codex --scope user` |
