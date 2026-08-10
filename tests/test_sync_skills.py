@@ -58,7 +58,7 @@ class SyncSkillsCharacterizationTests(unittest.TestCase):
             capture_output=True,
         )
 
-        self.assertEqual(result.stdout, "validated 32 vendored skills\n")
+        self.assertEqual(result.stdout, "validated 36 vendored skills\n")
 
 
 if __name__ == "__main__":

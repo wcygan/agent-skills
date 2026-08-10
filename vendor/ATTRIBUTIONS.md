@@ -75,3 +75,13 @@ These skills are copied from their upstream repositories.
 - `to-spec` from `skills/engineering/to-spec`
 - `to-tickets` from `skills/engineering/to-tickets`
 - `triage` from `skills/engineering/triage`
+
+## https://github.com/openai/skills.git
+
+- License: Apache-2.0
+- Revision: `49f948faa9258a0c61caceaf225e179651397431`
+
+- `define-goal` from `skills/.curated/define-goal`
+- `gh-address-comments` from `skills/.curated/gh-address-comments`
+- `gh-fix-ci` from `skills/.curated/gh-fix-ci`
+- `pdf` from `skills/.curated/pdf`

@@ -97,6 +97,18 @@
         "disable-model-invocation"
       ],
       "license": "MIT"
+    },
+    {
+      "repository": "https://github.com/openai/skills.git",
+      "branch": "main",
+      "ref": "49f948faa9258a0c61caceaf225e179651397431",
+      "skills": {
+        ".curated/define-goal": "define-goal",
+        ".curated/gh-address-comments": "gh-address-comments",
+        ".curated/gh-fix-ci": "gh-fix-ci",
+        ".curated/pdf": "pdf"
+      },
+      "license": "Apache-2.0"
     }
   ]
 }
