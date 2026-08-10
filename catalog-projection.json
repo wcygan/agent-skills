@@ -1,0 +1,21 @@
+{
+  "managed_paths": [
+    ".github/workflows/ci.yml",
+    "BOOTSTRAP.md",
+    "catalog-projection.json",
+    "docs/catalog-inheritance.md",
+    "justfile",
+    "pyproject.toml",
+    "skill_catalog/__init__.py",
+    "skill_catalog/catalog.py",
+    "skill_catalog/vendor.py",
+    "tests/test_catalog.py",
+    "tests/test_sync_skills.py",
+    "tools/catalog.py",
+    "tools/sync_skills.py",
+    "uv.lock",
+    "vendor/ATTRIBUTIONS.md",
+    "vendor/skills-lock.json"
+  ],
+  "schema": 1
+}

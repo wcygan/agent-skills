@@ -18,21 +18,16 @@ This repo deliberately uses the layout that **Agent Plugins** also defines for
 its `skills/` component, so the same tree can be packaged as an Agent Plugin
 (optional `plugin.json`) for plugin-capable clients without restructuring.
 
-## Repository layout
+## Core paths
 
-```
-agent-skills/
-├── plugin.json        # OPTIONAL: only if we adopt Agent Plugins packaging
-├── README.md          # user-facing: install instructions + skill index
-├── LICENSE
-└── skills/
-    ├── <skill-name>/
-    │   ├── SKILL.md        # required: YAML frontmatter + instructions
-    │   ├── scripts/        # optional: executable code
-    │   ├── references/     # optional: docs loaded on demand
-    │   └── assets/         # optional: templates, resources
-    └── ...
-```
+- `skills/` contains the distributable skill catalog.
+- `vendor/skills-lock.json` defines direct vendored sources.
+- `justfile` defines the supported maintenance commands.
+- `BOOTSTRAP.md` guides agent-led template creation.
+- `docs/catalog-inheritance.md` defines catalog adoption and upgrades.
+- `catalog-seed.json` and `catalog-projection.json` define inheritance inputs.
+- `catalog-snapshot.json` records distributable content hashes.
+- `.github/workflows/ci.yml` runs the shared validation gate.
 
 ### Rules every skill MUST follow
 
@@ -54,31 +49,30 @@ agent-skills/
 
 ## Validation before merging/committing skills
 
-Validate each skill with the Agent Skills reference library before pushing:
+Validate each changed skill with the Agent Skills reference library:
 
 ```bash
-uv tool run skills-ref validate ./skills/<skill-name>
+uv tool run --from skills-ref agentskills validate ./skills/<skill-name>
 ```
 
-Also verify discovery with the actual installer (draft check, installs into a
-scratch dir):
+Run the shared repository and publication checks before pushing:
 
 ```bash
-gh skill install ./agent-skills --from-local --all --dir /tmp/skill-check
+just check-full
 ```
 
 ## Distribution
 
 - Installation: `gh skill install OWNER/agent-skills --agent <agent> --scope <scope>` (`--all` to install every skill; a trailing skill name selects one).
-- Support any agent, e.g. global install for Codex:
+- Support each agent listed by `gh skill install --help`.
+  For example, install all skills for Codex:
 
   ```bash
   gh skill install OWNER/agent-skills --agent codex --scope user --all
   ```
 
-- **Versioning:** `gh skill install` resolves versions as git tags, commit
-  SHAs, or default-branch HEAD. Cut release tags (`v1.0.0`, semver) so users
-  can pin: `gh skill install OWNER/agent-skills ... --pin v1.0.0`.
+- **Versioning:** Unpinned installs use the latest release, then default-branch
+  HEAD. Pins accept a tag or commit SHA.
 - gh injects source-tracking metadata into installed skill frontmatter,
   enabling `gh skill update`.
 
@@ -88,6 +82,8 @@ gh skill install ./agent-skills --from-local --all --dir /tmp/skill-check
   <https://agentskills.io/specification>
 - `gh skill install` reference (our distribution path):
   <https://cli.github.com/manual/gh_skill_install>
+- `gh skill update` reference:
+  <https://cli.github.com/manual/gh_skill_update>
 - Agent Plugins home (portable package format for skills + MCP servers):
   <https://agent-plugins.org/>
 - Agent Plugins specification (v1.0.0, working draft):
