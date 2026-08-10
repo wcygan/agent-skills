@@ -27,6 +27,7 @@ loaded as a plugin by plugin-capable clients.
 | `code-review` | Reviews changes against repository standards and the originating specification. | `gh skill install wcygan/agent-skills code-review --agent codex --scope user` |
 | `codebase-design` | Designs deep modules and shared vocabulary for maintainable, testable code. | `gh skill install wcygan/agent-skills codebase-design --agent codex --scope user` |
 | `design-verification-strategy` | Designs risk-based proof across test tiers, authoritative oracles, fixtures, environments, held-out checks, and acceptance gates. | `gh skill install wcygan/agent-skills design-verification-strategy --agent codex --scope user` |
+| `diagnose-difficult-bug` | Orchestrates a faithful reproduction, failure trace, causal diagnosis, regression oracle, and repair boundary for difficult bugs. | `gh skill install wcygan/agent-skills diagnose-difficult-bug --agent codex --scope user` |
 | `domain-modeling` | Builds and sharpens a project's domain model, terminology, decisions, and glossary. | `gh skill install wcygan/agent-skills domain-modeling --agent codex --scope user` |
 | `effect-ts` | Builds production TypeScript applications with Effect v4, including workflows, services, schemas, configuration, schedules, caches, streams, HTTP clients, and tests. | `gh skill install wcygan/agent-skills effect-ts --agent codex --scope user` |
 | `ephemeral-chooser` | Creates, compares, shares, and promotes temporary component variants. | `gh skill install wcygan/agent-skills ephemeral-chooser --agent codex --scope user` |
