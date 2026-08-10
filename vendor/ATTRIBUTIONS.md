@@ -24,9 +24,27 @@ These skills are copied from their upstream repositories.
 
 - `animate` from `skills/animate`
 - `animation-vocabulary` from `skills/animation-vocabulary`
+- `emil-design-eng` from `skills/emil-design-eng`
 - `find-animation-opportunities` from `skills/find-animation-opportunities`
 - `improve-animations` from `skills/improve-animations`
 - `review-animations` from `skills/review-animations`
+
+## https://github.com/shadcn-ui/ui.git
+
+- License: MIT
+- Revision: `5eb130d72dbe723d0c4324769d250eda668b1813`
+
+- `shadcn` from `skills/shadcn`
+
+## https://github.com/vercel-labs/agent-skills.git
+
+- License: MIT
+- Revision: `7c180d9044c9ae2b442b567aad4e42a28dd5ed62`
+
+- `vercel-composition-patterns` from `skills/composition-patterns`
+- `vercel-react-best-practices` from `skills/react-best-practices`
+- `vercel-react-view-transitions` from `skills/react-view-transitions`
+- `web-design-guidelines` from `skills/web-design-guidelines`
 
 ## https://github.com/vercel-labs/skills.git
 

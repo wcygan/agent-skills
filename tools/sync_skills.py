@@ -90,9 +90,9 @@ def normalize_frontmatter(skill_text: str, source: dict) -> str:
     return "---\n" + "\n".join(lines) + separator + body
 
 
-def exclude_openai_yaml(_directory: str, names: list[str]) -> set[str]:
+def exclude_provider_manifests(_directory: str, names: list[str]) -> set[str]:
     """Keep provider-specific OpenAI agent manifests out of vendored skills."""
-    return {name for name in names if name.lower() == "openai.yaml"}
+    return {name for name in names if name.lower() in {"openai.yaml", "openai.yml"}}
 
 
 def sync_source(source: dict, update_lock: bool) -> tuple[str, str]:
@@ -108,7 +108,7 @@ def sync_source(source: dict, update_lock: bool) -> tuple[str, str]:
                 raise RuntimeError(f"refusing to overwrite non-vendored skill: {target}")
             if target.exists():
                 shutil.rmtree(target)
-            shutil.copytree(upstream, target, ignore=exclude_openai_yaml)
+            shutil.copytree(upstream, target, ignore=exclude_provider_manifests)
             skill_file = target / "SKILL.md"
             skill_text = skill_file.read_text()
             upstream_skill_name = Path(upstream_name).name
@@ -155,8 +155,8 @@ def main() -> int:
                     raise SystemExit(f"missing vendored skill: {skill}")
                 if not (skill / ".vendored").is_file():
                     raise SystemExit(f"missing provenance marker: {skill}")
-                if any(path.name.lower() == "openai.yaml" for path in skill.rglob("*")):
-                    raise SystemExit(f"forbidden openai.yaml in vendored skill: {skill}")
+                if any(path.name.lower() in {"openai.yaml", "openai.yml"} for path in skill.rglob("*")):
+                    raise SystemExit(f"forbidden OpenAI manifest in vendored skill: {skill}")
         print(f"validated {sum(len(s['skills']) for s in sources)} vendored skills")
         return 0
     if args.command == "check":

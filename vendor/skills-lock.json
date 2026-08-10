@@ -26,6 +26,7 @@
       "skills": {
         "animate": "animate",
         "animation-vocabulary": "animation-vocabulary",
+        "emil-design-eng": "emil-design-eng",
         "find-animation-opportunities": "find-animation-opportunities",
         "improve-animations": "improve-animations",
         "review-animations": "review-animations"
@@ -33,6 +34,30 @@
       "remove_frontmatter": [
         "disable-model-invocation"
       ],
+      "license": "MIT"
+    },
+    {
+      "repository": "https://github.com/shadcn-ui/ui.git",
+      "branch": "main",
+      "ref": "5eb130d72dbe723d0c4324769d250eda668b1813",
+      "skills": {
+        "shadcn": "shadcn"
+      },
+      "remove_frontmatter": [
+        "user-invocable"
+      ],
+      "license": "MIT"
+    },
+    {
+      "repository": "https://github.com/vercel-labs/agent-skills.git",
+      "branch": "main",
+      "ref": "7c180d9044c9ae2b442b567aad4e42a28dd5ed62",
+      "skills": {
+        "composition-patterns": "vercel-composition-patterns",
+        "react-best-practices": "vercel-react-best-practices",
+        "react-view-transitions": "vercel-react-view-transitions",
+        "web-design-guidelines": "web-design-guidelines"
+      },
       "license": "MIT"
     },
     {
