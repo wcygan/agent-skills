@@ -1,10 +1,13 @@
 ---
 name: improve-development-loop
-description: Inspect and improve an application's development inner loops—the repeated path from a change to trustworthy feedback. Use when setup, service startup, fixtures, test selection, builds, restarts, browser actions, log inspection, validation, or cleanup consume repeated developer or agent effort; identify evidence-backed bottlenecks and add the smallest useful scripts, task-runner commands, deterministic harnesses, observability, and bounded agent-facing scaffolding when implementation is requested.
+description: |
+  Inspect and improve an application's development loops from a change to trustworthy feedback.
+  Use when setup, startup, fixtures, tests, builds, browser actions, logs, validation, or cleanup consume repeated developer or agent effort.
+  Add the smallest useful automation and promote stable workflows into project-specific agent skills when implementation is requested.
 license: MIT
 metadata:
   author: William Cygan
-  version: "0.1.0"
+  version: "0.2.0"
 ---
 
 # Improve the Development Loop
@@ -151,6 +154,8 @@ that match the observed friction:
   `references/run-evidence-and-recovery.md`.
 - For generators or bounded automation interfaces, read
   `references/safe-automation.md`.
+- For promoting a stable workflow into a project-specific agent skill, read
+  `references/agent-capability-promotion.md`.
 
 Do not load or apply unrelated references as a checklist.
 
@@ -242,6 +247,28 @@ When implementation is requested:
 Do not automate a process that cannot yet be reproduced or explained. First
 make its state and failure semantics observable.
 
+## Evaluate agent capability promotion
+
+Always evaluate a proven tooling improvement for promotion into a
+project-specific agent skill. Create or extend that skill only when the
+promotion gate in `references/agent-capability-promotion.md` passes.
+
+Keep each layer responsible for one concern:
+
+- The project skill owns scenario selection, authority, evidence, and recovery.
+- The `justfile` owns stable, discoverable project command entry points.
+- A uv-managed or native script owns substantial, testable mechanics.
+- The application and its tools remain the source of behavior.
+
+Use the `just` skill when the project uses or adopts `just`. Use the
+`uv-python` skill when Python is the justified script surface. Use the
+`writing-for-agents` skill to create or change the project skill. Do not install
+these tools or skills unless the user authorizes that change.
+
+Do not copy recipe bodies, script internals, or general tool documentation into
+the project skill. Teach the agent when to use the project commands, how to
+judge their evidence, and how to recover safely.
+
 ## Verify the resulting loop
 
 Repeat the same representative scenario used for the baseline. Compare:
@@ -293,6 +320,13 @@ Before:
 After:
 Validation:
 
+## Agent capability promotion
+Decision:
+Project skill:
+Command surface:
+Script surface:
+Skill validation:
+
 ## Residual gaps
 Unverified assumptions:
 Deferred opportunities:
@@ -316,5 +350,6 @@ highest-leverage low-risk automation without adding dependencies.
 
 ```text
 Make this repository easier for a coding agent to operate locally. Focus on
-deterministic setup, focused checks, readiness, failure evidence, and safe reset.
+deterministic setup, focused checks, readiness, failure evidence, safe reset,
+and promotion of stable workflows into a project-specific agent skill.
 ```
