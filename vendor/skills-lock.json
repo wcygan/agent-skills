@@ -62,7 +62,10 @@
         "engineering/prototype": "prototype",
         "engineering/research": "research",
         "engineering/resolving-merge-conflicts": "resolving-merge-conflicts",
-        "engineering/setup-matt-pocock-skills": "setup-matt-pocock-skills"
+        "engineering/setup-matt-pocock-skills": "setup-matt-pocock-skills",
+        "engineering/to-spec": "to-spec",
+        "engineering/to-tickets": "to-tickets",
+        "engineering/triage": "triage"
       },
       "remove_frontmatter": [
         "argument-hint",

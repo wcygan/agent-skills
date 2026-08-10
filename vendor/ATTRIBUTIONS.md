@@ -54,3 +54,6 @@ These skills are copied from their upstream repositories.
 - `research` from `skills/engineering/research`
 - `resolving-merge-conflicts` from `skills/engineering/resolving-merge-conflicts`
 - `setup-matt-pocock-skills` from `skills/engineering/setup-matt-pocock-skills`
+- `to-spec` from `skills/engineering/to-spec`
+- `to-tickets` from `skills/engineering/to-tickets`
+- `triage` from `skills/engineering/triage`
