@@ -50,4 +50,7 @@ These skills are copied from their upstream repositories.
 - `improve-codebase-architecture` from `skills/engineering/improve-codebase-architecture`
 - `tdd` from `skills/engineering/tdd`
 - `code-review` from `skills/engineering/code-review`
+- `prototype` from `skills/engineering/prototype`
+- `research` from `skills/engineering/research`
+- `resolving-merge-conflicts` from `skills/engineering/resolving-merge-conflicts`
 - `setup-matt-pocock-skills` from `skills/engineering/setup-matt-pocock-skills`

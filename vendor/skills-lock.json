@@ -59,6 +59,9 @@
         "engineering/improve-codebase-architecture": "improve-codebase-architecture",
         "engineering/tdd": "tdd",
         "engineering/code-review": "code-review",
+        "engineering/prototype": "prototype",
+        "engineering/research": "research",
+        "engineering/resolving-merge-conflicts": "resolving-merge-conflicts",
         "engineering/setup-matt-pocock-skills": "setup-matt-pocock-skills"
       },
       "remove_frontmatter": [
