@@ -18,11 +18,23 @@ Use these specialist skills when available:
 - `gh-stack-companion` for stack detection, topology, health, merge order, and recovery advice.
 - `pr-guidelines` once per PR for presentation, testing evidence, reviewability, and split signals.
 - `code-review` only when the user asks for a deep Standards and Spec review or passes equivalent intent such as `--deep`.
-- `github:gh-address-comments` only after the user asks to implement selected review feedback.
-- `github:gh-fix-ci` only after the user asks to diagnose or fix failing GitHub Actions checks.
+- `gh-address-comments` after the user asks to inspect or implement selected review feedback.
+- `gh-fix-ci` after the user asks to diagnose failing GitHub Actions checks; require a separate approval before code changes.
 - `monitor-until` only when the user explicitly asks to watch a state until a terminal condition.
 
 If a named optional skill is unavailable, keep the inspection read-only and tell the user which follow-up capability is unavailable.
+
+Treat this skill as the read-only router for PR follow-up work. Report the
+smallest useful next action and name the specialist that owns it:
+
+- Active review threads route to `gh-address-comments`.
+- Failed GitHub Actions checks route to `gh-fix-ci`.
+- Pending checks route to `monitor-until` only when the user asks to watch.
+- Stack propagation or merge-order issues route to `gh-stack-companion`.
+
+Do not invoke a specialist's mutation path automatically. Preserve the
+specialist's authority gate and ask the user to select comments or approve
+implementation after diagnosis.
 
 ## Workflow
 
