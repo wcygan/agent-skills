@@ -90,7 +90,12 @@
         "engineering/setup-matt-pocock-skills": "setup-matt-pocock-skills",
         "engineering/to-spec": "to-spec",
         "engineering/to-tickets": "to-tickets",
-        "engineering/triage": "triage"
+        "engineering/triage": "triage",
+        "engineering/wayfinder": "wayfinder",
+        "engineering/diagnosing-bugs": "diagnosing-bugs",
+        "engineering/wizard": "wizard",
+        "engineering/implement": "implement",
+        "engineering/ask-matt": "ask-matt"
       },
       "remove_frontmatter": [
         "argument-hint",

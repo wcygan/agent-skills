@@ -10,17 +10,18 @@
     "skill_catalog/catalog.py": "6e1d54ecd0231b3755f9be4d5e11844ebf9184975036c75540a0745329467fda",
     "skill_catalog/vendor.py": "a9c2024184785ab0b6f02b333c7ad5fc63323ebd8ac3172b5ab118edfdfbd13a",
     "tests/test_catalog.py": "9ceac022b983a8689bbeb4fe760e0ef1ab47419450b18bf09135de993a11b1c0",
-    "tests/test_sync_skills.py": "9b8716c67e8d2d8cc1a749ad42bac4c3ec151848aa42157e047de6461185d536",
+    "tests/test_sync_skills.py": "716c10433fb499394768c82c523dd2f88f5b2fcc9684a68dcb8b4a9c28b0f3f2",
     "tools/catalog.py": "96d000ca4a86ef78e87e53a632137e0a547251acf8b3ea4d5366d15cbc11d165",
     "tools/sync_skills.py": "4726c4e7702a586522031e2684aea035d921ec90a1ba83d49a4daac01b564dab",
     "uv.lock": "b8088892e84e2a71c92df67f4b74ec1b7b9b3d7f6fffa4eebbec26fd22be8f9d",
-    "vendor/ATTRIBUTIONS.md": "f07f407ec4ae5d2a38f6539486e25a758cd50e007678be95098c0ec0bc451ecd",
-    "vendor/skills-lock.json": "7a176ae6a7a93249fbe3e5a9a7b549c295b60f033cf1daacb55d0711ef7090fd"
+    "vendor/ATTRIBUTIONS.md": "c59075fa9d4791191c392d3de01c2197eb34f11d6c3d2d17e9f352864dcb80b8",
+    "vendor/skills-lock.json": "14c1094404c8e5523e13c764be7de80b6a8e0980ef842f8bff53ee3b494a11a1"
   },
   "schema": 1,
   "skills": {
     "animate": "4b8e47320e6d2c0be5c0effb387448123560eddb5e11b4cbd9face98ee286f24",
     "animation-vocabulary": "9069e5224c26ca2fae6951f637a495d4451962af574eb6f03546ff21d46bb17c",
+    "ask-matt": "3fda532ce4436be8556b4b6da7363e301664ee65287fbfe3cb1af83467bb3b10",
     "audit-observability-path": "441819ac90bc481660f5f5ce7f1c7f299b04a03212a9d57bc8b1898c158c9ba7",
     "audit-resilience": "f0ec4d0074e4f7f6f74a0a19949d2e263f9a9a7e52b7ccce9469c683f89021b9",
     "audit-workflow-graph": "a7c4fedeca3f77fc37a3887eecea459aca6dea223bb9beaa0e3c74306e5ada69",
@@ -36,6 +37,7 @@
     "design-verification-strategy": "0c0bee4a30f5367205b7286f0a7fec7050ce5b9cd437b5881751baedbaf3c707",
     "design-workflow-graph": "8bef7ae4bbcc0acec742ef6a34d528a057fc96d0d067f4bb0d7796e6afb99c43",
     "diagnose-difficult-bug": "8e3284774e38325cfa9068dfaff69e4568a9404fdc0ab2aa3068ca7c0bed225a",
+    "diagnosing-bugs": "f65cee7440739915a64d3781530256666f86ba8cdb65ab7bf753acf136cf5b33",
     "domain-modeling": "e6864e9060705fbc9a348a83f2da1baa38ea2fe51854d1dcecf0989ecea92065",
     "effect-ts": "4316adf3561c52303c5ebb3452c7634fcb2b094eb806f72437f3901fec9c4a0a",
     "emil-design-eng": "2670af88207cd636ec9da6aea81bbd181f8908b7d87fffb653b570f3c14dd588",
@@ -54,6 +56,7 @@
     "hill-climbing": "3f7d5cadef30be4d3028072f3f606f0193893884c8c54d44e7446d091c28946e",
     "ideate-orchestrator-skill": "d5ccfb258ea85259b1650f1ea02989933060d340969376e5f14babfe181621b4",
     "identify-hill-climbing-opportunities": "faf9a02ef6ea568d103f8e6f14ddb9c5da5eeb532c1770687c21b69c9e1cd91f",
+    "implement": "496daf29c71967b6d592efc3b03a7d3f429721db08a62658612cf7aa2fdfbf43",
     "improve-agent-harness": "c8021441fb6f1dfa53e4f31c67322677bff5c8314d34240ed48fe66e230e9b19",
     "improve-animations": "4d4d7f4a7d5bf100d0783934026849a33341a539be872fc577c71ec91a41710f",
     "improve-codebase-architecture": "4a1254d5bf761a2fa4390e41307aebc60ef53d40e2a1a6edb0d946cb00fc589b",
@@ -101,7 +104,9 @@
     "vercel-react-view-transitions": "f45e61be890b62aea0a963ad98356002d43a753c3bb975434ab6d0a9f4d46091",
     "verify-and-revise": "ba98ffeeb8f99ae423f910d542f54940aa932352f7c0d095effdbe1b28adeb18",
     "wait-what": "b64a638ce2cf557af7128913bce128efa59852646becc6ed84eb244ba72f0b64",
+    "wayfinder": "51f0d9f8ec1c14c1620b9ccbd1725df631a4aaa82ebccb85201fa96bb923fca6",
     "web-design-guidelines": "a551df5b7649a8170be0b27be15852e3e34d54c2cfa8e414a317dde492d2ab4a",
+    "wizard": "a31b64664ff5dbe998df1bade82eaebcc9a1843b22cd9a6e6025c2cb2e1e74ec",
     "writing-for-agents": "41c4272c9bca46d407ed16a3626e1e4db30556408903f318f50914d2f56d8463"
   }
 }

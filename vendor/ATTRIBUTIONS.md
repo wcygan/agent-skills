@@ -75,6 +75,11 @@ These skills are copied from their upstream repositories.
 - `to-spec` from `skills/engineering/to-spec`
 - `to-tickets` from `skills/engineering/to-tickets`
 - `triage` from `skills/engineering/triage`
+- `wayfinder` from `skills/engineering/wayfinder`
+- `diagnosing-bugs` from `skills/engineering/diagnosing-bugs`
+- `wizard` from `skills/engineering/wizard`
+- `implement` from `skills/engineering/implement`
+- `ask-matt` from `skills/engineering/ask-matt`
 
 ## https://github.com/openai/skills.git
 
