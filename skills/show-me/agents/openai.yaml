@@ -1,0 +1,4 @@
+interface:
+  display_name: "Show Me"
+  short_description: "Explain technical topics with concise visuals"
+  default_prompt: "Use the smallest clear visual to explain the structure, flow, state, or change."
