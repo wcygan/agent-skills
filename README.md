@@ -22,6 +22,9 @@ loaded as a plugin by plugin-capable clients.
 
 Browse the complete [skills directory](https://github.com/wcygan/agent-skills/tree/main/skills).
 
+Use [`audit-skill-catalog`](skills/audit-skill-catalog/SKILL.md) to review a
+flat catalog and propose safe semantic grouping or consolidation.
+
 ## PR and stack health
 
 From a repository checkout, the `check-my-prs` terminal inspector checks the current PR and expands an official GitHub PR stack when detected:
