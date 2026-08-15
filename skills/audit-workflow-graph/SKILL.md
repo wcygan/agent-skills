@@ -1,6 +1,6 @@
 ---
 name: audit-workflow-graph
-description: Audit an existing workflow graph specification or implementation for reachability, guards, terminal paths, cycles, retries, side effects, state, fanout, authority gates, observability, and proof. Use when a graph workflow may stall, duplicate work, lose state, evade policy, or lack evidence; produce a read-only ranked Graph Audit Report and bounded next evidence without redesigning or implementing.
+description: Audit a workflow graph for reachability, guards, terminal paths, cycles, retries, state, fanout, agent routes, authority, observability, and proof. Use when a graph can stall, duplicate work, use a wrong child route, lose state, evade policy, or lack evidence. Produce a read-only ranked report.
 license: MIT
 metadata:
   author: William Cygan
@@ -39,8 +39,9 @@ side effect; **evidence** is `observed`, `verified`, `declared`, `inferred`, or
 ### 1. Create the graph inventory
 
 Record every node, edge, state field, terminal status, side effect, authority
-gate, identity, and artifact relevant to the selected scenario. For each item,
-state its source and evidence class. Build a transition ledger:
+gate, agent Route Record, identity, and artifact relevant to the selected
+scenario. For each item, state its source and evidence class. Build a
+transition ledger:
 
 ```text
 source node | typed guard | destination node | state read/write | effect
@@ -89,6 +90,11 @@ semantics. Flag unbounded spawning, join conditions that cannot settle,
 duplicate children, nondeterministic merge where order matters, and child work
 that can outlive the parent without an owner.
 
+For model or agent children, compare requested, resolved, and effective routes.
+Inspect roles, context forks, inherited fields, backend compatibility, tools,
+permissions, fallback, and child-spawn policy. Flag silent substitution,
+incompatible overrides, undeclared tools, and unbounded descendants.
+
 For human and policy gates, trace the exact pre-action path. Flag effects that
 can bypass, race, reuse a stale decision, or interpret model/agent output as an
 authorization. Assess excessive or misplaced agency: classification, drafting,
@@ -99,7 +105,8 @@ logic or named human authority.
 ### 5. Audit observability and proof
 
 Check whether operation, workflow, attempt, node, parent/child, actor, and
-external-effect identities survive every material transition. Verify that
+external-effect identities survive every material transition. Confirm Route
+Record identity also survives agent dispatch and result transport. Verify that
 success, failure, retry, cancellation, resume, fanin, and terminal outcomes
 have distinguishable evidence. Keep source configuration, runtime telemetry,
 and rendered projections separate.
@@ -132,9 +139,10 @@ Use exact installed skill names for a bounded handoff only after reporting the
 finding: `design-workflow-graph` for an accepted redesign, `model-concurrency`
 for a specific overlapping schedule, `audit-observability-path` for one named
 signal gap, `design-verification-strategy` for proof design, or
+`route-agent-models` for one unsupported or mismatched child route, or
 `choose-workflow-control-model` when the core control-model choice is itself
-unsupported. State the required input, missing evidence, and separate authority
-for each handoff; do not invoke it or reproduce its method here.
+unsupported. State the required input, missing evidence, and separate
+authority for each handoff; do not invoke it or reproduce its method here.
 
 ## Report and stop
 
@@ -148,7 +156,8 @@ highest-severity supported finding. Then report:
 3. **Verified Behavior versus Declared Design** — each material difference and
    unknown.
 4. **Ranked Findings** — reachability, guards, terminal paths, cycles, replay,
-   side effects, state, fanout, authority, observability, and proof.
+   side effects, state, fanout, agent routes, authority, observability, and
+   proof.
 5. **Coverage Assessment** — invariant-to-oracle map and missing cases.
 6. **Bounded Next Evidence and Handoffs** — smallest safe discriminating step,
    no redesign or implementation.

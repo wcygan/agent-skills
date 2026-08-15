@@ -18,9 +18,9 @@ Requirement sources:
 - R-001: [acceptance criterion or safety boundary]
 
 Tasks:
-| Task | Outcome | Requirements | Depends on | Consumes contract | Produces contract | Integration order |
-|------|---------|--------------|------------|-------------------|-------------------|-------------------|
-| T-01 |         | R-001        | none       | none              |                   | 1                 |
+| Task | Outcome | Route Record | Requirements | Depends on | Consumes contract | Produces contract | Integration order |
+|------|---------|-------------|--------------|------------|-------------------|-------------------|-------------------|
+| T-01 |         |             | R-001        | none       | none              |                   | 1                 |
 
 Edges:
 T-01 -> T-02 because [exact prerequisite contract]
@@ -65,9 +65,15 @@ Validation:
 - Commands:
 - Required evidence:
 
+Route summary:
+- Route Record ID:
+- Status:
+- Location or inline record:
+
 Report:
 - Changed paths and diff or revision
 - Commands and results
+- Effective route and execution envelope evidence
 - Contract, migration, schema, fixture, or generated-artifact changes
 - Assumptions, blockers, and residual risks
 
@@ -121,9 +127,9 @@ Requirements:
 | R-001 |                     | T-01       |                 |                     |                     | planned          |
 
 Tasks:
-| Task | State | Dependency evidence | Diff / revision | Worker validation | Integration order | Integration evidence | Blocker / next action |
-|------|-------|---------------------|-----------------|-------------------|-------------------|----------------------|-----------------------|
-| T-01 | planned |                   |                 |                   | 1                 |                      |                       |
+| Task | State | Route Record | Dependency evidence | Diff / revision | Worker validation | Integration order | Integration evidence | Blocker / next action |
+|------|-------|-------------|---------------------|-----------------|-------------------|-------------------|----------------------|-----------------------|
+| T-01 | planned |             |                   |                 |                   | 1                 |                      |                       |
 
 Allowed task states:
 planned | waiting_dependency | active | blocked | ready_for_integration |

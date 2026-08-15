@@ -24,6 +24,7 @@ Layer classification:
 Primary metric and acceptance threshold:
 Guard metrics and prohibited regressions:
 Editable harness surfaces and sole writer:
+Parent and child Route Records, when applicable:
 Experiment / time / cost budget:
 Cold-replay environment and held-out / negative set:
 Checkpoint and rollback boundary:
@@ -47,6 +48,7 @@ cluster's leading layer:
 - instructions;
 - context selection;
 - tools or contracts;
+- model routing and context forks;
 - orchestration;
 - graders;
 - memory; or
@@ -73,6 +75,19 @@ The held-out or negative set must challenge the likely regression, such as a
 nearby task class, safety boundary, tool-call shape, or previously successful
 behavior.
 
+### Test route hypotheses
+
+When the candidate changes a model route, invoke `route-agent-models` for each
+candidate. Preserve the returned Route Records with the experiment evidence.
+
+Change one route variable at a time: provider/model, reasoning effort, service
+tier, role, context fork, tool surface, or fallback. Keep task briefs,
+permissions, fixtures, acceptance criteria, and child-spawn policy constant.
+
+Measure quality separately from latency and cost. Require guard metrics for
+tool correctness, authority, route mismatch, cancellation, and partial failure.
+Treat silent substitution or unknown effective configuration as a discard.
+
 ## Keep or discard with evidence
 
 Keep a candidate only when the primary threshold improves and all declared
@@ -86,7 +101,8 @@ Maintain an experiment ledger:
 
 ```text
 experiment | cluster | layer | hypothesis | candidate | baseline replay
-cold replay | held-out/negative result | guard result | keep/discard | evidence
+cold replay | requested/effective route | held-out/negative result
+guard result | keep/discard | evidence
 ```
 
 Stop on the target, budget exhaustion, repeated unchanged evidence, a plateau,
@@ -124,6 +140,11 @@ do not assume a named framework, provider, or agent client.
 Improve the harness for recurring invalid tool arguments across 40 recorded
 evaluations. You may edit only tool-schema descriptions and instruction text;
 use 10 held-out evaluations and stop after four experiments.
+```
+
+```text
+Compare an inherited worker route with one explicit economical route. Hold the
+task, context fork, tools, and acceptance rubric constant.
 ```
 
 ```text

@@ -45,6 +45,7 @@ Establish ownership before designing cases:
 | Prove a deterministic feature, migration, integration, or release claim | `design-verification-strategy` |
 | Recover missing correlation, trace, or durable-outcome evidence | `audit-observability-path` |
 | Model schedule-dependent tools, subagents, retries, or cancellation | `model-concurrency` |
+| Select or verify one parent or child model route | `route-agent-models` |
 | Optimize an established numeric eval score under a behavioral guard | `hill-climbing`, only when explicitly invoked |
 | Measure application load, throughput, CPU, memory, or backend latency | A performance-benchmark workflow, not this skill |
 
@@ -110,7 +111,8 @@ Record all dimensions that can change the result:
 
 - source revision and built artifact;
 - prompt, instruction, template, and retrieval-data versions;
-- model, provider, sampling settings, and feature flags;
+- requested, resolved, and effective parent and child routes, sampling settings,
+  feature flags, roles, context forks, and multi-agent backends;
 - advertised tools, schemas, ordering, permissions, and availability;
 - orchestration, memory, cache, retry, and session configuration;
 - evaluator, grader, rubric, dependency, and framework versions; and
@@ -152,6 +154,10 @@ Runtime, cost, and data class:
 Read `references/evaluation-contract.md` when defining datasets, oracles,
 model graders, repeated trials, trace receipts, or held-out cases.
 
+Read `references/multi-agent-routing.md` when the suite covers route
+inheritance, heterogeneous workers, fork modes, child failure, cancellation,
+or fanin. Use its standard routing matrix and receipt contract.
+
 The matrix is complete when every target behavior has at least one positive or
 negative discriminator and every prohibited behavior has an observable oracle.
 
@@ -185,6 +191,9 @@ Final-output evaluation is sufficient when internal choices are not part of
 the contract. Require component traces or durable receipts when the claim
 depends on retrieval, tool selection, arguments, order, subagent handoff,
 retry, cancellation, persistence, or terminal outcome.
+
+For delegated work, retain parent and child identities, requested and effective
+routes, role, context fork, result transport, fallback, and terminal states.
 
 Prefer standard telemetry or application-owned structured events over an
 eval-only shadow model. For cross-language workflows, OpenTelemetry spans may
@@ -297,6 +306,7 @@ Confirm that:
 - every case has an assertion boundary and authoritative oracle;
 - deterministic and model-graded properties are separated;
 - candidate and grader identities are retained;
+- requested and effective agent routes are retained when routing matters;
 - trace requirements stop at observable behavior;
 - stochastic claims have finite budgets and thresholds;
 - framework selection is evidence-backed rather than language-matched by habit;
@@ -328,6 +338,8 @@ decision or missing evidence.
   and component-level retrieval evidence.
 - Define held-out evals for a prompt, model, or tool-schema migration while
   keeping the provider envelope fixed.
+- Define routing regressions for inherited, explicit, unsupported, cancelled,
+  and partially failed child routes.
 - Add one bounded CI eval slice to an existing TypeScript agent harness without
   enabling cloud sharing.
 

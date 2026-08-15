@@ -9,6 +9,8 @@ Choose the lowest boundary that proves the responsible behavior:
 
 - **Schema or catalog:** capability is advertised exactly and invalid arguments
   are rejected.
+- **Route resolution:** requested model, effort, role, and context fork resolve
+  to the expected effective route or explicit error.
 - **Tool adapter:** validated arguments produce the expected normalized result.
 - **Orchestration:** recorded model and tool items advance state correctly.
 - **Persistence:** authoritative events and identities are durably retained.
@@ -56,6 +58,7 @@ Name the statistical claim before repeating runs. Record:
 
 - number of trials;
 - model, provider, parameters, and seed support;
+- parent and child route, role, context fork, inheritance, and fallback;
 - per-case success definition;
 - aggregate threshold;
 - tolerated variance or confidence interval;

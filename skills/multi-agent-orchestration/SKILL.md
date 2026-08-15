@@ -1,6 +1,6 @@
 ---
 name: multi-agent-orchestration
-description: Coordinate a bounded multi-agent software task from decomposition through verified integration. Use when work may be split across concurrent agents or sessions and requires dependency-aware worker assignments, a choice between a shared checkout and isolated worktrees, progress supervision, or semantic conflict resolution that preserves the intended combined outcome.
+description: Coordinate a bounded multi-agent software task from decomposition through verified integration. Use for concurrent workers, deliberate model routes, worktree choices, progress supervision, or semantic conflict resolution.
 license: MIT
 ---
 
@@ -40,15 +40,27 @@ authority to publish their work.
 2. Assign exactly one orchestrator as the integration owner. Only that owner
    may decide integration order, apply contributions to the target checkout,
    reconcile shared contracts, and declare final acceptance.
-3. When role configuration is selectable, give the orchestrator the strongest
-   available reasoning configuration. Give workers efficient, capable
-   configurations unless task complexity or failed evidence warrants escalation.
+3. Route model and reasoning choices through the model contract below.
 4. Bound each worker's writable scope and authority. Tell every worker that
    other workers may change adjacent areas and that unrelated work must survive.
 5. Keep commits, pushes, pull requests, deployments, external mutations, and
    worktree deletion outside scope until separately authorized.
 
 Stop before mutation when authorization or ownership is uncertain.
+
+## Route models deliberately
+
+Invoke `route-agent-models` before dispatch when a worker can inherit, override,
+or specialize its model route. Pass the outcome, risk, context, tools,
+permissions, authority, and fallback constraints.
+
+Require one `route_ready` or `inherited_route_ready` Route Record. Keep task
+identity, agent role, model route, and context fork distinct. A blocked or
+mismatched route is not dispatchable.
+
+Keep the integration owner on a route that can perform contract decisions and
+final acceptance. Route bounded worker tasks according to their own evidence
+and risk.
 
 ## Run the protocol
 
@@ -129,6 +141,8 @@ Issue a worker brief before starting it. Include:
 - authorized mutations and forbidden external actions;
 - topology, shared-resource constraints, and coordination expectations;
 - validation commands and required evidence;
+- Route Record: requested and effective route, role, context fork, inheritance,
+  compatibility evidence, and fallback or blocker;
 - report fields: changed paths, diff or revision, tests and results, assumptions,
   contract changes, blockers, and residual risks; and
 - stop conditions for overlap, missing contracts, ambiguous requirements,
@@ -145,8 +159,9 @@ worker's completion label as evidence.
 
 Mark a task `ready_for_integration` only after inspecting its reported diff or
 revision, validation output, dependency evidence, changed contracts, and known
-risks. Reclassify stale or contradictory reports. Give blocked workers the exact
-missing contract, decision, or authority boundary.
+risks. Confirm the effective route and execution envelope against the Route
+Record. Reclassify stale or contradictory reports. Give blocked workers the
+exact missing contract, decision, or authority boundary.
 
 ### 7. Preflight every integration
 
@@ -179,6 +194,9 @@ deliberately reconcile:
 After an upstream integration is safe, refresh or rebase dependent workers using
 the authorized strategy and give them the exact integrated contract. Until then,
 keep them waiting or state the blocker; do not let them invent the prerequisite.
+Re-resolve model availability after a refresh or rebase when the runtime can
+change between dispatch and integration. Update the Route Record before work
+resumes.
 
 ### 9. Resolve semantic conflicts
 
@@ -204,7 +222,7 @@ Run combined targeted tests and every applicable repository gate for the changed
 scope, including type checks, builds, migration or schema checks, generated-file
 checks, diff-whitespace checks, and specification or backlog checks. Record exact
 commands, exit results, and material failures. Confirm all evidence describes
-the same final revision and working-tree state.
+the same final revision, working-tree state, and recorded model routes.
 
 Accept the task only when every requirement row is `accepted`, explicitly
 superseded by an authorized decision, or reported as an unresolved blocker.
@@ -232,9 +250,10 @@ Produce and maintain:
 1. a bounded decomposition and dependency graph;
 2. worker briefs with ownership, dependencies, authority, validation, and stop
    conditions;
-3. a shared-checkout or worktree decision with rationale;
-4. a live worker-status, acceptance, and integration ledger; and
-5. a final integration report listing integrated items, requirement coverage,
+3. one Route Record for each worker configuration;
+4. a shared-checkout or worktree decision with rationale;
+5. a live worker-status, acceptance, and integration ledger; and
+6. a final integration report listing integrated items, requirement coverage,
    exact validation commands and results, blockers, residual risks, and actions
    requiring approval.
 

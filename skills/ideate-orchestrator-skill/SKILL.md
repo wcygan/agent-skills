@@ -93,6 +93,7 @@ For every proposed companion, record:
 | Output | What bounded artifact must it return? |
 | Completion | What proves this phase is done? |
 | Authority | What may it inspect or mutate? |
+| Route | Which role, context fork, tools, and effective model route does an agent companion require? |
 | Failure | How does the parent behave if it is unavailable or inconclusive? |
 
 Then define the parent contract:
@@ -102,11 +103,13 @@ Then define the parent contract:
 - phase order and legal branches;
 - conflict-resolution rule;
 - authority ceiling and mutation gates;
+- route selection, inheritance, fallback, and child-spawn policy;
 - stop condition and handoff boundary;
 - portability and missing-companion behavior.
 
 The parent may narrow a child's authority but never broaden it. A read-only
 parent remains read-only even if a child can implement changes in other uses.
+An agent route cannot add tools, permissions, credentials, or external effects.
 Model inspection, command execution, temporary or ignored artifacts, durable
 file writes, and external mutations separately. A child's mutating prerequisite
 also counts as mutation: supply a non-mutating alternative, require the needed
@@ -117,6 +120,8 @@ input directly, or stop rather than invoking it implicitly.
 Agent Skills do not provide a dependency manifest. Design accordingly:
 
 - Refer to companion skills by their exact installed names.
+- Use `route-agent-models` when an agent companion can inherit, override, or
+  specialize its model route.
 - Do not reference sibling paths such as `../other-skill/SKILL.md`.
 - Do not copy companion instructions into the parent.
 - State whether companions are required, optional, or replaceable.
@@ -147,7 +152,8 @@ boundary.
    framework. Record any secondary mechanics and explain why the other patterns
    are secondary or unsuitable.
 4. **Define companion contracts.** Separate always-required companions from
-   conditional ones and give every conditional edge a concrete predicate.
+   conditional ones. Give every conditional edge a concrete predicate. Require
+   a Route Record for each selectable agent route.
 5. **Design artifact flow.** Specify phase inputs, outputs, completion criteria,
    reconciliation, and the integrated final artifact.
 6. **Audit authority and portability.** Preserve read-only boundaries, add
@@ -177,8 +183,8 @@ boundary.
 
 ## Composition map
 
-| Companion | Role | Predicate | Input | Output | Completion | Authority | Missing behavior |
-|---|---|---|---|---|---|---|---|
+| Companion | Role | Predicate | Input | Output | Completion | Authority | Route / context | Missing behavior |
+|---|---|---|---|---|---|---|---|---|
 
 ## Phase sequence
 
@@ -192,6 +198,8 @@ boundary.
 - Handoff boundary:
 - Portability/install assumption:
 - Degraded mode:
+- Route inheritance and fallback:
+- Child-spawn policy:
 
 ## Skill blueprint
 

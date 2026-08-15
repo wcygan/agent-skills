@@ -1,6 +1,6 @@
 ---
 name: model-concurrency
-description: Model concurrent or distributed behavior using actors, state, operations, invariants, happens-before relationships, and counterexample schedules. Use when analyzing races, lost updates, deadlocks, livelocks, ABA or TOCTOU bugs, duplicate work, ordering, cancellation, transactions, optimistic concurrency, locks, leases, fencing, queues, retries, or idempotency; distinguish safety from liveness, expose ambiguous interleavings, compare coordination strategies, and design deterministic tests without stress-testing production.
+description: Model concurrent or distributed behavior with actors, state, operations, invariants, causal order, and counterexample schedules. Use for races, lost updates, deadlocks, duplicates, ordering, cancellation, retries, fanout, fanin, or nested agents. Separate safety from liveness and design deterministic tests.
 license: MIT
 metadata:
   author: William Cygan
@@ -139,6 +139,10 @@ nearby valid schedule to show the discriminating ordering.
 Read `references/failure-patterns-and-tests.md` for common concurrency
 failures, coordination mechanisms, and deterministic test seams.
 
+Read `references/multi-agent-schedules.md` when parent and child agents can
+overlap, retry, complete out of order, outlive cancellation, exhaust slots, or
+join partial results. Model route identity separately from task identity.
+
 ## Distinguish safety and liveness
 
 State properties precisely:
@@ -233,3 +237,5 @@ coordination boundary. Then provide:
   suspension and failover.
 - Model queue acknowledgment, database commit, timeout, and redelivery to test
   duplicate side effects.
+- Model a parent cancelling fanout while one child completes and another retry
+  starts.

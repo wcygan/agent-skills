@@ -21,7 +21,8 @@ consumer derived. None substitutes automatically for the others.
 |---|---|---|---|
 | Instructions | What behavior and boundaries were effective? | system/developer instructions, prompt assembly, policy version | stale or conflicting instruction |
 | Input | What did the application actually send? | normalized request, attachments, context selection, truncation logs | omitted or transformed requirement |
-| Runtime | Which model and controls executed? | provider/model ID, parameters, flags, request ID | silent fallback or mixed configuration |
+| Runtime | Which parent and child controls executed? | effective provider/model IDs, efforts, tiers, flags, backends, request IDs | silent fallback or mixed configuration |
+| Routing | How did the child route resolve? | Route Record, requested/resolved route, role, context fork, inheritance, fallback | rejected override, wrong inheritance, incompatible fork, silent substitution |
 | Capability | What could the model select? | advertised tool list, JSON schemas, auth/availability state | missing, permissive, stale, or reordered tool |
 | Decision | What did the model emit? | response items, finish reason, tool name and arguments | no selection, wrong selection, invalid arguments |
 | Execution | What did the tool or dependency do? | validated input, output, status, stderr, timing, side effects | rejected call, partial result, downstream failure |
@@ -36,6 +37,7 @@ consumer derived. None substitutes automatically for the others.
 Track identities explicitly:
 
 - session, conversation, turn, response, and response-item IDs;
+- parent and child thread, task, role, and Route Record IDs;
 - tool-call and tool-result IDs;
 - workflow, run, activity, task, and attempt IDs;
 - persisted event sequence or revision;

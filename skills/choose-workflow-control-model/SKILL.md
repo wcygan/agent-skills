@@ -59,6 +59,10 @@ authorization, spending, data release, approval, or safety gates are required.
 Place those gates in deterministic code or a named human authority; an agent
 may prepare evidence but cannot decide the gate.
 
+Model diversity, model price, or model availability alone does not justify a
+multi-agent workflow. Require distinct responsibilities, context boundaries, or
+independent evidence that one bounded agent loop cannot provide.
+
 ## Build the decision record
 
 ### 1. Establish the workflow contract
@@ -77,6 +81,7 @@ Runtime variability and expected cardinality:
 Failure, cancellation, and recovery requirements:
 Observability identities and required evidence:
 Cost and latency constraints:
+Agent-route, context, tool, and privacy constraints:
 Non-goals and authority boundary:
 ```
 
@@ -98,7 +103,7 @@ For each requirement, explain which pressure it creates:
 - deterministic policy or human approval;
 - durable checkpoint, resume, cancellation, or replay;
 - independently acting owners; or
-- latency, cost, privacy, or observability constraints.
+- route capability, latency, cost, privacy, or observability constraints.
 
 Do not promote an implementation detail to a control pressure. A queue,
 function, model call, or diagram alone does not justify a graph.
@@ -137,7 +142,8 @@ Choose one selected model and state its minimal control contract:
 - simple agent loop: judgment input/output contract, deterministic evaluator,
   bounded iterations, progress rule, and escalation gate; or
 - multi-agent workflow: actor ownership, shared-resource boundary, dependency
-  contract, integration owner, and acceptance evidence.
+  contract, integration owner, route policy, child-spawn bound, and acceptance
+  evidence.
 
 If selection needs a product or policy decision, retain the viable options and
 return `decision-blocked`; do not invent a default.
@@ -158,7 +164,9 @@ Lead with `selected`, `decision-blocked`, or `evidence-blocked`. Then report:
 Stop before creating nodes, edges, schemas, implementation tasks, or tests.
 If the selected model is a graph, hand off the CMDR to
 `design-workflow-graph`. If it is not a graph, name the appropriate owner or
-workflow without recreating another skill's procedure.
+workflow without recreating another skill's procedure. Route an accepted
+multi-agent workflow to `multi-agent-orchestration`, with `route-agent-models`
+for each selectable agent route.
 
 ## Examples and counterexamples
 

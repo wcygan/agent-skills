@@ -1,6 +1,6 @@
 ---
 name: evaluate-agent-workflow
-description: Evaluate and diagnose one agent workflow end to end across instructions, context, model selection, advertised tool schemas, tool calls, orchestration, persisted events, projections, and user-visible output. Use when an agent gives surprising or inconsistent results, ignores or misuses tools, emits invalid arguments, changes after a model or provider migration, disagrees with its transcript or durable state, or needs a focused regression eval; produce an evidence-backed layer classification and bounded evaluation plan without blaming the model by default.
+description: Evaluate and diagnose one agent workflow across instructions, context, route selection, tools, orchestration, durable events, and user output. Use for surprising results, wrong child routes, tool misuse, model migrations, or state disagreements. Produce an evidence-backed layer classification and bounded evaluation plan.
 license: MIT
 metadata:
   author: William Cygan
@@ -37,7 +37,7 @@ Specify:
 - **Expected behavior:** observable outcome or contract, not a preferred chain
   of thought.
 - **Observed behavior:** exact output, tool action, state change, or omission.
-- **Environment:** application version, model and provider, tool catalog,
+- **Environment:** application version, parent and child routes, tool catalog,
   configuration, and time when relevant.
 - **Evaluation question:** the single uncertainty to resolve.
 - **Scope:** one turn, session, workflow, projection, or user journey.
@@ -52,11 +52,13 @@ Collect the smallest complete envelope needed to reproduce the behavior:
 
 1. effective instructions and application-supplied context;
 2. normalized user input and attachments;
-3. model, provider, parameters, and feature flags;
+3. requested, resolved, and effective model routes, parameters, feature flags,
+   multi-agent backend, agent roles, and context-fork modes;
 4. advertised tools, exact schemas, tool-choice controls, and availability;
 5. model response items and tool-call arguments;
 6. tool execution inputs, outputs, errors, timing, and side effects;
-7. orchestration decisions, retries, cancellations, and turn boundaries;
+7. orchestration decisions, parent/child identities, retries, cancellations,
+   result transport, and turn boundaries;
 8. persisted events or workflow history;
 9. projections, caches, API envelopes, and rendered output; and
 10. the evaluator, expected result, and acceptance threshold already in use.
@@ -67,13 +69,18 @@ mark the layer unknown rather than inferring it from a later representation.
 Read `references/agent-evidence-model.md` for layer definitions, evidence
 classes, and the divergence ledger.
 
+When the scenario includes delegated work, invoke `route-agent-models` with the
+observed task contract. Require its Route Record before comparing requested and
+effective child behavior. Keep unavailable route evidence `unknown`.
+
 ## Reconstruct the artifact chain
 
 Follow the scenario in causal order:
 
 ```text
-input -> request envelope -> model response -> tool call -> tool result
-      -> orchestration event -> durable event -> projection -> rendered result
+input -> request envelope -> route request -> route resolution -> child run
+      -> model response -> tool call -> tool result -> orchestration event
+      -> durable event -> projection -> rendered result
 ```
 
 Include only layers present in the system. Preserve raw artifacts where safe;
@@ -97,6 +104,8 @@ failure classes:
 
 - **Input:** requested information was omitted, transformed, or truncated.
 - **Capability:** a tool, schema, resource, or permission was absent or stale.
+- **Routing:** provider, model, effort, role, context fork, backend, or fallback
+  resolved differently from the task contract.
 - **Selection:** the model did not choose an available appropriate action.
 - **Argument:** the model emitted invalid, unsupported, or semantically wrong
   arguments.
@@ -133,6 +142,10 @@ schemas, provider settings, or application code also changed. Use repeated runs
 only when stochastic stability is part of the claim, and record seeds or
 sampling settings when supported.
 
+For delegated behavior, hold task identity, role, context fork, tools,
+permissions, parent state, and child-spawn policy constant. Separate route
+resolution from the child's later decisions.
+
 ## Design a focused evaluation
 
 Turn the diagnosed behavior into an evaluation contract:
@@ -145,6 +158,7 @@ Turn the diagnosed behavior into an evaluation contract:
 - deterministic checks and any repeated-run component;
 - pass threshold and tolerated variance;
 - captured artifacts for failure diagnosis; and
+- requested, resolved, and effective route receipts when delegation matters;
 - runtime, cost, data, and authority bounds.
 
 Use the lowest layer that proves the defect and at least one higher-level case
@@ -174,6 +188,8 @@ case pass.
 Confirm that:
 
 - the effective request and capability catalog match the tested claim;
+- the requested, resolved, and effective child routes match or have an
+  authorized fallback;
 - tool availability, selection, argument validity, and execution are distinct;
 - persisted state is inspected separately from API and UI projections;
 - the earliest divergence has direct evidence;
@@ -209,3 +225,5 @@ provide:
   tool schemas, fixtures, and orchestration constant.
 - Explain why a successful tool result exists in workflow history but is absent
   from the transcript or rendered answer.
+- Explain why a child inherited the parent route when the dispatch requested a
+  different model, role, or reasoning effort.

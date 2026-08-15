@@ -1,0 +1,4 @@
+interface:
+  display_name: "Route Agent Models"
+  short_description: "Select and verify agent model routes"
+  default_prompt: "Use $route-agent-models to select and verify a model route for this delegated task."

@@ -32,6 +32,7 @@ by a sibling filesystem path. Keep their authority read-only.
 | Companion | Exact predicate | Required input and returned artifact |
 | --- | --- | --- |
 | `model-concurrency` | Any two nodes, retries, fanout children, cancellation, or resume path can overlap on authoritative state or one external effect. | Pass the CMDR and overlap question; require its bounded concurrency model. |
+| `route-agent-models` | Any model or agent node can inherit, override, or specialize its route. | Pass the node outcome, risk, context, tools, authority, and fallback; require one Route Record per selectable route. |
 | `design-verification-strategy` | Always, after the candidate graph's states, transitions, risks, and terminal outcomes are known. | Pass the candidate graph contract; require a Proof Matrix and acceptance gates. |
 | `audit-observability-path` | A required identity, terminal outcome, or operational reconstruction claim cannot be supported by the inspected design/runtime evidence. | Pass one named observability question; require its signal map or stated gap. |
 
@@ -87,6 +88,7 @@ Preconditions and validation:
 Output type and failure result:
 Side effect, idempotency key, and authority gate:
 Observability events and identities:
+Route Record and child-spawn policy, for model or agent nodes:
 ```
 
 Place deterministic policy and authority gates in deterministic or human nodes.
@@ -106,6 +108,8 @@ When runtime inputs create child work, define:
 - fanout source, eligibility predicate, maximum cardinality, quota, and
   backpressure behavior;
 - child identity, parent/child causation, isolated state, and retry scope;
+- child Route Record, role, context fork, tool boundary, and `leaf` or bounded
+  descendant policy;
 - fanin eligibility, expected-child accounting, timeout, partial-result,
   duplicate-child, and failed-child behavior; and
 - deterministic merge order or an associative/commutative merge proof.
@@ -144,7 +148,8 @@ semantics visible rather than converting a design intent into proof.
 Invoke `design-verification-strategy` with the candidate graph and reconcile
 its Proof Matrix with node contracts, edge predicates, cycles, fanout, failure
 paths, and authority gates. Include discriminating positive, negative,
-cancellation, replay, and terminal-state cases as required by the risk.
+cancellation, replay, route mismatch, partial-child, and terminal-state cases as
+required by the risk.
 
 Before reporting, verify that:
 
@@ -153,6 +158,7 @@ Before reporting, verify that:
 - every terminal state has no normal outgoing edge and emits evidence;
 - cycles have finite progress and exit conditions;
 - fanout has bounds and fanin has a merge contract;
+- each selectable agent route has a compatible Route Record and fallback;
 - effects have authority, idempotency, and recovery contracts; and
 - proof, identities, and terminal outcomes describe the same graph.
 
@@ -170,7 +176,7 @@ Lead with `ready for implementation approval`, `decision-blocked`, or
 2. **State Schema and Ownership** — fields, owners, durability, lifecycle,
    identities, and resume semantics.
 3. **Node and Edge Contracts** — kinds, typed inputs/outputs, predicates,
-   placement, precedence, and failure edges.
+   placement, precedence, route records, and failure edges.
 4. **Fanout, Cycles, and Terminals** — bounds, merge, progress, retry,
    cancellation, recovery, and terminal paths.
 5. **Authority and Side Effects** — gates, action owners, idempotency, and
