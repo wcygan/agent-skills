@@ -38,6 +38,8 @@ Do not invoke a specialist's mutation path automatically. Preserve the
 specialist's authority gate and ask the user to select comments or approve
 implementation after diagnosis.
 
+When the user authorizes new visual proof, route the work to `github-pr-media-proof`. That skill uses `playwright-cli` for browser capture.
+
 ## Workflow
 
 ### 1. Establish the target and evidence boundary

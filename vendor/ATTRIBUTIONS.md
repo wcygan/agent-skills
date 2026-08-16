@@ -17,6 +17,13 @@ These skills are copied from their upstream repositories.
 
 - `gh-stack` from `skills/gh-stack`
 
+## https://github.com/microsoft/playwright-cli.git
+
+- License: Apache-2.0
+- Revision: `4f9d85a9472fc6d0c9a91ac62f3f3ecc24c16de2`
+
+- `playwright-cli` from `skills/playwright-cli`
+
 ## https://github.com/emilkowalski/skills.git
 
 - License: MIT

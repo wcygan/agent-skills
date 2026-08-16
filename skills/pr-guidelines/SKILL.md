@@ -43,7 +43,7 @@ Put detailed recordings, screenshots, and logs in this section.
 
 Descriptions should be brief, high-level, and descriptive. Prefer the smallest explanation that lets a reviewer understand why the change exists, what changed conceptually, and how confidence was established. Do not turn the body into a file-by-file changelog.
 
-Use [`github-pr-media-proof`](../github-pr-media-proof/SKILL.md) to upload media, review the body, and apply the generic attachment workflow. Use its preview-first update path when the user authorizes a description change.
+Use [`github-pr-media-proof`](../github-pr-media-proof/SKILL.md) to capture browser media with `playwright-cli`, upload it, review the body, and apply the attachment workflow. Use its preview-first update path when the user authorizes a description change.
 
 ## Preferred presentation
 
@@ -76,7 +76,7 @@ Treat visual proof as a review aid, not decoration. A strong visual proof block 
 - Use a Markdown table to summarize the observable difference.
 - Keep the overview video short. Move diagnostic recordings to `Evidence`.
 - Put video attachment URLs on separate lines. Use image Markdown with descriptive alt text for stills.
-- Route upload and body-edit work through `github-pr-media-proof`.
+- Route Playwright capture, upload, and body-edit work through `github-pr-media-proof`.
 
 ### Stacked PRs
 

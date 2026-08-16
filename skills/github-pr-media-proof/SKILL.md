@@ -1,6 +1,6 @@
 ---
 name: github-pr-media-proof
-description: Prepare and upload image or video proof for GitHub pull requests, then review or update PR descriptions with orientation media, before/after tables, and validation evidence. Use when a PR needs screenshots, recordings, media conversion, attachment recovery, or description cleanup.
+description: Capture browser proof with Playwright CLI, prepare and upload images or videos for GitHub pull requests, then review or update PR descriptions. Use when a PR needs screenshots, recordings, media conversion, attachment recovery, before/after evidence, or description cleanup.
 license: MIT
 ---
 
@@ -12,7 +12,7 @@ Use this skill when a pull request needs visual evidence or a clearer descriptio
 
 1. Run each script with `--help` when its current interface is not known.
 2. Review the current PR body with `scripts/pr_body.py review`.
-3. Generate or locate the requested media.
+3. Use `playwright-cli` when browser media must be generated.
 4. Run `scripts/upload_attachments.py --dry-run` on every media file.
 5. Upload only after the repository, conversions, sizes, and side effects are correct.
 6. Add the returned Markdown or URLs to a proposed body file.
@@ -22,6 +22,12 @@ Use this skill when a pull request needs visual evidence or a clearer descriptio
 10. Re-read the PR body and report the PR URL and uploaded URLs.
 
 Every write step must have a checkable result: upload responses contain a URL, the proposed body contains the URLs, and the final API read contains the intended sections.
+
+## Capture browser proof
+
+Use the vendored `playwright-cli` skill as the sole browser capture tool. Use a screenshot for a stable state. Use a video for interaction, timing, animation, or state transitions.
+
+Read [references/browser-capture.md](references/browser-capture.md) before generating browser media. It defines the temporary workspace, recording sequence, recovery path, and completion checks.
 
 ## Upload media
 
@@ -80,7 +86,7 @@ Prefer this table shape:
 | Resize the pane mid-transcript | Reader position jumps | Anchor stays on the same message |
 ```
 
-Use an image for a still state. Use a video for interaction, timing, animation, or state transitions. Put video URLs on their own lines so GitHub renders the player. Use image Markdown for still images. Keep the overview media short and move detailed proof to `Evidence`.
+Put video URLs on their own lines so GitHub renders the player. Use image Markdown for still images. Keep the overview media short and move detailed proof to `Evidence`.
 
 Read [references/description-guidelines.md](references/description-guidelines.md) for the review checklist and generic template.
 
