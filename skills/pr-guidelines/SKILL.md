@@ -1,6 +1,6 @@
 ---
 name: pr-guidelines
-description: Evaluate one pull request for concise description structure, testing evidence, naming consistency, reviewability, code-quality signals, CI state, stack context, and whether its scope should be split. Use when preparing, checking, or improving an individual PR, including stacked or AI-generated changes.
+description: Evaluate one pull request for concise description structure, visual proof, testing evidence, naming consistency, reviewability, code-quality signals, CI state, stack context, and split signals. Use when preparing, checking, or improving an individual PR, including stacked or AI-generated changes.
 license: MIT
 ---
 
@@ -20,7 +20,7 @@ If no branch convention is configured, prefer `<topic>/<concern>` for stack laye
 
 ## Required description shape
 
-The default body contains exactly these non-empty H2 sections, once each and in this order:
+The default body contains these non-empty H2 sections, once each and in this order:
 
 ```markdown
 ## Problem & Solution Overview
@@ -32,7 +32,18 @@ Briefly state the user or engineering problem, the chosen approach, and the impo
 List concrete commands, checks, or manual scenarios and their outcomes. If testing was not run, say so and explain why.
 ```
 
+Add `## Before / After` when the change has a meaningful comparison. Add `## Evidence` for visual or observable behavior.
+
+## Evidence
+
+For UI, visual, timing, animation, interaction, or other observable behavior, include visual proof.
+Use an image for a still state and a short video for interaction or state transitions.
+Put the shortest orientation video immediately after the overview when it helps the reviewer understand the change.
+Put detailed recordings, screenshots, and logs in this section.
+
 Descriptions should be brief, high-level, and descriptive. Prefer the smallest explanation that lets a reviewer understand why the change exists, what changed conceptually, and how confidence was established. Do not turn the body into a file-by-file changelog.
+
+Use [`github-pr-media-proof`](../github-pr-media-proof/SKILL.md) to upload media, review the body, and apply the generic attachment workflow. Use its preview-first update path when the user authorizes a description change.
 
 ## Preferred presentation
 
@@ -55,6 +66,17 @@ Use structured content and progressive disclosure when they improve scanability:
 - Put a visible result summary before its supporting `<details>` block.
 
 Treat these formats as strong defaults, not rigid requirements. Clear prose is acceptable when a table or collapsed section would add friction.
+
+### Visual proof standard
+
+Treat visual proof as a review aid, not decoration. A strong visual proof block has one sentence that tells the reviewer what to watch.
+
+- Add a short video for UI behavior, interaction, timing, animation, or state transitions.
+- Add before and after images for stable visual states.
+- Use a Markdown table to summarize the observable difference.
+- Keep the overview video short. Move diagnostic recordings to `Evidence`.
+- Put video attachment URLs on separate lines. Use image Markdown with descriptive alt text for stills.
+- Route upload and body-edit work through `github-pr-media-proof`.
 
 ### Stacked PRs
 
@@ -93,6 +115,7 @@ Flag:
 - missing, duplicated, reordered, or empty required sections;
 - placeholder text or claims unsupported by named evidence;
 - vague testing such as “tests pass” without the relevant command or scenario;
+- missing visual proof for a UI or otherwise observable behavior change;
 - dishonest omission when tests were not run;
 - implementation detail that obscures the problem and solution.
 
@@ -100,7 +123,9 @@ Flag:
 
 ### 1. Check presentation
 
-Inspect title, branch, body headings, body length, linked context, draft state, and stack position. Report repository-rule violations separately from personal defaults.
+Inspect title, branch, body headings, body length, linked context, visual proof, draft state, and stack position. Report repository-rule violations separately from personal defaults.
+
+For visual or observable changes, verify the overview, before/after table, image or video evidence, and the sentence that orients the reviewer to each recording.
 
 Recommend structured formatting when dense prose obscures comparable facts or optional detail obscures the summary. Do not lower the verdict for clear prose alone.
 
@@ -147,6 +172,7 @@ Return a compact record:
 ```text
 PR #143  NEEDS POLISH
   Body      Testing section is vague; name the command and result.
+  Visual    Short before/after video is present and linked from the overview.
   Naming    Title convention not configured; branch follows topic/concern.
   Scope     Cohesive despite 820 changed lines; 610 are generated.
   Review    1 active thread; required checks passing.

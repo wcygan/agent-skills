@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub PR Media Proof"
+  short_description: "Upload media and shape evidence-rich PR descriptions"
+  default_prompt: "Review this PR description, upload any requested image or video proof, and update the body with clear overview evidence."

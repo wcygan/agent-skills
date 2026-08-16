@@ -34,6 +34,9 @@ from rich.text import Text
 SCHEMA_VERSION = 1
 MAX_GRAPHQL_ITEMS = 100
 EXPECTED_HEADINGS = ["Problem & Solution Overview", "Testing Done"]
+VISUAL_CUES = re.compile(
+    r"(?i)\b(?:animation|browser|layout|resize|screen|visual|ui|ux|interaction|video|screenshot)\b"
+)
 CHECK_FIELDS = "name,state,bucket,link,startedAt,completedAt,workflow"
 
 
@@ -605,6 +608,29 @@ def parse_body(body: str | None) -> dict[str, Any]:
         )
     if len(text.split()) > 700:
         findings.append("description is long; keep the overview high-level and brief")
+    media_urls = re.findall(
+        r"https://github\.com/user-attachments/assets/[^)\s]+", text
+    )
+    bare_media_urls = [
+        line.strip()
+        for line in lines
+        if line.strip().startswith("https://github.com/user-attachments/assets/")
+    ]
+    has_before_after_table = bool(
+        re.search(r"(?im)^\|[^\n]+\|\s*$", text)
+        and re.search(r"(?i)before\s*\|\s*after|before.{0,40}after", text)
+    )
+    visual_cue = bool(VISUAL_CUES.search(text))
+    visual_recommendation = None
+    if visual_cue and not media_urls:
+        visual_recommendation = (
+            "add visual proof with `github-pr-media-proof` for this observable change"
+        )
+        findings.append(visual_recommendation)
+    elif visual_cue and not has_before_after_table:
+        visual_recommendation = (
+            "consider a Markdown before/after table with `github-pr-media-proof`"
+        )
     return {
         "findings": findings,
         "word_count": len(text.split()),
@@ -612,6 +638,11 @@ def parse_body(body: str | None) -> dict[str, Any]:
         "testing_present": bool(testing_text),
         "testing_vague": vague_testing,
         "sections_nonempty": section_nonempty,
+        "media_urls": media_urls,
+        "bare_media_urls": bare_media_urls,
+        "visual_cue": visual_cue,
+        "visual_recommendation": visual_recommendation,
+        "has_before_after_table": has_before_after_table,
     }
 
 
@@ -1295,6 +1326,17 @@ def review_line(review: dict[str, Any]) -> str:
     return " · ".join(parts) or "clear"
 
 
+def visual_summary(guidelines: dict[str, Any]) -> str:
+    body = guidelines.get("body") or {}
+    media_count = len(body.get("media_urls") or [])
+    if media_count:
+        table = " + table" if body.get("has_before_after_table") else ""
+        return f"{media_count} attachment(s){table}"
+    if body.get("visual_cue"):
+        return "recommended"
+    return "not needed"
+
+
 def render_rich(report: dict[str, Any], console: Console) -> None:
     overall = str(report.get("overall"))
     stack = report.get("stack") or {}
@@ -1317,6 +1359,7 @@ def render_rich(report: dict[str, Any], console: Console) -> None:
     table.add_column("TITLE", overflow="fold", ratio=2)
     table.add_column("CI", overflow="fold")
     table.add_column("REVIEW", overflow="fold")
+    table.add_column("VISUAL", overflow="fold")
     table.add_column("GUIDELINES", overflow="fold")
     for record in report.get("pull_requests") or []:
         gate = str(record.get("gate"))
@@ -1328,6 +1371,7 @@ def render_rich(report: dict[str, Any], console: Console) -> None:
             str(record.get("title") or ""),
             check_summary(record.get("checks") or {}),
             review_line(record.get("review") or {}),
+            visual_summary(record.get("guidelines") or {}),
             "clear"
             if not findings
             else f"{len(findings)} finding{'s' if len(findings) != 1 else ''}",
@@ -1392,7 +1436,8 @@ def render_plain(report: dict[str, Any]) -> str:
         lines.append(
             f"  {record.get('position') or '-'}  #{record.get('number')} {record.get('gate')}  "
             f"{record.get('title')}  [CI: {check_summary(record.get('checks') or {})}; "
-            f"review: {review_line(record.get('review') or {})}; guidelines: {findings}]"
+            f"review: {review_line(record.get('review') or {})}; "
+            f"visual: {visual_summary(record.get('guidelines') or {})}; guidelines: {findings}]"
         )
     frontier = stack.get("frontier_pr")
     lines.append(f"MERGE FRONTIER: {'#' + str(frontier) if frontier else 'none'}")

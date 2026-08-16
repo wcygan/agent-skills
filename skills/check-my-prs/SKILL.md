@@ -1,6 +1,6 @@
 ---
 name: check-my-prs
-description: Inspect the current GitHub pull request or stacked pull request as a read-only terminal dashboard, combining review threads, comments, CI, stack health, merge order, naming, description quality, testing evidence, and split signals. Use when asked to check PR state, stack health, readiness, or what needs attention.
+description: Inspect the current GitHub pull request or stacked pull request as a read-only terminal dashboard, combining review threads, comments, CI, stack health, merge order, naming, visual proof, description quality, testing evidence, and split signals. Use when asked to check PR state, stack health, readiness, or what needs attention.
 license: MIT
 ---
 
@@ -17,6 +17,7 @@ Use these specialist skills when available:
 - `gh-stack` for installed CLI semantics and any explicitly authorized stack operation.
 - `gh-stack-companion` for stack detection, topology, health, merge order, and recovery advice.
 - `pr-guidelines` once per PR for presentation, testing evidence, reviewability, and split signals.
+- `github-pr-media-proof` for visual-proof review, attachment handling, and authorized PR-body updates.
 - `code-review` only when the user asks for a deep Standards and Spec review or passes equivalent intent such as `--deep`.
 - `gh-address-comments` after the user asks to inspect or implement selected review feedback.
 - `gh-fix-ci` after the user asks to diagnose failing GitHub Actions checks; require a separate approval before code changes.
@@ -31,6 +32,7 @@ smallest useful next action and name the specialist that owns it:
 - Failed GitHub Actions checks route to `gh-fix-ci`.
 - Pending checks route to `monitor-until` only when the user asks to watch.
 - Stack propagation or merge-order issues route to `gh-stack-companion`.
+- Missing or weak visual proof routes to `github-pr-media-proof`.
 
 Do not invoke a specialist's mutation path automatically. Preserve the
 specialist's authority gate and ask the user to select comments or approve
@@ -85,14 +87,14 @@ For every PR in scope, collect:
 - unresolved and outdated review threads, review requests, issue comments, and review comments;
 - all CI checks plus the required-check subset when GitHub exposes it;
 - title, description, changed files, additions, deletions, and commits;
-- description-guideline findings, naming findings, testing evidence, and split signals;
+- description-guideline findings, naming findings, testing evidence, visual-proof status, and split signals;
 - evidence gaps, pagination/truncation, unavailable fields, and command failures.
 
 Treat unresolved active threads as attention unless repository rules prove they are a merge blocker. Never count outdated threads as active.
 
 ### 4. Delegate analysis, then integrate once
 
-Run `pr-guidelines` against each PR snapshot. In stack mode, run `gh-stack-companion` against local and remote topology. Do not ask specialists to produce competing final reports.
+Run `pr-guidelines` against each PR snapshot. For observable behavior, apply the visual-proof standard and route missing evidence to `github-pr-media-proof`. In stack mode, run `gh-stack-companion` against local and remote topology. Do not ask specialists to produce competing final reports.
 
 The parent report owns:
 
@@ -139,4 +141,4 @@ A check is complete only when it reports:
 4. stack health and merge frontier when stacked;
 5. guideline and split findings;
 6. the prioritized next action;
-7. every material evidence gap.
+7. visual-proof status and every material evidence gap.

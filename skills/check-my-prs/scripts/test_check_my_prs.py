@@ -132,6 +132,17 @@ class BodyTests(unittest.TestCase):
         self.assertIn("required H2 sections are out of order", findings)
         self.assertTrue(any("testing evidence is vague" in item for item in findings))
 
+    def test_recommends_visual_proof_for_observable_changes(self) -> None:
+        body = (
+            "## Problem & Solution Overview\n\n"
+            "The UI resize path keeps the reader anchored.\n\n"
+            "## Testing Done\n\n"
+            "- `uv run pytest` — passed"
+        )
+        parsed = inspector.parse_body(body)
+        self.assertEqual([], parsed["media_urls"])
+        self.assertIn("visual proof", parsed["findings"][-1])
+
 
 class StackTests(unittest.TestCase):
     def test_reconciles_matching_and_divergent_stacks(self) -> None:
