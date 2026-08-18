@@ -75,6 +75,13 @@ The held-out or negative set must challenge the likely regression, such as a
 nearby task class, safety boundary, tool-call shape, or previously successful
 behavior.
 
+When the candidate layer is `instructions` or `retrieved skills`, consult
+`writing-for-agents` for the craft of the edit: pointer wording, completion
+criteria, leading words, and pruning decide whether the smallest candidate is a
+wording change, a disclosure move, or a deletion. It supplies craft, not
+process; clustering, attribution, cold replay, and keep/discard evidence stay
+with this skill.
+
 ### Test route hypotheses
 
 When the candidate changes a model route, invoke `route-agent-models` for each
