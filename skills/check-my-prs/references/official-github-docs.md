@@ -21,7 +21,7 @@ When sources disagree, use this order:
 |---|---|---|---|---|---|
 | [Stacked pull requests how-tos](https://docs.github.com/en/pull-requests/how-tos/stacked-pull-requests) | How-to hub | Orienting to official workflows | Available workflow set | None recorded | 2026-08-09 |
 | [Stacked pull requests reference](https://docs.github.com/en/pull-requests/reference/stacked-pull-requests) | Reference | Defining stack concepts and limits | Feature status and platform behavior | None recorded | 2026-08-09 |
-| [Stacked PRs CLI commands](https://docs.github.com/en/pull-requests/reference/stacked-prs-cli-commands) | CLI reference | Checking command families and merge behavior | Flags and grouped operations | Says grouped merge is all-or-nothing; troubleshooting warns partial progress may occur. Never promise transaction atomicity. | 2026-08-09 |
+| [Stacked PRs CLI commands](https://docs.github.com/en/pull-requests/reference/stacked-prs-cli-commands) | CLI reference | Checking command families and merge behavior | Flags and grouped operations | Installed help currently defines direct grouped merge as all-or-nothing. Merge queues can land members separately. | 2026-08-09 |
 | [GraphQL pulls reference](https://docs.github.com/en/graphql/reference/pulls) | API reference | Detecting membership and positions | `PullRequest.stack`, `stackEntry`, and stack entry fields | None recorded | 2026-08-09 |
 | [REST pulls API 2026-03-10](https://docs.github.com/en/rest/pulls/pulls?apiVersion=2026-03-10) | API reference | Checking PR and stacked merge endpoints | Versioned request and asynchronous stack merge behavior | Never invoke a merge endpoint during a read-only check | 2026-08-09 |
 | [Managing stacked pull requests](https://docs.github.com/en/pull-requests/how-tos/create-pull-requests/managing-stacked-pull-requests) | How-to | Creating, editing, syncing, or rebasing | Current CLI workflow and recovery path | Installed help wins on flags | 2026-08-09 |
@@ -40,5 +40,5 @@ When sources disagree, use this order:
 - Use stack position, size, base reference, and base SHA event metadata only when the workflow event exposes them; otherwise report unavailable evidence.
 - Fix a problem in the layer that owns it, then propagate that correction upstack.
 - Review and merge from the bottom upward.
-- Never claim the whole-stack merge is atomic.
-
+- Claim direct grouped merge atomicity only when installed help confirms it and no merge queue owns completion.
+- Treat atomicity as an all-or-nothing PR set guarantee, not a single-commit guarantee or validation result.
