@@ -1,6 +1,6 @@
 ---
 name: audit-observability-path
-description: Audit whether one request, event, job, or state change can be followed across an application or distributed system using logs, metrics, traces, correlation identifiers, audit records, and operational artifacts. Use when investigating observability blind spots, broken trace propagation, weak log context, missing service-level signals, noisy alerts, unmeasurable failure paths, or incidents that cannot be reconstructed; produce an evidence-backed signal map, gap analysis, and prioritized instrumentation plan.
+description: Audit and design observability for one request, event, job, or state change across an application or distributed system using logs, metrics, traces, correlation identifiers, audit records, and operational artifacts. Use when making a flow measurable, defining success rate or latency breakdowns, finding bottlenecks, investigating observability blind spots, or planning instrumentation; produce an evidence-backed signal map, gap analysis, and prioritized instrumentation plan.
 license: MIT
 metadata:
   author: William Cygan
@@ -45,6 +45,26 @@ Specify:
 
 If no path is supplied, reconstruct the narrow scenario path from source and
 configuration. Do not turn the task into a whole-platform observability audit.
+
+## Define the measurement goal
+
+When the request asks to make a flow measurable, read
+[references/measurement-goals.md](references/measurement-goals.md) and write a
+measurement goal before inspecting signals.
+
+Record:
+
+- the primary outcome to measure;
+- the denominator and terminal conditions for a rate;
+- the start and end events for a duration;
+- the stages whose time or failure contribution matters;
+- the operation, attempt, message, job, and domain identities to preserve; and
+- the maximum useful attribute cardinality, privacy, volume, and retention.
+
+Keep the goal to one primary question and at most two supporting questions.
+Separate aggregate questions from questions about one operation. A metric can
+answer a bounded population question, while logs and traces explain an
+individual operation.
 
 ## Establish the expected path
 
@@ -146,6 +166,12 @@ Prioritize gaps that block detection of severe outcomes, break end-to-end
 correlation, hide the earliest cause, or make recovery unverifiable. Discount
 generic telemetry additions that do not answer a named question.
 
+For a measurement-design request, rank proposed instrumentation by the value of
+the question it answers, the boundary or stage it covers, its operator
+actionability, and its privacy, cardinality, volume, and maintenance cost.
+Prefer the smallest set that establishes the outcome and separates the major
+latency or failure stages.
+
 ## Recommend instrumentation
 
 When recommendations are requested, prefer:
@@ -163,6 +189,12 @@ Specify signal name, location, attributes, units, cardinality bounds, sampling,
 redaction, retention, consumer, and proof. Do not recommend logging entire
 payloads or adding identifiers with unbounded metric cardinality.
 
+For success-rate goals, define started, terminal, successful, failed, cancelled,
+timed-out, and abandoned outcomes before naming a numerator or denominator. For
+latency goals, separate queue wait, processing, dependency wait, and durable
+commit when those stages can dominate the result. For bottleneck goals, prefer
+stage spans or bounded duration histograms over logs from every function.
+
 Implement instrumentation only when asked. Reuse the repository's existing
 telemetry libraries, naming, context propagation, and test utilities.
 
@@ -178,6 +210,15 @@ Walk the expected path and confirm:
 - current-runtime claims use current evidence rather than source alone; and
 - every recommendation answers a named diagnostic question.
 
+For a measurement-design request, also confirm that:
+
+- each rate has an explicit denominator and terminal outcome policy;
+- each duration has explicit start and end events;
+- the proposed stages cover the expected path without double-counting time;
+- aggregate signals use bounded dimensions;
+- individual explanations retain safe operation and attempt context; and
+- the plan can be validated with a representative safe scenario.
+
 When safe fixtures or local integrated scenarios exist, use the smallest one
 that exercises the relevant boundary. Do not call local exporter output proof
 of production retention, sampling, or alert delivery.
@@ -188,15 +229,19 @@ Lead with which diagnostic questions can and cannot be answered. Then provide:
 
 1. **Scenario and expected path:** trigger, outcome, boundaries, environment,
    and constraints.
-2. **Signal map:** flowchart or sequence view of signal and context propagation.
-3. **Coverage ledger:** hop, diagnostic need, signal, identifier, producer,
+2. **Measurement goal:** primary question, rate or duration definition,
+   supporting questions, and constraints.
+3. **Signal map:** flowchart or sequence view of signal and context propagation.
+4. **Coverage ledger:** hop, diagnostic need, signal, identifier, producer,
    consumer, evidence, and evidence class.
-4. **Correlation assessment:** operation, attempt, message, task, domain, and
+5. **Instrumentation opportunities:** ranked stage and boundary additions with
+   signal contracts, costs, safety limits, and validation methods.
+6. **Correlation assessment:** operation, attempt, message, task, domain, and
    actor identities across boundaries.
-5. **Gap backlog:** ranked by operational consequence and diagnostic value.
-6. **Instrumentation contracts:** smallest proposed additions with safety and
+7. **Gap backlog:** ranked by operational consequence and diagnostic value.
+8. **Instrumentation contracts:** smallest proposed additions with safety and
    cost bounds.
-7. **Validation and unknowns:** what was proven, what remains configuration-only,
+9. **Validation and unknowns:** what was proven, what remains configuration-only,
    and the next safe runtime evidence.
 
 ## Examples
