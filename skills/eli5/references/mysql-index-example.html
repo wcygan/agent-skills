@@ -1,0 +1,2568 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#fbf7ef">
+  <link rel="icon" href="data:,">
+  <title>What does a MySQL index look like?</title>
+  <style>
+    :root {
+      --ink: #14213d;
+      --muted: #5d6473;
+      --paper: #fbf7ef;
+      --card: #fffdf8;
+      --line: #d8d1c3;
+      --blue: oklch(0.56 0.19 255);
+      --blue-soft: #e9f2ff;
+      --teal: #087f75;
+      --teal-soft: #e2f5f1;
+      --road-link: oklch(0.42 0.105 176);
+      --road-link-soft: oklch(0.92 0.04 176);
+      --orange: #e16b2d;
+      --orange-soft: #fff0e5;
+      --yellow: #ffd166;
+      --check: var(--blue);
+      --check-soft: oklch(0.94 0.035 255);
+      --no: oklch(0.5 0.16 25);
+      --no-soft: oklch(0.94 0.045 25);
+      --yes: oklch(0.43 0.11 153);
+      --yes-soft: oklch(0.93 0.04 153);
+      --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+      --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+      --shadow: 0 18px 50px rgb(42 34 20 / 9%);
+      --radius: 28px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 3%, rgb(255 209 102 / 22%), transparent 29rem),
+        radial-gradient(circle at 94% 12%, rgb(22 119 255 / 12%), transparent 31rem),
+        var(--paper);
+      font-family: ui-rounded, "SF Pro Rounded", "Avenir Next", system-ui, sans-serif;
+      line-height: 1.45;
+    }
+
+    a { color: var(--blue); }
+
+    a:focus-visible,
+    summary:focus-visible {
+      outline: 3px solid var(--blue);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+
+    button, summary { font: inherit; }
+
+    button,
+    summary,
+    a,
+    input[type="range"] {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgb(20 33 61 / 18%);
+    }
+
+    summary { cursor: pointer; }
+
+    .skip-link {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 1000;
+      padding: 11px 15px;
+      border-radius: 12px;
+      color: white;
+      background: var(--ink);
+      font-weight: 900;
+      transform: translateY(calc(-100% - 24px));
+    }
+
+    .skip-link:focus-visible { transform: translateY(0); }
+
+    .page {
+      width: min(820px, calc(100% - 32px));
+      margin-inline: auto;
+    }
+
+    main.page { container-type: inline-size; }
+
+    .hero {
+      min-height: auto;
+      display: grid;
+      align-content: center;
+      padding: 42px 0 38px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      gap: 10px;
+      margin: 0 0 14px;
+      padding: 7px 12px;
+      border: 1px solid #bcd2ff;
+      border-radius: 999px;
+      background: rgb(255 255 255 / 65%);
+      color: #22519c;
+      font-size: .78rem;
+      font-weight: 850;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      background: var(--blue);
+      box-shadow: 5px 5px 0 var(--yellow);
+    }
+
+    h1,
+    h2,
+    h3 {
+      scroll-margin-top: 24px;
+      text-wrap: balance;
+    }
+
+    h1 {
+      max-width: none;
+      margin: 0;
+      font-size: clamp(3rem, 5.75vw, 4.65rem);
+      line-height: .96;
+      letter-spacing: -.055em;
+    }
+
+    .hero-copy {
+      max-width: 760px;
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: clamp(1.2rem, 2.4vw, 1.75rem);
+      line-height: 1.35;
+    }
+
+    .hero-copy strong { color: var(--ink); }
+
+    .hero-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .pill {
+      padding: 9px 13px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgb(255 253 248 / 75%);
+      color: var(--muted);
+      font-weight: 750;
+    }
+
+    .section {
+      margin: 28px auto;
+      padding: clamp(28px, 6vw, 64px);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgb(255 253 248 / 92%);
+      box-shadow: var(--shadow);
+    }
+
+    .section-number {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      margin-bottom: 18px;
+      border-radius: 16px;
+      background: var(--ink);
+      color: white;
+      font-size: 1.05rem;
+      font-weight: 900;
+    }
+
+    h2 {
+      max-width: 850px;
+      margin: 0;
+      font-size: clamp(2.1rem, 5vw, 4.5rem);
+      line-height: 1.02;
+      letter-spacing: -.045em;
+    }
+
+    .lede {
+      max-width: 760px;
+      margin: 18px 0 38px;
+      color: var(--muted);
+      font-size: clamp(1.05rem, 2vw, 1.35rem);
+    }
+
+    .index-tree {
+      position: relative;
+      padding: clamp(20px, 4vw, 42px);
+      overflow: hidden;
+      border: 1px solid #ccd8ee;
+      border-radius: 24px;
+      background:
+        linear-gradient(rgb(255 255 255 / 72%), rgb(255 255 255 / 72%)),
+        repeating-linear-gradient(0deg, transparent 0 31px, #dce6f7 32px),
+        repeating-linear-gradient(90deg, transparent 0 31px, #dce6f7 32px),
+        var(--blue-soft);
+    }
+
+    .tree-label {
+      margin: 0 0 14px;
+      color: #496177;
+      font-size: .75rem;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .root-row { display: grid; place-items: center; }
+
+    .index-page {
+      position: relative;
+      z-index: 2;
+      border: 3px solid var(--ink);
+      border-radius: 18px;
+      background: white;
+      box-shadow: 7px 8px 0 rgb(20 33 61 / 12%);
+      transition: transform 220ms var(--ease-out), opacity 220ms var(--ease-out);
+    }
+
+    .root-page { width: min(430px, 100%); }
+
+    .root-page .keys { grid-template-columns: repeat(3, 1fr); }
+
+    .page-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 13px 16px;
+      border-bottom: 2px solid var(--ink);
+      border-radius: 14px 14px 0 0;
+      background: var(--yellow);
+      font-weight: 900;
+    }
+
+    .page-title small {
+      align-self: center;
+      color: #5c4b1f;
+      font-weight: 800;
+    }
+
+    .keys {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      padding: 16px;
+    }
+
+    .key {
+      position: relative;
+      padding: 14px 10px;
+      border: 2px solid #c8d0dc;
+      border-radius: 12px;
+      background: #f8fafc;
+      text-align: center;
+      font-family: ui-monospace, "SFMono-Regular", monospace;
+      font-size: 1.1rem;
+      font-weight: 850;
+      transition: transform 220ms var(--ease-out), opacity 220ms var(--ease-out);
+    }
+
+    .route-key {
+      min-height: 82px;
+      display: grid;
+      place-items: center;
+      align-content: center;
+      gap: 7px;
+    }
+
+    .branch-map {
+      height: 118px;
+      margin: -3px 7% 0;
+    }
+
+    .branch-map svg { width: 100%; height: 100%; overflow: visible; }
+
+    .branch-map path {
+      fill: none;
+      stroke: #8797aa;
+      stroke-width: 5;
+      stroke-linecap: round;
+      opacity: .45;
+      transition: opacity 220ms var(--ease-out);
+    }
+
+    .leaf-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      align-items: start;
+      gap: clamp(12px, 2vw, 24px);
+    }
+
+    .leaf-page .page-title {
+      background: var(--teal-soft);
+      font-size: .92rem;
+    }
+
+    .leaf-page .keys {
+      grid-template-columns: 1fr;
+      gap: 8px;
+      padding: 12px;
+    }
+
+    .leaf-page .key {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      font-size: .91rem;
+      text-align: left;
+    }
+
+    .leaf-page .key .name { color: var(--muted); text-align: right; }
+
+    .state-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin: -16px 0 26px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: white;
+      box-shadow: 0 0 0 1px oklch(0 0 0 / 0.08);
+      font-size: .72rem;
+      font-weight: 900;
+      letter-spacing: .06em;
+    }
+
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .legend-dot.check { background: var(--check); }
+    .legend-dot.no { background: var(--no); }
+    .legend-dot.yes { background: var(--yes); }
+
+    .verdict {
+      min-width: 42px;
+      min-height: 20px;
+      display: inline-grid;
+      place-items: center;
+      padding: 3px 7px;
+      border-radius: 999px;
+      opacity: 0;
+      color: white;
+      font-family: ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+      font-size: .61rem;
+      font-weight: 950;
+      letter-spacing: .06em;
+      line-height: 1;
+      transform: scale(.25);
+      filter: blur(4px);
+      transition: opacity 300ms cubic-bezier(0.2, 0, 0, 1), transform 300ms cubic-bezier(0.2, 0, 0, 1), filter 300ms cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    :is(.key, .tree-node).state-check > .verdict,
+    :is(.key, .tree-node).state-no > .verdict,
+    :is(.key, .tree-node).state-yes > .verdict,
+    .index-entry.state-check .entry-label > .verdict,
+    .index-entry.state-no .entry-label > .verdict,
+    .index-entry.state-yes .entry-label > .verdict {
+      opacity: 1;
+      transform: scale(1);
+      filter: blur(0);
+    }
+
+    :is(.key, .tree-node).state-check > .verdict,
+    .index-entry.state-check .entry-label > .verdict { background: var(--check); }
+    :is(.key, .tree-node).state-no > .verdict,
+    .index-entry.state-no .entry-label > .verdict { background: var(--no); }
+    :is(.key, .tree-node).state-yes > .verdict,
+    .index-entry.state-yes .entry-label > .verdict { background: var(--yes); }
+
+    .key.state-check { background: var(--check-soft); box-shadow: inset 0 0 0 3px var(--check); transform: scale(1.035); }
+    .key.state-no { background: var(--no-soft); box-shadow: inset 0 0 0 3px var(--no); opacity: .78; }
+    .key.state-yes { background: var(--yes-soft); box-shadow: inset 0 0 0 3px var(--yes); transform: scale(1.035); }
+
+    .index-page.state-check { box-shadow: 0 0 0 4px var(--check), 7px 8px 0 oklch(0.58 0.19 255 / 0.18); transform: translateY(-4px); }
+    .index-page.state-yes { box-shadow: 0 0 0 4px var(--yes), 7px 8px 0 oklch(0.43 0.11 153 / 0.18); }
+    .index-page.state-no { opacity: .56; }
+
+    .branch-map path.state-check { stroke: var(--check); stroke-width: 10; opacity: 1; }
+    .branch-map path.state-no { stroke: var(--no); opacity: .3; }
+    .branch-map path.state-yes { stroke: var(--yes); stroke-width: 10; opacity: 1; }
+
+    .stage-note {
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    .lookup-controls {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .action {
+      min-height: 50px;
+      padding: 12px 18px;
+      border: 0;
+      border-radius: 15px;
+      color: white;
+      background: var(--blue);
+      box-shadow: 0 8px 0 #0b4eaa;
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform 160ms var(--ease-out), opacity 160ms var(--ease-out);
+    }
+
+    .action:active { transform: translateY(4px) scale(.96); box-shadow: 0 3px 0 #0b4eaa; }
+    .action:focus-visible { outline: 4px solid var(--yellow); outline-offset: 4px; }
+    .action:disabled { cursor: wait; opacity: .72; }
+
+    @media (hover: hover) and (pointer: fine) {
+      .action:hover { transform: translateY(-2px); box-shadow: 0 10px 0 #0b4eaa; }
+      .mode-button:not([aria-pressed="true"]):not(:disabled):hover { background: oklch(0.89 0.02 80); }
+      .sources a:hover { color: oklch(0.96 0.04 250); }
+    }
+
+    .status {
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      flex: 1 1 260px;
+      padding: 11px 15px;
+      border-left: 5px solid var(--blue);
+      border-radius: 0 12px 12px 0;
+      background: var(--blue-soft);
+      font-weight: 780;
+    }
+
+    .big-note {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-top: 28px;
+      padding: 20px;
+      border-radius: 20px;
+      background: var(--ink);
+      color: white;
+    }
+
+    .big-note strong {
+      flex: 0 0 auto;
+      color: var(--yellow);
+      font-size: clamp(2.4rem, 6vw, 4.8rem);
+      line-height: 1;
+    }
+
+    .big-note span { font-size: clamp(1rem, 2vw, 1.3rem); font-weight: 760; }
+
+    .query-toolbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+      gap: 22px;
+      margin-bottom: 30px;
+    }
+
+    .query-box {
+      min-width: 0;
+      padding: 18px 20px;
+      border-radius: 20px;
+      background: var(--ink);
+      color: white;
+      box-shadow: 0 10px 0 oklch(0.25 0.04 260 / 0.12);
+    }
+
+    .query-box span {
+      display: block;
+      margin-bottom: 7px;
+      color: oklch(0.84 0.105 176);
+      font-size: .7rem;
+      font-weight: 900;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .query-box code {
+      color: white;
+      font-family: ui-monospace, "SFMono-Regular", monospace;
+      font-size: .9rem;
+      font-weight: 750;
+      overflow-wrap: anywhere;
+    }
+
+    .query-mode { min-width: 252px; margin: 0; padding: 0; border: 0; }
+
+    .query-mode legend {
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: .72rem;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .mode-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+      padding: 6px;
+      border-radius: 19px;
+      background: oklch(0.93 0.012 80);
+      box-shadow: inset 0 0 0 1px oklch(0 0 0 / 0.08);
+    }
+
+    .mode-button {
+      min-height: 44px;
+      padding: 9px 12px;
+      border: 0;
+      border-radius: 13px;
+      color: var(--muted);
+      background: transparent;
+      font-size: .78rem;
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform 160ms var(--ease-out), opacity 160ms var(--ease-out);
+    }
+
+    .mode-button[aria-pressed="true"] {
+      color: var(--ink);
+      background: white;
+      box-shadow: 0 0 0 1px oklch(0 0 0 / 0.06), 0 2px 5px oklch(0 0 0 / 0.08);
+    }
+
+    .mode-button:active { transform: scale(.96); }
+    .mode-button:focus-visible { outline: 3px solid var(--check); outline-offset: 2px; }
+    .mode-button:disabled { cursor: wait; opacity: .58; }
+
+    .trees-stage {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 160px minmax(0, 1fr);
+      align-items: stretch;
+      gap: 22px;
+    }
+
+    .mini-tree {
+      position: relative;
+      min-width: 0;
+      padding: 24px;
+      border-radius: 28px;
+      background: oklch(0.97 0.02 250);
+      box-shadow: 0 0 0 1px oklch(0 0 0 / 0.08), 0 10px 22px oklch(0 0 0 / 0.06);
+      transition: transform 220ms var(--ease-out), opacity 220ms var(--ease-out), filter 220ms var(--ease-out);
+    }
+
+    .mini-tree.primary-tree { background: oklch(0.97 0.025 75); }
+
+    .tree-kicker {
+      margin: 0;
+      color: var(--muted);
+      font-size: .69rem;
+      font-weight: 950;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .mini-tree h3 {
+      margin: 6px 0 0;
+      font-size: clamp(1.3rem, 2.5vw, 2rem);
+      line-height: 1.08;
+      letter-spacing: -.025em;
+    }
+
+    .tree-node,
+    .index-entry {
+      position: relative;
+      margin-top: 20px;
+      padding: 15px 16px;
+      border-radius: 16px;
+      background: white;
+      box-shadow: 0 0 0 2px var(--ink), 0 7px 0 oklch(0.25 0.04 260 / 0.1);
+      font-family: ui-monospace, "SFMono-Regular", monospace;
+      transition: transform 220ms var(--ease-out), opacity 220ms var(--ease-out);
+    }
+
+    .tree-node {
+      display: grid;
+      place-items: center;
+      gap: 7px;
+      text-align: center;
+      font-size: .82rem;
+      font-weight: 850;
+    }
+
+    .tree-node.state-check,
+    .index-entry.state-check {
+      background: var(--check-soft);
+      box-shadow: 0 0 0 3px var(--check), 0 7px 0 oklch(0.58 0.19 255 / 0.15);
+      transform: translateY(-3px);
+    }
+
+    .tree-node.state-yes,
+    .index-entry.state-yes {
+      background: var(--yes-soft);
+      box-shadow: 0 0 0 3px var(--yes), 0 7px 0 oklch(0.43 0.11 153 / 0.15);
+    }
+
+    .tree-node.state-no,
+    .index-entry.state-no { background: var(--no-soft); box-shadow: 0 0 0 3px var(--no); opacity: .72; }
+
+    .mini-tree.state-check { box-shadow: 0 0 0 4px var(--check), 0 12px 24px oklch(0.58 0.19 255 / 0.12); transform: translateY(-4px); }
+    .mini-tree.state-yes { box-shadow: 0 0 0 4px var(--yes), 0 12px 24px oklch(0.43 0.11 153 / 0.12); }
+
+    .mini-path {
+      width: 4px;
+      height: 40px;
+      margin: 4px auto -8px;
+      border-radius: 999px;
+      background: oklch(0.65 0.025 260);
+      opacity: .55;
+      transform-origin: top;
+      transform: scaleY(.72);
+      transition: transform 300ms var(--ease-in-out), opacity 220ms var(--ease-out);
+    }
+
+    .mini-path.state-check { background: var(--check); opacity: 1; transform: scaleY(1); }
+    .mini-path.state-yes { background: var(--yes); opacity: 1; transform: scaleY(1); }
+
+    .entry-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 11px;
+      font-family: ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+      font-size: .72rem;
+      font-weight: 900;
+    }
+
+    .entry-fields {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .entry-field {
+      min-width: 0;
+      padding: 10px;
+      border-radius: 11px;
+      background: oklch(0.96 0.01 260);
+    }
+
+    .entry-field small { display: block; color: var(--muted); font-size: .64rem; }
+    .entry-field b { display: block; margin-top: 4px; font-size: .82rem; overflow-wrap: anywhere; }
+
+    .primary-entry .entry-fields { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    .handoff-lane {
+      display: grid;
+      place-items: center;
+      align-content: center;
+      gap: 12px;
+      min-width: 0;
+      text-align: center;
+    }
+
+    .handoff-label {
+      color: var(--muted);
+      font-size: .68rem;
+      font-weight: 950;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
+
+    .pk-token {
+      position: relative;
+      z-index: 2;
+      padding: 10px 12px;
+      border-radius: 13px;
+      opacity: 0;
+      color: white;
+      background: var(--check);
+      box-shadow: 0 7px 0 oklch(0.36 0.13 255);
+      font-family: ui-monospace, "SFMono-Regular", monospace;
+      font-size: .78rem;
+      font-weight: 900;
+      transform: translateX(-12px) scale(.95);
+      filter: blur(4px);
+      transition: opacity 220ms var(--ease-out), transform 480ms var(--ease-in-out), filter 220ms var(--ease-out);
+    }
+
+    .pk-token.is-visible { opacity: 1; transform: translateX(0) scale(1); filter: blur(0); }
+    .handoff-lane.is-moving .pk-token { transform: translateX(28px) scale(1); }
+
+    .handoff-track {
+      position: relative;
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: oklch(0.82 0.02 260);
+    }
+
+    .handoff-track::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -1px;
+      width: 13px;
+      height: 13px;
+      border-top: 4px solid oklch(0.58 0.03 260);
+      border-right: 4px solid oklch(0.58 0.03 260);
+      transform: translateY(-50%) rotate(45deg);
+    }
+
+    .handoff-progress {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: var(--check);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 720ms var(--ease-in-out);
+    }
+
+    .handoff-lane.is-moving .handoff-progress { transform: scaleX(1); }
+    .handoff-lane.is-moving .handoff-track::after { border-color: var(--check); }
+
+    .stop-note {
+      min-height: 54px;
+      display: grid;
+      place-items: center;
+      padding: 10px;
+      border-radius: 14px;
+      opacity: 0;
+      color: oklch(0.32 0.09 153);
+      background: var(--yes-soft);
+      box-shadow: inset 0 0 0 2px var(--yes);
+      font-size: .74rem;
+      font-weight: 950;
+      transform: translateY(8px) scale(.95);
+      filter: blur(4px);
+      transition: opacity 220ms var(--ease-out), transform 220ms var(--ease-out), filter 220ms var(--ease-out);
+    }
+
+    .handoff-lane.is-stop .stop-note { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    .handoff-lane.is-stop .handoff-track { opacity: .22; }
+
+    .skip-badge {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      z-index: 3;
+      padding: 6px 9px;
+      border-radius: 999px;
+      opacity: 0;
+      color: white;
+      background: var(--yes);
+      font-size: .64rem;
+      font-weight: 950;
+      letter-spacing: .06em;
+      transform: scale(.25);
+      filter: blur(4px);
+      transition: opacity 300ms cubic-bezier(0.2, 0, 0, 1), transform 300ms cubic-bezier(0.2, 0, 0, 1), filter 300ms cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .mini-tree.is-skipped > :not(.skip-badge) { opacity: .34; }
+    .mini-tree.is-skipped .skip-badge { opacity: 1; transform: scale(1); filter: blur(0); }
+
+    .memory-note {
+      margin-top: 24px;
+      padding: 16px 18px;
+      border-left: 5px solid var(--orange);
+      border-radius: 0 14px 14px 0;
+      background: var(--orange-soft);
+      color: oklch(0.38 0.08 45);
+      font-weight: 760;
+    }
+
+    details {
+      margin-top: 24px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgb(255 255 255 / 64%);
+    }
+
+    summary {
+      padding: 16px 18px;
+      font-weight: 850;
+      cursor: pointer;
+    }
+
+    details > div { padding: 0 18px 18px; color: var(--muted); }
+
+    .lookup-fact {
+      border: 0;
+      color: white;
+      background: var(--ink);
+    }
+
+    .lookup-fact summary {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px 12px;
+    }
+
+    .lookup-fact summary strong {
+      color: var(--yellow);
+      font-size: 1.2rem;
+    }
+
+    .lookup-fact summary span { font-size: .82rem; }
+    .lookup-fact > div { color: oklch(0.88 0.015 260); }
+
+    .range-demo { margin-top: 34px; }
+
+    .range-query {
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: start;
+      gap: 20px;
+    }
+
+    .range-query code { line-height: 1.5; }
+
+    .range-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin: 18px 0 26px;
+    }
+
+    .legend-dot.skip { background: oklch(0.68 0.025 260); }
+
+    .range-seek {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 28px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: oklch(0.95 0.012 260);
+      box-shadow: inset 0 0 0 2px oklch(0.82 0.025 260);
+      transition: opacity 220ms var(--ease-out), transform 300ms var(--ease-out), filter 220ms var(--ease-out);
+    }
+
+    .range-seek > span:first-child {
+      color: var(--muted);
+      font-size: .68rem;
+      font-weight: 950;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
+
+    .range-seek strong { font-size: .95rem; }
+
+    .range-seek.range-check {
+      background: var(--check-soft);
+      box-shadow: inset 0 0 0 3px var(--check);
+      transform: translateY(-3px);
+    }
+
+    .range-seek.range-match {
+      background: var(--yes-soft);
+      box-shadow: inset 0 0 0 3px var(--yes);
+    }
+
+    .range-verdict,
+    .page-state,
+    .row-state {
+      display: inline-grid;
+      min-height: 20px;
+      place-items: center;
+      padding: 3px 7px;
+      border-radius: 999px;
+      opacity: 0;
+      color: white;
+      background: var(--check);
+      font-size: .58rem;
+      font-weight: 950;
+      letter-spacing: .06em;
+      line-height: 1;
+      transform: scale(.25);
+      filter: blur(4px);
+      transition: opacity 300ms cubic-bezier(0.2, 0, 0, 1), transform 300ms cubic-bezier(0.2, 0, 0, 1), filter 300ms cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    :is(.range-check, .range-match, .range-skip, .range-stop) > :is(.range-verdict, .page-state, .row-state) {
+      opacity: 1;
+      transform: scale(1);
+      filter: blur(0);
+    }
+
+    .range-match > :is(.range-verdict, .page-state, .row-state) { background: var(--yes); }
+    .range-skip > :is(.range-verdict, .page-state, .row-state) { background: oklch(0.52 0.025 260); }
+    .range-stop > :is(.range-verdict, .page-state, .row-state) { background: var(--no); }
+
+    .leaf-road {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      align-items: stretch;
+      gap: 22px;
+    }
+
+    .range-segment {
+      position: relative;
+      min-width: 0;
+    }
+
+    .road-page {
+      height: 100%;
+      padding: 13px 11px;
+      border: 0;
+      border-radius: 20px;
+      background: white;
+      box-shadow:
+        0 0 0 3px var(--ink),
+        0 8px 0 oklch(0.25 0.04 260 / 0.12);
+      transition: opacity 220ms var(--ease-out), transform 300ms var(--ease-out), filter 220ms var(--ease-out);
+    }
+
+    .road-page h3 {
+      margin: 0 0 7px;
+      font-size: .9rem;
+      text-align: center;
+    }
+
+    .road-page .page-state {
+      width: 100%;
+      margin-bottom: 3px;
+      white-space: nowrap;
+    }
+
+    .road-page.range-check {
+      background: var(--check-soft);
+      box-shadow: 0 0 0 4px var(--check), 0 9px 0 oklch(0.58 0.19 255 / 0.15);
+      transform: translateY(-5px);
+    }
+
+    .road-page.range-match {
+      background: var(--yes-soft);
+      box-shadow: 0 0 0 4px var(--yes), 0 9px 0 oklch(0.43 0.11 153 / 0.15);
+    }
+
+    .road-page.range-skip {
+      opacity: .43;
+      transform: scale(.97);
+      filter: grayscale(.5);
+    }
+
+    .road-page.range-stop {
+      background: var(--no-soft);
+      box-shadow: 0 0 0 4px var(--no), 0 9px 0 oklch(0.5 0.16 25 / 0.14);
+    }
+
+    .road-row {
+      display: grid;
+      gap: 3px;
+      margin-top: 7px;
+      padding: 8px 7px;
+      border-radius: 10px;
+      background: oklch(0.96 0.012 260);
+      font-family: ui-monospace, "SFMono-Regular", monospace;
+      font-size: .72rem;
+      font-weight: 780;
+      text-align: center;
+      transition: opacity 220ms var(--ease-out), transform 300ms var(--ease-out), filter 220ms var(--ease-out);
+    }
+
+    .road-row.range-check {
+      background: var(--check-soft);
+      box-shadow: inset 0 0 0 2px var(--check);
+      transform: translateY(-2px);
+    }
+
+    .road-row.range-match {
+      background: var(--yes-soft);
+      box-shadow: inset 0 0 0 2px var(--yes);
+    }
+
+    .road-row.range-stop {
+      background: var(--no-soft);
+      box-shadow: inset 0 0 0 2px var(--no);
+      opacity: .8;
+    }
+
+    .row-state {
+      justify-self: center;
+      min-height: 17px;
+      padding: 2px 6px;
+      font-size: .52rem;
+    }
+
+    .road-link {
+      position: absolute;
+      top: 50%;
+      left: calc(100% + 3px);
+      z-index: 3;
+      width: 16px;
+      color: oklch(0.66 0.025 260);
+      opacity: .35;
+      transform: translateY(-50%) scale(.92);
+      transition: opacity 220ms var(--ease-out), transform 300ms var(--ease-in-out), filter 220ms var(--ease-out);
+    }
+
+    .road-link svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      overflow: visible;
+    }
+
+    .road-link.range-check { color: var(--check); opacity: 1; transform: translateY(-50%) scale(1.12); }
+    .road-link.range-match { color: var(--yes); opacity: 1; transform: translateY(-50%) scale(1); }
+    .road-link.range-stop { color: var(--no); opacity: 1; transform: translateY(-50%) scale(1); }
+    .road-link.range-skip { opacity: .12; filter: grayscale(1); }
+
+    .road-link.range-stop svg { opacity: .18; }
+
+    .road-link.range-stop::after {
+      content: "×";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      color: var(--no);
+      font-size: 1.5rem;
+      font-weight: 950;
+      line-height: 1;
+      transform: translate(-50%, -54%);
+    }
+
+    .range-results {
+      position: relative;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 18px;
+      margin-top: 30px;
+      padding: 18px 20px;
+      border-radius: 22px;
+      background: var(--ink);
+      color: white;
+    }
+
+    .range-results-label,
+    .range-count {
+      font-size: .7rem;
+      font-weight: 950;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .range-results-label { color: oklch(0.84 0.105 176); }
+    .range-count { color: var(--yellow); white-space: nowrap; }
+
+    .result-list {
+      position: relative;
+      display: flex;
+      min-height: 34px;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .result-empty {
+      position: absolute;
+      inset: 50% auto auto 0;
+      color: oklch(0.8 0.02 260);
+      font-size: .82rem;
+      transform: translateY(-50%) scale(1);
+      transition: opacity 220ms var(--ease-out), transform 220ms var(--ease-out), filter 220ms var(--ease-out);
+    }
+
+    .result-list.has-results .result-empty {
+      opacity: 0;
+      transform: translateY(-50%) scale(.25);
+      filter: blur(4px);
+    }
+
+    .result-chip {
+      position: absolute;
+      padding: 7px 9px;
+      border-radius: 10px;
+      opacity: 0;
+      color: oklch(0.28 0.07 153);
+      background: var(--yes-soft);
+      font-family: ui-monospace, "SFMono-Regular", monospace;
+      font-size: .7rem;
+      font-weight: 850;
+      transform: translateY(6px) scale(.95);
+      filter: blur(4px);
+      transition: opacity 300ms var(--ease-out), transform 300ms var(--ease-out), filter 300ms var(--ease-out);
+    }
+
+    .result-chip.is-visible {
+      position: relative;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      filter: blur(0);
+    }
+
+    .range-controls { margin-top: 22px; }
+
+    .tradeoff {
+      display: grid;
+      gap: 24px;
+      margin-top: 56px;
+    }
+
+    .balance {
+      padding: clamp(28px, 5vw, 52px);
+      border-radius: 28px;
+      background: var(--ink);
+      color: white;
+    }
+
+    .balance-kicker {
+      margin: 0;
+      color: oklch(0.84 0.105 176);
+      font-size: .75rem;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .balance h3 {
+      max-width: 680px;
+      margin: 8px 0 0;
+      color: white;
+      font-size: clamp(1.65rem, 3.5vw, 2.8rem);
+      line-height: 1.08;
+      letter-spacing: -.025em;
+    }
+
+    .balance-copy {
+      max-width: 720px;
+      margin: 12px 0 0;
+      color: oklch(0.86 0.015 260);
+      font-size: .95rem;
+    }
+
+    .balance-visual {
+      margin-top: 22px;
+      padding: 16px;
+      border-radius: 24px;
+      background: oklch(1 0 0 / 0.055);
+      box-shadow: inset 0 0 0 1px oklch(1 0 0 / 0.13);
+    }
+
+    .balance svg {
+      display: block;
+      width: min(620px, 100%);
+      height: auto;
+      margin: 0 auto;
+      overflow: visible;
+    }
+
+    .scale-stand {
+      fill: none;
+      stroke: white;
+      stroke-width: 10;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .scale-pivot { fill: var(--yellow); stroke: white; stroke-width: 5; }
+
+    .balance-beam {
+      transform-box: view-box;
+      transform-origin: 260px 70px;
+    }
+
+    .scale-beam,
+    .scale-hangers {
+      fill: none;
+      stroke: white;
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .read-pan { fill: oklch(0.84 0.105 176); }
+    .write-pan { fill: var(--yellow); }
+
+    .scale-side-label {
+      fill: var(--ink);
+      font-family: ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+      font-size: 15px;
+      font-weight: 950;
+      letter-spacing: .045em;
+      dominant-baseline: middle;
+      text-anchor: middle;
+    }
+
+    .read-speed-line,
+    .write-weight {
+      opacity: 0;
+      transform-box: fill-box;
+      transform-origin: center;
+      transform: translateY(6px) scale(.95);
+    }
+
+    .read-speed-line {
+      fill: none;
+      stroke: oklch(0.84 0.105 176);
+      stroke-width: 5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .write-weight {
+      fill: var(--ink);
+      stroke: oklch(1 0 0 / 0.3);
+      stroke-width: 2;
+    }
+
+    .balance-labels {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 20px;
+    }
+
+    .balance-label {
+      padding: 18px 20px;
+      border-radius: 18px;
+      background: oklch(1 0 0 / 0.07);
+      box-shadow: inset 0 0 0 1px oklch(1 0 0 / 0.16);
+    }
+
+    .balance-label strong {
+      display: block;
+      font-size: 1.05rem;
+      letter-spacing: .02em;
+    }
+
+    .balance-label-kicker {
+      display: block;
+      margin-bottom: 5px;
+      color: oklch(0.8 0.02 260);
+      font-size: .65rem;
+      font-weight: 950;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .balance-label small {
+      display: block;
+      margin-top: 5px;
+      color: oklch(0.88 0.015 260);
+      font-size: .9rem;
+    }
+
+    .balance-label.read strong { color: oklch(0.84 0.105 176); }
+    .balance-label.write strong { color: var(--yellow); }
+
+    .tradeoff-slider {
+      margin-top: 22px;
+      padding: 20px;
+      border-radius: 20px;
+      background: oklch(1 0 0 / 0.07);
+      box-shadow: inset 0 0 0 1px oklch(1 0 0 / 0.16);
+    }
+
+    .balance-slider-head,
+    .slider-extents {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .balance-slider-head label {
+      font-size: .9rem;
+      font-weight: 900;
+    }
+
+    .balance-slider-head output {
+      min-width: 7.5rem;
+      padding: 6px 9px;
+      border-radius: 999px;
+      color: var(--ink);
+      background: var(--yellow);
+      font-size: .72rem;
+      font-weight: 950;
+      font-variant-numeric: tabular-nums;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .tradeoff-slider input[type="range"] {
+      width: 100%;
+      min-height: 44px;
+      margin: 10px 0 0;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .tradeoff-slider input[type="range"]::-webkit-slider-runnable-track {
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, oklch(0.84 0.105 176), var(--yellow));
+      box-shadow: inset 0 0 0 1px oklch(1 0 0 / 0.25);
+    }
+
+    .tradeoff-slider input[type="range"]::-webkit-slider-thumb {
+      width: 28px;
+      height: 28px;
+      margin-top: -9px;
+      appearance: none;
+      border: 0;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 0 0 4px var(--check), 0 5px 0 oklch(0.25 0.04 260 / 0.25);
+    }
+
+    .tradeoff-slider input[type="range"]::-moz-range-track {
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, oklch(0.84 0.105 176), var(--yellow));
+      box-shadow: inset 0 0 0 1px oklch(1 0 0 / 0.25);
+    }
+
+    .tradeoff-slider input[type="range"]::-moz-range-thumb {
+      width: 28px;
+      height: 28px;
+      border: 0;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 0 0 4px var(--check), 0 5px 0 oklch(0.25 0.04 260 / 0.25);
+    }
+
+    .tradeoff-slider input[type="range"]:focus-visible {
+      outline: 3px solid white;
+      outline-offset: 3px;
+    }
+
+    .slider-extents {
+      color: oklch(0.78 0.02 260);
+      font-size: .7rem;
+      font-weight: 800;
+    }
+
+    .balance-note {
+      margin: 16px 0 0;
+      padding-left: 13px;
+      border-left: 4px solid var(--orange);
+      color: oklch(0.84 0.02 260);
+      font-size: .82rem;
+    }
+
+    .cost-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .cost {
+      padding: 22px 24px;
+      border: 2px solid var(--line);
+      border-radius: 18px;
+      background: white;
+      font-size: 1.06rem;
+      font-weight: 800;
+    }
+
+    .cost.good { border-color: #77c7bb; background: var(--teal-soft); }
+    .cost.caution { border-color: #f0ae7c; background: var(--orange-soft); }
+
+    .recap {
+      margin: 28px auto 70px;
+      padding: clamp(30px, 7vw, 72px);
+      border-radius: var(--radius);
+      color: white;
+      background: var(--ink);
+      box-shadow: var(--shadow);
+    }
+
+    .recap h2 { color: white; }
+
+    .recap-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 34px;
+    }
+
+    .recap-item {
+      padding: 22px;
+      border: 1px solid rgb(255 255 255 / 20%);
+      border-radius: 19px;
+      background: rgb(255 255 255 / 7%);
+    }
+
+    .recap-item strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--yellow);
+      font-size: 1.35rem;
+    }
+
+    .limitation {
+      margin-top: 24px;
+      padding: 17px 19px;
+      border-left: 5px solid var(--orange);
+      border-radius: 0 13px 13px 0;
+      background: rgb(255 255 255 / 8%);
+      color: #d8e0ee;
+    }
+
+    .sources {
+      border-color: oklch(1 0 0 / 0.2);
+      background: oklch(0.19 0.04 260);
+    }
+
+    .sources summary { color: oklch(0.98 0.01 250); }
+
+    .sources > div { color: oklch(0.92 0.012 260); }
+
+    .sources a {
+      color: oklch(0.9 0.075 250);
+      text-decoration-thickness: 2px;
+      text-underline-offset: 3px;
+    }
+
+    footer {
+      padding: 0 0 48px;
+      color: var(--muted);
+      text-align: center;
+      font-size: .9rem;
+    }
+
+    @container (min-width: 721px) {
+      .section {
+        margin-block: 18px;
+        padding: 28px;
+      }
+
+      .section-number {
+        width: 36px;
+        height: 36px;
+        margin-bottom: 10px;
+        border-radius: 12px;
+        font-size: .9rem;
+      }
+
+      h2 { font-size: clamp(2rem, 4vw, 3.1rem); }
+
+      .lede {
+        margin: 10px 0 20px;
+        font-size: 1rem;
+      }
+
+      .state-legend {
+        gap: 7px;
+        margin: -6px 0 14px;
+      }
+
+      .legend-item {
+        gap: 5px;
+        padding: 5px 8px;
+        font-size: .62rem;
+      }
+
+      .legend-dot { width: 8px; height: 8px; }
+
+      .index-tree { padding: 18px; }
+
+      .tree-label {
+        margin-bottom: 8px;
+        font-size: .65rem;
+      }
+
+      .root-page { width: min(360px, 100%); }
+
+      .page-title {
+        padding: 8px 10px;
+        font-size: .78rem;
+      }
+
+      .keys {
+        gap: 6px;
+        padding: 8px;
+      }
+
+      .key {
+        padding: 8px 7px;
+        font-size: .88rem;
+      }
+
+      .route-key { min-height: 50px; }
+
+      .branch-map { height: 52px; }
+
+      .leaf-grid { gap: 10px; }
+
+      .leaf-page .page-title { font-size: .74rem; }
+
+      .leaf-page .keys {
+        gap: 5px;
+        padding: 7px;
+      }
+
+      .leaf-page .key {
+        padding: 5px 7px;
+        font-size: .72rem;
+      }
+
+      .lookup-controls {
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .action {
+        min-height: 44px;
+        padding: 9px 14px;
+      }
+
+      .status {
+        min-height: 44px;
+        padding: 8px 12px;
+        font-size: .8rem;
+      }
+
+      .big-note {
+        gap: 12px;
+        margin-top: 16px;
+        padding: 12px;
+      }
+
+      .big-note strong { font-size: 2.2rem; }
+      .big-note span { font-size: .88rem; }
+
+      details { margin-top: 12px; }
+      summary { padding: 11px 14px; }
+      details > div { padding: 0 14px 14px; }
+      .lookup-fact { margin-top: 10px; }
+
+      .query-toolbar {
+        grid-template-columns: minmax(0, 1fr) 210px;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .query-box {
+        padding: 12px 14px;
+        border-radius: 16px;
+      }
+
+      .query-box code { font-size: .75rem; }
+      .query-mode { min-width: 0; }
+
+      .trees-stage {
+        grid-template-columns: minmax(0, 1fr) 58px minmax(0, 1fr);
+        gap: 10px;
+      }
+
+      .mini-tree {
+        padding: 14px;
+        border-radius: 20px;
+      }
+
+      .mini-tree h3 { font-size: 1.35rem; }
+
+      .tree-node,
+      .index-entry {
+        margin-top: 12px;
+        padding: 10px;
+        border-radius: 13px;
+      }
+
+      .mini-path {
+        height: 24px;
+        margin-bottom: -6px;
+      }
+
+      .entry-label {
+        margin-bottom: 7px;
+        font-size: .62rem;
+      }
+
+      .entry-fields { gap: 6px; }
+      .entry-field { padding: 7px; }
+      .entry-field b { font-size: .72rem; }
+      .handoff-lane { gap: 8px; }
+
+      .pk-token { padding: 8px; }
+
+      .stop-note {
+        min-height: 44px;
+        padding: 6px;
+        font-size: .62rem;
+      }
+
+      .memory-note {
+        margin-top: 14px;
+        padding: 11px 14px;
+        font-size: .82rem;
+      }
+
+      .range-demo { margin-top: 20px; }
+
+      .range-query { gap: 8px; }
+      .range-query code { line-height: 1.35; }
+
+      .range-legend {
+        gap: 7px;
+        margin: 12px 0 14px;
+      }
+
+      .range-seek {
+        gap: 9px;
+        margin-bottom: 16px;
+        padding: 10px 12px;
+        border-radius: 14px;
+      }
+
+      .range-seek strong { font-size: .78rem; }
+
+      .leaf-road { gap: 12px; }
+
+      .road-page {
+        padding: 9px 6px;
+        border-radius: 14px;
+      }
+
+      .road-page h3 {
+        margin-bottom: 4px;
+        font-size: .72rem;
+      }
+
+      .road-row {
+        margin-top: 5px;
+        padding: 6px 3px;
+        border-radius: 8px;
+        font-size: .58rem;
+      }
+
+      .road-link {
+        left: 100%;
+        width: 14px;
+        opacity: .5;
+      }
+
+      .range-results {
+        gap: 10px;
+        margin-top: 16px;
+        padding: 12px 14px;
+        border-radius: 16px;
+      }
+
+      .range-controls { margin-top: 14px; }
+
+      .tradeoff {
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .balance {
+        display: grid;
+        grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+        grid-template-areas:
+          "kicker kicker"
+          "copy copy"
+          "visual labels"
+          "visual slider"
+          "note note";
+        gap: 10px 16px;
+        padding: 22px;
+      }
+
+      .balance-kicker { grid-area: kicker; }
+      .balance-copy { grid-area: copy; margin-top: 0; }
+
+      .balance-visual {
+        grid-area: visual;
+        align-self: center;
+        margin-top: 0;
+        padding: 10px;
+        border-radius: 18px;
+      }
+
+      .balance-labels {
+        grid-area: labels;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        margin-top: 0;
+      }
+
+      .balance-label {
+        padding: 10px 12px;
+        border-radius: 14px;
+      }
+
+      .balance-label strong { font-size: .88rem; }
+      .balance-label small { margin-top: 3px; font-size: .72rem; }
+
+      .tradeoff-slider {
+        grid-area: slider;
+        margin-top: 0;
+        padding: 12px;
+        border-radius: 15px;
+      }
+
+      .balance-slider-head {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .balance-slider-head label { font-size: .75rem; }
+
+      .balance-slider-head output {
+        min-width: 6.5rem;
+        padding: 5px 8px;
+      }
+
+      .balance-note {
+        grid-area: note;
+        margin-top: 0;
+        font-size: .75rem;
+      }
+
+      .cost-list {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .cost {
+        padding: 12px 14px;
+        border-radius: 14px;
+        font-size: .82rem;
+      }
+    }
+
+    @container (max-width: 720px) {
+      .query-toolbar { grid-template-columns: 1fr; }
+      .query-mode { min-width: 0; }
+      .trees-stage { grid-template-columns: 1fr; }
+      .handoff-lane { min-height: 158px; }
+      .handoff-track { width: 6px; height: 92px; }
+      .handoff-track::after {
+        top: auto;
+        right: 50%;
+        bottom: -1px;
+        transform: translateX(50%) rotate(135deg);
+      }
+      .handoff-progress { transform: scaleY(0); transform-origin: top; }
+      .handoff-lane.is-moving .handoff-progress { transform: scaleY(1); }
+      .pk-token { transform: translateY(-12px) scale(.95); }
+      .pk-token.is-visible { transform: translateY(0) scale(1); }
+      .handoff-lane.is-moving .pk-token { transform: translateY(28px) scale(1); }
+      .leaf-road {
+        max-width: 460px;
+        grid-template-columns: 1fr;
+        gap: 72px;
+        margin-inline: auto;
+      }
+      .road-page { padding: 18px; border-radius: 24px; }
+      .road-page h3 { font-size: 1rem; }
+      .road-row { font-size: .82rem; }
+      .road-link,
+      .road-link.range-check,
+      .road-link.range-match,
+      .road-link.range-stop {
+        top: calc(100% + 13px);
+        left: 50%;
+        width: 44px;
+        transform: translateX(-50%) scale(.92);
+      }
+      .road-link svg { transform: rotate(90deg); }
+      .road-link.range-check { transform: translateX(-50%) scale(1.12); }
+      .road-link.range-match,
+      .road-link.range-stop { transform: translateX(-50%) scale(1); }
+
+      .balance { display: block; }
+      .balance-visual { margin-top: 22px; }
+      .balance-labels { margin-top: 20px; }
+      .tradeoff-slider { margin-top: 22px; }
+      .balance-note { margin-top: 16px; }
+    }
+
+    @media (max-width: 760px) {
+      .hero { padding: 32px 0 28px; }
+      .section { padding: 26px 20px; }
+      .branch-map { display: none; }
+      .branch-map + .tree-label { margin-top: 28px; }
+      .leaf-grid { grid-template-columns: 1fr; margin-top: 34px; }
+      .leaf-grid::before {
+        content: "↓ choose one leaf";
+        grid-column: 1;
+        color: #8797aa;
+        text-align: center;
+        font-size: 1.1rem;
+        font-weight: 900;
+      }
+      .tradeoff, .recap-grid { grid-template-columns: 1fr; }
+      .range-query { grid-template-columns: 1fr; gap: 8px; }
+      .range-seek { grid-template-columns: 1fr; gap: 7px; }
+      .range-results { grid-template-columns: 1fr; gap: 11px; }
+      .range-count { justify-self: start; }
+      .balance-labels { grid-template-columns: 1fr; }
+      .balance-visual { padding: 8px; }
+      .balance-slider-head { align-items: flex-start; flex-direction: column; gap: 8px; }
+      .slider-extents { align-items: flex-start; }
+      .slider-extents span:last-child { max-width: 120px; text-align: right; }
+      .primary-entry .entry-fields { grid-template-columns: 1fr; }
+      .big-note { align-items: flex-start; flex-direction: column; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+      }
+      .pk-token,
+      .pk-token.is-visible,
+      .handoff-lane.is-moving .pk-token { transform: none; }
+      .range-seek.range-check,
+      .road-page.range-check,
+      .road-page.range-skip,
+      .road-row.range-check,
+      .result-chip,
+      .result-chip.is-visible { transform: none; }
+      .balance-beam {
+        transform: none !important;
+        transition: none !important;
+      }
+      .read-speed-line,
+      .read-speed-line.is-visible,
+      .write-weight,
+      .write-weight.is-visible {
+        transform: none !important;
+        transition: none !important;
+      }
+      .road-link,
+      .road-link.range-check,
+      .road-link.range-match,
+      .road-link.range-stop { transform: translateY(-50%); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      @container (max-width: 720px) {
+        .road-link,
+        .road-link.range-check,
+        .road-link.range-match,
+        .road-link.range-stop { transform: translateX(-50%); }
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header class="hero page">
+    <p class="eyebrow">MySQL · InnoDB</p>
+    <h1>An index is a sorted map.</h1>
+    <p class="hero-copy">
+      It helps MySQL <strong>skip almost everything</strong> and jump toward the row it needs.
+    </p>
+    <div class="hero-pills" aria-label="Main ideas">
+      <span class="pill"><span aria-hidden="true">📄</span> Built from pages</span>
+      <span class="pill"><span aria-hidden="true">🌳</span> Shaped like a wide tree</span>
+      <span class="pill"><span aria-hidden="true">🔤</span> Kept in order</span>
+    </div>
+  </header>
+
+  <main class="page" id="main-content" tabindex="-1">
+    <section class="section" aria-labelledby="tree-heading">
+      <div class="section-number" aria-hidden="true">1</div>
+      <h2 id="tree-heading">Watch one index lookup</h2>
+      <p class="lede">MySQL rules out whole routes, opens one leaf page, then searches inside that sorted page.</p>
+
+      <div class="state-legend" aria-label="Animation state legend">
+        <span class="legend-item"><span class="legend-dot check" aria-hidden="true"></span>CHECKING</span>
+        <span class="legend-item"><span class="legend-dot no" aria-hidden="true"></span>RULED OUT</span>
+        <span class="legend-item"><span class="legend-dot yes" aria-hidden="true"></span>CHOSEN</span>
+      </div>
+
+      <div class="index-tree" id="lookupStage" aria-label="Animated B-tree lookup for ID 52" aria-busy="false">
+        <p class="tree-label">Start here</p>
+        <div class="root-row">
+          <div class="index-page root-page" id="rootPage" data-stateful>
+            <div class="page-title"><span>ROOT PAGE</span><small>Choose one route</small></div>
+            <div class="keys">
+              <div class="key route-key" id="routeLow" data-stateful><span>ID &lt; 40</span><span class="verdict" aria-hidden="true"></span></div>
+              <div class="key route-key" id="routeMiddle" data-stateful><span>40–69</span><span class="verdict" aria-hidden="true"></span></div>
+              <div class="key route-key" id="routeHigh" data-stateful><span>ID ≥ 70</span><span class="verdict" aria-hidden="true"></span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="branch-map" aria-hidden="true">
+          <svg viewBox="0 0 1000 120" preserveAspectRatio="none">
+            <path id="lowPath" d="M500 0 L500 34 L160 112" data-stateful />
+            <path id="middlePath" d="M500 0 L500 112" data-stateful />
+            <path id="highPath" d="M500 0 L500 34 L840 112" data-stateful />
+          </svg>
+        </div>
+
+        <p class="tree-label">Sorted leaf pages</p>
+        <div class="leaf-grid">
+          <div class="index-page leaf-page" id="lowLeaf" data-stateful>
+            <div class="page-title"><span>LEAF A</span><small>low IDs</small></div>
+            <div class="keys">
+              <div class="key"><span>11</span><span class="name">Ava</span></div>
+              <div class="key"><span>24</span><span class="name">Bo</span></div>
+              <div class="key"><span>37</span><span class="name">Cal</span></div>
+            </div>
+          </div>
+          <div class="index-page leaf-page" id="middleLeaf" data-stateful>
+            <div class="page-title"><span>LEAF B</span><small>middle IDs</small></div>
+            <div class="keys">
+              <div class="key"><span>42</span><span class="name">Di</span></div>
+              <div class="key"><span>47</span><span class="name">Eli</span></div>
+              <div class="key" id="row50" data-stateful><span>50</span><span class="name">Flo</span><span class="verdict" aria-hidden="true"></span></div>
+              <div class="key" id="targetRow" data-stateful><span>52</span><span class="name">Eva</span><span class="verdict" aria-hidden="true"></span></div>
+              <div class="key" id="row60" data-stateful><span>60</span><span class="name">Gio</span><span class="verdict" aria-hidden="true"></span></div>
+              <div class="key"><span>68</span><span class="name">Fox</span></div>
+            </div>
+          </div>
+          <div class="index-page leaf-page" id="highLeaf" data-stateful>
+            <div class="page-title"><span>LEAF C</span><small>high IDs</small></div>
+            <div class="keys">
+              <div class="key"><span>71</span><span class="name">Gia</span></div>
+              <div class="key"><span>81</span><span class="name">Hal</span></div>
+              <div class="key"><span>94</span><span class="name">Ivy</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="lookup-controls">
+          <button class="action" id="runLookup" type="button">Find ID 52</button>
+          <div class="status" id="lookupStatus" role="status" aria-live="polite">Run the lookup. Blue checks, red rules out, and green chooses.</div>
+        </div>
+      </div>
+
+      <details class="lookup-fact">
+        <summary><strong>16 KB pages</strong><span>Wide tree, not binary</span></summary>
+        <div>A page holds many entries. Real pages use a page directory; this animation expands comparisons so each decision stays visible.</div>
+      </details>
+    </section>
+
+    <section class="section" aria-labelledby="leaves-heading">
+      <div class="section-number" aria-hidden="true">2</div>
+      <h2 id="leaves-heading">Sometimes one lookup becomes two</h2>
+      <p class="lede">A secondary leaf gives MySQL the primary key. The primary tree uses that key to find the complete row.</p>
+
+      <div id="doubleLookupStage" aria-busy="false">
+        <div class="query-toolbar">
+          <div class="query-box">
+            <span>Query</span>
+            <code id="queryText">SELECT name, city FROM users WHERE email = 'eva@example.com';</code>
+          </div>
+
+          <fieldset class="query-mode">
+            <legend>What does the query need?</legend>
+            <div class="mode-buttons">
+              <button class="mode-button" type="button" data-mode="full" aria-pressed="true">Needs row</button>
+              <button class="mode-button" type="button" data-mode="covering" aria-pressed="false">Index only</button>
+            </div>
+          </fieldset>
+        </div>
+
+        <div class="trees-stage">
+          <article class="mini-tree secondary-tree" id="secondaryTree" data-stateful>
+            <p class="tree-kicker">First tree</p>
+            <h3>Secondary index</h3>
+            <div class="tree-node" id="secondaryRoot" data-stateful>
+              UNIQUE(email)
+              <span class="verdict" aria-hidden="true"></span>
+            </div>
+            <div class="mini-path" id="secondaryPath" data-stateful aria-hidden="true"></div>
+            <div class="index-entry" id="secondaryEntry" data-stateful>
+              <div class="entry-label"><span>SECONDARY leaf</span><span class="verdict" aria-hidden="true"></span></div>
+              <div class="entry-fields">
+                <div class="entry-field"><small>email</small><b>eva@example.com</b></div>
+                <div class="entry-field"><small>primary key</small><b>52</b></div>
+              </div>
+            </div>
+          </article>
+
+          <div class="handoff-lane" id="handoffLane" aria-label="Primary key handoff">
+            <span class="handoff-label">Hand off</span>
+            <span class="pk-token" id="pkToken">PK 52</span>
+            <div class="handoff-track" aria-hidden="true"><div class="handoff-progress"></div></div>
+            <div class="stop-note" id="stopNote">STOP HERE<br>The index has every requested value.</div>
+          </div>
+
+          <article class="mini-tree primary-tree" id="primaryTree" data-stateful>
+            <span class="skip-badge">SKIPPED</span>
+            <p class="tree-kicker">Second tree</p>
+            <h3>Primary index</h3>
+            <div class="tree-node" id="primaryRoot" data-stateful>
+              PRIMARY(id)
+              <span class="verdict" aria-hidden="true"></span>
+            </div>
+            <div class="mini-path" id="primaryPath" data-stateful aria-hidden="true"></div>
+            <div class="index-entry primary-entry" id="primaryEntry" data-stateful>
+              <div class="entry-label"><span>PRIMARY leaf = complete row</span><span class="verdict" aria-hidden="true"></span></div>
+              <div class="entry-fields">
+                <div class="entry-field"><small>id</small><b>52</b></div>
+                <div class="entry-field"><small>name</small><b>Eva</b></div>
+                <div class="entry-field"><small>city</small><b>Chicago</b></div>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="lookup-controls">
+          <button class="action" id="runDoubleLookup" type="button">Run the two-tree lookup</button>
+          <div class="status" id="doubleLookupStatus" role="status" aria-live="polite">Start with the secondary index. Watch primary key 52 move to the primary tree.</div>
+        </div>
+      </div>
+
+      <p class="memory-note"><strong>Two logical searches do not mean two disk reads.</strong> The required pages may already be in memory.</p>
+    </section>
+
+    <section class="section" aria-labelledby="range-heading">
+      <div class="section-number" aria-hidden="true">3</div>
+      <h2 id="range-heading">Watch a range scan move sideways</h2>
+      <p class="lede">MySQL jumps to the first value in the interval, returns sorted matches, then stops at the upper boundary.</p>
+
+      <div class="range-demo" id="rangeScanStage" aria-busy="false">
+        <div class="query-box range-query">
+          <span>Range query · INDEX(city, id)</span>
+          <code>SELECT city, id FROM users WHERE city &gt;= 'Chicago' AND city &lt; 'Detroit' ORDER BY city, id;</code>
+        </div>
+
+        <div class="range-legend" aria-label="Range scan state legend">
+          <span class="legend-item"><span class="legend-dot check" aria-hidden="true"></span>CHECKING</span>
+          <span class="legend-item"><span class="legend-dot yes" aria-hidden="true"></span>RETURNED</span>
+          <span class="legend-item"><span class="legend-dot no" aria-hidden="true"></span>STOP BOUNDARY</span>
+          <span class="legend-item"><span class="legend-dot skip" aria-hidden="true"></span>NOT VISITED</span>
+        </div>
+
+        <div class="range-seek" id="rangeSeek" data-range-stateful>
+          <span>Root seek</span>
+          <strong>Jump past earlier leaves to the first key ≥ “Chicago.”</strong>
+          <span class="range-verdict" aria-hidden="true"></span>
+        </div>
+
+        <div class="leaf-road" aria-label="Seven linked leaf pages in sorted city order">
+          <div class="range-segment">
+            <article class="road-page" id="rangePageA" data-range-stateful>
+              <h3>Leaf A</h3>
+              <span class="page-state" aria-hidden="true"></span>
+              <div class="road-row">Albany · 06</div>
+              <div class="road-row">Austin · 18</div>
+            </article>
+            <div class="road-link" id="rangeLinkA" data-range-stateful aria-hidden="true">
+              <svg viewBox="0 0 28 28"><path d="M3 14 H24 M17 7 L24 14 L17 21" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+
+          <div class="range-segment">
+            <article class="road-page" id="rangePageB" data-range-stateful>
+              <h3>Leaf B</h3>
+              <span class="page-state" aria-hidden="true"></span>
+              <div class="road-row">Boise · 14</div>
+              <div class="road-row">Boston · 37</div>
+            </article>
+            <div class="road-link" id="rangeLinkB" data-range-stateful aria-hidden="true">
+              <svg viewBox="0 0 28 28"><path d="M3 14 H24 M17 7 L24 14 L17 21" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+
+          <div class="range-segment">
+            <article class="road-page" id="rangePageC" data-range-stateful>
+              <h3>Leaf C</h3>
+              <span class="page-state" aria-hidden="true"></span>
+              <div class="road-row" id="rangeChicago52" data-range-stateful>Chicago · 52<span class="row-state" aria-hidden="true"></span></div>
+              <div class="road-row" id="rangeChicago81" data-range-stateful>Chicago · 81<span class="row-state" aria-hidden="true"></span></div>
+            </article>
+            <div class="road-link" id="rangeLinkC" data-range-stateful aria-hidden="true">
+              <svg viewBox="0 0 28 28"><path d="M3 14 H24 M17 7 L24 14 L17 21" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+
+          <div class="range-segment">
+            <article class="road-page" id="rangePageD" data-range-stateful>
+              <h3>Leaf D</h3>
+              <span class="page-state" aria-hidden="true"></span>
+              <div class="road-row" id="rangeDallas11" data-range-stateful>Dallas · 11<span class="row-state" aria-hidden="true"></span></div>
+              <div class="road-row" id="rangeDenver24" data-range-stateful>Denver · 24<span class="row-state" aria-hidden="true"></span></div>
+            </article>
+            <div class="road-link" id="rangeLinkD" data-range-stateful aria-hidden="true">
+              <svg viewBox="0 0 28 28"><path d="M3 14 H24 M17 7 L24 14 L17 21" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+
+          <div class="range-segment">
+            <article class="road-page" id="rangePageE" data-range-stateful>
+              <h3>Leaf E</h3>
+              <span class="page-state" aria-hidden="true"></span>
+              <div class="road-row" id="rangeDenver68" data-range-stateful>Denver · 68<span class="row-state" aria-hidden="true"></span></div>
+              <div class="road-row" id="rangeDetroit23" data-range-stateful>Detroit · 23<span class="row-state" aria-hidden="true"></span></div>
+            </article>
+            <div class="road-link" id="rangeLinkE" data-range-stateful aria-hidden="true">
+              <svg viewBox="0 0 28 28"><path d="M3 14 H24 M17 7 L24 14 L17 21" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+
+          <div class="range-segment">
+            <article class="road-page" id="rangePageF" data-range-stateful>
+              <h3>Leaf F</h3>
+              <span class="page-state" aria-hidden="true"></span>
+              <div class="road-row">El Paso · 35</div>
+              <div class="road-row">Houston · 44</div>
+            </article>
+            <div class="road-link" id="rangeLinkF" data-range-stateful aria-hidden="true">
+              <svg viewBox="0 0 28 28"><path d="M3 14 H24 M17 7 L24 14 L17 21" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+
+          <div class="range-segment">
+            <article class="road-page" id="rangePageG" data-range-stateful>
+              <h3>Leaf G</h3>
+              <span class="page-state" aria-hidden="true"></span>
+              <div class="road-row">Miami · 72</div>
+              <div class="road-row">Seattle · 94</div>
+            </article>
+          </div>
+        </div>
+
+        <div class="range-results" aria-label="Rows returned by the range query">
+          <span class="range-results-label">Result set</span>
+          <div class="result-list" id="rangeResultList">
+            <span class="result-empty">No rows returned yet.</span>
+            <span class="result-chip" data-range-result>Chicago · 52</span>
+            <span class="result-chip" data-range-result>Chicago · 81</span>
+            <span class="result-chip" data-range-result>Dallas · 11</span>
+            <span class="result-chip" data-range-result>Denver · 24</span>
+            <span class="result-chip" data-range-result>Denver · 68</span>
+          </div>
+          <span class="range-count" id="rangeCount">0 rows</span>
+        </div>
+
+        <div class="lookup-controls range-controls">
+          <button class="action" id="runRangeScan" type="button">Run the range scan</button>
+          <div class="status" id="rangeStatus" role="status" aria-live="polite">The root finds the start. Linked leaves carry the scan forward until “Detroit.”</div>
+        </div>
+      </div>
+
+    </section>
+
+    <section class="section balance-section" aria-labelledby="balance-heading">
+      <div class="section-number" aria-hidden="true">4</div>
+      <h2 id="balance-heading">Faster reads need more write work</h2>
+      <p class="lede">One workload can trade extra index maintenance for shorter read paths.</p>
+
+      <div class="tradeoff">
+        <div class="balance" id="indexBalanceStage">
+          <p class="balance-kicker">Index tradeoff</p>
+          <p class="balance-copy">Drag the slider to see both sides move together.</p>
+
+          <div class="balance-visual">
+            <svg viewBox="0 0 520 270" role="img" aria-labelledby="balanceSvgTitle balanceSvgDescription">
+              <title id="balanceSvgTitle">Read and write index tradeoff scale</title>
+              <desc id="balanceSvgDescription">The read pan rises and the write pan falls continuously as the slider moves toward more useful indexes.</desc>
+              <path class="scale-stand" d="M260 30 V202 M260 202 L208 248 H312 Z"/>
+              <circle class="scale-pivot" cx="260" cy="70" r="13"/>
+              <g class="balance-beam" id="balanceBeam">
+                <path class="scale-beam" d="M75 70 H445"/>
+                <path class="scale-hangers" d="M125 70 V103 M125 103 L78 148 M125 103 L172 148 M395 70 V103 M395 103 L348 148 M395 103 L442 148"/>
+                <path class="read-pan" d="M68 148 Q125 242 182 148 Z"/>
+                <path class="write-pan" d="M338 148 Q395 242 452 148 Z"/>
+                <text class="scale-side-label" x="125" y="169">READS</text>
+                <text class="scale-side-label" x="395" y="169">WRITES</text>
+
+                <path class="read-speed-line" data-balance-mark d="M28 92 H68 M60 84 L68 92 L60 100"/>
+                <path class="read-speed-line" data-balance-mark d="M18 108 H63 M55 100 L63 108 L55 116"/>
+                <path class="read-speed-line" data-balance-mark d="M31 124 H71 M63 116 L71 124 L63 132"/>
+                <path class="read-speed-line" data-balance-mark d="M21 140 H66 M58 132 L66 140 L58 148"/>
+
+                <rect class="write-weight" data-balance-mark x="370" y="132" width="50" height="13" rx="4"/>
+                <rect class="write-weight" data-balance-mark x="365" y="115" width="60" height="13" rx="4"/>
+                <rect class="write-weight" data-balance-mark x="360" y="98" width="70" height="13" rx="4"/>
+                <rect class="write-weight" data-balance-mark x="355" y="81" width="80" height="13" rx="4"/>
+              </g>
+            </svg>
+          </div>
+
+          <div class="balance-labels">
+            <div class="balance-label read">
+              <span class="balance-label-kicker">Read side</span>
+              <strong>Reads get faster</strong>
+              <small>Useful indexes can skip more unrelated rows.</small>
+            </div>
+            <div class="balance-label write">
+              <span class="balance-label-kicker">Write side</span>
+              <strong>Writes get heavier</strong>
+              <small>Affected index entries need more maintenance.</small>
+            </div>
+          </div>
+
+          <div class="tradeoff-slider">
+            <div class="balance-slider-head">
+              <label for="indexTradeoffSlider">Useful indexes for this workload</label>
+              <output id="indexTradeoffOutput" for="indexTradeoffSlider">Tradeoff · 0%</output>
+            </div>
+            <input id="indexTradeoffSlider" name="index-tradeoff" type="range" min="0" max="100" value="0" step="any" autocomplete="off" aria-describedby="indexTradeoffHelp" aria-valuetext="0% toward more useful indexes. Read paths start at baseline. Write maintenance starts light.">
+            <div class="slider-extents" aria-hidden="true">
+              <span>Fewer useful indexes</span>
+              <span>More useful indexes</span>
+            </div>
+          </div>
+
+          <p class="balance-note" id="indexTradeoffHelp">This is a workload model, not a guarantee. An index helps only when MySQL can use it. Writes maintain only affected indexes.</p>
+        </div>
+        <div class="cost-list">
+          <div class="cost good">✓ Reads can skip most rows.</div>
+          <div class="cost caution">↻ Every write updates each affected index.</div>
+          <div class="cost caution">▣ Every index uses storage and memory.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="recap" aria-labelledby="recap-heading">
+      <h2 id="recap-heading">The whole picture</h2>
+      <div class="recap-grid">
+        <div class="recap-item"><strong>Compare</strong>Ordered checks rule out most pages and records.</div>
+        <div class="recap-item"><strong>Hand off</strong>A secondary leaf can send a primary key into the primary tree.</div>
+        <div class="recap-item"><strong>Stop early</strong>A covering secondary index can answer without the second tree.</div>
+        <div class="recap-item"><strong>Walk sideways</strong>A range scan follows linked leaves until its upper boundary fails.</div>
+      </div>
+      <p class="limitation"><strong>Important limit:</strong> this shows logical searches through ordinary InnoDB B-tree indexes. Caching and other optimizations can change the physical work.</p>
+      <details class="sources">
+        <summary>Official MySQL sources</summary>
+        <div>
+          <p><a href="https://dev.mysql.com/doc/refman/8.4/en/innodb-index-types.html">Clustered and secondary indexes</a></p>
+          <p><a href="https://dev.mysql.com/doc/refman/8.4/en/innodb-physical-structure.html">Physical structure of an InnoDB index</a></p>
+          <p><a href="https://dev.mysql.com/doc/dev/mysql-server/8.4.9/btr0cur_8cc.html">B-tree cursor and page search source documentation</a></p>
+          <p><a href="https://dev.mysql.com/doc/refman/8.4/en/optimizing-innodb-queries.html">Covering index guidance</a></p>
+          <p><a href="https://dev.mysql.com/doc/refman/8.4/en/range-optimization.html">Range access and index intervals</a></p>
+          <p><a href="https://dev.mysql.com/doc/refman/8.4/en/glossary.html#glos_b_tree">MySQL glossary: B-tree</a></p>
+        </div>
+      </details>
+    </section>
+  </main>
+
+  <footer class="page">A simplified view of MySQL 8.4 InnoDB indexes.</footer>
+
+  <script>
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const pause = reducedMotion ? 70 : 560;
+    const handoffPause = reducedMotion ? 100 : 820;
+    const stateClasses = ['state-check', 'state-no', 'state-yes'];
+    const wait = milliseconds => new Promise(resolve => window.setTimeout(resolve, milliseconds));
+
+    function getVerdict(element) {
+      if (element.matches('.key, .tree-node')) {
+        return element.querySelector(':scope > .verdict');
+      }
+      if (element.matches('.index-entry')) {
+        return element.querySelector(':scope > .entry-label > .verdict');
+      }
+      return null;
+    }
+
+    function setState(element, state, label = '') {
+      element.classList.remove(...stateClasses);
+      if (state) element.classList.add(`state-${state}`);
+      const verdict = getVerdict(element);
+      if (verdict) verdict.textContent = label;
+    }
+
+    function clearStage(stage) {
+      stage.querySelectorAll('[data-stateful]').forEach(element => {
+        element.classList.remove(...stateClasses);
+      });
+      stage.querySelectorAll('.verdict').forEach(verdict => {
+        verdict.textContent = '';
+      });
+      stage.setAttribute('aria-busy', 'false');
+    }
+
+    async function showStep(status, text, changes, delay = pause) {
+      changes.forEach(([element, state, label]) => setState(element, state, label));
+      status.textContent = text;
+      await wait(delay);
+    }
+
+    const lookupStage = document.querySelector('#lookupStage');
+    const lookupButton = document.querySelector('#runLookup');
+    const lookupStatus = document.querySelector('#lookupStatus');
+    const rootPage = document.querySelector('#rootPage');
+    const routeLow = document.querySelector('#routeLow');
+    const routeMiddle = document.querySelector('#routeMiddle');
+    const lowPath = document.querySelector('#lowPath');
+    const middlePath = document.querySelector('#middlePath');
+    const middleLeaf = document.querySelector('#middleLeaf');
+    const row50 = document.querySelector('#row50');
+    const row60 = document.querySelector('#row60');
+    const targetRow = document.querySelector('#targetRow');
+
+    lookupButton.addEventListener('click', async () => {
+      clearStage(lookupStage);
+      lookupStage.setAttribute('aria-busy', 'true');
+      lookupButton.disabled = true;
+      lookupButton.textContent = 'Searching…';
+
+      await showStep(lookupStatus, '1 · Open the root page.', [[rootPage, 'check', '']]);
+      await showStep(lookupStatus, '2 · Is 52 below 40?', [[routeLow, 'check', 'CHECK']]);
+      await showStep(lookupStatus, 'No. Rule out the low-ID route.', [[routeLow, 'no', 'NO'], [lowPath, 'no', '']]);
+      await showStep(lookupStatus, '3 · Is 52 inside 40–69?', [[routeMiddle, 'check', 'CHECK']]);
+      await showStep(lookupStatus, 'Yes. Choose the middle route.', [[routeMiddle, 'yes', 'YES'], [rootPage, 'yes', '']]);
+      await showStep(lookupStatus, '4 · Follow one pointer to Leaf B.', [[middlePath, 'check', '']]);
+      await showStep(lookupStatus, '5 · Open Leaf B. Search only this sorted page.', [[middlePath, 'yes', ''], [middleLeaf, 'check', '']]);
+      await showStep(lookupStatus, 'Compare with 50. It is too low.', [[row50, 'check', 'CHECK']]);
+      await showStep(lookupStatus, '50 is ruled out.', [[row50, 'no', 'LOW']]);
+      await showStep(lookupStatus, 'Compare with 60. It is too high.', [[row60, 'check', 'CHECK']]);
+      await showStep(lookupStatus, '60 is ruled out.', [[row60, 'no', 'HIGH']]);
+      await showStep(lookupStatus, 'Compare with 52.', [[targetRow, 'check', 'CHECK']]);
+      await showStep(lookupStatus, 'Found Eva at ID 52.', [[targetRow, 'yes', 'FOUND'], [middleLeaf, 'yes', '']], handoffPause);
+
+      lookupStage.setAttribute('aria-busy', 'false');
+      lookupButton.disabled = false;
+      lookupButton.textContent = 'Run it again';
+    });
+
+    const doubleStage = document.querySelector('#doubleLookupStage');
+    const doubleButton = document.querySelector('#runDoubleLookup');
+    const doubleStatus = document.querySelector('#doubleLookupStatus');
+    const queryText = document.querySelector('#queryText');
+    const modeButtons = [...document.querySelectorAll('.mode-button')];
+    const secondaryTree = document.querySelector('#secondaryTree');
+    const secondaryRoot = document.querySelector('#secondaryRoot');
+    const secondaryPath = document.querySelector('#secondaryPath');
+    const secondaryEntry = document.querySelector('#secondaryEntry');
+    const handoffLane = document.querySelector('#handoffLane');
+    const pkToken = document.querySelector('#pkToken');
+    const primaryTree = document.querySelector('#primaryTree');
+    const primaryRoot = document.querySelector('#primaryRoot');
+    const primaryPath = document.querySelector('#primaryPath');
+    const primaryEntry = document.querySelector('#primaryEntry');
+    let queryMode = 'full';
+
+    const modeContent = {
+      full: {
+        query: "SELECT name, city FROM users WHERE email = 'eva@example.com';",
+        button: 'Run the two-tree lookup',
+        status: 'Start with the secondary index. Watch primary key 52 move to the primary tree.'
+      },
+      covering: {
+        query: "SELECT id, email FROM users WHERE email = 'eva@example.com';",
+        button: 'Run the covering lookup',
+        status: 'This query needs only values already stored in the secondary index.'
+      }
+    };
+
+    function resetDoubleLookup() {
+      clearStage(doubleStage);
+      handoffLane.classList.remove('is-moving', 'is-stop');
+      pkToken.classList.remove('is-visible');
+      primaryTree.classList.remove('is-skipped');
+      doubleButton.textContent = modeContent[queryMode].button;
+      doubleStatus.textContent = modeContent[queryMode].status;
+    }
+
+    function selectMode(mode) {
+      queryMode = mode;
+      modeButtons.forEach(button => {
+        button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
+      });
+      queryText.textContent = modeContent[mode].query;
+      resetDoubleLookup();
+    }
+
+    modeButtons.forEach(button => {
+      button.addEventListener('click', () => selectMode(button.dataset.mode));
+    });
+
+    doubleButton.addEventListener('click', async () => {
+      resetDoubleLookup();
+      doubleStage.setAttribute('aria-busy', 'true');
+      doubleButton.disabled = true;
+      modeButtons.forEach(button => { button.disabled = true; });
+      doubleButton.textContent = 'Searching…';
+
+      await showStep(doubleStatus, '1 · Search UNIQUE(email), the secondary tree.', [[secondaryTree, 'check', '']]);
+      await showStep(doubleStatus, '2 · Use the email key to choose a leaf.', [[secondaryRoot, 'check', 'CHECK']]);
+      await showStep(doubleStatus, 'The secondary route is chosen.', [[secondaryRoot, 'yes', 'YES'], [secondaryPath, 'check', '']]);
+      await showStep(doubleStatus, '3 · Open the matching secondary leaf entry.', [[secondaryPath, 'yes', ''], [secondaryEntry, 'check', 'CHECK']]);
+      await showStep(doubleStatus, 'Found eva@example.com and primary key 52.', [[secondaryEntry, 'yes', 'PK 52'], [secondaryTree, 'yes', '']]);
+
+      pkToken.classList.add('is-visible');
+
+      if (queryMode === 'covering') {
+        handoffLane.classList.add('is-stop');
+        primaryTree.classList.add('is-skipped');
+        doubleStatus.textContent = 'Done after one tree. The secondary index contains id and email.';
+        await wait(handoffPause);
+      } else {
+        handoffLane.classList.add('is-moving');
+        doubleStatus.textContent = '4 · Hand primary key 52 to the primary tree.';
+        await wait(handoffPause);
+        await showStep(doubleStatus, '5 · Search PRIMARY(id) for 52.', [[primaryTree, 'check', ''], [primaryRoot, 'check', 'CHECK']]);
+        await showStep(doubleStatus, 'The primary-key route is chosen.', [[primaryRoot, 'yes', 'YES'], [primaryPath, 'check', '']]);
+        await showStep(doubleStatus, '6 · Open the clustered primary leaf.', [[primaryPath, 'yes', ''], [primaryEntry, 'check', 'CHECK']]);
+        await showStep(doubleStatus, 'Found the complete Eva row after two logical tree searches.', [[primaryEntry, 'yes', 'FOUND'], [primaryTree, 'yes', '']], handoffPause);
+      }
+
+      doubleStage.setAttribute('aria-busy', 'false');
+      doubleButton.disabled = false;
+      modeButtons.forEach(button => { button.disabled = false; });
+      doubleButton.textContent = 'Run it again';
+    });
+
+    const rangeStage = document.querySelector('#rangeScanStage');
+    const rangeButton = document.querySelector('#runRangeScan');
+    const rangeStatus = document.querySelector('#rangeStatus');
+    const rangeSeek = document.querySelector('#rangeSeek');
+    const rangeResultList = document.querySelector('#rangeResultList');
+    const rangeCount = document.querySelector('#rangeCount');
+    const rangeResultChips = [...document.querySelectorAll('[data-range-result]')];
+    const rangeStateClasses = ['range-check', 'range-match', 'range-skip', 'range-stop'];
+    const rangePages = ['A', 'B', 'C', 'D', 'E', 'F', 'G'].map(letter => document.querySelector(`#rangePage${letter}`));
+    const rangeLinks = ['A', 'B', 'C', 'D', 'E', 'F'].map(letter => document.querySelector(`#rangeLink${letter}`));
+    const rangeRows = {
+      chicago52: document.querySelector('#rangeChicago52'),
+      chicago81: document.querySelector('#rangeChicago81'),
+      dallas11: document.querySelector('#rangeDallas11'),
+      denver24: document.querySelector('#rangeDenver24'),
+      denver68: document.querySelector('#rangeDenver68'),
+      detroit23: document.querySelector('#rangeDetroit23')
+    };
+
+    function getRangeBadge(element) {
+      return element.querySelector(':scope > .range-verdict')
+        || element.querySelector(':scope > .page-state')
+        || element.querySelector(':scope > .row-state');
+    }
+
+    function setRangeState(element, state, label = '') {
+      element.classList.remove(...rangeStateClasses);
+      if (state) element.classList.add(`range-${state}`);
+      const badge = getRangeBadge(element);
+      if (badge) badge.textContent = label;
+    }
+
+    function resetRangeScan() {
+      rangeStage.querySelectorAll('[data-range-stateful]').forEach(element => {
+        setRangeState(element, '');
+      });
+      rangeResultChips.forEach(chip => chip.classList.remove('is-visible'));
+      rangeResultList.classList.remove('has-results');
+      rangeCount.textContent = '0 rows';
+      rangeStatus.textContent = 'The root finds the start. Linked leaves carry the scan forward until “Detroit.”';
+      rangeStage.setAttribute('aria-busy', 'false');
+      rangeButton.textContent = 'Run the range scan';
+    }
+
+    function revealRangeResult(index) {
+      rangeResultList.classList.add('has-results');
+      rangeResultChips[index].classList.add('is-visible');
+      const count = index + 1;
+      rangeCount.textContent = `${count} ${count === 1 ? 'row' : 'rows'}`;
+    }
+
+    async function showRangeStep(text, changes, delay = pause) {
+      changes.forEach(([element, state, label]) => setRangeState(element, state, label));
+      rangeStatus.textContent = text;
+      await wait(delay);
+    }
+
+    rangeButton.addEventListener('click', async () => {
+      resetRangeScan();
+      rangeStage.setAttribute('aria-busy', 'true');
+      rangeButton.disabled = true;
+      rangeButton.textContent = 'Scanning…';
+
+      await showRangeStep('1 · Search INDEX(city) for the first key at or after “Chicago.”', [[rangeSeek, 'check', 'SEEK']]);
+      await showRangeStep('The root jump skips Leaf A and Leaf B. Their values are below the range.', [
+        [rangePages[0], 'skip', 'SKIP'],
+        [rangePages[1], 'skip', 'SKIP'],
+        [rangeLinks[0], 'skip', ''],
+        [rangeLinks[1], 'skip', '']
+      ]);
+      await showRangeStep('2 · Land on Leaf C and check Chicago · 52. It is inside the interval.', [[rangeSeek, 'match', 'START'], [rangePages[2], 'check', 'CHECK'], [rangeRows.chicago52, 'check', 'CHECK']]);
+      revealRangeResult(0);
+      await showRangeStep('Return Chicago · 52.', [[rangeRows.chicago52, 'match', 'RETURN']]);
+      await showRangeStep('Check Chicago · 81. It also matches.', [[rangeRows.chicago81, 'check', 'CHECK']]);
+      revealRangeResult(1);
+      await showRangeStep('Return Chicago · 81, then follow the next-leaf pointer.', [[rangeRows.chicago81, 'match', 'RETURN'], [rangePages[2], 'match', 'RETURNED'], [rangeLinks[2], 'check', '']]);
+
+      await showRangeStep('3 · Open Leaf D and check Dallas · 11. It is still below “Detroit.”', [[rangeLinks[2], 'match', ''], [rangePages[3], 'check', 'CHECK'], [rangeRows.dallas11, 'check', 'CHECK']]);
+      revealRangeResult(2);
+      await showRangeStep('Return Dallas · 11.', [[rangeRows.dallas11, 'match', 'RETURN']]);
+      await showRangeStep('Check Denver · 24. It also matches.', [[rangeRows.denver24, 'check', 'CHECK']]);
+      revealRangeResult(3);
+      await showRangeStep('Return Denver · 24, then follow the next-leaf pointer.', [[rangeRows.denver24, 'match', 'RETURN'], [rangePages[3], 'match', 'RETURNED'], [rangeLinks[3], 'check', '']]);
+
+      await showRangeStep('4 · Open Leaf E and check Denver · 68. It still matches.', [[rangeLinks[3], 'match', ''], [rangePages[4], 'check', 'CHECK'], [rangeRows.denver68, 'check', 'CHECK']]);
+      revealRangeResult(4);
+      await showRangeStep('Return Denver · 68. The next entry is Detroit · 23.', [[rangeRows.denver68, 'match', 'RETURN'], [rangeRows.detroit23, 'check', 'CHECK']]);
+      await showRangeStep('5 · Stop at Detroit. The query requires city < “Detroit.”', [
+        [rangeRows.detroit23, 'stop', 'OUT'],
+        [rangePages[4], 'stop', 'STOP'],
+        [rangeLinks[4], 'stop', '']
+      ]);
+      await showRangeStep('Leaf F and Leaf G cannot match. MySQL does not visit them.', [
+        [rangePages[5], 'skip', 'NOT VISITED'],
+        [rangePages[6], 'skip', 'NOT VISITED'],
+        [rangeLinks[5], 'skip', '']
+      ], handoffPause);
+
+      rangeStatus.textContent = 'Returned 5 rows. Earlier leaves were skipped, and later leaves were never visited.';
+      rangeStage.setAttribute('aria-busy', 'false');
+      rangeButton.disabled = false;
+      rangeButton.textContent = 'Run it again';
+    });
+
+    const indexBalanceStage = document.querySelector('#indexBalanceStage');
+    const indexTradeoffSlider = document.querySelector('#indexTradeoffSlider');
+    const indexTradeoffOutput = document.querySelector('#indexTradeoffOutput');
+    const balanceBeam = document.querySelector('#balanceBeam');
+    const readSpeedLines = [...document.querySelectorAll('.read-speed-line')];
+    const writeWeights = [...document.querySelectorAll('.write-weight')];
+
+    function updateIndexBalance() {
+      const value = Math.min(100, Math.max(0, Number(indexTradeoffSlider.value)));
+      const progress = value / 100;
+      const roundedPercent = Math.round(value);
+
+      indexBalanceStage.dataset.progress = progress.toFixed(3);
+      balanceBeam.style.transform = `rotate(${(progress * 10).toFixed(3)}deg)`;
+
+      readSpeedLines.forEach(line => {
+        line.style.opacity = progress.toFixed(3);
+        line.style.transform = `translateX(${((1 - progress) * -8).toFixed(2)}px) scale(${(0.95 + progress * 0.05).toFixed(3)})`;
+      });
+
+      writeWeights.forEach((weight, index) => {
+        const weightProgress = Math.pow(progress, 1 + index * 0.35);
+        weight.style.opacity = weightProgress.toFixed(3);
+        weight.style.transform = `translateY(${((1 - weightProgress) * 6).toFixed(2)}px) scale(${(0.95 + weightProgress * 0.05).toFixed(3)})`;
+      });
+
+      indexTradeoffOutput.textContent = `Tradeoff · ${roundedPercent}%`;
+      indexTradeoffSlider.setAttribute('aria-valuetext', `${roundedPercent}% toward more useful indexes. Read paths get faster. Affected writes get heavier.`);
+    }
+
+    indexTradeoffSlider.addEventListener('input', updateIndexBalance);
+    updateIndexBalance();
+  </script>
+</body>
+</html>
