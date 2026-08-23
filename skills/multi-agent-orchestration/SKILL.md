@@ -54,6 +54,7 @@ inherit the orchestrator's route.
 
 Dispatch a task only when its required contracts and dependencies are ready.
 Keep dependent implementation tasks waiting until their inputs are exact.
+Blocked implementation waits. Bounded read-only research may start early.
 
 Use one shared checkout for read-only work or one mutating worker. Use isolated
 worktrees for concurrent mutation or uncertain file overlap.
@@ -71,6 +72,8 @@ destructive cleanup as separate authority boundaries.
 
 Inspect each contribution's diff, validation output, dependencies, contract
 changes, assumptions, and risks. A completion label is not proof.
+Verify acceptance through the public contract and authoritative state,
+independent of worker-shaped fixtures.
 
 Return incomplete work to its primary worker. Mark work ready only when its
 outcome and evidence satisfy the brief.
