@@ -4,7 +4,7 @@ description: Create a beginner-friendly visual explainer with big pictures and f
 license: MIT
 metadata:
   author: William Cygan
-  version: "0.3.0"
+  version: "0.4.0"
   inspiration-url: https://github.com/anthropics/claude-plugins-community/blob/794af9e63d07fad17087dcab61f21f44cb48effd/eli5/skills/eli5/SKILL.md
   inspiration-revision: 794af9e63d07fad17087dcab61f21f44cb48effd
 ---
@@ -56,6 +56,10 @@ Save the document when file access is available. Otherwise, return the complete
 HTML document in one code block.
 
 ## References
+
+Plain English: read [references/plain-english.md](references/plain-english.md)
+before you write or revise reader-facing text. Apply it to visible copy,
+animation messages, controls, and accessible labels.
 
 Read [references/style-guide.md](references/style-guide.md) before you create
 or restyle an HTML explainer. Apply its layout, color, motion, and viewport

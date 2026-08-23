@@ -6,7 +6,7 @@
   <meta name="color-scheme" content="light">
   <meta name="theme-color" content="#fbf7ef">
   <link rel="icon" href="data:,">
-  <title>What does a MySQL index look like?</title>
+  <title>How does a MySQL index work?</title>
   <style>
     :root {
       --ink: #14213d;
@@ -1806,7 +1806,7 @@
       .branch-map + .tree-label { margin-top: 28px; }
       .leaf-grid { grid-template-columns: 1fr; margin-top: 34px; }
       .leaf-grid::before {
-        content: "↓ choose one leaf";
+        content: "↓ pick one leaf";
         grid-column: 1;
         color: #8797aa;
         text-align: center;
@@ -1874,34 +1874,34 @@
   <a class="skip-link" href="#main-content">Skip to main content</a>
   <header class="hero page">
     <p class="eyebrow">MySQL · InnoDB</p>
-    <h1>An index is a sorted map.</h1>
+    <h1>Indexes keep values sorted.</h1>
     <p class="hero-copy">
-      It helps MySQL <strong>skip almost everything</strong> and jump toward the row it needs.
+      This lets MySQL <strong>skip most rows</strong> and move close to the row it needs.
     </p>
     <div class="hero-pills" aria-label="Main ideas">
-      <span class="pill"><span aria-hidden="true">📄</span> Built from pages</span>
-      <span class="pill"><span aria-hidden="true">🌳</span> Shaped like a wide tree</span>
-      <span class="pill"><span aria-hidden="true">🔤</span> Kept in order</span>
+      <span class="pill"><span aria-hidden="true">📄</span> Made of pages</span>
+      <span class="pill"><span aria-hidden="true">🌳</span> Built as a wide tree</span>
+      <span class="pill"><span aria-hidden="true">🔤</span> Values stay in order</span>
     </div>
   </header>
 
   <main class="page" id="main-content" tabindex="-1">
     <section class="section" aria-labelledby="tree-heading">
       <div class="section-number" aria-hidden="true">1</div>
-      <h2 id="tree-heading">Watch one index lookup</h2>
-      <p class="lede">MySQL rules out whole routes, opens one leaf page, then searches inside that sorted page.</p>
+      <h2 id="tree-heading">See MySQL find one ID</h2>
+      <p class="lede">MySQL skips whole paths, opens one leaf page that holds index entries, then checks its sorted values.</p>
 
       <div class="state-legend" aria-label="Animation state legend">
-        <span class="legend-item"><span class="legend-dot check" aria-hidden="true"></span>CHECKING</span>
+        <span class="legend-item"><span class="legend-dot check" aria-hidden="true"></span>CHECK NOW</span>
         <span class="legend-item"><span class="legend-dot no" aria-hidden="true"></span>RULED OUT</span>
         <span class="legend-item"><span class="legend-dot yes" aria-hidden="true"></span>CHOSEN</span>
       </div>
 
-      <div class="index-tree" id="lookupStage" aria-label="Animated B-tree lookup for ID 52" aria-busy="false">
-        <p class="tree-label">Start here</p>
+      <div class="index-tree" id="lookupStage" aria-label="Animated index search for ID 52" aria-busy="false">
+        <p class="tree-label">Start at the root</p>
         <div class="root-row">
           <div class="index-page root-page" id="rootPage" data-stateful>
-            <div class="page-title"><span>ROOT PAGE</span><small>Choose one route</small></div>
+            <div class="page-title"><span>ROOT PAGE</span><small>Pick one path</small></div>
             <div class="keys">
               <div class="key route-key" id="routeLow" data-stateful><span>ID &lt; 40</span><span class="verdict" aria-hidden="true"></span></div>
               <div class="key route-key" id="routeMiddle" data-stateful><span>40–69</span><span class="verdict" aria-hidden="true"></span></div>
@@ -1918,7 +1918,7 @@
           </svg>
         </div>
 
-        <p class="tree-label">Sorted leaf pages</p>
+        <p class="tree-label">Leaf pages hold sorted values</p>
         <div class="leaf-grid">
           <div class="index-page leaf-page" id="lowLeaf" data-stateful>
             <div class="page-title"><span>LEAF A</span><small>low IDs</small></div>
@@ -1951,20 +1951,20 @@
 
         <div class="lookup-controls">
           <button class="action" id="runLookup" type="button">Find ID 52</button>
-          <div class="status" id="lookupStatus" role="status" aria-live="polite">Run the lookup. Blue checks, red rules out, and green chooses.</div>
+          <div class="status" id="lookupStatus" role="status" aria-live="polite">Select the button. Blue checks, red rejects, and green chooses.</div>
         </div>
       </div>
 
       <details class="lookup-fact">
-        <summary><strong>16 KB pages</strong><span>Wide tree, not binary</span></summary>
-        <div>A page holds many entries. Real pages use a page directory; this animation expands comparisons so each decision stays visible.</div>
+        <summary><strong>16 KB pages</strong><span>A wide tree, not a binary tree</span></summary>
+        <div>A page holds many entries. A real page has a small lookup table called a page directory. This demo slows the search so you can see each choice.</div>
       </details>
     </section>
 
     <section class="section" aria-labelledby="leaves-heading">
       <div class="section-number" aria-hidden="true">2</div>
-      <h2 id="leaves-heading">Sometimes one lookup becomes two</h2>
-      <p class="lede">A secondary leaf gives MySQL the primary key. The primary tree uses that key to find the complete row.</p>
+      <h2 id="leaves-heading">One search can become two</h2>
+      <p class="lede">A secondary index finds the primary key, which identifies the row. MySQL uses that key to find the full row in the primary index.</p>
 
       <div id="doubleLookupStage" aria-busy="false">
         <div class="query-toolbar">
@@ -1974,17 +1974,17 @@
           </div>
 
           <fieldset class="query-mode">
-            <legend>What does the query need?</legend>
+            <legend>What information does the query need?</legend>
             <div class="mode-buttons">
-              <button class="mode-button" type="button" data-mode="full" aria-pressed="true">Needs row</button>
-              <button class="mode-button" type="button" data-mode="covering" aria-pressed="false">Index only</button>
+              <button class="mode-button" type="button" data-mode="full" aria-pressed="true">Full row</button>
+              <button class="mode-button" type="button" data-mode="covering" aria-pressed="false">Index data only</button>
             </div>
           </fieldset>
         </div>
 
         <div class="trees-stage">
           <article class="mini-tree secondary-tree" id="secondaryTree" data-stateful>
-            <p class="tree-kicker">First tree</p>
+            <p class="tree-kicker">First search</p>
             <h3>Secondary index</h3>
             <div class="tree-node" id="secondaryRoot" data-stateful>
               UNIQUE(email)
@@ -1992,7 +1992,7 @@
             </div>
             <div class="mini-path" id="secondaryPath" data-stateful aria-hidden="true"></div>
             <div class="index-entry" id="secondaryEntry" data-stateful>
-              <div class="entry-label"><span>SECONDARY leaf</span><span class="verdict" aria-hidden="true"></span></div>
+              <div class="entry-label"><span>SECONDARY LEAF</span><span class="verdict" aria-hidden="true"></span></div>
               <div class="entry-fields">
                 <div class="entry-field"><small>email</small><b>eva@example.com</b></div>
                 <div class="entry-field"><small>primary key</small><b>52</b></div>
@@ -2000,16 +2000,16 @@
             </div>
           </article>
 
-          <div class="handoff-lane" id="handoffLane" aria-label="Primary key handoff">
-            <span class="handoff-label">Hand off</span>
-            <span class="pk-token" id="pkToken">PK 52</span>
+          <div class="handoff-lane" id="handoffLane" aria-label="Send the primary key to the primary index">
+            <span class="handoff-label">Send key</span>
+            <span class="pk-token" id="pkToken">KEY 52</span>
             <div class="handoff-track" aria-hidden="true"><div class="handoff-progress"></div></div>
-            <div class="stop-note" id="stopNote">STOP HERE<br>The index has every requested value.</div>
+            <div class="stop-note" id="stopNote">STOP HERE<br>The index has every value the query needs.</div>
           </div>
 
           <article class="mini-tree primary-tree" id="primaryTree" data-stateful>
             <span class="skip-badge">SKIPPED</span>
-            <p class="tree-kicker">Second tree</p>
+            <p class="tree-kicker">Second search</p>
             <h3>Primary index</h3>
             <div class="tree-node" id="primaryRoot" data-stateful>
               PRIMARY(id)
@@ -2017,7 +2017,7 @@
             </div>
             <div class="mini-path" id="primaryPath" data-stateful aria-hidden="true"></div>
             <div class="index-entry primary-entry" id="primaryEntry" data-stateful>
-              <div class="entry-label"><span>PRIMARY leaf = complete row</span><span class="verdict" aria-hidden="true"></span></div>
+              <div class="entry-label"><span>PRIMARY LEAF · FULL ROW</span><span class="verdict" aria-hidden="true"></span></div>
               <div class="entry-fields">
                 <div class="entry-field"><small>id</small><b>52</b></div>
                 <div class="entry-field"><small>name</small><b>Eva</b></div>
@@ -2028,18 +2028,18 @@
         </div>
 
         <div class="lookup-controls">
-          <button class="action" id="runDoubleLookup" type="button">Run the two-tree lookup</button>
-          <div class="status" id="doubleLookupStatus" role="status" aria-live="polite">Start with the secondary index. Watch primary key 52 move to the primary tree.</div>
+          <button class="action" id="runDoubleLookup" type="button">Show the two searches</button>
+          <div class="status" id="doubleLookupStatus" role="status" aria-live="polite">Start with the secondary index. Then watch primary key 52 move to the primary index.</div>
         </div>
       </div>
 
-      <p class="memory-note"><strong>Two logical searches do not mean two disk reads.</strong> The required pages may already be in memory.</p>
+      <p class="memory-note"><strong>Two index searches do not always cause two disk reads.</strong> MySQL may already have the pages in memory.</p>
     </section>
 
     <section class="section" aria-labelledby="range-heading">
       <div class="section-number" aria-hidden="true">3</div>
-      <h2 id="range-heading">Watch a range scan move sideways</h2>
-      <p class="lede">MySQL jumps to the first value in the interval, returns sorted matches, then stops at the upper boundary.</p>
+      <h2 id="range-heading">See a range scan move sideways</h2>
+      <p class="lede">A range scan finds a block of ordered values. MySQL jumps to the first match, moves through linked leaf pages, then stops at the upper limit.</p>
 
       <div class="range-demo" id="rangeScanStage" aria-busy="false">
         <div class="query-box range-query">
@@ -2048,15 +2048,15 @@
         </div>
 
         <div class="range-legend" aria-label="Range scan state legend">
-          <span class="legend-item"><span class="legend-dot check" aria-hidden="true"></span>CHECKING</span>
+          <span class="legend-item"><span class="legend-dot check" aria-hidden="true"></span>CHECK NOW</span>
           <span class="legend-item"><span class="legend-dot yes" aria-hidden="true"></span>RETURNED</span>
-          <span class="legend-item"><span class="legend-dot no" aria-hidden="true"></span>STOP BOUNDARY</span>
+          <span class="legend-item"><span class="legend-dot no" aria-hidden="true"></span>STOP LIMIT</span>
           <span class="legend-item"><span class="legend-dot skip" aria-hidden="true"></span>NOT VISITED</span>
         </div>
 
         <div class="range-seek" id="rangeSeek" data-range-stateful>
-          <span>Root seek</span>
-          <strong>Jump past earlier leaves to the first key ≥ “Chicago.”</strong>
+          <span>Find the starting point</span>
+          <strong>Skip earlier leaves and jump to the first key ≥ “Chicago.”</strong>
           <span class="range-verdict" aria-hidden="true"></span>
         </div>
 
@@ -2144,9 +2144,9 @@
         </div>
 
         <div class="range-results" aria-label="Rows returned by the range query">
-          <span class="range-results-label">Result set</span>
+          <span class="range-results-label">Results</span>
           <div class="result-list" id="rangeResultList">
-            <span class="result-empty">No rows returned yet.</span>
+            <span class="result-empty">No rows yet.</span>
             <span class="result-chip" data-range-result>Chicago · 52</span>
             <span class="result-chip" data-range-result>Chicago · 81</span>
             <span class="result-chip" data-range-result>Dallas · 11</span>
@@ -2158,7 +2158,7 @@
 
         <div class="lookup-controls range-controls">
           <button class="action" id="runRangeScan" type="button">Run the range scan</button>
-          <div class="status" id="rangeStatus" role="status" aria-live="polite">The root finds the start. Linked leaves carry the scan forward until “Detroit.”</div>
+          <div class="status" id="rangeStatus" role="status" aria-live="polite">The root finds where to start. Then the scan moves through linked leaves until it reaches “Detroit.”</div>
         </div>
       </div>
 
@@ -2166,18 +2166,18 @@
 
     <section class="section balance-section" aria-labelledby="balance-heading">
       <div class="section-number" aria-hidden="true">4</div>
-      <h2 id="balance-heading">Faster reads need more write work</h2>
-      <p class="lede">One workload can trade extra index maintenance for shorter read paths.</p>
+      <h2 id="balance-heading">Faster reads add write work</h2>
+      <p class="lede">Useful indexes can shorten reads. MySQL must also update those indexes when affected data changes.</p>
 
       <div class="tradeoff">
         <div class="balance" id="indexBalanceStage">
-          <p class="balance-kicker">Index tradeoff</p>
-          <p class="balance-copy">Drag the slider to see both sides move together.</p>
+          <p class="balance-kicker">Read and write balance</p>
+          <p class="balance-copy">Move the slider. Both sides change at once.</p>
 
           <div class="balance-visual">
             <svg viewBox="0 0 520 270" role="img" aria-labelledby="balanceSvgTitle balanceSvgDescription">
-              <title id="balanceSvgTitle">Read and write index tradeoff scale</title>
-              <desc id="balanceSvgDescription">The read pan rises and the write pan falls continuously as the slider moves toward more useful indexes.</desc>
+              <title id="balanceSvgTitle">Balance between read speed and index write work</title>
+              <desc id="balanceSvgDescription">The read side rises and the write side falls as the slider moves toward more useful indexes.</desc>
               <path class="scale-stand" d="M260 30 V202 M260 202 L208 248 H312 Z"/>
               <circle class="scale-pivot" cx="260" cy="70" r="13"/>
               <g class="balance-beam" id="balanceBeam">
@@ -2204,62 +2204,62 @@
           <div class="balance-labels">
             <div class="balance-label read">
               <span class="balance-label-kicker">Read side</span>
-              <strong>Reads get faster</strong>
-              <small>Useful indexes can skip more unrelated rows.</small>
+              <strong>Reads can get faster</strong>
+              <small>Useful indexes can skip rows that do not match.</small>
             </div>
             <div class="balance-label write">
               <span class="balance-label-kicker">Write side</span>
-              <strong>Writes get heavier</strong>
-              <small>Affected index entries need more maintenance.</small>
+              <strong>Writes do more work</strong>
+              <small>MySQL must update each affected index entry.</small>
             </div>
           </div>
 
           <div class="tradeoff-slider">
             <div class="balance-slider-head">
               <label for="indexTradeoffSlider">Useful indexes for this workload</label>
-              <output id="indexTradeoffOutput" for="indexTradeoffSlider">Tradeoff · 0%</output>
+              <output id="indexTradeoffOutput" for="indexTradeoffSlider">More useful indexes · 0%</output>
             </div>
-            <input id="indexTradeoffSlider" name="index-tradeoff" type="range" min="0" max="100" value="0" step="any" autocomplete="off" aria-describedby="indexTradeoffHelp" aria-valuetext="0% toward more useful indexes. Read paths start at baseline. Write maintenance starts light.">
+            <input id="indexTradeoffSlider" name="index-tradeoff" type="range" min="0" max="100" value="0" step="any" autocomplete="off" aria-describedby="indexTradeoffHelp" aria-valuetext="0% toward more useful indexes. Reads start at their normal speed. Writes start with little extra work.">
             <div class="slider-extents" aria-hidden="true">
-              <span>Fewer useful indexes</span>
+              <span>Few useful indexes</span>
               <span>More useful indexes</span>
             </div>
           </div>
 
-          <p class="balance-note" id="indexTradeoffHelp">This is a workload model, not a guarantee. An index helps only when MySQL can use it. Writes maintain only affected indexes.</p>
+          <p class="balance-note" id="indexTradeoffHelp">This picture shows one possible workload, not a promise. An index helps only when MySQL uses it. A write updates only the affected indexes.</p>
         </div>
         <div class="cost-list">
           <div class="cost good">✓ Reads can skip most rows.</div>
-          <div class="cost caution">↻ Every write updates each affected index.</div>
-          <div class="cost caution">▣ Every index uses storage and memory.</div>
+          <div class="cost caution">↻ Each write updates every affected index.</div>
+          <div class="cost caution">▣ Each index uses storage and memory.</div>
         </div>
       </div>
     </section>
 
     <section class="recap" aria-labelledby="recap-heading">
-      <h2 id="recap-heading">The whole picture</h2>
+      <h2 id="recap-heading">Remember these four ideas</h2>
       <div class="recap-grid">
-        <div class="recap-item"><strong>Compare</strong>Ordered checks rule out most pages and records.</div>
-        <div class="recap-item"><strong>Hand off</strong>A secondary leaf can send a primary key into the primary tree.</div>
-        <div class="recap-item"><strong>Stop early</strong>A covering secondary index can answer without the second tree.</div>
-        <div class="recap-item"><strong>Walk sideways</strong>A range scan follows linked leaves until its upper boundary fails.</div>
+        <div class="recap-item"><strong>Compare</strong>Ordered values let MySQL skip most pages and records.</div>
+        <div class="recap-item"><strong>Use the key</strong>A secondary index can send a primary key to the primary index.</div>
+        <div class="recap-item"><strong>Stop after one index</strong>A covering index already has every value the query needs.</div>
+        <div class="recap-item"><strong>Move through leaves</strong>A range scan follows links until a value reaches the upper limit.</div>
       </div>
-      <p class="limitation"><strong>Important limit:</strong> this shows logical searches through ordinary InnoDB B-tree indexes. Caching and other optimizations can change the physical work.</p>
+      <p class="limitation"><strong>Important limit:</strong> these diagrams show the search steps in ordinary InnoDB B-tree indexes. Cached pages and other optimizations can change the physical work.</p>
       <details class="sources">
         <summary>Official MySQL sources</summary>
         <div>
-          <p><a href="https://dev.mysql.com/doc/refman/8.4/en/innodb-index-types.html">Clustered and secondary indexes</a></p>
-          <p><a href="https://dev.mysql.com/doc/refman/8.4/en/innodb-physical-structure.html">Physical structure of an InnoDB index</a></p>
-          <p><a href="https://dev.mysql.com/doc/dev/mysql-server/8.4.9/btr0cur_8cc.html">B-tree cursor and page search source documentation</a></p>
-          <p><a href="https://dev.mysql.com/doc/refman/8.4/en/optimizing-innodb-queries.html">Covering index guidance</a></p>
-          <p><a href="https://dev.mysql.com/doc/refman/8.4/en/range-optimization.html">Range access and index intervals</a></p>
-          <p><a href="https://dev.mysql.com/doc/refman/8.4/en/glossary.html#glos_b_tree">MySQL glossary: B-tree</a></p>
+          <p><a href="https://dev.mysql.com/doc/refman/8.4/en/innodb-index-types.html">How clustered and secondary indexes work</a></p>
+          <p><a href="https://dev.mysql.com/doc/refman/8.4/en/innodb-physical-structure.html">How InnoDB stores an index</a></p>
+          <p><a href="https://dev.mysql.com/doc/dev/mysql-server/8.4.9/btr0cur_8cc.html">Source notes for B-tree page searches</a></p>
+          <p><a href="https://dev.mysql.com/doc/refman/8.4/en/optimizing-innodb-queries.html">How a covering index avoids more searches</a></p>
+          <p><a href="https://dev.mysql.com/doc/refman/8.4/en/range-optimization.html">How MySQL searches a range</a></p>
+          <p><a href="https://dev.mysql.com/doc/refman/8.4/en/glossary.html#glos_b_tree">What MySQL means by B-tree</a></p>
         </div>
       </details>
     </section>
   </main>
 
-  <footer class="page">A simplified view of MySQL 8.4 InnoDB indexes.</footer>
+  <footer class="page">A simple picture of MySQL 8.4 InnoDB indexes.</footer>
 
   <script>
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -2321,18 +2321,18 @@
       lookupButton.textContent = 'Searching…';
 
       await showStep(lookupStatus, '1 · Open the root page.', [[rootPage, 'check', '']]);
-      await showStep(lookupStatus, '2 · Is 52 below 40?', [[routeLow, 'check', 'CHECK']]);
-      await showStep(lookupStatus, 'No. Rule out the low-ID route.', [[routeLow, 'no', 'NO'], [lowPath, 'no', '']]);
-      await showStep(lookupStatus, '3 · Is 52 inside 40–69?', [[routeMiddle, 'check', 'CHECK']]);
-      await showStep(lookupStatus, 'Yes. Choose the middle route.', [[routeMiddle, 'yes', 'YES'], [rootPage, 'yes', '']]);
-      await showStep(lookupStatus, '4 · Follow one pointer to Leaf B.', [[middlePath, 'check', '']]);
-      await showStep(lookupStatus, '5 · Open Leaf B. Search only this sorted page.', [[middlePath, 'yes', ''], [middleLeaf, 'check', '']]);
-      await showStep(lookupStatus, 'Compare with 50. It is too low.', [[row50, 'check', 'CHECK']]);
-      await showStep(lookupStatus, '50 is ruled out.', [[row50, 'no', 'LOW']]);
-      await showStep(lookupStatus, 'Compare with 60. It is too high.', [[row60, 'check', 'CHECK']]);
-      await showStep(lookupStatus, '60 is ruled out.', [[row60, 'no', 'HIGH']]);
-      await showStep(lookupStatus, 'Compare with 52.', [[targetRow, 'check', 'CHECK']]);
-      await showStep(lookupStatus, 'Found Eva at ID 52.', [[targetRow, 'yes', 'FOUND'], [middleLeaf, 'yes', '']], handoffPause);
+      await showStep(lookupStatus, '2 · Check: Is 52 below 40?', [[routeLow, 'check', 'CHECK']]);
+      await showStep(lookupStatus, 'No. Reject the low-ID path.', [[routeLow, 'no', 'NO'], [lowPath, 'no', '']]);
+      await showStep(lookupStatus, '3 · Check: Is 52 from 40 to 69?', [[routeMiddle, 'check', 'CHECK']]);
+      await showStep(lookupStatus, 'Yes. Choose the middle path.', [[routeMiddle, 'yes', 'YES'], [rootPage, 'yes', '']]);
+      await showStep(lookupStatus, '4 · Follow the middle link to Leaf B.', [[middlePath, 'check', '']]);
+      await showStep(lookupStatus, '5 · Open Leaf B. Check only the values on this page.', [[middlePath, 'yes', ''], [middleLeaf, 'check', '']]);
+      await showStep(lookupStatus, 'Check 50. It is too small.', [[row50, 'check', 'CHECK']]);
+      await showStep(lookupStatus, 'Reject 50.', [[row50, 'no', 'LOW']]);
+      await showStep(lookupStatus, 'Check 60. It is too large.', [[row60, 'check', 'CHECK']]);
+      await showStep(lookupStatus, 'Reject 60.', [[row60, 'no', 'HIGH']]);
+      await showStep(lookupStatus, 'Check 52.', [[targetRow, 'check', 'CHECK']]);
+      await showStep(lookupStatus, 'Found Eva. Her ID is 52.', [[targetRow, 'yes', 'FOUND'], [middleLeaf, 'yes', '']], handoffPause);
 
       lookupStage.setAttribute('aria-busy', 'false');
       lookupButton.disabled = false;
@@ -2359,13 +2359,13 @@
     const modeContent = {
       full: {
         query: "SELECT name, city FROM users WHERE email = 'eva@example.com';",
-        button: 'Run the two-tree lookup',
-        status: 'Start with the secondary index. Watch primary key 52 move to the primary tree.'
+        button: 'Show the two searches',
+        status: 'Start with the secondary index. Then watch primary key 52 move to the primary index.'
       },
       covering: {
         query: "SELECT id, email FROM users WHERE email = 'eva@example.com';",
-        button: 'Run the covering lookup',
-        status: 'This query needs only values already stored in the secondary index.'
+        button: 'Show the one-index search',
+        status: 'The secondary index already has every value this query needs.'
       }
     };
 
@@ -2398,27 +2398,27 @@
       modeButtons.forEach(button => { button.disabled = true; });
       doubleButton.textContent = 'Searching…';
 
-      await showStep(doubleStatus, '1 · Search UNIQUE(email), the secondary tree.', [[secondaryTree, 'check', '']]);
-      await showStep(doubleStatus, '2 · Use the email key to choose a leaf.', [[secondaryRoot, 'check', 'CHECK']]);
-      await showStep(doubleStatus, 'The secondary route is chosen.', [[secondaryRoot, 'yes', 'YES'], [secondaryPath, 'check', '']]);
-      await showStep(doubleStatus, '3 · Open the matching secondary leaf entry.', [[secondaryPath, 'yes', ''], [secondaryEntry, 'check', 'CHECK']]);
-      await showStep(doubleStatus, 'Found eva@example.com and primary key 52.', [[secondaryEntry, 'yes', 'PK 52'], [secondaryTree, 'yes', '']]);
+      await showStep(doubleStatus, '1 · Search the secondary index: UNIQUE(email).', [[secondaryTree, 'check', '']]);
+      await showStep(doubleStatus, '2 · Use the email to pick a leaf.', [[secondaryRoot, 'check', 'CHECK']]);
+      await showStep(doubleStatus, 'The secondary index picks one path.', [[secondaryRoot, 'yes', 'YES'], [secondaryPath, 'check', '']]);
+      await showStep(doubleStatus, '3 · Open the matching leaf entry.', [[secondaryPath, 'yes', ''], [secondaryEntry, 'check', 'CHECK']]);
+      await showStep(doubleStatus, 'Found eva@example.com. Its primary key is 52.', [[secondaryEntry, 'yes', 'KEY 52'], [secondaryTree, 'yes', '']]);
 
       pkToken.classList.add('is-visible');
 
       if (queryMode === 'covering') {
         handoffLane.classList.add('is-stop');
         primaryTree.classList.add('is-skipped');
-        doubleStatus.textContent = 'Done after one tree. The secondary index contains id and email.';
+        doubleStatus.textContent = 'Stop after one index. It already contains id and email.';
         await wait(handoffPause);
       } else {
         handoffLane.classList.add('is-moving');
-        doubleStatus.textContent = '4 · Hand primary key 52 to the primary tree.';
+        doubleStatus.textContent = '4 · Send primary key 52 to the primary index.';
         await wait(handoffPause);
-        await showStep(doubleStatus, '5 · Search PRIMARY(id) for 52.', [[primaryTree, 'check', ''], [primaryRoot, 'check', 'CHECK']]);
-        await showStep(doubleStatus, 'The primary-key route is chosen.', [[primaryRoot, 'yes', 'YES'], [primaryPath, 'check', '']]);
-        await showStep(doubleStatus, '6 · Open the clustered primary leaf.', [[primaryPath, 'yes', ''], [primaryEntry, 'check', 'CHECK']]);
-        await showStep(doubleStatus, 'Found the complete Eva row after two logical tree searches.', [[primaryEntry, 'yes', 'FOUND'], [primaryTree, 'yes', '']], handoffPause);
+        await showStep(doubleStatus, '5 · Search the primary index for 52: PRIMARY(id).', [[primaryTree, 'check', ''], [primaryRoot, 'check', 'CHECK']]);
+        await showStep(doubleStatus, 'The primary index picks one path.', [[primaryRoot, 'yes', 'YES'], [primaryPath, 'check', '']]);
+        await showStep(doubleStatus, '6 · Open the leaf that holds the full row.', [[primaryPath, 'yes', ''], [primaryEntry, 'check', 'CHECK']]);
+        await showStep(doubleStatus, 'Found the full row for Eva after two index searches.', [[primaryEntry, 'yes', 'FOUND'], [primaryTree, 'yes', '']], handoffPause);
       }
 
       doubleStage.setAttribute('aria-busy', 'false');
@@ -2466,7 +2466,7 @@
       rangeResultChips.forEach(chip => chip.classList.remove('is-visible'));
       rangeResultList.classList.remove('has-results');
       rangeCount.textContent = '0 rows';
-      rangeStatus.textContent = 'The root finds the start. Linked leaves carry the scan forward until “Detroit.”';
+      rangeStatus.textContent = 'The root finds where to start. Then the scan moves through linked leaves until it reaches “Detroit.”';
       rangeStage.setAttribute('aria-busy', 'false');
       rangeButton.textContent = 'Run the range scan';
     }
@@ -2490,42 +2490,42 @@
       rangeButton.disabled = true;
       rangeButton.textContent = 'Scanning…';
 
-      await showRangeStep('1 · Search INDEX(city) for the first key at or after “Chicago.”', [[rangeSeek, 'check', 'SEEK']]);
-      await showRangeStep('The root jump skips Leaf A and Leaf B. Their values are below the range.', [
+      await showRangeStep('1 · Use INDEX(city) to find the first key at or after “Chicago.”', [[rangeSeek, 'check', 'SEEK']]);
+      await showRangeStep('Leaf A and Leaf B only have earlier values, so MySQL skips them.', [
         [rangePages[0], 'skip', 'SKIP'],
         [rangePages[1], 'skip', 'SKIP'],
         [rangeLinks[0], 'skip', ''],
         [rangeLinks[1], 'skip', '']
       ]);
-      await showRangeStep('2 · Land on Leaf C and check Chicago · 52. It is inside the interval.', [[rangeSeek, 'match', 'START'], [rangePages[2], 'check', 'CHECK'], [rangeRows.chicago52, 'check', 'CHECK']]);
+      await showRangeStep('2 · Open Leaf C and check Chicago · 52. It is in the range.', [[rangeSeek, 'match', 'START'], [rangePages[2], 'check', 'CHECK'], [rangeRows.chicago52, 'check', 'CHECK']]);
       revealRangeResult(0);
       await showRangeStep('Return Chicago · 52.', [[rangeRows.chicago52, 'match', 'RETURN']]);
       await showRangeStep('Check Chicago · 81. It also matches.', [[rangeRows.chicago81, 'check', 'CHECK']]);
       revealRangeResult(1);
-      await showRangeStep('Return Chicago · 81, then follow the next-leaf pointer.', [[rangeRows.chicago81, 'match', 'RETURN'], [rangePages[2], 'match', 'RETURNED'], [rangeLinks[2], 'check', '']]);
+      await showRangeStep('Return Chicago · 81, then follow the link to the next leaf.', [[rangeRows.chicago81, 'match', 'RETURN'], [rangePages[2], 'match', 'RETURNED'], [rangeLinks[2], 'check', '']]);
 
-      await showRangeStep('3 · Open Leaf D and check Dallas · 11. It is still below “Detroit.”', [[rangeLinks[2], 'match', ''], [rangePages[3], 'check', 'CHECK'], [rangeRows.dallas11, 'check', 'CHECK']]);
+      await showRangeStep('3 · Open Leaf D and check Dallas · 11. It still comes before “Detroit.”', [[rangeLinks[2], 'match', ''], [rangePages[3], 'check', 'CHECK'], [rangeRows.dallas11, 'check', 'CHECK']]);
       revealRangeResult(2);
       await showRangeStep('Return Dallas · 11.', [[rangeRows.dallas11, 'match', 'RETURN']]);
       await showRangeStep('Check Denver · 24. It also matches.', [[rangeRows.denver24, 'check', 'CHECK']]);
       revealRangeResult(3);
-      await showRangeStep('Return Denver · 24, then follow the next-leaf pointer.', [[rangeRows.denver24, 'match', 'RETURN'], [rangePages[3], 'match', 'RETURNED'], [rangeLinks[3], 'check', '']]);
+      await showRangeStep('Return Denver · 24, then follow the link to the next leaf.', [[rangeRows.denver24, 'match', 'RETURN'], [rangePages[3], 'match', 'RETURNED'], [rangeLinks[3], 'check', '']]);
 
       await showRangeStep('4 · Open Leaf E and check Denver · 68. It still matches.', [[rangeLinks[3], 'match', ''], [rangePages[4], 'check', 'CHECK'], [rangeRows.denver68, 'check', 'CHECK']]);
       revealRangeResult(4);
       await showRangeStep('Return Denver · 68. The next entry is Detroit · 23.', [[rangeRows.denver68, 'match', 'RETURN'], [rangeRows.detroit23, 'check', 'CHECK']]);
-      await showRangeStep('5 · Stop at Detroit. The query requires city < “Detroit.”', [
+      await showRangeStep('5 · Stop at Detroit. The query needs city < “Detroit.”', [
         [rangeRows.detroit23, 'stop', 'OUT'],
         [rangePages[4], 'stop', 'STOP'],
         [rangeLinks[4], 'stop', '']
       ]);
-      await showRangeStep('Leaf F and Leaf G cannot match. MySQL does not visit them.', [
+      await showRangeStep('Leaf F and Leaf G come later, so they cannot match. MySQL does not open them.', [
         [rangePages[5], 'skip', 'NOT VISITED'],
         [rangePages[6], 'skip', 'NOT VISITED'],
         [rangeLinks[5], 'skip', '']
       ], handoffPause);
 
-      rangeStatus.textContent = 'Returned 5 rows. Earlier leaves were skipped, and later leaves were never visited.';
+      rangeStatus.textContent = 'MySQL returned 5 rows. It skipped earlier leaves and did not open later leaves.';
       rangeStage.setAttribute('aria-busy', 'false');
       rangeButton.disabled = false;
       rangeButton.textContent = 'Run it again';
@@ -2557,8 +2557,8 @@
         weight.style.transform = `translateY(${((1 - weightProgress) * 6).toFixed(2)}px) scale(${(0.95 + weightProgress * 0.05).toFixed(3)})`;
       });
 
-      indexTradeoffOutput.textContent = `Tradeoff · ${roundedPercent}%`;
-      indexTradeoffSlider.setAttribute('aria-valuetext', `${roundedPercent}% toward more useful indexes. Read paths get faster. Affected writes get heavier.`);
+      indexTradeoffOutput.textContent = `More useful indexes · ${roundedPercent}%`;
+      indexTradeoffSlider.setAttribute('aria-valuetext', `${roundedPercent}% toward more useful indexes. Reads can get faster. Affected writes do more work.`);
     }
 
     indexTradeoffSlider.addEventListener('input', updateIndexBalance);
