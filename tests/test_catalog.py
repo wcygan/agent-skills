@@ -215,6 +215,122 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual((local / "SKILL.md").read_text(), "---\nname: added\ndescription: Local.\n---\nLocal.\n")
         self.assertEqual(catalog.load_lock(child)["parent"]["revision"], self.parent.revision_one)
 
+    def test_blocked_skill_remains_child_owned_through_sync_and_upgrade(self) -> None:
+        child = self.root / "blocked-skill"
+        self.parent.copy_without_git(child)
+        write_json(
+            child / catalog.SEED_NAME,
+            {
+                "schema": 1,
+                "repository": str(self.parent.root),
+                "tracking_ref": "main",
+                "blocked_skills": ["base"],
+            },
+        )
+        local_skill = child / "skills" / "base" / "SKILL.md"
+        local_skill.write_text("---\nname: base\ndescription: Local.\n---\nLocal.\n")
+        catalog.snapshot(child, check=False)
+
+        catalog.adopt(child, str(self.parent.root), self.parent.revision_one, "main")
+
+        _lock, manifest = catalog.verify_child(child)
+        self.assertNotIn("base", manifest["skills"])
+        self.assertEqual(local_skill.read_text(), "---\nname: base\ndescription: Local.\n---\nLocal.\n")
+
+        catalog.sync(child)
+        self.assertEqual(local_skill.read_text(), "---\nname: base\ndescription: Local.\n---\nLocal.\n")
+
+        revision_two = self.parent.update()
+        catalog.upgrade(child, "v2.0.0", dry_run=False)
+
+        lock, manifest = catalog.verify_child(child)
+        self.assertEqual(lock["parent"]["revision"], revision_two)
+        self.assertEqual(set(manifest["skills"]), {"added"})
+        self.assertEqual(local_skill.read_text(), "---\nname: base\ndescription: Local.\n---\nLocal.\n")
+
+    def test_sync_migrates_an_existing_skill_to_the_blocked_list(self) -> None:
+        child = self.adopt_child("migrate-blocked-skill")
+        write_json(
+            child / catalog.SEED_NAME,
+            {
+                "schema": 1,
+                "repository": str(self.parent.root),
+                "tracking_ref": "main",
+                "blocked_skills": ["base"],
+            },
+        )
+        local_skill = child / "skills" / "base" / "SKILL.md"
+        local_skill.write_text("---\nname: base\ndescription: Local.\n---\nLocal.\n")
+        catalog.snapshot(child, check=False)
+
+        catalog.sync(child)
+
+        _lock, manifest = catalog.verify_child(child)
+        self.assertNotIn("base", manifest["skills"])
+        self.assertEqual(local_skill.read_text(), "---\nname: base\ndescription: Local.\n---\nLocal.\n")
+
+    def test_sync_can_restore_a_removed_blocked_skill(self) -> None:
+        child = self.adopt_child("restore-blocked-skill")
+        local_skill = child / "skills" / "base" / "SKILL.md"
+        local_skill.write_text("---\nname: base\ndescription: Local.\n---\nLocal.\n")
+        write_json(
+            child / catalog.SEED_NAME,
+            {
+                "schema": 1,
+                "repository": str(self.parent.root),
+                "tracking_ref": "main",
+                "blocked_skills": ["base"],
+            },
+        )
+        catalog.snapshot(child, check=False)
+        catalog.sync(child)
+
+        write_json(
+            child / catalog.SEED_NAME,
+            {"schema": 1, "repository": str(self.parent.root), "tracking_ref": "main"},
+        )
+        catalog.snapshot(child, check=False)
+
+        with self.assertRaisesRegex(catalog.CatalogError, "child-owned skill: base"):
+            catalog.sync(child)
+
+        shutil.rmtree(child / "skills" / "base")
+        catalog.snapshot(child, check=False)
+
+        catalog.sync(child)
+
+        _lock, manifest = catalog.verify_child(child)
+        self.assertIn("base", manifest["skills"])
+        self.assertEqual(local_skill.read_text(), "---\nname: base\ndescription: Base.\n---\nBase.\n")
+
+    def test_seed_rejects_duplicate_blocked_skills(self) -> None:
+        write_json(
+            self.parent.root / catalog.SEED_NAME,
+            {
+                "schema": 1,
+                "repository": str(self.parent.root),
+                "tracking_ref": "main",
+                "blocked_skills": ["base", "base"],
+            },
+        )
+
+        with self.assertRaisesRegex(catalog.CatalogError, "must not contain duplicates"):
+            catalog.load_seed(self.parent.root)
+
+    def test_seed_rejects_an_oversized_blocked_skill_name(self) -> None:
+        write_json(
+            self.parent.root / catalog.SEED_NAME,
+            {
+                "schema": 1,
+                "repository": str(self.parent.root),
+                "tracking_ref": "main",
+                "blocked_skills": ["a" * 65],
+            },
+        )
+
+        with self.assertRaisesRegex(catalog.CatalogError, "invalid blocked skill name"):
+            catalog.load_seed(self.parent.root)
+
     def test_unknown_lock_keys_are_rejected(self) -> None:
         child = self.adopt_child("strict-lock")
         lock_path = child / catalog.LOCK_NAME

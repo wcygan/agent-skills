@@ -104,6 +104,30 @@ Parent synchronization preserves those local paths.
 An upgrade stops when the parent adds a conflicting local name.
 Rename the local skill or keep the current parent commit.
 
+## Block one inherited skill
+
+Use `blocked_skills` when a local skill replaces an inherited skill.
+Add the name to `catalog-seed.json`:
+
+```json
+{
+  "schema": 1,
+  "repository": "https://github.com/example/parent.git",
+  "tracking_ref": "main",
+  "blocked_skills": ["mine-transcript-learnings"]
+}
+```
+
+The blocked names must be valid and unique skill names.
+The catalog keeps each blocked directory child-owned.
+It excludes blocked skills from inherited manifests, collision checks, sync, upgrades, and verification.
+
+Add or update the local skill before you block its name.
+Then run `just catalog-snapshot` and `just catalog-sync`.
+
+To restore a parent skill, remove the local directory first.
+Run `just catalog-snapshot`, remove the blocked name, then run `just catalog-sync`.
+
 ## Check for parent updates
 
 Check the moving parent reference without changing files:

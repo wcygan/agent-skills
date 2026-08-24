@@ -60,6 +60,20 @@ def _require_keys(value: dict[str, Any], expected: set[str], context: str) -> No
     raise CatalogError(f"invalid {context}: {'; '.join(details)}")
 
 
+def _require_allowed_keys(value: dict[str, Any], required: set[str], optional: set[str], context: str) -> None:
+    actual = set(value)
+    missing = sorted(required - actual)
+    unknown = sorted(actual - required - optional)
+    if not missing and not unknown:
+        return
+    details = []
+    if missing:
+        details.append(f"missing keys: {', '.join(missing)}")
+    if unknown:
+        details.append(f"unknown keys: {', '.join(unknown)}")
+    raise CatalogError(f"invalid {context}: {'; '.join(details)}")
+
+
 def _require_schema(value: Any, context: str) -> None:
     if value != SCHEMA:
         raise CatalogError(f"unsupported {context} schema: {value!r}; supported: {SCHEMA}")
@@ -165,12 +179,29 @@ def _tree_digest(directory: Path) -> str:
 
 def load_seed(root: Path) -> dict[str, Any]:
     seed = _read_object(root / SEED_NAME)
-    _require_keys(seed, {"schema", "repository", "tracking_ref"}, "catalog seed")
+    _require_allowed_keys(
+        seed,
+        {"schema", "repository", "tracking_ref"},
+        {"blocked_skills"},
+        "catalog seed",
+    )
     _require_schema(seed["schema"], "catalog seed")
+    blocked_skills = seed.get("blocked_skills", [])
+    if not isinstance(blocked_skills, list):
+        raise CatalogError("seed blocked_skills must be a list")
+    normalized_blocked_skills = []
+    for skill in blocked_skills:
+        name = _require_string(skill, "seed blocked skill")
+        if len(name) > 64 or not SKILL_PATTERN.fullmatch(name):
+            raise CatalogError(f"invalid blocked skill name: {name}")
+        normalized_blocked_skills.append(name)
+    if len(normalized_blocked_skills) != len(set(normalized_blocked_skills)):
+        raise CatalogError("seed blocked_skills must not contain duplicates")
     return {
         "schema": SCHEMA,
         "repository": _require_string(seed["repository"], "seed repository"),
         "tracking_ref": _require_string(seed["tracking_ref"], "seed tracking_ref"),
+        "blocked_skills": sorted(normalized_blocked_skills),
     }
 
 
@@ -315,23 +346,57 @@ def verify_snapshot(root: Path, *, require_fresh: bool) -> dict[str, Any]:
     return snapshot
 
 
-def verify_child(root: Path) -> tuple[dict[str, Any], dict[str, Any]]:
+def _filter_blocked_skills(snapshot: dict[str, Any], blocked_skills: list[str]) -> dict[str, Any]:
+    blocked = set(blocked_skills)
+    return {
+        "schema": SCHEMA,
+        "skills": {name: digest for name, digest in snapshot["skills"].items() if name not in blocked},
+        "files": dict(snapshot["files"]),
+    }
+
+
+def verify_child(root: Path, *, allow_legacy_blocked_skills: bool = False) -> tuple[dict[str, Any], dict[str, Any]]:
     lock = load_lock(root)
     manifest = load_manifest(root)
     if manifest["parent_revision"] != lock["parent"]["revision"]:
         raise CatalogError("catalog lock and manifest revisions differ")
     parent_snapshot = _load_snapshot_path(root / PARENT_SNAPSHOT_NAME)
+    seed = load_seed(root)
+    expected_snapshot = _filter_blocked_skills(parent_snapshot, seed["blocked_skills"])
     expected_files = dict(parent_snapshot["files"])
     expected_files[PARENT_SNAPSHOT_NAME] = _file_digest(root / PARENT_SNAPSHOT_NAME)
-    if manifest["skills"] != parent_snapshot["skills"] or manifest["files"] != expected_files:
+    expected_manifest = {
+        "schema": SCHEMA,
+        "parent_revision": manifest["parent_revision"],
+        "skills": expected_snapshot["skills"],
+        "files": expected_files,
+    }
+    legacy_exclusions = (
+        allow_legacy_blocked_skills
+        and manifest["files"] == expected_files
+        and all(parent_snapshot["skills"].get(name) == digest for name, digest in manifest["skills"].items())
+    )
+    if manifest != expected_manifest and not legacy_exclusions:
         raise CatalogError("catalog manifest does not match the inherited source snapshot")
-    skill_drift = _verify_digest_map(root, manifest["skills"], "skill")
+    verified_skills = (
+        {name: digest for name, digest in manifest["skills"].items() if name not in seed["blocked_skills"]}
+        if legacy_exclusions
+        else manifest["skills"]
+    )
+    skill_drift = _verify_digest_map(root, verified_skills, "skill")
     file_drift = _verify_digest_map(root, manifest["files"], "file")
     if skill_drift or file_drift:
         details = _format_drift(skill_drift, file_drift)
         raise CatalogError(f"inherited catalog content drift: {details}")
     verify_snapshot(root, require_fresh=True)
-    return lock, manifest
+    if legacy_exclusions:
+        return lock, {
+            "schema": SCHEMA,
+            "parent_revision": manifest["parent_revision"],
+            "skills": verified_skills,
+            "files": dict(manifest["files"]),
+        }
+    return lock, expected_manifest
 
 
 def _format_drift(skills: list[str], files: list[str]) -> str:
@@ -374,14 +439,14 @@ def clone_revision(repository: str, requested_ref: str, destination: Path) -> st
     return revision
 
 
-def _source_manifest(checkout: Path, revision: str) -> dict[str, Any]:
+def _source_manifest(checkout: Path, revision: str, blocked_skills: list[str]) -> dict[str, Any]:
     snapshot = verify_snapshot(checkout, require_fresh=True)
     files = dict(snapshot["files"])
     files[PARENT_SNAPSHOT_NAME] = _file_digest(checkout / SNAPSHOT_NAME)
     return {
         "schema": SCHEMA,
         "parent_revision": revision,
-        "skills": snapshot["skills"],
+        "skills": _filter_blocked_skills(snapshot, blocked_skills)["skills"],
         "files": dict(sorted(files.items())),
     }
 
@@ -512,7 +577,7 @@ def _check_collisions(root: Path, old_manifest: dict[str, Any], target_manifest:
                 raise CatalogError(f"file blocks managed path: {parent.relative_to(root)}")
 
 
-def _initial_manifest(root: Path) -> dict[str, Any]:
+def _initial_manifest(root: Path, blocked_skills: list[str]) -> dict[str, Any]:
     if not (root / SNAPSHOT_NAME).is_file():
         return {"schema": SCHEMA, "parent_revision": "0" * 40, "skills": {}, "files": {}}
     snapshot = verify_snapshot(root, require_fresh=False)
@@ -520,6 +585,7 @@ def _initial_manifest(root: Path) -> dict[str, Any]:
     parent_snapshot = root / PARENT_SNAPSHOT_NAME
     if parent_snapshot.is_file():
         files[PARENT_SNAPSHOT_NAME] = _file_digest(parent_snapshot)
+    snapshot = _filter_blocked_skills(snapshot, blocked_skills)
     return {
         "schema": SCHEMA,
         "parent_revision": "0" * 40,
@@ -594,12 +660,14 @@ def format_upgrade_report(old: dict[str, Any], new: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def _prepare_parent(repository: str, requested_ref: str) -> tuple[tempfile.TemporaryDirectory[str], Path, str, dict[str, Any]]:
+def _prepare_parent(
+    repository: str, requested_ref: str, blocked_skills: list[str]
+) -> tuple[tempfile.TemporaryDirectory[str], Path, str, dict[str, Any]]:
     scratch = tempfile.TemporaryDirectory(prefix="skill-catalog-parent-")
     checkout = Path(scratch.name) / "source"
     try:
         revision = clone_revision(repository, requested_ref, checkout)
-        manifest = _source_manifest(checkout, revision)
+        manifest = _source_manifest(checkout, revision, blocked_skills)
     except Exception:
         scratch.cleanup()
         raise
@@ -624,8 +692,10 @@ def adopt(
         if current_lock["parent"]["repository"] == selected_repository:
             raise CatalogError("catalog adoption already exists; use sync or upgrade")
     requested = revision or selected_tracking_ref
-    old_manifest = _initial_manifest(root)
-    scratch, checkout, resolved, target_manifest = _prepare_parent(selected_repository, requested)
+    old_manifest = _initial_manifest(root, seed["blocked_skills"])
+    scratch, checkout, resolved, target_manifest = _prepare_parent(
+        selected_repository, requested, seed["blocked_skills"]
+    )
     try:
         lock = {
             "schema": SCHEMA,
@@ -642,9 +712,12 @@ def adopt(
 
 
 def sync(root: Path) -> str:
-    lock, old_manifest = verify_child(root)
+    lock, old_manifest = verify_child(root, allow_legacy_blocked_skills=True)
     parent = lock["parent"]
-    scratch, checkout, resolved, target_manifest = _prepare_parent(parent["repository"], parent["revision"])
+    blocked_skills = load_seed(root)["blocked_skills"]
+    scratch, checkout, resolved, target_manifest = _prepare_parent(
+        parent["repository"], parent["revision"], blocked_skills
+    )
     try:
         if resolved != parent["revision"]:
             raise CatalogError("locked parent commit resolved to a different commit")
@@ -657,16 +730,22 @@ def sync(root: Path) -> str:
 def check_parent(root: Path) -> tuple[str, str]:
     lock, _manifest = verify_child(root)
     parent = lock["parent"]
-    scratch, _checkout, available, _target = _prepare_parent(parent["repository"], parent["tracking_ref"])
+    blocked_skills = load_seed(root)["blocked_skills"]
+    scratch, _checkout, available, _target = _prepare_parent(
+        parent["repository"], parent["tracking_ref"], blocked_skills
+    )
     scratch.cleanup()
     return parent["revision"], available
 
 
 def upgrade(root: Path, requested_ref: str | None, *, dry_run: bool) -> str:
-    lock, old_manifest = verify_child(root)
+    lock, old_manifest = verify_child(root, allow_legacy_blocked_skills=True)
     parent = lock["parent"]
     requested = requested_ref or parent["tracking_ref"]
-    scratch, checkout, resolved, target_manifest = _prepare_parent(parent["repository"], requested)
+    blocked_skills = load_seed(root)["blocked_skills"]
+    scratch, checkout, resolved, target_manifest = _prepare_parent(
+        parent["repository"], requested, blocked_skills
+    )
     try:
         _check_collisions(root, old_manifest, target_manifest)
         report = format_upgrade_report(old_manifest, target_manifest)
