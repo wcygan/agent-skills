@@ -22,6 +22,8 @@ loaded as a plugin by plugin-capable clients.
 
 Browse the complete [skills directory](https://github.com/wcygan/agent-skills/tree/main/skills).
 
+- [`prompt-kit`](skills/prompt-kit/SKILL.md) — evidence-backed PromptKit component, block, and primitive integration.
+
 Use [`audit-skill-catalog`](skills/audit-skill-catalog/SKILL.md) to review a
 flat catalog and propose safe semantic grouping or consolidation.
 

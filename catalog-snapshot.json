@@ -87,6 +87,7 @@
     "planetscale-postgres": "5dc1b43032ec3f2fdb2573620fb0b605e36be0c6ab2971e049917c531d6cca65",
     "playwright-cli": "a9c07c50e51c04875a52b234fdf7a91af9d74dc0bcafd498adadbb7e7a1881ff",
     "pr-guidelines": "75f6e08a6f7475bc93f1890c23eb5dd2a0e8b62563b433a9d0057008642418f3",
+    "prompt-kit": "f4362d3d85341d956dd247967a4b3403c27393ed589b044fa7030e62e0980187",
     "prototype": "c90b7605fd1b9904e738c0e5214c13caa6b3f2cff343f8784914e63d7b03f25d",
     "reconcile-documentation": "0b4868a6b09e99e14d7bc27797d2134fe532983a056b72675a67cb5f0008d746",
     "reproduce-bug": "765be29bcb5ce56fe49fd3324d53ea0feadbf9027af0388a27f7b45deb682cbd",
