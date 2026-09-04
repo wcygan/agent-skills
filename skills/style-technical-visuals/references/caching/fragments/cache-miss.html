@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>cache-miss</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-fragment="cache-miss">
+  <div data-id="cache-miss"></div>
+  <script src="../assets/viz.js"></script>
+  <script>
+    new VIZ.CacheViz({ rows: 3, cols: 3, layers: [{ rows: 3, cols: 1, label: 'fast storage' }], automation: 'automatic-miss', interval: 2500, prewarm: false, source: 'cache-miss' });
+  </script>
+</body>
+</html>

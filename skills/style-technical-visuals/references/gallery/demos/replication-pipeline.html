@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MySQL Replication Pipeline</title>
+<style>
+  /* Tokens: PlanetScale Dark System */
+  :root {
+    --canvas: #111111;
+    --panel: #1c1c1c;
+    --border: rgba(255,255,255,.14);
+    --border-node: rgba(255,255,255,.22);
+    --track: rgba(255,255,255,.10);
+    --text: #fafafa;
+    --text-muted: rgba(250,250,250,.60);
+    --text-dim: rgba(250,250,250,.40);
+    --accent: #f35815;
+    --good: #30a46c;
+    --warn: #d19f03;
+    --bad: #ff455d;
+    --info: #1e9de7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 20px 28px;
+    background: var(--canvas);
+    color: var(--text);
+    font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+    overflow: hidden;
+  }
+  main { max-width: 860px; margin: 0 auto; }
+  h1 {
+    font-size: 13px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin: 0 0 4px;
+    opacity: .9;
+  }
+  .sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0 0 16px;
+  }
+
+  /* Topology Box */
+  .topo-box {
+    position: relative;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--panel);
+    height: 400px;
+    overflow: hidden;
+  }
+  svg.network-wires {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+    pointer-events: none;
+  }
+  .net-wire {
+    fill: none;
+    stroke: #454545;
+    stroke-width: 1.5;
+  }
+
+  /* Left: Primary Node */
+  .primary-node {
+    position: absolute;
+    left: 20px;
+    top: 140px;
+    width: 170px;
+    height: 120px;
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    background: #181818;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    z-index: 2;
+  }
+  .primary-node .title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .primary-node .role {
+    font-size: 9px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-top: 2px;
+    display: block;
+  }
+  .binlog-box {
+    margin-top: 12px;
+    border: 1px dashed rgba(243,88,21,.5);
+    border-radius: 3px;
+    background: rgba(243,88,21,.08);
+    padding: 8px;
+    text-align: center;
+  }
+  .binlog-box .log-name {
+    font-size: 11px;
+    font-weight: 700;
+    color: #fafafa;
+  }
+  .binlog-box .log-pos {
+    font-size: 9px;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+    margin-top: 2px;
+  }
+
+  /* Right: 3 Replica Nodes */
+  .replicas-col {
+    position: absolute;
+    right: 20px;
+    top: 18px;
+    bottom: 18px;
+    width: 530px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    z-index: 2;
+  }
+  .replica-card {
+    height: 110px;
+    border: 1px solid var(--border-node);
+    border-radius: 4px;
+    background: #181818;
+    padding: 10px 14px;
+    position: relative;
+    transition: all .2s ease;
+  }
+  .replica-card.lagged {
+    border-color: var(--accent) !important;
+    background: rgba(243,88,21,.05);
+    box-shadow: 0 0 12px rgba(243,88,21,.3);
+  }
+
+  .replica-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .rep-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .lag-badge {
+    font-size: 10px;
+    letter-spacing: .04em;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+  }
+  .lag-good {
+    background: rgba(48,164,108,.16);
+    color: #30a46c;
+    border: 1px solid rgba(48,164,108,.3);
+  }
+  .lag-warn {
+    background: rgba(243,88,21,.16);
+    color: #f35815;
+    border: 1px solid rgba(243,88,21,.4);
+  }
+
+  /* Internal Replica Components */
+  .replica-pipeline {
+    display: grid;
+    grid-template-columns: 85px 1fr 85px;
+    gap: 12px;
+    align-items: center;
+  }
+  .pipe-box {
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 3px;
+    background: #222;
+    padding: 6px 8px;
+    text-align: center;
+  }
+  .pipe-box .p-title {
+    font-size: 10px;
+    font-weight: 700;
+    display: block;
+  }
+  .pipe-box .p-desc {
+    font-size: 8px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    display: block;
+  }
+
+  .relay-buffer {
+    border: 1px dashed rgba(255,255,255,.2);
+    border-radius: 3px;
+    background: #202020;
+    padding: 6px 8px;
+    position: relative;
+    height: 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .relay-title {
+    font-size: 9px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .backlog-tag {
+    font-size: 9px;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .buffer-dots {
+    display: flex;
+    gap: 4px;
+    height: 12px;
+    align-items: center;
+  }
+  .buffer-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--info);
+    opacity: 0.8;
+  }
+  .buffer-dot.hot {
+    background: var(--accent);
+  }
+  /* Packet styling inside SVG */
+  .pkt-binlog {
+    fill: #1e9de7;
+    filter: drop-shadow(0 0 6px rgba(30,157,231,.9));
+  }
+  .pkt-apply {
+    fill: #30a46c;
+    filter: drop-shadow(0 0 6px rgba(48,164,108,.9));
+  }
+  /* Legend & Meta */
+  .meta-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 14px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .legend {
+    display: flex;
+    gap: 16px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .legend i {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: -0.5px;
+  }
+  .note {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 12px 0 0;
+    max-width: 82ch;
+    line-height: 1.6;
+  }
+  .note b { color: var(--text); }
+  .note .hot-label { color: var(--accent); font-weight: 600; }
+</style>
+</head>
+<body>
+<main>
+  <h1>MySQL Replication Pipeline</h1>
+  <p class="sub">
+    Commit stream from primary binlog through IO reader threads, relay log buffers, and SQL applier engines.
+  </p>
+
+  <div class="topo-box" id="canvas">
+    <svg class="network-wires" id="net-wires-svg">
+      <!-- Main trunk (Primary right center x=190, y=200 -> Split point x=250, y=200 -> Replicas left center x=310, y: 73, 200, 327) -->
+      <path class="net-wire" d="M 190 200 H 250 V 73 H 310" />
+      <path class="net-wire" d="M 190 200 H 310" />
+      <path class="net-wire" d="M 190 200 H 250 V 327 H 310" />
+      <g id="pkts-g"></g>
+    </svg>
+    <!-- Primary Node -->
+    <div class="primary-node">
+      <span class="title">PRIMARY</span>
+      <span class="role">read / write node</span>
+      <div class="binlog-box">
+        <div class="log-name">binlog.000421</div>
+        <div class="log-pos" id="primary-pos">pos: 4,192,840</div>
+      </div>
+    </div>
+
+    <!-- 3 Replica Nodes -->
+    <div class="replicas-col">
+
+      <!-- Replica 0 -->
+      <div class="replica-card" id="rep-card-0">
+        <div class="replica-header">
+          <span class="rep-name">replica-0</span>
+          <span class="lag-badge lag-good" id="lag-0">lag 0.04s</span>
+        </div>
+        <div class="replica-pipeline">
+          <div class="pipe-box">
+            <span class="p-title" style="color:#1e9de7">IO thread</span>
+            <span class="p-desc">network fetch</span>
+          </div>
+          <div class="relay-buffer">
+            <div class="relay-title"><span>relay log</span><span>synced</span></div>
+            <div class="buffer-dots" id="dots-0">
+              <span class="buffer-dot"></span>
+            </div>
+          </div>
+          <div class="pipe-box">
+            <span class="p-title" style="color:#30a46c">SQL thread</span>
+            <span class="p-desc">applier</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Replica 1 -->
+      <div class="replica-card" id="rep-card-1">
+        <div class="replica-header">
+          <span class="rep-name">replica-1</span>
+          <span class="lag-badge lag-good" id="lag-1">lag 0.20s</span>
+        </div>
+        <div class="replica-pipeline">
+          <div class="pipe-box">
+            <span class="p-title" style="color:#1e9de7">IO thread</span>
+            <span class="p-desc">network fetch</span>
+          </div>
+          <div class="relay-buffer">
+            <div class="relay-title"><span>relay log</span><span>synced</span></div>
+            <div class="buffer-dots" id="dots-1">
+              <span class="buffer-dot"></span>
+              <span class="buffer-dot"></span>
+            </div>
+          </div>
+          <div class="pipe-box">
+            <span class="p-title" style="color:#30a46c">SQL thread</span>
+            <span class="p-desc">applier</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Replica 2 (Slow SQL Applier) -->
+      <div class="replica-card lagged" id="rep-card-2">
+        <div class="replica-header">
+          <span class="rep-name">replica-2</span>
+          <span class="lag-badge lag-warn" id="lag-2">lag 6.4s</span>
+        </div>
+        <div class="replica-pipeline">
+          <div class="pipe-box">
+            <span class="p-title" style="color:#1e9de7">IO thread</span>
+            <span class="p-desc">network fetch</span>
+          </div>
+          <div class="relay-buffer" style="border-color:rgba(243,88,21,.4);">
+            <div class="relay-title">
+              <span>relay log</span>
+              <span class="backlog-tag" id="backlog-2">backlog 1,420 events</span>
+            </div>
+            <div class="buffer-dots" id="dots-2">
+              <span class="buffer-dot hot"></span>
+              <span class="buffer-dot hot"></span>
+              <span class="buffer-dot hot"></span>
+              <span class="buffer-dot hot"></span>
+              <span class="buffer-dot hot"></span>
+              <span class="buffer-dot hot"></span>
+              <span class="buffer-dot hot"></span>
+              <span class="buffer-dot hot"></span>
+            </div>
+          </div>
+          <div class="pipe-box" style="border-color:rgba(243,88,21,.4);">
+            <span class="p-title" style="color:#f35815">SQL thread</span>
+            <span class="p-desc" style="color:var(--accent)">applier stall</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="meta-bar">
+    <div class="legend">
+      <span><i style="background:#1e9de7"></i>binlog stream (IO thread)</span>
+      <span><i style="background:#30a46c"></i>applied event (SQL thread)</span>
+      <span><i style="background:#f35815"></i>unapplied relay backlog</span>
+    </div>
+  </div>
+
+  <p class="note">
+    Continuous commit events write into the primary's binlog and stream across the network into each replica's relay log.
+    Replicas 0 and 1 drain instantly (sub-second green lag).
+    <span class="hot-label">Replica 2</span> simulates a slow SQL single-threaded applier: the relay log fills with queued packets, the backlog count grows, the card glows warning orange, and lag climbs to <b>6.4s</b>.
+  </p>
+</main>
+
+<script>
+  const canvas = document.getElementById("canvas");
+  const posEl = document.getElementById("primary-pos");
+  let currentPos = 4192840;
+
+  const NET_PATHS = [
+    "M 190 200 H 250 V 73 H 310",
+    "M 190 200 H 310",
+    "M 190 200 H 250 V 327 H 310"
+  ];
+
+  function spawnPkt(pathStr, dur, cls, onEnd) {
+    const g = document.getElementById("pkts-g");
+    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    circle.setAttribute("r", "5");
+    circle.setAttribute("class", "pkt-" + cls);
+    const anim = document.createElementNS("http://www.w3.org/2000/svg", "animateMotion");
+    anim.setAttribute("path", pathStr);
+    anim.setAttribute("dur", dur + "ms");
+    anim.setAttribute("fill", "freeze");
+    anim.setAttribute("rotate", "auto");
+    circle.appendChild(anim);
+    g.appendChild(circle);
+    anim.beginElement();
+    setTimeout(() => {
+      circle.remove();
+      if (onEnd) onEnd();
+    }, dur + 40);
+  }
+
+  function commitLoop() {
+    currentPos += Math.floor(Math.random() * 450) + 120;
+    posEl.textContent = "pos: " + currentPos.toLocaleString();
+
+    // Stream across network to all 3 replicas
+    for (let r = 0; r < 3; r++) {
+      spawnPkt(NET_PATHS[r], 600, "binlog", () => {
+        if (r < 2) {
+          // Replicas 0 & 1 apply quickly
+          setTimeout(() => {
+            const lagEl = document.getElementById("lag-" + r);
+            if (lagEl) {
+              const ms = r === 0 ? (0.03 + Math.random() * 0.02).toFixed(2) : (0.18 + Math.random() * 0.05).toFixed(2);
+              lagEl.textContent = "lag " + ms + "s";
+            }
+          }, 150);
+        } else {
+          // Replica 2 lag fluctuates high (6.2s - 6.8s)
+          const lagEl = document.getElementById("lag-2");
+          const backlogEl = document.getElementById("backlog-2");
+          if (lagEl) {
+            const s = (6.2 + Math.random() * 0.6).toFixed(1);
+            lagEl.textContent = "lag " + s + "s";
+          }
+          if (backlogEl) {
+            const count = 1400 + Math.floor(Math.random() * 80);
+            backlogEl.textContent = "backlog " + count.toLocaleString() + " events";
+          }
+        }
+      });
+    }
+  }
+
+  setInterval(commitLoop, 450);
+
+  // Height auto-reporter
+  const postH = () => {
+    try {
+      parent.postMessage({ demoHeight: Math.ceil(document.body.scrollHeight) }, "*");
+    } catch (e) {}
+  };
+  window.addEventListener("load", postH);
+  window.addEventListener("resize", postH);
+  new MutationObserver(postH).observe(document.body, { childList: true, subtree: true, characterData: true });
+  postH();
+</script>
+</body>
+</html>

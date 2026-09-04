@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Latency ladder</title>
+<style>
+  /* tokens: --canvas #111, --panel #1c1c1c, --accent #f35815, --good #27b648 */
+  * { box-sizing: border-box; }
+  body { margin:0; padding:24px 20px 28px; background:#111; overflow:hidden;
+    font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; color:#fafafa; }
+  main { max-width: 720px; margin: 0 auto; }
+  h1 { font-size: 13px; letter-spacing: .08em; text-transform: uppercase;
+    margin: 0 0 4px; opacity: .9; }
+  .sub { font-size: 12px; color: rgba(250,250,250,.6); margin: 0 0 14px; }
+  .rungs { border: 1px solid rgba(255,255,255,.14); border-radius: 4px;
+    background: #1c1c1c; overflow: hidden; }
+  .rung { display: grid; grid-template-columns: 150px 1fr 92px 74px;
+    align-items: center; gap: 10px; padding: 7px 12px;
+    border-top: 1px solid rgba(255,255,255,.10); position: relative; }
+  .rung:first-child { border-top: 0; }
+  .name { font-weight: 600; font-size: 12px; }
+  .track { position: relative; height: 16px; border-radius: 2px;
+    background: rgba(255,255,255,.08); overflow: hidden; }
+  /* bar width is log10(ns): every step down the ladder is 100× harder */
+  .bar { position: absolute; inset: 0; width: 0%; border-radius: 2px;
+    transition: width .6s ease, opacity .6s ease; opacity: .5; }
+  .time { text-align: right; font-size: 11px; color: rgba(250,250,250,.6);
+    font-variant-numeric: tabular-nums; }
+  .x { text-align: right; font-size: 10px; color: rgba(250,250,250,.4);
+    font-variant-numeric: tabular-nums; }
+  .req { position: absolute; right: 4px; top: 50%; width: 10px; height: 10px;
+    margin: -5px 0 0 -5px; border-radius: 50%; background: #fff;
+    box-shadow: 0 0 6px #f35815; opacity: 0; }
+  .controls { display: flex; align-items: center; gap: 10px; margin-top: 14px;
+    flex-wrap: wrap; }
+  button { font: 12px ui-monospace, Menlo, monospace; padding: 6px 14px;
+    border: 1px solid rgba(255,255,255,.25); border-radius: 3px;
+    background: transparent; color: #fafafa; cursor: pointer; }
+  button.on { border-color: #f35815; color: #f35815; }
+  .verdict { font-size: 12px; margin-top: 12px; min-height: 18px;
+    color: rgba(250,250,250,.75); }
+  .verdict b { color: #f35815; font-variant-numeric: tabular-nums; }
+  @media (prefers-reduced-motion: reduce) {
+    .bar, .req { transition: none; animation: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Latency ladder — why we cache</h1>
+  <p class="sub">One request falls until a tier serves it. Bar length is log-scale
+  (each rung is ~100× the one above); the request dwells at each tier in proportion
+  to its real latency.</p>
+  <div class="rungs" id="rungs"></div>
+  <div class="controls">
+    <button id="btn-hit">RAM cache hit</button>
+    <button id="btn-miss">Disk miss</button>
+    <button id="btn-loop" class="on">loop</button>
+    <span style="font-size:11px;color:rgba(250,250,250,.4);font-variant-numeric:tabular-nums"
+      id="elapsed"></span>
+  </div>
+  <p class="verdict" id="verdict"></p>
+</main>
+<script>
+  const TIERS = [
+    { name: "CPU L1 cache",    ns: 1,          color: "#27b648" },
+    { name: "System RAM",      ns: 100,        color: "#40d763" },
+    { name: "NVMe SSD",        ns: 100_000,    color: "#d19f03" },
+    { name: "SATA SSD",        ns: 200_000,    color: "#a78103" },
+    { name: "Same-DC network", ns: 500_000,    color: "#1e9de7" },
+    { name: "Disk seek",       ns: 10_000_000, color: "#ff455d" },
+  ];
+  const MAXLOG = Math.log10(10_000_000); // 7 decades
+  const fmt = (ns) =>
+    ns < 1_000 ? ns + " ns" :
+    ns < 1_000_000 ? (ns / 1_000).toFixed(1) + " µs" :
+    ns < 60_000_000 ? (ns / 1_000_000).toFixed(1) + " ms" :
+    (ns / 1_000_000_000).toFixed(1) + " s";
+  // dwell ms per tier while descending: 60ms per decade, min 120ms
+  const dwell = (ns) => Math.max(120, Math.log10(ns + 1) * 60);
+
+  const rungs = document.getElementById("rungs");
+  const reqs = [];
+  TIERS.forEach((t, i) => {
+    const row = document.createElement("div");
+    row.className = "rung";
+    const pct = (Math.log10(t.ns + 1) / MAXLOG * 100).toFixed(1);
+    row.innerHTML =
+      `<span class="name">${t.name}</span>` +
+      `<div class="track"><div class="bar" data-pct="${pct}" style="background:${t.color}"></div>` +
+      `<div class="req"></div></div>` +
+      `<span class="time">${fmt(t.ns)}</span>` +
+      `<span class="x">${i ? "×" + Math.round(TIERS[i].ns / TIERS[i-1].ns) : "—"}</span>`;
+    rungs.appendChild(row);
+    reqs.push(row.querySelector(".req"));
+  });
+  const bars = rungs.querySelectorAll(".bar");
+
+  let target = 1, looping = true, token = 0;
+  const verdict = document.getElementById("verdict");
+  const elapsedEl = document.getElementById("elapsed");
+
+  function paintStatic() {
+    bars.forEach((b, i) => {
+      b.style.width = i <= target ? b.dataset.pct + "%" : "0%";
+      b.style.opacity = i === target ? 1 : 0.5;
+    });
+    reqs.forEach((r, i) => { r.style.opacity = i === target ? 1 : 0; });
+  }
+
+  // Animate one request descending rung by rung. Dwell at each tier is
+  // proportional to its latency (log-scaled so humans can watch it).
+  async function descend() {
+    const my = ++token;
+    bars.forEach(b => { b.style.width = "0%"; b.style.opacity = 0.5; });
+    reqs.forEach(r => { r.style.opacity = 0; });
+    let total = 0;
+    for (let i = 0; i <= target; i++) {
+      if (my !== token) return;
+      const t = TIERS[i];
+      reqs.forEach((r, j) => { r.style.opacity = j === i ? 1 : 0; });
+      // live counter: show the tier's real latency as the cost of this fall
+      total = t.ns;
+      elapsedEl.textContent = "elapsed " + fmt(total);
+      verdict.innerHTML = "falling… now paying <b>" + fmt(t.ns) + "</b> at <b>" +
+        t.name + "</b>" + (i < target ? " — miss, next tier" : "");
+      bars[i].style.width = bars[i].dataset.pct + "%";
+      bars[i].style.opacity = i === target ? 1 : 0.5;
+      await new Promise(res => setTimeout(res, dwell(t.ns)));
+    }
+    if (my !== token) return;
+    const slow = TIERS[TIERS.length - 1].ns;
+    verdict.innerHTML = `Served from <b>${TIERS[target].name}</b> after <b>${fmt(total)}</b> —
+      a disk seek would have cost <b>${fmt(slow)}</b>, <b>${Math.round(slow / total)}×</b> more.`;
+  }
+
+  let timer = null;
+  function startLoop() {
+    clearInterval(timer);
+    timer = setInterval(() => {
+      target = (target + 1) % TIERS.length;
+      descend();
+    }, TIERS.reduce((a, t) => a + dwell(t.ns), 0) + 600);
+  }
+  function pick(btn, t) {
+    looping = false;
+    clearInterval(timer);
+    hitBtn.classList.remove("on"); missBtn.classList.remove("on"); loopBtn.classList.remove("on");
+    btn.classList.add("on");
+    target = t;
+    descend();
+  }
+  const hitBtn = document.getElementById("btn-hit");
+  const missBtn = document.getElementById("btn-miss");
+  const loopBtn = document.getElementById("btn-loop");
+  hitBtn.onclick = () => pick(hitBtn, 1);
+  missBtn.onclick = () => pick(missBtn, 5);
+  loopBtn.onclick = () => {
+    looping = true;
+    loopBtn.classList.add("on");
+    hitBtn.classList.remove("on"); missBtn.classList.remove("on");
+    startLoop();
+  };
+  descend();
+  startLoop();
+
+  // Report content height to the gallery frame (works across origins,
+  // including file://). The gallery grows our iframe to match — never clips.
+  const postH = () => { try { parent.postMessage({ demoHeight: Math.ceil(document.body.scrollHeight) }, "*"); } catch (e) {} };
+  window.addEventListener("load", postH);
+  window.addEventListener("resize", postH);
+  new MutationObserver(postH).observe(document.body, { childList: true, subtree: true, characterData: true });
+  postH();
+</script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Write path, read path</title>
+<style>
+  /* tokens: --canvas #111, --panel #1c1c1c, --accent #f35815, --good #27b648, --info #1e9de7 */
+  * { box-sizing: border-box; }
+  body { margin:0; padding:24px 20px 28px; background:#111; overflow:hidden;
+    font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; color:#fafafa; }
+  main { max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; margin:0 0 4px; opacity:.9; }
+  .sub { font-size: 12px; color: rgba(250,250,250,.6); margin: 0 0 16px; }
+  .topo { position: relative; border: 1px solid rgba(255,255,255,.14); border-radius: 4px;
+    background: #1c1c1c; height: 330px; overflow: hidden; }
+  .node { position: absolute; border: 1px solid rgba(255,255,255,.25); border-radius: 4px;
+    padding: 0 10px; text-align: center; background: #1c1c1c; z-index: 2;
+    display: flex; flex-direction: column; justify-content: center; }
+  .node .t { font-size: 12px; font-weight: 700; display: block; line-height: 1.2; }
+  .node .d { display: block; font-size: 9px; color: rgba(250,250,250,.45);
+    text-transform: uppercase; letter-spacing: .06em; margin-top: 3px; line-height: 1.2; }
+  .app     { left: 16px;  top: 24px;  width: 170px; height: 56px; border-color: #1e9de7; }
+  .app .t  { color: #1e9de7; }
+  .primary { left: 345px; top: 24px;  width: 170px; height: 56px; border-color: #f35815; }
+  .primary .t { color: #f35815; }
+  .replica { top: 238px; width: 240px; height: 56px; }
+  .r1 { left: 40px; } .r2 { left: 310px; } .r3 { left: 580px; }
+  svg.wires { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
+  .lbl { position: absolute; font-size: 9px; letter-spacing: .08em; text-transform: uppercase;
+    color: rgba(250,250,250,.45); background: #1c1c1c; padding: 1px 5px; z-index: 2; }
+  .pkt-write  { fill: #f35815; filter: drop-shadow(0 0 5px rgba(243,88,21,.8)); }
+  .pkt-binlog { fill: #1e9de7; filter: drop-shadow(0 0 5px rgba(30,157,231,.8)); }
+  .pkt-read   { fill: #27b648; filter: drop-shadow(0 0 5px rgba(39,182,72,.8)); }
+  .legend { display: flex; gap: 18px; margin: 14px 0 0; font-size: 11px;
+    color: rgba(250,250,250,.6); flex-wrap: wrap; }
+  .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%;
+    margin-right: 6px; vertical-align: -1px; }
+  .note { font-size: 12px; color: rgba(250,250,250,.6); margin: 12px 0 0; max-width: 84ch; }
+  .note b { color: #f35815; }
+</style>
+</head>
+<body>
+<main>
+  <h1>System architecture — one primary, many read replicas</h1>
+  <p class="sub">The application writes to the primary only. The primary's binlog
+  replicates out to read replicas; reads fan back from the replica pool.</p>
+  <div class="topo" id="topo">
+    <svg class="wires" id="wires-svg" width="100%" height="100%">
+      <!-- app right center (186,52) → primary left center (345,52) -->
+      <line x1="186" y1="52" x2="345" y2="52" stroke="#454545" stroke-width="2"/>
+      <!-- primary bottom center (430,80) → each replica top center (160/430/700, 238) -->
+      <line x1="430" y1="80" x2="160" y2="238" stroke="#454545" stroke-width="2"/>
+      <line x1="430" y1="80" x2="430" y2="238" stroke="#454545" stroke-width="2"/>
+      <line x1="430" y1="80" x2="700" y2="238" stroke="#454545" stroke-width="2"/>
+      <!-- replica 1 top center (160,238) → app bottom center (101,80) -->
+      <line x1="160" y1="238" x2="101" y2="80" stroke="#454545" stroke-width="2"/>
+      <g id="pkts-g"></g>
+    </svg>
+
+    <div class="node app"><span class="t">APPLICATION</span><span class="d">app servers</span></div>
+    <div class="node primary"><span class="t">PRIMARY</span><span class="d">MySQL · accepts writes</span></div>
+    <div class="node replica r1"><span class="t">REPLICA 1</span><span class="d" id="lag1">caught up</span></div>
+    <div class="node replica r2"><span class="t">REPLICA 2</span><span class="d" id="lag2">caught up</span></div>
+    <div class="node replica r3"><span class="t">REPLICA 3</span><span class="d" id="lag3">replicating…</span></div>
+
+    <span class="lbl" style="left:230px; top:40px">writes</span>
+    <span class="lbl" style="left:338px; top:102px">binlog replication (async)</span>
+    <span class="lbl" style="left:60px;  top:158px">reads</span>
+
+  </div>
+  <div class="legend">
+    <span><i style="background:#f35815"></i>write → primary</span>
+    <span><i style="background:#1e9de7"></i>binlog → replicas</span>
+    <span><i style="background:#27b648"></i>read ← replica</span>
+  </div>
+  <p class="note">One <b>primary</b> owns every write; replicas are read-only copies.
+  Replication is <b>asynchronous</b> — a replica can be milliseconds-to-seconds behind,
+  so never read-your-own-write from a replica. The write path is one node; the read
+  path scales horizontally.</p>
+</main>
+<script>
+  const topo = document.getElementById("topo");
+  const PATHS = {
+    write:   "M 186 52 L 345 52",
+    binlog1: "M 430 80 L 160 238",
+    binlog2: "M 430 80 L 430 238",
+    binlog3: "M 430 80 L 700 238",
+    read:    "M 160 238 L 101 80",
+  };
+  const LAGS = [4000, 10000, 24000];
+  function spawn(cls, path, dur) {
+    const g = document.getElementById("pkts-g");
+    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    circle.setAttribute("r", "5");
+    circle.setAttribute("class", "pkt-" + cls);
+    const anim = document.createElementNS("http://www.w3.org/2000/svg", "animateMotion");
+    anim.setAttribute("path", path);
+    anim.setAttribute("dur", dur + "ms");
+    anim.setAttribute("fill", "freeze");
+    anim.setAttribute("rotate", "auto");
+    circle.appendChild(anim);
+    g.appendChild(circle);
+    anim.beginElement();
+    setTimeout(function () { circle.remove(); }, dur + 60);
+  }
+
+  function cycle() {
+    // write: app → primary
+    spawn("write", PATHS.write, 800);
+    // binlog fans out to the three replicas, staggered by their lag
+    setTimeout(function () {
+      spawn("binlog", PATHS.binlog1, 900);
+      spawn("binlog", PATHS.binlog2, 1100);
+      spawn("binlog", PATHS.binlog3, 1400);
+    }, 800);
+    // read returns from replica 1
+    setTimeout(function () { spawn("read", PATHS.read, 900); }, 1800);
+  }
+  setInterval(cycle, 2800);
+  cycle();
+
+  // replica status mirrors the staggered binlog arrival
+  setInterval(function () {
+    const phase = (Date.now() / 1000) % 30;
+    LAGS.forEach(function (lagMs, i) {
+      document.getElementById("lag" + (i + 1)).textContent =
+        phase < lagMs / 1000 ? "replicating…" : "caught up";
+    });
+  }, 400);
+
+  // Report content height to the gallery frame (works across origins,
+  // including file://). The gallery grows our iframe to match — never clips.
+  const postH = () => { try { parent.postMessage({ demoHeight: Math.ceil(document.body.scrollHeight) }, "*"); } catch (e) {} };
+  window.addEventListener("load", postH);
+  window.addEventListener("resize", postH);
+  new MutationObserver(postH).observe(document.body, { childList: true, subtree: true, characterData: true });
+  postH();
+</script>
+</body>
+</html>

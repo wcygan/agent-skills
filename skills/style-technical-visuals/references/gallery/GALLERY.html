@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlanetScale Technical Visuals — Gallery</title>
+<style>
+  /* ============================================================
+     DESIGN SYSTEM — PlanetScale Technical Visuals (dark theme)
+     All demos share these tokens. Dark canvas only.
+
+     Canvas & surfaces
+       --canvas        #111111   page background
+       --panel         #1c1c1c   demo panels, cards, table surfaces
+       --border        rgba(255,255,255,.14)   1px dividers and outlines
+       --track         rgba(255,255,255,.10)   empty tracks, cell wells
+     Text
+       --text          #fafafa   primary
+       --text-muted    rgba(250,250,250,.60)   captions, subheads
+       --text-dim      rgba(250,250,250,.40)   x-axes, footnotes
+     Accent (sparing — active state, focus, taught concept)
+       --accent        #f35815   the one orange
+     Series & states
+       --good          #27b648   success, hits, caught-up
+       --warn          #d19f03   caution, wasted scans, mid lag
+       --bad           #ff455d   errors, stale reads, saturation
+       --info          #1e9de7   network, secondary series
+    Layout & framing (hard rules for every new demo)
+       demos NEVER scroll: each iframe expands to claim its full vertical space
+       write body { overflow:hidden } and size content to a natural height;
+       set a generous height="N" on the iframe — the fit script below grows it
+       to body.scrollHeight after load, never shrinks below content
+       no internal scrollbars, no clipped panels; padding belongs in the demo,
+       not the iframe frame
+    ============================================================ */
+  :root {
+    color-scheme: dark;
+    --canvas:#111111; --panel:#1c1c1c;
+    --border:rgba(255,255,255,.14); --track:rgba(255,255,255,.10);
+    --text:#fafafa; --text-muted:rgba(250,250,250,.6); --text-dim:rgba(250,250,250,.4);
+    --accent:#f35815; --good:#27b648; --warn:#d19f03; --bad:#ff455d; --info:#1e9de7;
+  }
+  body{background:var(--canvas);color:var(--text);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;margin:0;padding:40px 16px;}
+  main{max-width:1080px;margin:0 auto;}
+  h1{font-size:22px;letter-spacing:.02em;}
+  header p{font-size:13px;line-height:1.6;opacity:.75;max-width:70ch;}
+  .swatches{display:flex;gap:8px;margin:16px 0 8px;}
+  .sw{width:44px;}
+  .sw i{display:block;height:14px;border-radius:2px;}
+  .sw s{display:block;font-size:9px;opacity:.5;text-decoration:none;margin-top:3px;}
+  figure{margin:0 0 64px;position:relative;}
+  figure iframe{width:100%;border:1px solid var(--border);background:var(--panel);display:block;border-radius:4px;overflow:hidden;}
+  figcaption{margin-top:10px;}
+  figcaption b{display:block;font-size:14px;}
+  figcaption span{font-size:11px;letter-spacing:.08em;opacity:.5;text-transform:uppercase;}
+  figcaption p{font-size:12px;line-height:1.6;opacity:.7;margin:6px 0 0;max-width:78ch;}
+  figcaption code{font-size:11px;background:rgba(255,255,255,.10);padding:1px 5px;border-radius:3px;}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>PlanetScale Technical Visuals — Gallery</h1>
+    <p>Diagrams that carry the design language of PlanetScale's engineering blog:
+    the pixel-letterboard brand moment, the cache hit-ratio simulation, B+tree page splits,
+    the 768-server matrix, the Universal Scalability Law curve, the latency ladder, the
+    leftmost-prefix index study, the replication lag wave, partition pruning,
+    primary-plus-read-replicas architecture, request fanout topology, hot shard overload,
+    database table sampler, backfill migration progress, connection pool exhaustion,
+    and the MySQL replication pipeline.
+    Each demo is self-contained. Open this file in a browser; every animation runs offline.</p>
+    <p>No demo scrolls: every iframe grows to fit its content. The auto-fit script at
+    the bottom of this file sizes each frame after load; the design-system comment at
+    the top states the layout rules every new demo must follow.</p>
+    <div class="swatches">
+      <span class="sw"><i style="background:var(--accent)"></i><s>accent</s></span>
+      <span class="sw"><i style="background:var(--good)"></i><s>good</s></span>
+      <span class="sw"><i style="background:var(--warn)"></i><s>warn</s></span>
+      <span class="sw"><i style="background:var(--bad)"></i><s>bad</s></span>
+      <span class="sw"><i style="background:var(--info)"></i><s>info</s></span>
+      <span class="sw"><i style="background:var(--panel);border:1px solid var(--border)"></i><s>panel</s></span>
+      <span class="sw"><i style="background:var(--canvas);border:1px solid var(--border)"></i><s>canvas</s></span>
+    </div>
+  </header>
+  <figure>
+    <iframe src="demos/cache-title.html" height="260" loading="lazy" title="Caching pixel title"></iframe>
+    <figcaption>
+      <span>blog/caching &middot; #title</span>
+      <b>Pixel letterboard — the brand moment</b>
+      <p>Every demo in the system opens with this: the word rendered as colored pixel cells that
+      pop in letter by letter, then randomly swap neighbors forever. Canvas of JetBains-free
+      palette cells; the one asset every post shares.</p>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <iframe src="demos/cache-hit-ratio.html#cache-hr-high" height="320" loading="lazy" title="Cache hit ratio simulation"></iframe>
+    <figcaption>
+      <span>blog/caching &middot; #cache-hr-high</span>
+      <b>Cache hit ratio at 99% — the load argument</b>
+      <p>The core teaching visual of the caching post: requesters on the left, a thin fast cache
+      in the middle, the slow database on the right. Colored requests resolve as hits (green path)
+      or miss into the database (orange), with live hit/miss counters. Change the ratio and the
+      origin load story tells itself.</p>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <iframe src="demos/bplustree-random.html" height="1200" loading="lazy" title="B+tree random inserts"></iframe>
+    <figcaption>
+      <span>blog/btrees-and-database-indexes &middot; #bplustree-random</span>
+      <b>B+tree page splits under random keys</b>
+      <p>Insert keys and watch the tree grow: random (UUID-like) keys split pages everywhere and
+      keep the tree shallow and wide, while the sequential twin fills pages to 93% before splitting.
+      The single best argument for monotonic primary keys.</p>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <iframe src="demos/servers.html" height="300" loading="lazy" title="768 servers"></iframe>
+    <figcaption>
+      <span>blog/many-servers-appear-as-one &middot; #servers</span>
+      <b>768 servers that look like one</b>
+      <p>A live Canvas matrix of 768 database nodes processing traffic in real time. It is the
+      scale claim of the whole post made physical: individual nodes disappear into one endpoint.</p>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <iframe src="demos/usl-curve.html" height="620" loading="lazy" title="Universal Scalability Law curve"></iframe>
+    <figcaption>
+      <span>blog/doing-more-with-less &middot; #usl-curve</span>
+      <b>Universal Scalability Law — throughput vs load</b>
+      <p>Throughput rises, peaks, then collapses as contention (&alpha;) and coherency (&beta;)
+      take over. Drag the sliders and the curve reshapes; the peak is why unlimited connection
+      pools hurt.</p>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <iframe src="demos/latency-ladder.html" height="440" scrolling="no" loading="lazy" title="Latency ladder"></iframe>
+    <figcaption>
+      <span>concept &middot; #latency-ladder</span>
+      <b>Latency ladder — why we cache</b>
+      <p>A read falls through every tier below the one that serves it, from L1 to a
+      disk seek. Watch the multipliers stack and the cost of a miss makes itself
+      known in one picture.</p>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <iframe src="demos/index-range-scan.html" height="680" scrolling="no" loading="lazy" title="Leftmost prefix"></iframe>
+    <figcaption>
+      <span>blog/indexing &middot; #index-range-scan</span>
+      <b>Composite index — the leftmost prefix rule</b>
+      <p>The same WHERE clause against a correctly ordered index and a badly ordered
+      one. Orange rows are returned, yellow rows are pointlessly scanned, and the
+      scanned/returned counters make the cost ratio visible.</p>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <iframe src="demos/replication-lag.html" height="580" scrolling="no" loading="lazy" title="Replication lag"></iframe>
+    <figcaption>
+      <span>concept &middot; #replication-lag</span>
+      <b>Replication lag wave</b>
+      <p>Writes commit on the primary and arrive at each replica on its own schedule
+      (4 s, 10 s, 24 s). Read from the slow replica during the wave and the demo shows
+      you yesterday's value.</p>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <iframe src="demos/partition-pruning.html" height="400" scrolling="no" loading="lazy" title="Partition pruning"></iframe>
+    <figcaption>
+      <span>blog/partitioning &middot; #partition-pruning</span>
+      <b>Partition pruning — touch only what the query needs</b>
+      <p>Twenty-four monthly partitions of a 50M-rows-per-month orders table. Pick a
+      date range, run the query, and only the touched partitions light up — with the
+      pruned percentage as the payoff.</p>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <iframe src="demos/system-architecture.html" height="600" scrolling="no" loading="lazy" title="System architecture"></iframe>
+    <figcaption>
+      <span>architecture &middot; #system-architecture</span>
+      <b>One primary, many read replicas</b>
+      <p>The standard MySQL topology at a glance: the application writes only to the
+      primary (orange), the primary's binlog streams asynchronously to read replicas
+      (blue), and reads fan back from the replica pool (green). Write path is one
+      node; read path scales horizontally.</p>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <iframe src="demos/fanout-topology.html#fanout" height="530" scrolling="no" loading="lazy" title="Request fanout topology"></iframe>
+    <figcaption>
+      <span>sharding &middot; #fanout</span>
+      <b>Request fanout topology — balanced distribution</b>
+      <p>Three application cards (<code>app-0</code>, <code>app-1</code>, <code>app-2</code>) dispatch through a central proxy to six database shards (<code>s0</code> through <code>s5</code>), each topped with a small queue depth badge. Glowing traffic dots travel along rectilinear interconnects, fanning out in round-robin fashion, with borders pulsing accent green (<code>#30A46C</code>) on arrival to prove balanced load distribution.</p>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <iframe src="demos/fanout-topology.html#hot-shard" height="530" scrolling="no" loading="lazy" title="Hot shard overload"></iframe>
+    <figcaption>
+      <span>sharding &middot; #hot-shard</span>
+      <b>Hot shard overload — partition skew</b>
+      <p>Identical geometry to <code>#fanout</code> (3 apps, 1 proxy, 6 shards), but the proxy routes ~80%+ of incoming requests directly to shard <code>s3</code>. Shard <code>s3</code> is visually emphasized with an orange outline; as requests bottleneck, its border pulses warning orange (<code>#F35815</code>) and its live queue depth counter climbs incrementally (<code>queue 1</code>, <code>queue 2</code>, …) while the other shards sit largely idle.</p>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <iframe src="demos/users-table.html" height="420" scrolling="no" loading="lazy" title="Database table sampler"></iframe>
+    <figcaption>
+      <span>schema &middot; users</span>
+      <b>Database table sampler — relational layout and row locks</b>
+      <p>Static relational database table with 5 columns (<code>id</code>, <code>email</code>, <code>org_id</code>, <code>status</code>, <code>created_at</code>) and 5 sample rows. Features thin 1px interior gridlines, a 2px container border, column type annotations (the <code>id</code> primary key header tinted accent blue), and Row 4 (<code>dan@example.com</code>, <code>id=1045</code>) highlighted with an orange border, tinted background, and caption marking an open transaction lock.</p>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <iframe src="demos/backfill.html#backfill" height="380" scrolling="no" loading="lazy" title="Table migration backfill progress"></iframe>
+    <figcaption>
+      <span>migration &middot; #backfill</span>
+      <b>Table migration / backfill progress</b>
+      <p>Four stacked horizontal stage bars: <code>COPYING ROWS</code>, <code>COPYING INDEXES</code>, <code>COPYING TOAST</code>, and <code>COPYING WAL</code>, topped with a prominent percentage readout (<code>21%</code>). Uses an SVG <code>&lt;clipPath&gt;</code> sliding horizontally across static diagonal hatching to reveal progress smoothly without redrawing paths; completed stages turn solid green with a checkmark while pending stages remain dim outline boxes.</p>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <iframe src="demos/connection-pool.html#connection-pool" height="540" scrolling="no" loading="lazy" title="Connection pool exhaustion"></iframe>
+    <figcaption>
+      <span>concurrency &middot; #connection-pool</span>
+      <b>Connection pool exhaustion — leaked connection</b>
+      <p>Top status bar shows live counts (<code>in use</code>, <code>idle</code>, <code>stuck</code>); six client request queues (<code>req-0</code> through <code>req-5</code>) on the left stream into an 8-slot pool container (<code>c0</code> through <code>c7</code>) in the middle, querying MySQL on the right. After ~5 seconds, connection <code>c3</code> enters a stuck/leaked state (turns warning orange and never releases), permanently reducing capacity so subsequent client requests back up in orange.</p>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <iframe src="demos/replication-pipeline.html#replication" height="540" scrolling="no" loading="lazy" title="MySQL replication pipeline"></iframe>
+    <figcaption>
+      <span>replication &middot; #replication</span>
+      <b>MySQL replication pipeline — applier stall</b>
+      <p>Primary MySQL node on the left writes into its <code>binlog</code>; network wires branch to three replicas (<code>replica-0</code>, <code>replica-1</code>, <code>replica-2</code>), each showing its internal <code>io</code> thread, <code>relay log</code> buffer, and <code>sql</code> applier thread. Replicas 0 and 1 drain instantly with sub-second green lag (<code>0.04s</code>, <code>0.20s</code>), while Replica 2 simulates a slow applier: the relay log fills with queued packets, the backlog grows, the border turns warning orange, and lag climbs to <code>6.4s</code>.</p>
+    </figcaption>
+  </figure>
+</main>
+<script>
+  // Auto-fit each demo iframe so nothing ever scrolls inside.
+  const fit = (frame) => {
+    try {
+      const doc = frame.contentWindow.document;
+      const bottom = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight);
+      if (bottom > 50) frame.style.height = Math.ceil(bottom) + 'px';
+    } catch (e) { /* keep attribute height until same-origin allows measuring */ }
+  };
+  const fitAll = () => document.querySelectorAll('figure iframe').forEach(fit);
+  window.addEventListener('load', () => setTimeout(fitAll, 1500));
+  window.addEventListener('resize', () => setTimeout(fitAll, 400));
+  document.addEventListener('click', () => setTimeout(fitAll, 600));
+  // Demos report their own content height (works on file://, where the
+  // same-origin fit above cannot measure). Grow-only, with padding.
+  window.addEventListener('message', (e) => {
+    if (!e.data || !e.data.demoHeight) return;
+    const f = [...document.querySelectorAll('figure iframe')]
+      .find(fr => fr.contentWindow === e.source);
+    if (f) f.style.height = Math.ceil(e.data.demoHeight + 12) + 'px';
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>cache-hr-high</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-fragment="cache-hr-high">
+  <div data-id="cache-hr-high"></div>
+  <script src="../assets/viz.js"></script>
+  <script>
+    new VIZ.CacheViz({ rows: 4, cols: 3, layers: [{ rows: 4, cols: 2, label: 'cache' }], requester: 'requester', database: 'storage', automation: 'automatic', interval: 1000, prewarm: true, source: 'cache-hr-high' });
+  </script>
+</body>
+</html>

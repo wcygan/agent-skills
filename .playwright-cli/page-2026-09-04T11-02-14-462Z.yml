@@ -1,0 +1,292 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]: Clean-room design reference · PlanetScale caching article
+      - heading "Caching visual study" [level=1] [ref=e5]
+      - paragraph [ref=e6]: A local reconstruction of the visual vocabulary found during inspection. It records structure, color, typography, and interaction without copying the original application bundles.
+      - generic "Inspection findings" [ref=e7]:
+        - generic [ref=e8]:
+          - strong [ref=e9]: "23"
+          - text: fragment views
+        - generic [ref=e10]:
+          - strong [ref=e11]: "1"
+          - text: shared iframe shell
+        - generic [ref=e12]:
+          - strong [ref=e13]: "3"
+          - text: versioned script bundles
+        - generic [ref=e14]:
+          - strong [ref=e15]: "1"
+          - text: broken remote image
+  - generic [ref=e16]:
+    - paragraph [ref=e17]: All code, styles, and data are embedded in this file.
+    - generic [ref=e18]:
+      - button "Pause motion" [ref=e19] [cursor=pointer]
+      - button "Use dark theme" [ref=e20] [cursor=pointer]
+  - main [ref=e21]:
+    - generic [ref=e22]:
+      - generic [ref=e23]:
+        - heading "Pixel title" [level=2] [ref=e24]
+        - generic [ref=e25]: "#title"
+      - generic "Caching in colored square letters" [ref=e28]
+    - generic [ref=e141]:
+      - generic [ref=e142]:
+        - heading "Memory hierarchy preview" [level=2] [ref=e143]
+        - generic [ref=e144]: "#cache-0"
+      - generic [ref=e148]: requester
+    - generic [ref=e164]:
+      - generic [ref=e165]:
+        - heading "Postgres mode" [level=2] [ref=e166]
+        - generic [ref=e167]: "#postgres-toggle"
+      - generic [ref=e170]:
+        - strong [ref=e171]: Postgres Mode
+        - button "Toggle Postgres mode" [ref=e172] [cursor=pointer]
+    - generic [ref=e173]:
+      - generic [ref=e174]:
+        - heading "Basic cache path" [level=2] [ref=e175]
+        - generic [ref=e176]: "#cache-basic"
+      - generic [ref=e178]:
+        - generic [ref=e180]: data requester
+        - generic [ref=e188]: fast + small
+        - generic [ref=e203]: slow + large
+    - generic [ref=e204]:
+      - generic [ref=e205]:
+        - heading "Cache hit" [level=2] [ref=e206]
+        - generic [ref=e207]: "#cache-hit"
+      - generic [ref=e210]: requester
+    - generic [ref=e226]:
+      - generic [ref=e227]:
+        - heading "Cache miss" [level=2] [ref=e228]
+        - generic [ref=e229]: "#cache-miss"
+      - generic [ref=e232]: requester
+    - generic [ref=e249]:
+      - generic [ref=e250]:
+        - heading "Low hit-rate cache" [level=2] [ref=e251]
+        - generic [ref=e252]: "#cache-hr-low"
+      - generic [ref=e254]:
+        - generic [ref=e255]: requester
+        - generic [ref=e262]: cache
+        - generic [ref=e274]: storage
+    - generic [ref=e275]:
+      - generic [ref=e276]:
+        - heading "Low hit-rate statistics" [level=2] [ref=e277]
+        - generic [ref=e278]: "#cache-hr-low-stats"
+      - generic [ref=e294]:
+        - generic [ref=e295]:
+          - text: Hits
+          - status [ref=e296]: "2"
+        - generic [ref=e297]:
+          - text: Misses
+          - status [ref=e298]: "12"
+        - generic [ref=e299]:
+          - text: Hit rate
+          - status [ref=e300]: 14.3%
+    - generic [ref=e301]:
+      - generic [ref=e302]:
+        - heading "High hit-rate cache" [level=2] [ref=e303]
+        - generic [ref=e304]: "#cache-hr-high"
+      - generic [ref=e306]:
+        - generic [ref=e307]: requester
+        - generic [ref=e319]: cache
+        - generic [ref=e331]: storage
+    - generic [ref=e332]:
+      - generic [ref=e333]:
+        - heading "High hit-rate statistics" [level=2] [ref=e334]
+        - generic [ref=e335]: "#cache-hr-high-stats"
+      - generic [ref=e351]:
+        - generic [ref=e352]:
+          - text: Hits
+          - status [ref=e353]: "10"
+        - generic [ref=e354]:
+          - text: Misses
+          - status [ref=e355]: "3"
+        - generic [ref=e356]:
+          - text: Hit rate
+          - status [ref=e357]: 76.9%
+    - generic [ref=e358]:
+      - generic [ref=e359]:
+        - heading "RAM and disk" [level=2] [ref=e360]
+        - generic [ref=e361]: "#cache-1"
+      - generic [ref=e363]:
+        - generic [ref=e364]: CPU
+        - generic [ref=e372]: RAM
+        - generic [ref=e385]: Hard drive
+    - generic [ref=e386]:
+      - generic [ref=e387]:
+        - heading "CPU cache hierarchy" [level=2] [ref=e388]
+        - generic [ref=e389]: "#cache-2"
+      - generic [ref=e391]:
+        - generic [ref=e396]: CPU cache
+        - generic [ref=e403]: RAM
+        - generic [ref=e416]: Hard drive
+    - generic [ref=e417]:
+      - generic [ref=e418]:
+        - heading "Latency comparison" [level=2] [ref=e419]
+        - generic [ref=e420]: "#latency-comparison"
+      - generic [ref=e423]:
+        - generic [ref=e424]:
+          - generic [ref=e425]: CPU
+          - generic [ref=e426]: 1ns
+        - generic [ref=e428]:
+          - generic [ref=e429]: L1/L2
+          - generic [ref=e430]: 4ns
+        - generic [ref=e432]:
+          - generic [ref=e433]: L3
+          - generic [ref=e434]: 40ns
+        - generic [ref=e436]:
+          - generic [ref=e437]: RAM
+          - generic [ref=e438]: 80ns
+        - generic [ref=e440]:
+          - generic [ref=e441]: SSD
+          - generic [ref=e442]: 100μs
+      - generic [ref=e444]:
+        - text: Time scale
+        - slider "Time scale" [ref=e445]: "20"
+        - status [ref=e446]: 1× slower
+    - generic [ref=e447]:
+      - generic [ref=e448]:
+        - heading "Tweet example" [level=2] [ref=e449]
+        - generic [ref=e450]: "#tweet-example"
+      - article [ref=e453]:
+        - generic [ref=e454]:
+          - generic [ref=e455]: AK
+          - generic [ref=e456]:
+            - strong [ref=e457]: Andrej Karpathy
+            - generic [ref=e458]: "@karpathy"
+          - strong [ref=e459]: 𝕏
+        - paragraph [ref=e460]: The hottest new programming language is English
+        - paragraph [ref=e461]: Jan 24, 2023 · ↻ 6,900 · ♡ 43,000
+    - generic [ref=e462]:
+      - generic [ref=e463]:
+        - heading "Tweet impression simulator" [level=2] [ref=e464]
+        - generic [ref=e465]: "#karpathy-tweet-simulator"
+      - generic [ref=e468]:
+        - button "Start simulation" [ref=e470] [cursor=pointer]
+        - generic [ref=e471]:
+          - generic [ref=e472]:
+            - text: "Total impressions:"
+            - status [ref=e473]: "0"
+          - img "Impressions over time" [ref=e474]
+    - generic [ref=e475]:
+      - generic [ref=e476]:
+        - heading "Age-aware cache" [level=2] [ref=e477]
+        - generic [ref=e478]: "#cache-3"
+      - generic [ref=e480]:
+        - generic [ref=e481]: App server
+        - generic [ref=e489]: Cache
+        - generic [ref=e504]: Database
+        - generic [ref=e505]:
+          - generic [ref=e506]: NEWER
+          - generic [ref=e507]: OLDER
+    - generic [ref=e508]:
+      - generic [ref=e509]:
+        - heading "Empty cache statistics" [level=2] [ref=e510]
+        - generic [ref=e511]: "#cache-3-stats"
+      - generic [ref=e515]:
+        - generic [ref=e516]:
+          - text: Hits
+          - status [ref=e517]: "0"
+        - generic [ref=e518]:
+          - text: Misses
+          - status [ref=e519]: "0"
+        - generic [ref=e520]:
+          - text: Hit rate
+          - status [ref=e521]: 0.0%
+    - generic [ref=e522]:
+      - generic [ref=e523]:
+        - heading "Spatial locality" [level=2] [ref=e524]
+        - generic [ref=e525]: "#spatial-locality"
+      - generic [ref=e527]:
+        - generic [ref=e528]: Requester
+        - generic [ref=e529]:
+          - generic [ref=e530]:
+            - generic [ref=e531]: "10"
+            - generic [ref=e532]: "7"
+            - generic [ref=e533]: "1"
+            - generic [ref=e534]: "2"
+          - generic [ref=e535]: Cache with spatial locality
+        - generic [ref=e536]:
+          - generic [ref=e537]:
+            - generic [ref=e538]: "1"
+            - generic [ref=e539]: "2"
+            - generic [ref=e540]: "3"
+            - generic [ref=e541]: "4"
+            - generic [ref=e542]: "5"
+            - generic [ref=e543]: "6"
+            - generic [ref=e544]: "7"
+            - generic [ref=e545]: "8"
+            - generic [ref=e546]: "9"
+          - generic [ref=e547]: Database
+    - generic [ref=e548]:
+      - generic [ref=e549]:
+        - heading "Regional cache, sparse" [level=2] [ref=e550]
+        - generic [ref=e551]: "#geo-1"
+      - generic [ref=e554]:
+        - generic [ref=e572]: Database
+        - strong [ref=e579]: US East
+        - strong [ref=e586]: US Central
+        - strong [ref=e593]: US West
+        - generic [ref=e594]:
+          - button "Move requester west" [ref=e595] [cursor=pointer]: ←
+          - button "Move requester east" [ref=e596] [cursor=pointer]: →
+    - generic [ref=e597]:
+      - generic [ref=e598]:
+        - heading "Regional cache, distributed" [level=2] [ref=e599]
+        - generic [ref=e600]: "#geo-2"
+      - generic [ref=e603]:
+        - generic [ref=e610]: Database
+        - strong [ref=e617]: US East
+        - strong [ref=e624]: US Central
+        - strong [ref=e631]: US West
+        - generic [ref=e632]:
+          - button "Move requester west" [ref=e633] [cursor=pointer]: ←
+          - button "Move requester east" [ref=e634] [cursor=pointer]: →
+    - generic [ref=e635]:
+      - generic [ref=e636]:
+        - heading "LIFO policy" [level=2] [ref=e637]
+        - generic [ref=e638]: "#lifo-policy"
+      - generic [ref=e641]:
+        - generic [ref=e650]:
+          - generic [ref=e651]: "1"
+          - generic [ref=e652]: "2"
+          - generic [ref=e653]: "3"
+          - generic [ref=e654]: "4"
+          - generic [ref=e655]: "5"
+          - generic [ref=e656]: "6"
+          - generic [ref=e657]: "7"
+        - paragraph [ref=e658]: "Hits: 1 | Misses: 5 | Hit rate: 17%"
+    - generic [ref=e660]:
+      - generic [ref=e661]:
+        - heading "LRU policy" [level=2] [ref=e662]
+        - generic [ref=e663]: "#lru-policy"
+      - generic [ref=e666]:
+        - generic [ref=e675]:
+          - generic [ref=e676]: "1"
+          - generic [ref=e677]: "2"
+          - generic [ref=e678]: "3"
+          - generic [ref=e679]: "4"
+          - generic [ref=e680]: "5"
+          - generic [ref=e681]: "6"
+          - generic [ref=e682]: "7"
+        - paragraph [ref=e683]: "Hits: 1 | Misses: 5 | Hit rate: 17%"
+    - generic [ref=e685]:
+      - generic [ref=e686]:
+        - heading "Time-aware LRU" [level=2] [ref=e687]
+        - generic [ref=e688]: "#time-aware-lru-cache"
+      - generic [ref=e691]:
+        - generic [ref=e692]:
+          - time [ref=e694]
+          - time [ref=e696]
+          - time [ref=e698]
+          - time [ref=e700]
+          - time [ref=e702]
+        - generic [ref=e705]:
+          - generic [ref=e706]: "1"
+          - generic [ref=e707]: "2"
+          - generic [ref=e708]: "3"
+          - generic [ref=e709]: "4"
+          - generic [ref=e710]: "5"
+          - generic [ref=e711]: "6"
+          - generic [ref=e712]: "7"
+        - paragraph [ref=e713]: "Hits: 1 | Misses: 5 | Hit rate: 17%"
+  - contentinfo [ref=e715]:
+    - paragraph [ref=e716]: This file is a clean-room study. It uses original HTML, CSS, and JavaScript. It does not contain PlanetScale application code or downloaded assets.

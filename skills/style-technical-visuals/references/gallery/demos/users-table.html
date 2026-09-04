@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Database Table Sampler — users</title>
+<style>
+  /* Design system tokens: dark theme */
+  :root {
+    --canvas: #111111;
+    --panel: #1c1c1c;
+    --border: rgba(255,255,255,.14);
+    --border-subtle: rgba(255,255,255,.08);
+    --track: rgba(255,255,255,.10);
+    --text: #fafafa;
+    --text-muted: rgba(250,250,250,.60);
+    --text-dim: rgba(250,250,250,.40);
+    --accent: #f35815;
+    --good: #30a46c;
+    --info: #1e9de7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 20px 28px;
+    background: var(--canvas);
+    color: var(--text);
+    font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+    overflow: hidden;
+  }
+  main { max-width: 860px; margin: 0 auto; }
+  h1 {
+    font-size: 13px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin: 0 0 4px;
+    opacity: .9;
+  }
+  .sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0 0 16px;
+  }
+  .table-wrap {
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    background: var(--panel);
+    overflow: hidden;
+  }
+  svg.table-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* Captions & Callouts */
+  .callout-box {
+    margin-top: 14px;
+    padding: 10px 14px;
+    border: 1px solid rgba(243,88,21,.35);
+    background: rgba(243,88,21,.08);
+    border-radius: 4px;
+    font-size: 12px;
+    color: rgba(250,250,250,.85);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .callout-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+  .callout-box code {
+    background: rgba(255,255,255,.10);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 11px;
+    color: #fff;
+  }
+  .note {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 12px 0 0;
+    max-width: 82ch;
+    line-height: 1.6;
+  }
+  .note b { color: var(--text); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Database Table Sampler — users</h1>
+  <p class="sub">
+    Relational table definition with exact column widths, data types, 1px interior gridlines, and row lock highlighting.
+  </p>
+
+  <div class="table-wrap">
+    <svg class="table-svg" viewBox="0 0 820 286" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <style>
+          .th-name { font-family: ui-monospace, Menlo, monospace; font-size: 13px; font-weight: 700; fill: #fafafa; }
+          .th-type { font-family: ui-monospace, Menlo, monospace; font-size: 10px; fill: rgba(250,250,250,.45); letter-spacing: .02em; }
+          .th-pk { fill: #1e9de7; font-weight: 600; }
+          .td-cell { font-family: ui-monospace, Menlo, monospace; font-size: 12px; fill: rgba(250,250,250,.88); }
+          .td-dim { fill: rgba(250,250,250,.55); }
+          .td-badge { font-family: ui-monospace, Menlo, monospace; font-size: 10px; font-weight: 600; }
+          .grid-line { stroke: rgba(255,255,255,.10); stroke-width: 1; }
+          .grid-header-line { stroke: rgba(255,255,255,.22); stroke-width: 1.5; }
+        </style>
+      </defs>
+
+      <!-- Table Header Background -->
+      <rect x="0" y="0" width="820" height="46" fill="#181818" />
+
+      <!-- Columns layout:
+           id:         x=16..100   (width 84)
+           email:      x=100..340  (width 240)
+           org_id:     x=340..460  (width 120)
+           status:     x=460..580  (width 120)
+           created_at: x=580..820  (width 240)
+      -->
+
+      <!-- Column Headers -->
+      <!-- id (pk) -->
+      <text x="24" y="22" class="th-name">id</text>
+      <text x="24" y="38" class="th-type th-pk">bigint &middot; pk</text>
+
+      <!-- email -->
+      <text x="116" y="22" class="th-name">email</text>
+      <text x="116" y="38" class="th-type">varchar(255)</text>
+
+      <!-- org_id -->
+      <text x="356" y="22" class="th-name">org_id</text>
+      <text x="356" y="38" class="th-type">bigint &middot; idx</text>
+
+      <!-- status -->
+      <text x="476" y="22" class="th-name">status</text>
+      <text x="476" y="38" class="th-type">varchar(32)</text>
+
+      <!-- created_at -->
+      <text x="596" y="22" class="th-name">created_at</text>
+      <text x="596" y="38" class="th-type">timestamp</text>
+
+      <!-- Header Bottom Line -->
+      <line x1="0" y1="46" x2="820" y2="46" class="grid-header-line" />
+
+      <!-- Rows Data (Row height = 48px)
+           Row 0 (y=46..94):   id=1042, alice@acme.corp,    org_id=9801, active,   2026-08-14 09:12:04
+           Row 1 (y=94..142):  id=1043, bob@example.com,    org_id=9801, active,   2026-08-14 09:44:19
+           Row 2 (y=142..190): id=1044, carol@cloud.dev,    org_id=9805, pending,  2026-08-14 10:02:51
+           Row 3 (y=190..238): id=1045, dan@example.com,    org_id=9801, locked,   2026-08-14 10:15:22 (HIGHLIGHTED)
+           Row 4 (y=238..286): id=1046, erin@fintech.io,    org_id=9812, active,   2026-08-14 10:28:47
+      -->
+
+      <!-- Row 0: alternating faint fill -->
+      <rect x="0" y="46" width="820" height="48" fill="#1c1c1c" />
+      <text x="24" y="75" class="td-cell" font-weight="600">1042</text>
+      <text x="116" y="75" class="td-cell">alice@acme.corp</text>
+      <text x="356" y="75" class="td-cell td-dim">9801</text>
+      <rect x="474" y="62" width="56" height="20" rx="3" fill="rgba(48,164,108,.16)" />
+      <text x="484" y="76" class="td-badge" fill="#30a46c">active</text>
+      <text x="596" y="75" class="td-cell td-dim">2026-08-14 09:12:04</text>
+      <line x1="0" y1="94" x2="820" y2="94" class="grid-line" />
+
+      <!-- Row 1 -->
+      <rect x="0" y="94" width="820" height="48" fill="#1f1f1f" />
+      <text x="24" y="123" class="td-cell" font-weight="600">1043</text>
+      <text x="116" y="123" class="td-cell">bob@example.com</text>
+      <text x="356" y="123" class="td-cell td-dim">9801</text>
+      <rect x="474" y="110" width="56" height="20" rx="3" fill="rgba(48,164,108,.16)" />
+      <text x="484" y="124" class="td-badge" fill="#30a46c">active</text>
+      <text x="596" y="123" class="td-cell td-dim">2026-08-14 09:44:19</text>
+      <line x1="0" y1="142" x2="820" y2="142" class="grid-line" />
+
+      <!-- Row 2 -->
+      <rect x="0" y="142" width="820" height="48" fill="#1c1c1c" />
+      <text x="24" y="171" class="td-cell" font-weight="600">1044</text>
+      <text x="116" y="171" class="td-cell">carol@cloud.dev</text>
+      <text x="356" y="171" class="td-cell td-dim">9805</text>
+      <rect x="474" y="158" width="62" height="20" rx="3" fill="rgba(209,159,3,.16)" />
+      <text x="483" y="172" class="td-badge" fill="#d19f03">pending</text>
+      <text x="596" y="171" class="td-cell td-dim">2026-08-14 10:02:51</text>
+      <line x1="0" y1="190" x2="820" y2="190" class="grid-line" />
+
+      <!-- Row 3: HIGHLIGHTED (Row 4 in 1-based indexing: dan@example.com, id=1045) -->
+      <rect x="1" y="191" width="818" height="46" fill="rgba(243,88,21,.10)" />
+      <rect x="1" y="191" width="818" height="46" fill="none" stroke="#f35815" stroke-width="1.5" />
+      <text x="24" y="219" class="td-cell" font-weight="700" fill="#f35815">1045</text>
+      <text x="116" y="219" class="td-cell" font-weight="600">dan@example.com</text>
+      <text x="356" y="219" class="td-cell td-dim">9801</text>
+      <rect x="466" y="206" width="102" height="20" rx="3" fill="rgba(243,88,21,.20)" stroke="rgba(243,88,21,.4)" stroke-width="1" />
+      <text x="473" y="220" class="td-badge" fill="#f35815">in-tx &bull; lock</text>
+      <text x="596" y="219" class="td-cell td-dim">2026-08-14 10:15:22</text>
+      <line x1="0" y1="238" x2="820" y2="238" class="grid-line" />
+
+      <!-- Row 4 -->
+      <rect x="0" y="238" width="820" height="48" fill="#1c1c1c" />
+      <text x="24" y="267" class="td-cell" font-weight="600">1046</text>
+      <text x="116" y="267" class="td-cell">erin@fintech.io</text>
+      <text x="356" y="267" class="td-cell td-dim">9812</text>
+      <rect x="474" y="254" width="56" height="20" rx="3" fill="rgba(48,164,108,.16)" />
+      <text x="484" y="268" class="td-badge" fill="#30a46c">active</text>
+      <text x="596" y="267" class="td-cell td-dim">2026-08-14 10:28:47</text>
+
+      <!-- Vertical Interior Gridlines (1px) -->
+      <line x1="100" y1="0" x2="100" y2="286" class="grid-line" />
+      <line x1="340" y1="0" x2="340" y2="286" class="grid-line" />
+      <line x1="460" y1="0" x2="460" y2="286" class="grid-line" />
+      <line x1="580" y1="0" x2="580" y2="286" class="grid-line" />
+    </svg>
+  </div>
+
+  <div class="callout-box">
+    <div class="callout-dot"></div>
+    <div>
+      row <code>id=1045</code> (<code>dan@example.com</code>) held by an open transaction
+      &mdash; <code>SELECT ... FOR UPDATE</code> exclusive row lock acquired at <code>10:15:22</code>.
+    </div>
+  </div>
+
+  <p class="note">
+    Relational tables maintain strict column alignment and monospace data rhythm.
+    The primary key column <b>id</b> is tinted accent blue (<code>#1E9DE7</code>), and Row 4 is isolated with an orange boundary and tinted fill to spotlight concurrency contention without disrupting table proportions.
+  </p>
+</main>
+
+<script>
+  // Report content height to parent frame
+  const postH = () => {
+    try {
+      parent.postMessage({ demoHeight: Math.ceil(document.body.scrollHeight) }, "*");
+    } catch (e) {}
+  };
+  window.addEventListener("load", postH);
+  window.addEventListener("resize", postH);
+  new MutationObserver(postH).observe(document.body, { childList: true, subtree: true, characterData: true });
+  postH();
+</script>
+</body>
+</html>

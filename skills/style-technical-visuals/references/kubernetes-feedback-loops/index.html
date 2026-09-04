@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlanetScale — The Feedback Loops Behind Kubernetes (diagrams)</title>
+<style>
+body{background:#fafafa;color:#111;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;margin:0;padding:32px 16px;}
+main{max-width:1200px;margin:0 auto;}
+h1{font-size:20px;}
+.demo{margin:0 0 48px;position:relative;}
+.demo img{width:100%;height:auto;display:block;}
+.demo figcaption{margin-top:6px;font-size:11px;letter-spacing:.08em;opacity:.5;text-transform:uppercase;}
+@media (prefers-color-scheme: dark){ body{background:#111;color:#fafafa;} }
+</style>
+</head>
+<body>
+<main><h1>PlanetScale — The Feedback Loops Behind Kubernetes</h1>
+<figure class="demo">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="images/part1-manual-cluster-darkmode-VBZiV-Rl.png">
+    <img src="images/part1-manual-cluster-C6iQCdoL.png" alt="Manual Postgres cluster diagram" width="1504" height="1007" loading="lazy">
+  </picture>
+  <figcaption>part1-manual-cluster-C6iQCdoL</figcaption>
+</figure>
+<figure class="demo">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="images/part1-feedback-loop-darkmode-BeMyZLwB.png">
+    <img src="images/part1-feedback-loop-Z0q4qAPX.png" alt="Closed feedback loop diagram" width="1504" height="564" loading="lazy">
+  </picture>
+  <figcaption>part1-feedback-loop-Z0q4qAPX</figcaption>
+</figure>
+<figure class="demo">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="images/part2-kubernetes-mapping-darkmode-CAz9s2jY.png">
+    <img src="images/part2-kubernetes-mapping-BqGHE4E0.png" alt="Mapping manual operations to Kubernetes controllers" width="1504" height="883" loading="lazy">
+  </picture>
+  <figcaption>part2-kubernetes-mapping-BqGHE4E0</figcaption>
+</figure>
+<figure class="demo">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="images/part2-edge-vs-level-darkmode-3DNb92aw.png">
+    <img src="images/part2-edge-vs-level-BUiD8D-7.png" alt="Edge-triggered versus level-triggered scaling" width="1504" height="927" loading="lazy">
+  </picture>
+  <figcaption>part2-edge-vs-level-BUiD8D-7</figcaption>
+</figure>
+<figure class="demo">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="images/part2-informer-queue-darkmode-ANBXf_4R.png">
+    <img src="images/part2-informer-queue-yyOXLWWC.png" alt="Informer, work queue, and controller diagram" width="1504" height="1007" loading="lazy">
+  </picture>
+  <figcaption>part2-informer-queue-yyOXLWWC</figcaption>
+</figure>
+<figure class="demo">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="images/part2-cache-vs-api-darkmode-9mbMAIBr.png">
+    <img src="images/part2-cache-vs-api-4EYpZbTb.png" alt="Kubernetes cache reads versus API writes diagram" width="1504" height="1071" loading="lazy">
+  </picture>
+  <figcaption>part2-cache-vs-api-4EYpZbTb</figcaption>
+</figure>
+<figure class="demo">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="images/part2-spec-status-darkmode-DI9X1oFB.png">
+    <img src="images/part2-spec-status-CinHPict.png" alt="Spec and status as setpoint and measured variable" width="1504" height="1007" loading="lazy">
+  </picture>
+  <figcaption>part2-spec-status-CinHPict</figcaption>
+</figure>
+<figure class="demo">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="images/part2-observation-fan-in-darkmode-KuH1rwY1.png">
+    <img src="images/part2-observation-fan-in-DvyJkB0Y.png" alt="Observation fan-in for a reconciler" width="1504" height="1007" loading="lazy">
+  </picture>
+  <figcaption>part2-observation-fan-in-DvyJkB0Y</figcaption>
+</figure>
+<figure class="demo">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="images/part2-operator-loop-darkmode-jOHBdP3P.png">
+    <img src="images/part2-operator-loop-YZG6qYVG.png" alt="Production operator feedback loop diagram" width="1504" height="943" loading="lazy">
+  </picture>
+  <figcaption>part2-operator-loop-YZG6qYVG</figcaption>
+</figure>
+</main>
+</body>
+</html>

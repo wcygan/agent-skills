@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>time-aware-lru-cache</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-fragment="time-aware-lru-cache">
+  <div data-id="time-aware-lru-cache"></div>
+  <script src="../assets/viz.js"></script>
+  <script>
+    new VIZ.PolicyViz({ size: 7, algorithm: 'time-aware-lru', interval: 2500, expiration: 15000 });
+  </script>
+</body>
+</html>

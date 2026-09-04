@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connection Pool Exhaustion</title>
+<style>
+  /* Design system tokens: dark theme */
+  :root {
+    --canvas: #111111;
+    --panel: #1c1c1c;
+    --border: rgba(255,255,255,.14);
+    --border-node: rgba(255,255,255,.22);
+    --track: rgba(255,255,255,.10);
+    --text: #fafafa;
+    --text-muted: rgba(250,250,250,.60);
+    --text-dim: rgba(250,250,250,.40);
+    --accent: #f35815;
+    --good: #30a46c;
+    --warn: #d19f03;
+    --bad: #ff455d;
+    --info: #1e9de7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 20px 28px;
+    background: var(--canvas);
+    color: var(--text);
+    font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+    overflow: hidden;
+  }
+  main { max-width: 860px; margin: 0 auto; }
+  h1 {
+    font-size: 13px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin: 0 0 4px;
+    opacity: .9;
+  }
+  .sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0 0 16px;
+  }
+
+  /* Status Bar at Top */
+  .status-header {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: #181818;
+    padding: 10px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .counts {
+    display: flex;
+    gap: 20px;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+  .count-item b {
+    font-size: 14px;
+    margin-left: 4px;
+  }
+  .count-inuse b { color: var(--good); }
+  .count-idle b { color: var(--info); }
+  .count-stuck b { color: var(--accent); }
+  .sim-timer {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  /* Stage Canvas */
+  .stage-box {
+    position: relative;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--panel);
+    height: 380px;
+    overflow: hidden;
+  }
+  svg.wires {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+    pointer-events: none;
+  }
+  .wire-line {
+    stroke: #454545;
+    stroke-width: 1.5;
+    fill: none;
+  }
+  .wire-line.queued {
+    stroke: rgba(243,88,21,.4);
+    stroke-dasharray: 4 4;
+  }
+
+  /* Left: 6 Client Queues */
+  .client-col {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    bottom: 20px;
+    width: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    z-index: 2;
+  }
+  .client-card {
+    height: 48px;
+    border: 1px solid var(--border-node);
+    border-radius: 3px;
+    background: #222;
+    padding: 6px 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: all .2s ease;
+  }
+  .client-card.waiting {
+    border-color: var(--accent);
+    background: rgba(243,88,21,.12);
+  }
+  .client-card .name {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .client-card .state {
+    font-size: 9px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  .client-card.waiting .state {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* Middle: Pool Container holding 8-slot grid */
+  .pool-container {
+    position: absolute;
+    left: 270px;
+    top: 30px;
+    width: 320px;
+    height: 320px;
+    border: 1px solid rgba(255,255,255,.24);
+    border-radius: 6px;
+    background: #181818;
+    padding: 14px 16px;
+    z-index: 2;
+  }
+  .pool-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .slots-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 12px 14px;
+  }
+  .slot {
+    height: 54px;
+    border: 1px solid var(--border-node);
+    border-radius: 4px;
+    background: #242424;
+    padding: 6px 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: all .2s ease;
+  }
+  .slot .id {
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .slot .status {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+
+  /* Slot status colors */
+  .slot.idle {
+    border-color: rgba(30,157,231,.4);
+  }
+  .slot.idle .id { color: var(--info); }
+  .slot.idle .status { color: rgba(30,157,231,.7); }
+
+  .slot.in-use {
+    border-color: var(--good);
+    background: rgba(48,164,108,.16);
+    box-shadow: 0 0 8px rgba(48,164,108,.3);
+  }
+  .slot.in-use .id { color: var(--good); }
+  .slot.in-use .status { color: var(--good); font-weight: 600; }
+
+  .slot.stuck {
+    border-color: var(--accent) !important;
+    background: rgba(243,88,21,.20) !important;
+    box-shadow: 0 0 12px rgba(243,88,21,.5) !important;
+  }
+  .slot.stuck .id { color: var(--accent); }
+  .slot.stuck .status { color: var(--accent); font-weight: 700; }
+
+  /* Right: MySQL database cylinder */
+  .db-target {
+    position: absolute;
+    right: 24px;
+    top: 110px;
+    width: 140px;
+    height: 160px;
+    border: 1.5px solid rgba(255,255,255,.3);
+    border-top: none;
+    border-radius: 0 0 70px 70px / 0 0 24px 24px;
+    background: #181818;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+  .db-target .cyl-cap {
+    position: absolute;
+    top: -11px;
+    left: -1.5px;
+    right: -1.5px;
+    height: 22px;
+    border: 1.5px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    background: #252525;
+  }
+  .db-target .db-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fafafa;
+    margin-top: 14px;
+  }
+  .db-target .db-sub {
+    font-size: 9px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    letter-spacing: .06em;
+    margin-top: 4px;
+  }
+
+  /* Traffic Packets */
+  /* Packet styling inside SVG */
+  .pkt-query {
+    fill: #30a46c;
+    filter: drop-shadow(0 0 6px rgba(48,164,108,.9));
+  }
+  .pkt-return {
+    fill: #1e9de7;
+    filter: drop-shadow(0 0 6px rgba(30,157,231,.9));
+  }
+  .pkt-wait {
+    fill: #f35815;
+    filter: drop-shadow(0 0 6px rgba(243,88,21,.9));
+  }
+
+  /* Legend & Controls */
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 14px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .legend {
+    display: flex;
+    gap: 16px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .legend i {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: -0.5px;
+  }
+  .btn-sim {
+    font: 12px ui-monospace, Menlo, monospace;
+    padding: 5px 14px;
+    border: 1px solid var(--border-node);
+    border-radius: 3px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+  .btn-sim:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .note {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 12px 0 0;
+    max-width: 82ch;
+    line-height: 1.6;
+  }
+  .note b { color: var(--text); }
+  .note .stuck-label { color: var(--accent); font-weight: 600; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Connection Pool Exhaustion</h1>
+  <p class="sub">
+    Client queues allocate slots from an 8-connection pool. When a connection leaks or hangs, capacity cascades toward zero.
+  </p>
+
+  <div class="status-header">
+    <div class="counts">
+      <div class="count-item count-inuse">in use <b id="cnt-inuse">0</b></div>
+      <div class="count-item count-idle">idle <b id="cnt-idle">8</b></div>
+      <div class="count-item count-stuck">stuck <b id="cnt-stuck">0</b></div>
+    </div>
+    <div class="sim-timer" id="sim-banner">Time: 0.0s &middot; Normal Operation</div>
+  </div>
+
+  <div class="stage-box" id="canvas">
+    <svg class="wires" id="wires-svg">
+      <!-- Wires from Clients (right edge center x=160, y: 44, 104, 164, 224, 284, 344)
+           to Pool left edge (x=270, y: 80, 124, 168, 212, 256, 300) -->
+      <line class="wire-line" id="wire-c0" x1="160" y1="44" x2="270" y2="80" />
+      <line class="wire-line" id="wire-c1" x1="160" y1="104" x2="270" y2="124" />
+      <line class="wire-line" id="wire-c2" x1="160" y1="164" x2="270" y2="168" />
+      <line class="wire-line" id="wire-c3" x1="160" y1="224" x2="270" y2="212" />
+      <line class="wire-line" id="wire-c4" x1="160" y1="284" x2="270" y2="256" />
+      <line class="wire-line" id="wire-c5" x1="160" y1="344" x2="270" y2="300" />
+
+      <!-- Wires from Pool right edge (x=590, y=190) to MySQL left edge (x=700, y=190) -->
+      <line class="wire-line" x1="590" y1="170" x2="700" y2="170" />
+      <line class="wire-line" x1="590" y1="190" x2="700" y2="190" />
+      <line class="wire-line" x1="590" y1="210" x2="700" y2="210" />
+      <g id="pkts-g"></g>
+    </svg>
+    <!-- 6 Client Request Queues -->
+    <div class="client-col">
+      <div class="client-card" id="req-0"><span class="name">req-0</span><span class="state" id="st-0">idle</span></div>
+      <div class="client-card" id="req-1"><span class="name">req-1</span><span class="state" id="st-1">idle</span></div>
+      <div class="client-card" id="req-2"><span class="name">req-2</span><span class="state" id="st-2">idle</span></div>
+      <div class="client-card" id="req-3"><span class="name">req-3</span><span class="state" id="st-3">idle</span></div>
+      <div class="client-card" id="req-4"><span class="name">req-4</span><span class="state" id="st-4">idle</span></div>
+      <div class="client-card" id="req-5"><span class="name">req-5</span><span class="state" id="st-5">idle</span></div>
+    </div>
+
+    <!-- Middle Pool Container: 8 Slots (c0..c7) -->
+    <div class="pool-container">
+      <div class="pool-title">
+        <span>Connection Pool</span>
+        <span style="font-size:9px;color:var(--text-dim)">max_connections: 8</span>
+      </div>
+      <div class="slots-grid">
+        <div class="slot idle" id="slot-0"><span class="id">c0</span><span class="status">idle</span></div>
+        <div class="slot idle" id="slot-1"><span class="id">c1</span><span class="status">idle</span></div>
+        <div class="slot idle" id="slot-2"><span class="id">c2</span><span class="status">idle</span></div>
+        <div class="slot idle" id="slot-3"><span class="id">c3</span><span class="status">idle</span></div>
+        <div class="slot idle" id="slot-4"><span class="id">c4</span><span class="status">idle</span></div>
+        <div class="slot idle" id="slot-5"><span class="id">c5</span><span class="status">idle</span></div>
+        <div class="slot idle" id="slot-6"><span class="id">c6</span><span class="status">idle</span></div>
+        <div class="slot idle" id="slot-7"><span class="id">c7</span><span class="status">idle</span></div>
+      </div>
+    </div>
+
+    <!-- Right: MySQL cylinder -->
+    <div class="db-target">
+      <div class="cyl-cap"></div>
+      <div class="db-name">mysql</div>
+      <div class="db-sub">primary db</div>
+    </div>
+  </div>
+
+  <div class="meta-row">
+    <div class="legend">
+      <span><i style="background:#1e9de7"></i>idle connection</span>
+      <span><i style="background:#30a46c"></i>active query</span>
+      <span><i style="background:#f35815"></i>stuck / leaked connection</span>
+    </div>
+    <button class="btn-sim" onclick="restartSimulation()">Restart Simulation</button>
+  </div>
+
+  <p class="note" id="narrative">
+    Requests stream from client queues into available pool slots, turning them green, querying MySQL, and releasing them back to idle (blue).
+    After ~5 seconds, connection <span class="stuck-label">c3</span> enters a stuck/leaked state (uncommitted transaction or unclosed socket).
+    Available capacity permanently drops, and incoming client requests start backing up in warning orange.
+  </p>
+</main>
+
+<script>
+  const canvas = document.getElementById("canvas");
+  const cntInUse = document.getElementById("cnt-inuse");
+  const cntIdle = document.getElementById("cnt-idle");
+  const cntStuck = document.getElementById("cnt-stuck");
+  const simBanner = document.getElementById("sim-banner");
+
+  let simTime = 0;
+  let isC3Stuck = false;
+  let slotStates = ["idle", "idle", "idle", "idle", "idle", "idle", "idle", "idle"]; // idle, in-use, stuck
+  let mainInterval = null;
+  let timerInterval = null;
+
+  function updateCounts() {
+    let inUse = 0, idle = 0, stuck = 0;
+    slotStates.forEach(s => {
+      if (s === "in-use") inUse++;
+      else if (s === "idle") idle++;
+      else if (s === "stuck") stuck++;
+    });
+    cntInUse.textContent = inUse;
+    cntIdle.textContent = idle;
+    cntStuck.textContent = stuck;
+  }
+
+  function spawnPkt(pathStr, dur, cls, onEnd) {
+    const g = document.getElementById("pkts-g");
+    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    circle.setAttribute("r", "5");
+    circle.setAttribute("class", "pkt-" + cls);
+    const anim = document.createElementNS("http://www.w3.org/2000/svg", "animateMotion");
+    anim.setAttribute("path", pathStr);
+    anim.setAttribute("dur", dur + "ms");
+    anim.setAttribute("fill", "freeze");
+    anim.setAttribute("rotate", "auto");
+    circle.appendChild(anim);
+    g.appendChild(circle);
+    anim.beginElement();
+    setTimeout(() => {
+      circle.remove();
+      if (onEnd) onEnd();
+    }, dur + 40);
+  }
+
+  function runRequest(clientIndex) {
+    // Check if slot available
+    const availableSlots = [];
+    slotStates.forEach((st, idx) => {
+      if (st === "idle") availableSlots.push(idx);
+    });
+
+    const clientCard = document.getElementById("req-" + clientIndex);
+    const clientState = document.getElementById("st-" + clientIndex);
+    const clientWire = document.getElementById("wire-c" + clientIndex);
+
+    if (availableSlots.length === 0) {
+      // Queued / starved!
+      if (clientCard) clientCard.classList.add("waiting");
+      if (clientState) clientState.textContent = "queued...";
+      if (clientWire) clientWire.classList.add("queued");
+      return;
+    }
+
+    if (clientCard) clientCard.classList.remove("waiting");
+    if (clientState) clientState.textContent = "active";
+    if (clientWire) clientWire.classList.remove("queued");
+
+    // Pick slot
+    const slotIdx = availableSlots[0];
+
+    // If it's c3 and we are past 5s, it will become permanently stuck!
+    const willStick = (!isC3Stuck && simTime >= 5.0 && slotIdx === 3);
+
+    slotStates[slotIdx] = "in-use";
+    const slotEl = document.getElementById("slot-" + slotIdx);
+    slotEl.className = "slot in-use";
+    slotEl.querySelector(".status").textContent = "in use";
+    updateCounts();
+
+    // Client -> Pool path (Y aligns with client card center: 44, 104, 164, 224, 284, 344)
+    const clientY = 44 + clientIndex * 60;
+    const poolY = 80 + clientIndex * 44;
+    const poolPath = "M 160 " + clientY + " L 270 " + poolY;
+
+    spawnPkt(poolPath, 380, "query", () => {
+      // Pool -> MySQL across one of the three wired lanes (y: 170/190/210)
+      const laneY = 170 + 20 * Math.floor(Math.random() * 3);
+      const dbPath = "M 590 " + laneY + " L 700 " + laneY;
+      spawnPkt(dbPath, 350, "query", () => {
+        // MySQL processes query
+        setTimeout(() => {
+          if (willStick) {
+            // Becomes stuck! Never releases!
+            isC3Stuck = true;
+            slotStates[slotIdx] = "stuck";
+            slotEl.className = "slot stuck";
+            slotEl.querySelector(".status").textContent = "stuck / leak";
+            updateCounts();
+            if (clientState) clientState.textContent = "idle";
+          } else {
+            // MySQL -> Pool return on the same lane
+            const retPath = "M 700 " + laneY + " L 590 " + laneY;
+            spawnPkt(retPath, 300, "return", () => {
+              // Pool -> Client release
+              const backClient = "M 270 " + poolY + " L 160 " + clientY;
+              spawnPkt(backClient, 380, "return", () => {
+                // Release slot
+                slotStates[slotIdx] = "idle";
+                slotEl.className = "slot idle";
+                slotEl.querySelector(".status").textContent = "idle";
+                if (clientState) clientState.textContent = "idle";
+                updateCounts();
+              });
+            });
+          }
+        }, 350);
+      });
+    });
+  }
+  function startSimulation() {
+    simTime = 0;
+    isC3Stuck = false;
+    slotStates = ["idle", "idle", "idle", "idle", "idle", "idle", "idle", "idle"];
+    for (let i = 0; i < 8; i++) {
+      const el = document.getElementById("slot-" + i);
+      el.className = "slot idle";
+      el.querySelector(".status").textContent = "idle";
+    }
+    for (let i = 0; i < 6; i++) {
+      const card = document.getElementById("req-" + i);
+      const st = document.getElementById("st-" + i);
+      const wire = document.getElementById("wire-c" + i);
+      if (card) card.classList.remove("waiting");
+      if (st) st.textContent = "idle";
+      if (wire) wire.classList.remove("queued");
+    }
+    updateCounts();
+
+    if (timerInterval) clearInterval(timerInterval);
+    if (mainInterval) clearInterval(mainInterval);
+
+    timerInterval = setInterval(() => {
+      simTime += 0.2;
+      if (simTime >= 5.0 && !isC3Stuck) {
+        simBanner.innerHTML = "Time: " + simTime.toFixed(1) + "s &middot; <span style='color:var(--accent);font-weight:700'>Simulating Leak on c3</span>";
+      } else if (isC3Stuck) {
+        simBanner.innerHTML = "Time: " + simTime.toFixed(1) + "s &middot; <span style='color:var(--accent);font-weight:700'>Capacity Degraded (1/8 stuck) &middot; Queues Starving</span>";
+      } else {
+        simBanner.innerHTML = "Time: " + simTime.toFixed(1) + "s &middot; Normal Operation (in use 1-4, idle 4-7)";
+      }
+    }, 200);
+
+    mainInterval = setInterval(() => {
+      // Pick random client to issue query
+      const c = Math.floor(Math.random() * 6);
+      runRequest(c);
+      if (isC3Stuck && Math.random() < 0.6) {
+        // High load to cause queue starvation
+        const c2 = (c + 2) % 6;
+        runRequest(c2);
+      }
+    }, 450);
+  }
+
+  function restartSimulation() {
+    startSimulation();
+  }
+
+  startSimulation();
+
+  // Height auto-reporter
+  const postH = () => {
+    try {
+      parent.postMessage({ demoHeight: Math.ceil(document.body.scrollHeight) }, "*");
+    } catch (e) {}
+  };
+  window.addEventListener("load", postH);
+  window.addEventListener("resize", postH);
+  new MutationObserver(postH).observe(document.body, { childList: true, subtree: true, characterData: true });
+  postH();
+</script>
+</body>
+</html>

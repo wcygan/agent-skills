@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Request Fanout & Shard Topology</title>
+<style>
+  /* Design system tokens: dark theme */
+  :root {
+    --canvas: #111111;
+    --panel: #1c1c1c;
+    --border: rgba(255,255,255,.14);
+    --border-node: rgba(255,255,255,.22);
+    --track: rgba(255,255,255,.10);
+    --text: #fafafa;
+    --text-muted: rgba(250,250,250,.60);
+    --text-dim: rgba(250,250,250,.40);
+    --accent: #f35815;
+    --good: #30a46c;
+    --good-light: #46a758;
+    --warn: #f35815;
+    --info: #1e9de7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 20px 28px;
+    background: var(--canvas);
+    color: var(--text);
+    font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+    overflow: hidden;
+  }
+  main { max-width: 860px; margin: 0 auto; }
+  h1 {
+    font-size: 13px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin: 0 0 4px;
+    opacity: .9;
+  }
+  .sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0 0 16px;
+  }
+  .sub b { color: var(--text); font-weight: 600; }
+  .canvas-box {
+    position: relative;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--panel);
+    height: 380px;
+    overflow: hidden;
+  }
+  svg.wires {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+    pointer-events: none;
+  }
+  .wire-path {
+    fill: none;
+    stroke: #454545;
+    stroke-width: 1.5;
+  }
+  .wire-path.active {
+    stroke: #646464;
+  }
+
+  /* Node styling */
+  .node {
+    position: absolute;
+    border: 1px solid var(--border-node);
+    border-radius: 4px;
+    background: var(--panel);
+    text-align: center;
+    z-index: 2;
+    transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+  }
+  .node .label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .node .role {
+    display: block;
+    font-size: 9px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-top: 2px;
+  }
+
+  /* Top tier: 3 apps */
+  .app-node {
+    top: 24px;
+    width: 120px;
+    height: 52px;
+    padding: 0 6px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-color: rgba(30,157,231,.4);
+  }
+  .app-node .label { color: var(--info); }
+  .app-0 { left: 140px; }
+  .app-1 { left: 370px; }
+  .app-2 { left: 600px; }
+
+  /* Middle tier: proxy */
+  .proxy-node {
+    top: 154px;
+    left: 360px;
+    width: 140px;
+    height: 56px;
+    padding: 0 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-color: rgba(255,255,255,.35);
+  }
+  .proxy-node .label { color: #fafafa; font-size: 13px; }
+
+  /* Bottom tier: 6 shards */
+  .shard-node {
+    top: 284px;
+    width: 106px;
+    height: 64px;
+    padding: 0 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .shard-node .label { font-size: 12px; }
+  .s0 { left: 24px; }
+  .s1 { left: 160px; }
+  .s2 { left: 296px; }
+  .s3 { left: 432px; }
+  .s4 { left: 568px; }
+  .s5 { left: 704px; }
+  .q-badge {
+    position: absolute;
+    top: -10px;
+    right: 8px;
+    font-size: 9px;
+    letter-spacing: .04em;
+    padding: 1px 6px;
+    border-radius: 9px;
+    background: #252525;
+    border: 1px solid rgba(255,255,255,.2);
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+
+  /* Hot shard highlights */
+  .shard-node.hot-focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 10px rgba(243,88,21,.3);
+  }
+  .shard-node.hot-focus .q-badge {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(243,88,21,.15);
+  }
+
+  /* Flash pulse animations */
+  .shard-node.pulse-good {
+    border-color: var(--good) !important;
+    box-shadow: 0 0 12px rgba(48,164,108,.7) !important;
+  }
+  .shard-node.pulse-hot {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 16px rgba(243,88,21,.9) !important;
+  }
+
+  /* Packet styling inside SVG */
+  .pkt-normal {
+    fill: #30a46c;
+    filter: drop-shadow(0 0 6px rgba(48,164,108,.9));
+  }
+  .pkt-hot {
+    fill: #f35815;
+    filter: drop-shadow(0 0 8px rgba(243,88,21,1));
+  }
+  .pkt-app {
+    fill: #1e9de7;
+    filter: drop-shadow(0 0 6px rgba(30,157,231,.9));
+  }
+
+  /* Controls / Mode switch */
+  .meta-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 14px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .mode-switch {
+    display: flex;
+    gap: 8px;
+  }
+  .mode-btn {
+    font: 12px ui-monospace, Menlo, monospace;
+    padding: 5px 12px;
+    border: 1px solid var(--border-node);
+    border-radius: 3px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all .15s ease;
+  }
+  .mode-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(243,88,21,.08);
+    font-weight: 600;
+  }
+  .legend {
+    display: flex;
+    gap: 16px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .legend i {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: -0.5px;
+  }
+  .note {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 12px 0 0;
+    max-width: 82ch;
+    line-height: 1.6;
+  }
+  .note b { color: var(--text); }
+  .note .hot-label { color: var(--accent); font-weight: 600; }
+  .note .good-label { color: var(--good); font-weight: 600; }
+</style>
+</head>
+<body>
+<main>
+  <h1 id="title">Request Fanout Topology</h1>
+  <p class="sub" id="desc">
+    Three application instances dispatch through a central proxy to six database shards.
+  </p>
+
+  <div class="canvas-box" id="canvas">
+    <svg class="wires" id="wires-svg">
+      <!-- App to Proxy rectilinear wires -->
+      <!-- App 0 bottom center (200, 76) -> (200, 115) -> (400, 115) -> proxy top (400, 154) -->
+      <path id="wire-a0-p" class="wire-path" d="M 200 76 V 115 H 400 V 154" />
+      <!-- App 1 bottom center (430, 76) -> proxy top center (430, 154) -->
+      <path id="wire-a1-p" class="wire-path" d="M 430 76 V 154" />
+      <!-- App 2 bottom center (660, 76) -> (660, 115) -> (460, 115) -> proxy top (460, 154) -->
+      <path id="wire-a2-p" class="wire-path" d="M 660 76 V 115 H 460 V 154" />
+
+      <!-- Proxy to 6 Shards rectilinear wires -->
+      <!-- Proxy bottom edge: y = 210, center is 430. Outlets: 380, 400, 420, 440, 460, 480 -->
+      <!-- Shards top center (y = 284):
+           s0: 77
+           s1: 213
+           s2: 349
+           s3: 485
+           s4: 621
+           s5: 757
+      -->
+      <path id="wire-p-s0" class="wire-path" d="M 380 210 V 247 H 77 V 284" />
+      <path id="wire-p-s1" class="wire-path" d="M 400 210 V 247 H 213 V 284" />
+      <path id="wire-p-s2" class="wire-path" d="M 420 210 V 247 H 349 V 284" />
+      <path id="wire-p-s3" class="wire-path" d="M 440 210 V 247 H 485 V 284" />
+      <path id="wire-p-s4" class="wire-path" d="M 460 210 V 247 H 621 V 284" />
+      <path id="wire-p-s5" class="wire-path" d="M 480 210 V 247 H 757 V 284" />
+      <g id="pkts-g"></g>
+    </svg>
+
+    <!-- App cards -->
+    <div class="node app-node app-0">
+      <span class="label">app-0</span>
+      <span class="role">client</span>
+    </div>
+    <div class="node app-node app-1">
+      <span class="label">app-1</span>
+      <span class="role">client</span>
+    </div>
+    <div class="node app-node app-2">
+      <span class="label">app-2</span>
+      <span class="role">client</span>
+    </div>
+
+    <!-- Proxy node -->
+    <div class="node proxy-node" id="proxy">
+      <span class="label">proxy</span>
+      <span class="role">connection router</span>
+    </div>
+
+    <!-- Shards s0..s5 -->
+    <div class="node shard-node s0" id="shard-0">
+      <span class="q-badge" id="badge-0">queue 0</span>
+      <span class="label">s0</span>
+      <span class="role">shard</span>
+    </div>
+    <div class="node shard-node s1" id="shard-1">
+      <span class="q-badge" id="badge-1">queue 0</span>
+      <span class="label">s1</span>
+      <span class="role">shard</span>
+    </div>
+    <div class="node shard-node s2" id="shard-2">
+      <span class="q-badge" id="badge-2">queue 0</span>
+      <span class="label">s2</span>
+      <span class="role">shard</span>
+    </div>
+    <div class="node shard-node s3" id="shard-3">
+      <span class="q-badge" id="badge-3">queue 0</span>
+      <span class="label">s3</span>
+      <span class="role">shard</span>
+    </div>
+    <div class="node shard-node s4" id="shard-4">
+      <span class="q-badge" id="badge-4">queue 0</span>
+      <span class="label">s4</span>
+      <span class="role">shard</span>
+    </div>
+    <div class="node shard-node s5" id="shard-5">
+      <span class="q-badge" id="badge-5">queue 0</span>
+      <span class="label">s5</span>
+      <span class="role">shard</span>
+    </div>
+  </div>
+
+  <div class="meta-bar">
+    <div class="mode-switch">
+      <button class="mode-btn" id="btn-fanout" onclick="setMode('fanout')">Fanout Topology (#fanout)</button>
+      <button class="mode-btn" id="btn-hotshard" onclick="setMode('hot-shard')">Hot Shard Overload (#hot-shard)</button>
+    </div>
+    <div class="legend">
+      <span><i style="background:#1e9de7"></i>app request</span>
+      <span><i style="background:#30a46c"></i>balanced shard</span>
+      <span><i style="background:#f35815"></i>hot shard bottleneck</span>
+    </div>
+  </div>
+
+  <p class="note" id="narrative"></p>
+</main>
+
+<script>
+  const canvas = document.getElementById("canvas");
+  const APP_PATHS = [
+    "M 200 76 V 115 H 400 V 154",
+    "M 430 76 V 154",
+    "M 660 76 V 115 H 460 V 154"
+  ];
+  const SHARD_PATHS = [
+    "M 380 210 V 247 H 77 V 284",
+    "M 400 210 V 247 H 213 V 284",
+    "M 420 210 V 247 H 349 V 284",
+    "M 440 210 V 247 H 485 V 284",
+    "M 460 210 V 247 H 621 V 284",
+    "M 480 210 V 247 H 757 V 284"
+  ];
+
+  let mode = "fanout"; // "fanout" or "hot-shard"
+  let roundRobinIndex = 0;
+  let hotShardQueue = 0;
+  const queues = [0, 0, 0, 0, 0, 0];
+  let timerId = null;
+
+  function updateNarrative() {
+    const title = document.getElementById("title");
+    const desc = document.getElementById("desc");
+    const narr = document.getElementById("narrative");
+    const btnFanout = document.getElementById("btn-fanout");
+    const btnHot = document.getElementById("btn-hotshard");
+    const shard3 = document.getElementById("shard-3");
+
+    if (mode === "fanout") {
+      title.textContent = "Request Fanout — Balanced Distribution";
+      desc.innerHTML = "Three application cards (<code>app-0</code>, <code>app-1</code>, <code>app-2</code>) dispatch evenly through a <code>proxy</code> to 6 database shards (<code>s0</code>–<code>s5</code>).";
+      narr.innerHTML = "Traffic leaves random apps, enters the proxy, and fans out across all 6 shards in round-robin fashion. Each arrival causes a brief <span class='good-label'>accent green</span> pulse (<code style='color:#30a46c'>#30A46C</code>), proving an evenly balanced load without queue buildup.";
+      btnFanout.classList.add("active");
+      btnHot.classList.remove("active");
+      shard3.classList.remove("hot-focus");
+    } else {
+      title.textContent = "Hot Shard Overload — Skewed Partitioning";
+      desc.innerHTML = "Identical 3-app, 1-proxy, 6-shard topology where a skewed partition key routes <b>&gt;80% of traffic</b> to a single shard (<code>s3</code>).";
+      narr.innerHTML = "Requests bottleneck at <span class='hot-label'>shard s3</span>. Its border glows vibrant warning orange (<code style='color:#f35815'>#F35815</code>) and its live queue depth counter climbs incrementally (<code style='color:#f35815'>queue 1 … queue 6+</code>) while adjacent shards sit largely idle.";
+      btnFanout.classList.remove("active");
+      btnHot.classList.add("active");
+      shard3.classList.add("hot-focus");
+    }
+  }
+
+  function setMode(newMode) {
+    mode = newMode;
+    window.location.hash = (mode === "hot-shard") ? "hot-shard" : "fanout";
+    // Reset state
+    for (let i = 0; i < 6; i++) {
+      queues[i] = 0;
+      const b = document.getElementById("badge-" + i);
+      if (b) b.textContent = "queue 0";
+      const s = document.getElementById("shard-" + i);
+      if (s) {
+        s.classList.remove("pulse-good", "pulse-hot");
+      }
+    }
+    hotShardQueue = 0;
+    updateNarrative();
+  }
+
+  // Parse URL hash on load
+  function readHash() {
+    const h = window.location.hash.toLowerCase();
+    if (h.includes("hot-shard") || h.includes("hotshard")) {
+      mode = "hot-shard";
+    } else {
+      mode = "fanout";
+    }
+    updateNarrative();
+  }
+
+  function spawnPacket(pathData, dur, cls, onComplete) {
+    const g = document.getElementById("pkts-g");
+    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    circle.setAttribute("r", "5");
+    circle.setAttribute("class", "pkt-" + cls);
+    const anim = document.createElementNS("http://www.w3.org/2000/svg", "animateMotion");
+    anim.setAttribute("path", pathData);
+    anim.setAttribute("dur", dur + "ms");
+    anim.setAttribute("fill", "freeze");
+    anim.setAttribute("rotate", "auto");
+    circle.appendChild(anim);
+    g.appendChild(circle);
+    anim.beginElement();
+    setTimeout(() => {
+      circle.remove();
+      if (onComplete) onComplete();
+    }, dur + 40);
+  }
+
+  function pulseShard(shardIndex, isHot) {
+    const el = document.getElementById("shard-" + shardIndex);
+    if (!el) return;
+    const pulseClass = isHot ? "pulse-hot" : "pulse-good";
+    el.classList.add(pulseClass);
+    setTimeout(() => {
+      el.classList.remove(pulseClass);
+    }, 280);
+  }
+
+  function dispatchCycle() {
+    // 1. Pick random app 0, 1, or 2
+    const appId = Math.floor(Math.random() * 3);
+    const appPath = APP_PATHS[appId];
+
+    // 2. Decide target shard
+    let targetShard = 0;
+    let isHot = false;
+
+    if (mode === "fanout") {
+      targetShard = roundRobinIndex % 6;
+      roundRobinIndex++;
+    } else {
+      // hot-shard: ~85% go to s3 (shard index 3)
+      if (Math.random() < 0.85) {
+        targetShard = 3;
+        isHot = true;
+      } else {
+        const others = [0, 1, 2, 4, 5];
+        targetShard = others[Math.floor(Math.random() * others.length)];
+        isHot = false;
+      }
+    }
+
+    const shardPath = SHARD_PATHS[targetShard];
+
+    // Stage 1: App -> Proxy
+    spawnPacket(appPath, 480, "app", () => {
+      // Stage 2: Proxy -> Shard
+      const packetClass = isHot ? "hot" : "normal";
+      spawnPacket(shardPath, 520, packetClass, () => {
+        // Landed on shard
+        pulseShard(targetShard, isHot);
+
+        if (mode === "fanout") {
+          // momentary queue flash
+          queues[targetShard] = 1;
+          const badge = document.getElementById("badge-" + targetShard);
+          if (badge) badge.textContent = "queue 1";
+          setTimeout(() => {
+            queues[targetShard] = 0;
+            if (badge) badge.textContent = "queue 0";
+          }, 360);
+        } else {
+          // hot shard mode
+          if (targetShard === 3) {
+            hotShardQueue = Math.min(8, hotShardQueue + 1);
+            const badge = document.getElementById("badge-3");
+            if (badge) badge.textContent = "queue " + hotShardQueue;
+          } else {
+            // slight idle processing
+            const badge = document.getElementById("badge-" + targetShard);
+            if (badge) {
+              badge.textContent = "queue 1";
+              setTimeout(() => { badge.textContent = "queue 0"; }, 250);
+            }
+          }
+        }
+      });
+    });
+  }
+
+  // Hot shard drain rate is slower than arrival rate to demonstrate climbing queue
+  setInterval(() => {
+    if (mode === "hot-shard" && hotShardQueue > 0) {
+      // Drain occasionally
+      if (Math.random() < 0.35) {
+        hotShardQueue = Math.max(1, hotShardQueue - 1);
+        const badge = document.getElementById("badge-3");
+        if (badge) badge.textContent = "queue " + hotShardQueue;
+      }
+    }
+  }, 1100);
+
+  // Fast continuous traffic
+  timerId = setInterval(dispatchCycle, 380);
+
+  window.addEventListener("hashchange", readHash);
+  window.addEventListener("load", readHash);
+
+  // Height auto-reporter for gallery
+  const postH = () => {
+    try {
+      parent.postMessage({ demoHeight: Math.ceil(document.body.scrollHeight) }, "*");
+    } catch (e) {}
+  };
+  window.addEventListener("load", postH);
+  window.addEventListener("resize", postH);
+  new MutationObserver(postH).observe(document.body, { childList: true, subtree: true, characterData: true });
+  postH();
+</script>
+</body>
+</html>

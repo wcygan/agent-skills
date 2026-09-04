@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>cache-3</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-fragment="cache-3">
+  <div data-id="cache-3"></div>
+  <script src="../assets/viz.js"></script>
+  <script>
+    new VIZ.CacheViz({ rows: 5, cols: 3, layers: [{ rows: 5, cols: 1, label: 'Cache' }], requester: 'App Server', database: 'Database', mode: 'recency', automation: 'manual', prewarm: false, source: 'cache-3' });
+  </script>
+</body>
+</html>

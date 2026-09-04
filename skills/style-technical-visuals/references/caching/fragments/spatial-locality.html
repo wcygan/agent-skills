@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>spatial-locality</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-fragment="spatial-locality">
+  <div data-id="spatial-locality"></div>
+  <script src="../assets/viz.js"></script>
+  <script>
+    new VIZ.SpatialViz({ rows: 4, cols: 3, layers: [{ rows: 4, cols: 1, label: 'Cache with Spatial Locality' }], requester: 'Requester', database: 'Database', distance: 1, prewarm: true });
+  </script>
+</body>
+</html>

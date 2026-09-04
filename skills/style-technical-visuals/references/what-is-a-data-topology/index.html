@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlanetScale — What is a Data Topology (diagrams)</title>
+<style>
+body{background:#fafafa;color:#111;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;margin:0;padding:32px 16px;}
+main{max-width:1200px;margin:0 auto;}
+h1{font-size:20px;}
+.demo{margin:0 0 48px;position:relative;}
+.demo img{width:100%;height:auto;display:block;}
+.demo figcaption{margin-top:6px;font-size:11px;letter-spacing:.08em;opacity:.5;text-transform:uppercase;}
+@media (prefers-color-scheme: dark){ body{background:#111;color:#fafafa;} }
+</style>
+</head>
+<body>
+<main><h1>PlanetScale — What is a Data Topology?</h1>
+<figure class="demo">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="../../../../../wcygan.net/.agents/skills/planet-scale-animation-design-system/references/what-is-a-data-topology/svgs/data-topology-json-darkmode-CSBdTDxQ.svg">
+    <img src="../../../../../wcygan.net/.agents/skills/planet-scale-animation-design-system/references/what-is-a-data-topology/svgs/data-topology-json-CCh5Wtoi.svg" alt="An example Neki data topology annotated with its shard index, shard group, and database mapping." width="1504" height="1477" loading="lazy">
+  </picture>
+  <figcaption>data-topology-json.svg</figcaption>
+</figure>
+<figure class="demo">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="../../../../../wcygan.net/.agents/skills/planet-scale-animation-design-system/references/what-is-a-data-topology/svgs/neki-router-data-topology-shards-darkmode-DzeXwqJn.svg">
+    <img src="../../../../../wcygan.net/.agents/skills/planet-scale-animation-design-system/references/what-is-a-data-topology/svgs/neki-router-data-topology-shards-BJvkLSGa.svg" alt="A customer query enters a Neki router, which uses its cached data topology to select a PostgreSQL shard containing a primary and replicas." width="1504" height="870" loading="lazy">
+  </picture>
+  <figcaption>neki-router-data-topology-shards.svg</figcaption>
+</figure>
+<figure class="demo">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="../../../../../wcygan.net/.agents/skills/planet-scale-animation-design-system/references/what-is-a-data-topology/svgs/shard-index-routing-darkmode-Dt8K1rWM.svg">
+    <img src="../../../../../wcygan.net/.agents/skills/planet-scale-animation-design-system/references/what-is-a-data-topology/svgs/shard-index-routing-Bde5tmWH.svg" alt="Three Neki shard-index strategies: hash-based (xxhash), modulo-based, and range-based routing of customer IDs to shards." width="1504" height="958" loading="lazy">
+  </picture>
+  <figcaption>shard-index-routing.svg</figcaption>
+</figure>
+</main>
+</body>
+</html>

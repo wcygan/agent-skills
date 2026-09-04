@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>cache-1</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-fragment="cache-1">
+  <div data-id="cache-1"></div>
+  <script src="../assets/viz.js"></script>
+  <script>
+    new VIZ.CacheViz({ rows: 5, cols: 2, layers: [{ rows: 5, cols: 1, label: 'RAM' }], requester: 'CPU', database: 'Hard Drive', automation: 'manual', prewarm: false, source: 'cache-1' });
+  </script>
+</body>
+</html>

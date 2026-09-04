@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlanetScale — The History of Postgres Sharding (diagrams)</title>
+<style>
+body{background:#fafafa;color:#111;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;margin:0;padding:32px 16px;}
+main{max-width:1200px;margin:0 auto;}
+h1{font-size:20px;}
+.demo{margin:0 0 48px;position:relative;}
+.demo img{width:100%;height:auto;display:block;}
+.demo figcaption{margin-top:6px;font-size:11px;letter-spacing:.08em;opacity:.5;text-transform:uppercase;}
+@media (prefers-color-scheme: dark){ body{background:#111;color:#fafafa;} }
+</style>
+</head>
+<body>
+<main><h1>PlanetScale — The History of Postgres Sharding</h1>
+<figure class="demo">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="images/timeline-darkmode-BB-2zWJs.svg">
+    <img src="images/timeline-DFUq1emi.svg" alt="A twenty-year timeline from Ultima Online shards through Skype, Vitess, Instagram, Citus, and Neki." width="1504" height="300" loading="lazy">
+  </picture>
+  <figcaption>timeline-DFUq1emi</figcaption>
+</figure>
+<figure class="demo">
+  <img src="images/uo-Co9VDuNu.png" alt="An Ultima Online world copied onto independent parallel shards." width="1280" height="878" loading="lazy">
+  <figcaption>uo-Co9VDuNu</figcaption>
+</figure>
+<figure class="demo">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="images/pl-proxy-darkmode-DHtmfdrB.svg">
+    <img src="images/pl-proxy-DHPI1ZZe.svg" alt="PL/Proxy architecture: one central routing database sending queries to downstream shards." width="1504" height="540" loading="lazy">
+  </picture>
+  <figcaption>pl-proxy-DHPI1ZZe</figcaption>
+</figure>
+<figure class="demo">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="images/citus-darkmode-CPP1ktHJ.svg">
+    <img src="images/citus-CBpzQboB.svg" alt="A Citus cluster with a Citus extension wrapping Postgres on a coordinator and worker nodes." width="1504" height="640" loading="lazy">
+  </picture>
+  <figcaption>citus-CBpzQboB</figcaption>
+</figure>
+<figure class="demo">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="images/distributed-sql-darkmode-DMouKgnD.svg">
+    <img src="images/distributed-sql-CEYpq2Bq.svg" alt="An application request fans out through multiple routers to KV store buckets, with related rows landing on different buckets." width="1504" height="640" loading="lazy">
+  </picture>
+  <figcaption>distributed-sql-CEYpq2Bq</figcaption>
+</figure>
+<figure class="demo">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="images/neki-darkmode-B9hhiQed.svg">
+    <img src="images/neki-DWGXUOKW.svg" alt="An application connects to a Neki router that uses an explicit data topology to send queries to the correct Postgres shards." width="1504" height="705" loading="lazy">
+  </picture>
+  <figcaption>neki-DWGXUOKW</figcaption>
+</figure>
+</main>
+</body>
+</html>

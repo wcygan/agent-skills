@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Composite index — leftmost prefix</title>
+<style>
+  /* tokens: --panel #1c1c1c, --accent #f35815 (returned), --warn #d19f03 (scanned) */
+  * { box-sizing: border-box; }
+  body { margin:0; padding:24px 20px 28px; background:#111;
+    font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; color:#fafafa; overflow:hidden; }
+  main { max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; margin:0 0 4px; opacity:.9; }
+  .sub { font-size: 12px; color: rgba(250,250,250,.6); margin: 0 0 14px; }
+  .sub b { color: #f35815; }
+  .preds { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .chip { font: 12px ui-monospace, Menlo, monospace; padding: 6px 12px;
+    border: 1px solid rgba(255,255,255,.25); border-radius: 3px; cursor: pointer;
+    background: transparent; color: #fafafa; }
+  .chip.on { border-color: #f35815; color: #f35815; }
+  .query { font-size: 12px; margin: 0 0 12px; color: rgba(250,250,250,.75); }
+  .query b { color: #f35815; }
+  .board { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .panel { border: 1px solid rgba(255,255,255,.14); border-radius: 4px;
+    background: #1c1c1c; overflow: hidden; }
+  .panel h2 { font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+    margin: 0; padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,.12);
+    color: rgba(250,250,250,.6); font-weight: 600; }
+  .rows { display: flex; flex-wrap: wrap; gap: 3px; padding: 12px; min-height: 46px; }
+  .cell { width: 34px; height: 22px; border-radius: 2px; font-size: 9px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,.10); color: rgba(250,250,250,.85); opacity: .45;
+    font-variant-numeric: tabular-nums; }
+  .cell.scan { background: #d19f03; opacity: .8; }
+  .cell.hit  { background: #f35815; color: #fff; opacity: 1; }
+  .stats { padding: 10px 12px; border-top: 1px solid rgba(255,255,255,.12);
+    display: flex; gap: 18px; font-size: 12px; font-variant-numeric: tabular-nums;
+    color: rgba(250,250,250,.75); }
+  .stats .bad { color: #ff455d; }
+  .stats .good { color: #27b648; }
+  .note { font-size: 12px; color: rgba(250,250,250,.6); margin: 14px 0 0; max-width: 80ch; }
+  .note b { color: #f35815; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Leftmost prefix rule</h1>
+  <p class="sub">Secondary index on <b>(user_id, created_at, region)</b>. Pick a WHERE
+  clause; the left board scans the correct index, the right board a badly ordered one.</p>
+  <div class="preds" id="preds"></div>
+  <p class="query" id="query"></p>
+  <div class="board">
+    <div class="panel">
+      <h2>Index (user_id, created_at, region) — correct order</h2>
+      <div class="rows" id="rows-good"></div>
+      <div class="stats" id="stats-good"></div>
+    </div>
+    <div class="panel">
+      <h2>Index (region, created_at, user_id) — wrong order</h2>
+      <div class="rows" id="rows-bad"></div>
+      <div class="stats" id="stats-bad"></div>
+    </div>
+  </div>
+  <p class="note">The index is a sorted list; a query can walk it only where its
+  predicates line up with the <b>leftmost</b> columns. An equality on the first
+  column keeps the second sorted. A range stops that: <b>(a, b, c)</b> answers
+  <b>a = ? AND b = ?</b> perfectly but degrades once <b>b</b> becomes a range.
+  A query that skips column <b>a</b> entirely cannot use the index at all.</p>
+</main>
+<script>
+  // 96 fake index entries: user_id 1..8, created_at (month 1..12), region 1..4.
+  // Keys rendered "u.mm.r". Sorting differs per index order.
+  const N = 96, USERS = 8, MONTHS = 12, REGIONS = 4;
+  const keys = [];
+  for (let u = 1; u <= USERS; u++)
+    for (let m = 1; m <= MONTHS; m++)
+      keys.push({ u: u, m: m, r: 1 + ((u * 7 + m * 3) % REGIONS) });
+
+  const CASES = [
+    { label: "user_id = 5",
+      q: "WHERE user_id = 5",
+      test: function (k) { return k.u === 5; } },
+    { label: "user_id = 5 AND created_at >= '2026-06-01'",
+      q: "WHERE user_id = 5 AND created_at >= '2026-06-01'",
+      test: function (k) { return k.u === 5 && k.m >= 6; } },
+    { label: "created_at >= '2026-06-01'",
+      q: "WHERE created_at >= '2026-06-01'",
+      test: function (k) { return k.m >= 6; } },
+    { label: "region = 2",
+      q: "WHERE region = 2",
+      test: function (k) { return k.r === 2; } },
+  ];
+
+  // Per board: usable = the query's leading predicate matches the index's first
+  // column. Scanned = rows walked up to the last match (contiguous read);
+  // unusable = the optimizer falls back to a full index scan (all N rows).
+  const sortGood = function (k) { return k.u * 1e6 + k.m * 1e3 + k.r; };
+  const sortBad  = function (k) { return k.r * 1e6 + k.m * 1e3 + k.u; };
+  const rowsGood = document.getElementById("rows-good");
+  const rowsBad  = document.getElementById("rows-bad");
+
+  function buildBoard(el, sorter) {
+    el.innerHTML = "";
+    keys.slice().sort(function (a, b) { return sorter(a) - sorter(b); }).forEach(function (k) {
+      const d = document.createElement("div");
+      d.className = "cell";
+      d.textContent = k.u + "." + String(k.m).padStart(2, "0") + "." + k.r;
+      d.dataset.k = k.u + ":" + k.m + ":" + k.r;
+      el.appendChild(d);
+    });
+  }
+  buildBoard(rowsGood, sortGood);
+  buildBoard(rowsBad, sortBad);
+
+  const stats = function (el, scanned, hits, usable) {
+    const pct = Math.round(hits / N * 100);
+    el.innerHTML =
+      "<span>scanned <b class='" + (scanned > N / 2 ? "bad" : "good") + "'>" + scanned + "/" + N + "</b></span>" +
+      "<span>returned <b>" + hits + "</b></span>" +
+      "<span>" + (usable ? "efficiency <b class='" + (pct < 30 ? "bad" : "good") + "'>" + pct + "%</b>" : "<span style='color:#ff455d'>full index scan</span>") + "</span>";
+  };
+
+  let current = 0;
+  function paintCase() {
+    const c = CASES[current];
+    document.getElementById("query").innerHTML =
+      "<code>SELECT * FROM orders <b>" + c.q + "</b></code>";
+    const goodUsable = current < 2;
+    const badUsable  = current === 3;
+    const analyze = function (el, usable) {
+      const parsed = [...el.querySelectorAll(".cell")].map(function (cell) {
+        const p = cell.dataset.k.split(":").map(Number);
+        return { u: p[0], m: p[1], r: p[2], cell: cell };
+      });
+      let hits = 0, lastHit = -1;
+      parsed.forEach(function (k, i) {
+        k.cell.className = "cell";
+        if (c.test(k)) { hits++; lastHit = i; }
+      });
+      const scanned = usable ? lastHit + 1 : parsed.length;
+      parsed.forEach(function (k, i) {
+        if (c.test(k)) k.cell.classList.add("hit");
+        else if (usable && i < scanned) k.cell.classList.add("scan");
+      });
+      return { scanned: scanned, hits: hits };
+    };
+    const g = analyze(rowsGood, goodUsable);
+    const b = analyze(rowsBad, badUsable);
+    stats(document.getElementById("stats-good"), g.scanned, g.hits, goodUsable);
+    stats(document.getElementById("stats-bad"), b.scanned, b.hits, badUsable);
+  }
+
+  const preds = document.getElementById("preds");
+  CASES.forEach(function (c, i) {
+    const btn = document.createElement("button");
+    btn.className = "chip" + (i === 0 ? " on" : "");
+    btn.textContent = c.label;
+    btn.onclick = function () {
+      current = i;
+      preds.querySelectorAll(".chip").forEach(function (x, j) {
+        x.classList.toggle("on", j === i);
+      });
+      paintCase();
+    };
+    preds.appendChild(btn);
+  });
+  paintCase();
+
+  // Report content height to the gallery frame (works across origins,
+  // including file://). The gallery grows our iframe to match — never clips.
+  const postH = () => { try { parent.postMessage({ demoHeight: Math.ceil(document.body.scrollHeight) }, "*"); } catch (e) {} };
+  window.addEventListener("load", postH);
+  window.addEventListener("resize", postH);
+  new MutationObserver(postH).observe(document.body, { childList: true, subtree: true, characterData: true });
+  postH();
+</script>
+</body>
+</html>
