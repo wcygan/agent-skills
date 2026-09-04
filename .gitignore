@@ -10,3 +10,5 @@ venv/
 
 # scratch / local
 *.log
+
+.playwright-cli/
