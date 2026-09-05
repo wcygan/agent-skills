@@ -1,0 +1,692 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Change Data Capture Pipeline</title>
+<style>
+  /* Tokens: PlanetScale Dark System */
+  :root {
+    --canvas: #111111;
+    --panel: #1c1c1c;
+    --border: rgba(255,255,255,.14);
+    --border-node: rgba(255,255,255,.22);
+    --track: rgba(255,255,255,.10);
+    --text: #fafafa;
+    --text-muted: rgba(250,250,250,.60);
+    --text-dim: rgba(250,250,250,.40);
+    --accent: #f35815;
+    --good: #30a46c;
+    --warn: #d19f03;
+    --bad: #ff455d;
+    --info: #1e9de7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 20px 28px;
+    background: var(--canvas);
+    color: var(--text);
+    font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+    overflow: hidden;
+  }
+  main { max-width: 860px; margin: 0 auto; }
+  h1 {
+    font-size: 13px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin: 0 0 4px;
+    opacity: .9;
+  }
+  .sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0 0 16px;
+  }
+  .sub b { color: var(--text); font-weight: 600; }
+
+  /* Metrics Header Bar */
+  .metrics-bar {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: #181818;
+    padding: 10px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .metrics-group {
+    display: flex;
+    gap: 24px;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+  .metric-item span {
+    font-size: 10px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-right: 6px;
+  }
+  .metric-item b {
+    font-size: 13px;
+    color: var(--text);
+  }
+  .metric-item.accent b { color: var(--accent); }
+  .metric-item.info b { color: var(--info); }
+  .metric-item.good b { color: var(--good); }
+
+  /* Pipeline Canvas */
+  .stage-canvas {
+    position: relative;
+    width: 820px;
+    height: 400px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--panel);
+    overflow: hidden;
+    margin: 0 auto;
+  }
+  svg.pipeline-wires {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 820px;
+    height: 400px;
+    z-index: 3;
+    pointer-events: none;
+  }
+  .wire {
+    fill: none;
+    stroke: #454545;
+    stroke-width: 1.5;
+  }
+  .wire.branch {
+    stroke: #3c3c3c;
+    stroke-dasharray: 3 3;
+  }
+
+  /* Node Cards */
+  .node {
+    position: absolute;
+    border: 1px solid var(--border-node);
+    border-radius: 4px;
+    background: #1c1c1c;
+    z-index: 2;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  .node-title {
+    font-size: 12px;
+    font-weight: 700;
+    display: block;
+    line-height: 1.2;
+  }
+  .node-role {
+    font-size: 9px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-top: 2px;
+    display: block;
+    line-height: 1.2;
+  }
+
+  /* 1. MySQL Source: x:20..160, y:130..270 (center y=200) */
+  .node-source {
+    left: 20px;
+    top: 130px;
+    width: 140px;
+    height: 140px;
+    padding: 12px;
+    border-color: var(--accent);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .node-source .node-title { color: var(--accent); }
+  .binlog-well {
+    border: 1px dashed rgba(243,88,21,.5);
+    border-radius: 3px;
+    background: rgba(243,88,21,.08);
+    padding: 8px 6px;
+    text-align: center;
+  }
+  .binlog-name { font-size: 11px; font-weight: 700; color: #fff; }
+  .binlog-offset { font-size: 9px; color: var(--text-muted); font-variant-numeric: tabular-nums; margin-top: 2px; }
+
+  /* 2. Debezium Connector: x:196..332, y:130..270 (center y=200) */
+  .node-debezium {
+    left: 196px;
+    top: 130px;
+    width: 136px;
+    height: 140px;
+    padding: 12px;
+    border-color: rgba(30,157,231,.5);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .node-debezium .node-title { color: var(--info); }
+  .engine-box {
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 3px;
+    background: #222;
+    padding: 6px;
+    font-size: 10px;
+    text-align: center;
+    color: var(--text-muted);
+  }
+  .op-badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 2px;
+    font-size: 9px;
+    font-weight: 700;
+    margin-top: 4px;
+    background: rgba(30,157,231,.2);
+    color: var(--info);
+  }
+
+  /* 3. Kafka Topic: x:368..528, y:130..270 (center y=200, width:160px for ample log clearance) */
+  .node-kafka {
+    left: 368px;
+    top: 130px;
+    width: 160px;
+    height: 140px;
+    padding: 12px;
+    border-color: rgba(255,255,255,.3);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .topic-log {
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 3px;
+    background: #161616;
+    padding: 8px 6px;
+  }
+  .partition-tag {
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+  .log-offsets {
+    display: flex;
+    gap: 4px;
+    margin-top: 5px;
+  }
+  .off-cell {
+    flex: 1;
+    min-width: 0;
+    height: 19px;
+    padding: 0 1px;
+    border-radius: 2px;
+    background: rgba(255,255,255,.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-muted);
+    transition: background .3s, color .3s;
+  }
+  .off-cell.active {
+    background: var(--info);
+    color: #fff;
+    font-weight: 700;
+  }
+  /* 4. Sinks: x:560..800, y:20..380 */
+  .sinks-col {
+    position: absolute;
+    left: 560px;
+    top: 20px;
+    width: 240px;
+    height: 360px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    z-index: 2;
+  }
+  .sink-card {
+    height: 106px;
+    border: 1px solid var(--border-node);
+    border-radius: 4px;
+    background: #1c1c1c;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: border-color .2s ease, box-shadow .2s ease;
+  }
+  .sink-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .sink-tag {
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 2px;
+    background: rgba(255,255,255,.08);
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+  .sink-body {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #222;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 3px;
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+  .sink-action {
+    color: var(--text-muted);
+    font-size: 10px;
+  }
+  .sink-count {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: var(--good);
+  }
+
+  /* Wire Traffic Packets */
+  .pkt-binlog {
+    fill: var(--accent);
+    filter: drop-shadow(0 0 5px rgba(243,88,21,.85));
+  }
+  .pkt-json {
+    fill: var(--info);
+    filter: drop-shadow(0 0 5px rgba(30,157,231,.85));
+  }
+  .pkt-sink {
+    fill: var(--good);
+    filter: drop-shadow(0 0 5px rgba(48,164,108,.85));
+  }
+
+  /* Arrival Pulses */
+  @keyframes pulseGood {
+    0% { border-color: rgba(48,164,108,.95); box-shadow: 0 0 10px rgba(48,164,108,.4); }
+    100% { border-color: var(--border-node); box-shadow: none; }
+  }
+  @keyframes pulseWarn {
+    0% { border-color: rgba(243,88,21,.95); box-shadow: 0 0 10px rgba(243,88,21,.4); }
+    100% { border-color: var(--border-node); box-shadow: none; }
+  }
+  .pulse-good { animation: pulseGood .28s ease-out; }
+  .pulse-warn { animation: pulseWarn .28s ease-out; }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  button {
+    font: 12px ui-monospace, Menlo, monospace;
+    padding: 6px 14px;
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 3px;
+    background: transparent;
+    color: #fafafa;
+    cursor: pointer;
+    transition: border-color .15s ease, color .15s ease;
+  }
+  button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  button.active {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .event-preview {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+    margin-left: auto;
+  }
+  .event-preview code {
+    background: rgba(255,255,255,.08);
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: #fff;
+  }
+
+  /* Note Footer */
+  .note {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 14px 0 0;
+    max-width: 84ch;
+    line-height: 1.6;
+  }
+  .note b { color: var(--accent); }
+  .note code {
+    background: rgba(255,255,255,.10);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 11px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .wire, .node, .sink-card { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Change Data Capture — MySQL, Debezium, Kafka & Sinks</h1>
+  <p class="sub">
+    Row-level mutations stream from MySQL <b>binlog</b> through Debezium into a Kafka topic partition, fanning out to downstream analytics, search, and cache sinks.
+  </p>
+
+  <div class="metrics-bar">
+    <div class="metrics-group">
+      <div class="metric-item accent"><span>TX ID:</span><b id="m-tx">#10842</b></div>
+      <div class="metric-item info"><span>Topic Offset:</span><b id="m-offset">41,208</b></div>
+      <div class="metric-item good"><span>Lag:</span><b id="m-lag">18 ms</b></div>
+    </div>
+    <div class="metric-item">
+      <span>Connector State:</span><b>STREAMING (ROW-LEVEL)</b>
+    </div>
+  </div>
+
+  <div class="stage-canvas" id="canvas">
+    <svg class="pipeline-wires" id="wires-svg" viewBox="0 0 820 400">
+      <!-- 1. MySQL right center (160, 200) -> Debezium left center (196, 200) -->
+      <line x1="160" y1="200" x2="196" y2="200" class="wire" />
+
+      <!-- 2. Debezium right center (332, 200) -> Kafka left center (368, 200) -->
+      <line x1="332" y1="200" x2="368" y2="200" class="wire" />
+
+      <!-- 3. Kafka right center (528, 200) -> Rail (544, 200) -->
+      <line x1="528" y1="200" x2="544" y2="200" class="wire" />
+      <!-- Vertical bus rail spanning sink centers: y=73 to y=327 -->
+      <line x1="544" y1="73" x2="544" y2="327" class="wire" />
+
+      <!-- Dogleg branches directly into Sink left centers (x=560):
+           Sink 0: (544, 73) -> (560, 73)
+           Sink 1: (544, 200) -> (560, 200)
+           Sink 2: (544, 327) -> (560, 327)
+      -->
+      <line x1="544" y1="73" x2="560" y2="73" class="wire" />
+      <line x1="544" y1="200" x2="560" y2="200" class="wire" />
+      <line x1="544" y1="327" x2="560" y2="327" class="wire" />
+
+      <g id="packets-g"></g>
+    </svg>
+
+    <!-- Node 1: MySQL Source -->
+    <div class="node node-source">
+      <div>
+        <span class="node-title">MySQL 8.0</span>
+        <span class="node-role">ROW BINLOG ENABLED</span>
+      </div>
+      <div class="binlog-well">
+        <div class="binlog-name">binlog.000412</div>
+        <div class="binlog-offset" id="binlog-pos">pos: 489,120</div>
+      </div>
+    </div>
+
+    <!-- Node 2: Debezium Connector -->
+    <div class="node node-debezium">
+      <div>
+        <span class="node-title">Debezium</span>
+        <span class="node-role">Kafka Connect</span>
+      </div>
+      <div class="engine-box">
+        <div>Parser Engine</div>
+        <span class="op-badge" id="op-badge">OP: INSERT</span>
+      </div>
+    </div>
+
+    <!-- Node 3: Kafka Topic -->
+    <div class="node node-kafka">
+      <div>
+        <span class="node-title">Apache Kafka</span>
+        <span class="node-role">Event Log Broker</span>
+      </div>
+      <div class="topic-log">
+        <div class="partition-tag">topic: db.users.p0</div>
+        <div class="log-offsets">
+          <div class="off-cell" id="c0">41205</div>
+          <div class="off-cell" id="c1">41206</div>
+          <div class="off-cell" id="c2">41207</div>
+          <div class="off-cell active" id="c3">41208</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Node 4: Sinks Column -->
+    <div class="sinks-col">
+      <!-- Sink 1: Elasticsearch / Search -->
+      <div class="sink-card" id="sink-0">
+        <div class="sink-header">
+          <div>
+            <span class="node-title">Search Index Sink</span>
+            <span class="node-role">OpenSearch / ES</span>
+          </div>
+          <span class="sink-tag">upsert</span>
+        </div>
+        <div class="sink-body">
+          <span class="sink-action">doc re-indexed</span>
+          <span class="sink-count" id="count-0">1,248</span>
+        </div>
+      </div>
+
+      <!-- Sink 2: Cache Invalidator -->
+      <div class="sink-card" id="sink-1">
+        <div class="sink-header">
+          <div>
+            <span class="node-title">Redis Cache Sink</span>
+            <span class="node-role">Key Evictor</span>
+          </div>
+          <span class="sink-tag">DEL / SET</span>
+        </div>
+        <div class="sink-body">
+          <span class="sink-action">cache evicted</span>
+          <span class="sink-count" id="count-1">3,491</span>
+        </div>
+      </div>
+
+      <!-- Sink 3: Analytics Lake -->
+      <div class="sink-card" id="sink-2">
+        <div class="sink-header">
+          <div>
+            <span class="node-title">Lakehouse Sink</span>
+            <span class="node-role">S3 / Iceberg / ClickHouse</span>
+          </div>
+          <span class="sink-tag">APPEND</span>
+        </div>
+        <div class="sink-body">
+          <span class="sink-action">delta partitioned</span>
+          <span class="sink-count" id="count-2">8,920</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="btn-insert" class="active">INSERT user</button>
+    <button id="btn-update">UPDATE status</button>
+    <button id="btn-delete">DELETE row</button>
+    <button id="btn-pause">Pause Flow</button>
+    <div class="event-preview">
+      payload: <code id="payload-preview">{"op":"c","after":{"id":10842,"status":"active"}}</code>
+    </div>
+  </div>
+
+  <p class="note">
+    <b>Change Data Capture (CDC)</b> decouples source OLTP databases from downstream consumers. Debezium tails the MySQL <code>binlog</code> with near-zero overhead compared to polling <code>SELECT * FROM table</code>. Every mutation emits a deterministic envelope (<code>before</code>, <code>after</code>, <code>op</code>, <code>source_ts</code>) into Kafka, allowing downstream search indexes, cache invalidators, and columnar analytical stores to consume changes independently without contending for primary transaction locks.
+  </p>
+</main>
+
+<script>
+  // Flow Paths in 820x400 SVG Coordinate Space - exact pixel alignment to cards
+  const PATH_STAGE1 = "M 160 200 L 196 200";             // MySQL -> Debezium
+  const PATH_STAGE2 = "M 332 200 L 368 200";             // Debezium -> Kafka
+  const PATH_SINK0  = "M 528 200 L 544 200 L 544 73 L 560 73";   // Kafka -> Search
+  const PATH_SINK1  = "M 528 200 L 560 200";                     // Kafka -> Redis
+  const PATH_SINK2  = "M 528 200 L 544 200 L 544 327 L 560 327"; // Kafka -> Lakehouse
+  let txId = 10842;
+  let offset = 41208;
+  let binlogPos = 489120;
+  let currentOp = "INSERT";
+  let isPaused = false;
+  let counts = [1248, 3491, 8920];
+
+  const mTx = document.getElementById("m-tx");
+  const mOffset = document.getElementById("m-offset");
+  const mLag = document.getElementById("m-lag");
+  const binlogPosEl = document.getElementById("binlog-pos");
+  const opBadge = document.getElementById("op-badge");
+  const payloadPreview = document.getElementById("payload-preview");
+
+  const btnInsert = document.getElementById("btn-insert");
+  const btnUpdate = document.getElementById("btn-update");
+  const btnDelete = document.getElementById("btn-delete");
+  const btnPause = document.getElementById("btn-pause");
+
+  function setOp(op) {
+    currentOp = op;
+    [btnInsert, btnUpdate, btnDelete].forEach(b => b.classList.remove("active"));
+    if (op === "INSERT") btnInsert.classList.add("active");
+    if (op === "UPDATE") btnUpdate.classList.add("active");
+    if (op === "DELETE") btnDelete.classList.add("active");
+
+    opBadge.textContent = "OP: " + op;
+    if (op === "INSERT") {
+      opBadge.style.color = "var(--info)";
+      opBadge.style.background = "rgba(30,157,231,.2)";
+      payloadPreview.textContent = `{"op":"c","after":{"id":${txId},"status":"active"}}`;
+    } else if (op === "UPDATE") {
+      opBadge.style.color = "var(--warn)";
+      opBadge.style.background = "rgba(209,159,3,.2)";
+      payloadPreview.textContent = `{"op":"u","before":{"id":${txId},"status":"active"},"after":{"status":"suspended"}}`;
+    } else {
+      opBadge.style.color = "var(--bad)";
+      opBadge.style.background = "rgba(255,69,93,.2)";
+      payloadPreview.textContent = `{"op":"d","before":{"id":${txId}}}`;
+    }
+  }
+
+  btnInsert.onclick = () => setOp("INSERT");
+  btnUpdate.onclick = () => setOp("UPDATE");
+  btnDelete.onclick = () => setOp("DELETE");
+  btnPause.onclick = () => {
+    isPaused = !isPaused;
+    btnPause.textContent = isPaused ? "Resume Flow" : "Pause Flow";
+    btnPause.classList.toggle("active", isPaused);
+  };
+
+  function spawnPacket(pathStr, durMs, colorClass, onComplete) {
+    const g = document.getElementById("packets-g");
+    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    circle.setAttribute("r", "5");
+    circle.setAttribute("class", colorClass);
+
+    const anim = document.createElementNS("http://www.w3.org/2000/svg", "animateMotion");
+    anim.setAttribute("path", pathStr);
+    anim.setAttribute("dur", durMs + "ms");
+    anim.setAttribute("fill", "freeze");
+    anim.setAttribute("rotate", "auto");
+
+    circle.appendChild(anim);
+    g.appendChild(circle);
+    anim.beginElement();
+
+    setTimeout(() => {
+      circle.remove();
+      if (onComplete) onComplete();
+    }, durMs + 40);
+  }
+
+  function pulseElement(el, isHot) {
+    if (!el) return;
+    const cls = isHot ? "pulse-warn" : "pulse-good";
+    el.classList.add(cls);
+    setTimeout(() => el.classList.remove(cls), 280);
+  }
+
+  function cycle() {
+    if (isPaused) return;
+
+    txId += Math.floor(Math.random() * 3) + 1;
+    offset += 1;
+    binlogPos += Math.floor(Math.random() * 480) + 120;
+
+    mTx.textContent = "#" + txId;
+    mOffset.textContent = offset.toLocaleString();
+    binlogPosEl.textContent = "pos: " + binlogPos.toLocaleString();
+    mLag.textContent = (Math.random() * 12 + 10).toFixed(0) + " ms";
+    // Stage 1: MySQL -> Debezium (Binlog Packet) - ~3x slower: 780ms
+    spawnPacket(PATH_STAGE1, 780, "pkt-binlog", () => {
+      pulseElement(document.querySelector(".node-debezium"), false);
+
+      // Stage 2: Debezium -> Kafka (JSON Event Envelope) - ~3x slower: 840ms
+      spawnPacket(PATH_STAGE2, 840, "pkt-json", () => {
+        pulseElement(document.querySelector(".node-kafka"), false);
+
+        // Update Kafka visual partition cells
+        const c0 = document.getElementById("c0");
+        const c1 = document.getElementById("c1");
+        const c2 = document.getElementById("c2");
+        const c3 = document.getElementById("c3");
+        c0.textContent = offset - 3;
+        c1.textContent = offset - 2;
+        c2.textContent = offset - 1;
+        c3.textContent = offset;
+
+        // Stage 3: Fanout to 3 Sinks concurrently - ~3x slower
+        // Search Sink: 1260ms
+        spawnPacket(PATH_SINK0, 1260, "pkt-sink", () => {
+          counts[0]++;
+          document.getElementById("count-0").textContent = counts[0].toLocaleString();
+          pulseElement(document.getElementById("sink-0"), false);
+        });
+
+        // Redis Sink: 1020ms
+        spawnPacket(PATH_SINK1, 1020, "pkt-sink", () => {
+          counts[1]++;
+          document.getElementById("count-1").textContent = counts[1].toLocaleString();
+          pulseElement(document.getElementById("sink-1"), currentOp === "DELETE");
+        });
+
+        // Lakehouse Sink: 1560ms
+        spawnPacket(PATH_SINK2, 1560, "pkt-sink", () => {
+          counts[2]++;
+          document.getElementById("count-2").textContent = counts[2].toLocaleString();
+          pulseElement(document.getElementById("sink-2"), false);
+        });
+      });
+    });
+  }
+
+  setInterval(cycle, 3900);
+  cycle();
+
+  // Gallery Auto-Fit message reporting: measure main element rather than body/documentElement
+  // to prevent runaway feedback loop where iframe expansion expands documentElement.scrollHeight.
+  let lastSentHeight = 0;
+  const postH = () => {
+    try {
+      const mainEl = document.querySelector("main");
+      const h = mainEl ? Math.ceil(mainEl.getBoundingClientRect().height + 52) : Math.ceil(document.body.scrollHeight);
+      if (Math.abs(h - lastSentHeight) > 2) {
+        lastSentHeight = h;
+        parent.postMessage({ demoHeight: h }, "*");
+      }
+    } catch (e) {}
+  };
+  window.addEventListener("load", postH);
+  window.addEventListener("resize", postH);
+  postH();
+</script>
+</body>
+</html>

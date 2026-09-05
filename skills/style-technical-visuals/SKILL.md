@@ -144,6 +144,19 @@ strength, and data colors for each canvas.
 Keep the accent recognizable in both themes. Verify every foreground against
 the surface where it appears.
 
+## Design pattern references
+
+Detailed mechanics, layout techniques, and implementation patterns extracted
+from `references/gallery/GALLERY.html` live in `references/design-patterns/`:
+
+- [`layout-and-framing.md`](references/design-patterns/layout-and-framing.md): Zero-scroll embedding, auto-fit message reporting, canvas boxes, and dual DOM+SVG layers.
+- [`topology-diagrams.md`](references/design-patterns/topology-diagrams.md): Multi-tier architecture (apps, proxies, shards), rectilinear center-line wires, and trunk-rail routing.
+- [`traffic-animation.md`](references/design-patterns/traffic-animation.md): Native SVG traffic orbs (`<circle>` + `<animateMotion>`), arrival pulse states, and latency simulation.
+- [`tables-and-matrices.md`](references/design-patterns/tables-and-matrices.md): Relational table samplers, row lock overlays, dual index comparison boards, and canvas matrices.
+- [`progress-and-queues.md`](references/design-patterns/progress-and-queues.md): SVG clip-path sliding progress reveal, stage state transitions, and connection pool exhaustion.
+- [`interactive-controls.md`](references/design-patterns/interactive-controls.md): Adjacent direct-manipulation controls, chip toggles, continuous math sliders (USL), and verdict callouts.
+- [`typography-and-badges.md`](references/design-patterns/typography-and-badges.md): Monospace type hierarchies, tabular numbers (`tabular-nums`), large metric readouts, and badge container padding.
+
 ## Respect ownership
 
 - Use `show-me` to select the smallest useful visual format.

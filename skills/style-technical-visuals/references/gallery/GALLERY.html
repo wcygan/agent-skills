@@ -66,8 +66,11 @@
     the 768-server matrix, the Universal Scalability Law curve, the latency ladder, the
     leftmost-prefix index study, the replication lag wave, partition pruning,
     primary-plus-read-replicas architecture, request fanout topology, hot shard overload,
-    database table sampler, backfill migration progress, connection pool exhaustion,
-    and the MySQL replication pipeline.
+    the sharding story from the 768-servers post — popular architecture, primary plus replicas,
+    PgBouncer pooling, shard formation, row-hash inserts, the proxy plan, and the full sharded
+    end state — plus the database table sampler, backfill migration progress, connection pool
+    exhaustion, the MySQL replication pipeline, and Change Data Capture (CDC) streaming
+    with Debezium, Kafka, and downstream sinks.
     Each demo is self-contained. Open this file in a browser; every animation runs offline.</p>
     <p>No demo scrolls: every iframe grows to fit its content. The auto-fit script at
     the bottom of this file sizes each frame after load; the design-system comment at
@@ -209,7 +212,116 @@
       <b>Hot shard overload — partition skew</b>
       <p>Identical geometry to <code>#fanout</code> (3 apps, 1 proxy, 6 shards), but the proxy routes ~80%+ of incoming requests directly to shard <code>s3</code>. Shard <code>s3</code> is visually emphasized with an orange outline; as requests bottleneck, its border pulses warning orange (<code>#F35815</code>) and its live queue depth counter climbs incrementally (<code>queue 1</code>, <code>queue 2</code>, …) while the other shards sit largely idle.</p>
     </figcaption>
+
+  <figure>
+    <iframe src="demos/ps-popular-arch.html" height="560" scrolling="no" loading="lazy" title="Popular architecture"></iframe>
+    <figcaption>
+      <span>blog/making-768-servers-look-like-1 &middot; #popular-arch</span>
+      <b>Popular architecture — the baseline every app starts with</b>
+      <p>Web, PC, and mobile clients all point at one app server, which points at one
+      database. The architecture works until the database is the bottleneck — every
+      other demo in this set is an answer to this picture.</p>
+    </figcaption>
   </figure>
+
+  <figure>
+    <iframe src="demos/ps-primary-replicas.html" height="670" scrolling="no" loading="lazy" title="Primary and replicas"></iframe>
+    <figcaption>
+      <span>blog/making-768-servers-look-like-1 &middot; #primary-replicas</span>
+      <b>Primary plus read replicas — the first scale move</b>
+      <p>Clients hit the app server; writes go to the Postgres primary and replication
+      fans out to three read replicas. Traffic orbs travel the real paths: one write
+      upstream, many reads downstream.</p>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <iframe src="demos/ps-pgbouncer.html" height="560" scrolling="no" loading="lazy" title="PgBouncer pooling"></iframe>
+    <figcaption>
+      <span>blog/making-768-servers-look-like-1 &middot; #pgbouncer</span>
+      <b>PgBouncer — many app servers, one pooled door</b>
+      <p>App servers queue through a PgBouncer layer before reaching Postgres. The pooler
+      turns thousands of client connections into a handful of database connections, which
+      is what keeps the primary alive under fan-in.</p>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <iframe src="demos/ps-sharding.html" height="780" scrolling="no" loading="lazy" title="Sharding"></iframe>
+    <figcaption>
+      <span>blog/making-768-servers-look-like-1 &middot; #sharding</span>
+      <b>Sharding — replace the big database with a grid</b>
+      <p>The same clients and app server, but the single database becomes a grid of eight
+      shards. Each shard owns a slice of the rows; together they answer every query the
+      monolith used to.</p>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <iframe src="demos/ps-shard-formation.html" height="830" scrolling="no" loading="lazy" title="Shard formation"></iframe>
+    <figcaption>
+      <span>blog/making-768-servers-look-like-1 &middot; #shard-formation</span>
+      <b>Shard formation — the router and the 768-server fleet</b>
+      <p>Five app servers dispatch through one green router into rows of small shard
+      servers stretching past the frame. This is the scale claim of the post made
+      structural: the fleet looks like one database from above.</p>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <iframe src="demos/ps-simple-sharded.html" height="450" scrolling="no" loading="lazy" title="Simple sharded"></iframe>
+    <figcaption>
+      <span>blog/making-768-servers-look-like-1 &middot; #simple-sharded</span>
+      <b>Simple sharded — app servers, one database block</b>
+      <p>The minimal sharded picture: a block of app servers on the left, one sharded
+      database on the right, traffic crossing the one wire that matters. The conceptual
+      step before any router exists.</p>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <iframe src="demos/ps-tons-of-shards.html" height="560" scrolling="no" loading="lazy" title="Tons of shards"></iframe>
+    <figcaption>
+      <span>blog/making-768-servers-look-like-1 &middot; #tons-of-shards</span>
+      <b>Tons of shards — one app, a field of small databases</b>
+      <p>A single app server fronting dozens of tiny shard clusters. Horizontal scaling
+      taken to its conclusion: no shard is big, there are just many of them.</p>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <iframe src="demos/ps-shard-inserts.html" height="780" scrolling="no" loading="lazy" title="Shard inserts"></iframe>
+    <figcaption>
+      <span>blog/making-768-servers-look-like-1 &middot; #shard-inserts</span>
+      <b>Shard inserts — hash routing a row to its home</b>
+      <p>The router computes <code>HASH(7) % 4 = 3</code> and the highlighted row for
+      <code>donald@example.com</code> travels the orange wire into shard 3, where the
+      other sample rows already sit. Deterministic placement, one picture.</p>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <iframe src="demos/ps-proxy-plan.html" height="380" scrolling="no" loading="lazy" title="Proxy plan"></iframe>
+    <figcaption>
+      <span>blog/making-768-servers-look-like-1 &middot; #proxy-plan</span>
+      <b>The proxy plan — NLB, routers, shard tiers</b>
+      <p>The production topology in full: app servers enter through a network load
+      balancer, three routers partition the request space, and each router owns a tier
+      of shard pairs. Every layer exists to make the fleet behave like one database.</p>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <iframe src="demos/ps-full-sharded.html" height="670" scrolling="no" loading="lazy" title="Full sharded"></iframe>
+    <figcaption>
+      <span>blog/making-768-servers-look-like-1 &middot; #full-sharded</span>
+      <b>Full sharded — the end state</b>
+      <p>The last frame of the sharding story: the complete topology with routers
+      fronting every shard group, traffic flowing end to end. Compare it with
+      <code>#popular-arch</code> above — same clients, unrecognizable backend.</p>
+    </figcaption>
+  </figure>
+
 
   <figure>
     <iframe src="demos/users-table.html" height="420" scrolling="no" loading="lazy" title="Database table sampler"></iframe>
@@ -246,6 +358,15 @@
       <p>Primary MySQL node on the left writes into its <code>binlog</code>; network wires branch to three replicas (<code>replica-0</code>, <code>replica-1</code>, <code>replica-2</code>), each showing its internal <code>io</code> thread, <code>relay log</code> buffer, and <code>sql</code> applier thread. Replicas 0 and 1 drain instantly with sub-second green lag (<code>0.04s</code>, <code>0.20s</code>), while Replica 2 simulates a slow applier: the relay log fills with queued packets, the backlog grows, the border turns warning orange, and lag climbs to <code>6.4s</code>.</p>
     </figcaption>
   </figure>
+
+  <figure>
+    <iframe src="demos/cdc-pipeline.html" height="600" scrolling="no" loading="lazy" title="Change Data Capture pipeline"></iframe>
+    <figcaption>
+      <span>streaming &middot; #cdc</span>
+      <b>Change Data Capture — MySQL, Debezium, Kafka & Downstream Sinks</b>
+      <p>Row-level mutations stream from MySQL <code>binlog</code> through a Debezium connector into an Apache Kafka topic partition, fanning out asynchronously to three consumers: a search index (upserting documents), a Redis cache (evicting stale keys), and an analytics lakehouse (appending partitioned delta rows). Demonstrates decoupled low-overhead event streaming without lock contention on the primary database.</p>
+    </figcaption>
+  </figure>
 </main>
 <script>
   // Auto-fit each demo iframe so nothing ever scrolls inside.
@@ -266,7 +387,13 @@
     if (!e.data || !e.data.demoHeight) return;
     const f = [...document.querySelectorAll('figure iframe')]
       .find(fr => fr.contentWindow === e.source);
-    if (f) f.style.height = Math.ceil(e.data.demoHeight + 12) + 'px';
+    if (f) {
+      const targetH = Math.ceil(e.data.demoHeight + 12);
+      // Only update if difference is noticeable, preventing runaway loops
+      if (Math.abs(parseInt(f.style.height || f.getAttribute("height") || 0) - targetH) > 4) {
+        f.style.height = targetH + 'px';
+      }
+    }
   });
 </script>
 </body>
