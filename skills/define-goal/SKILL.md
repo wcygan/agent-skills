@@ -1,6 +1,6 @@
 ---
 name: define-goal
-description: Help the user define a concrete, measurable goal before starting work, especially when they ask to use the goal tool, create a goal, set an objective, clarify success criteria, or turn a fuzzy intention into a quantitative outcome. Use this skill for goal creation and goal refinement only; it does not manage durable snapshots, decision logs, or long-running execution artifacts.
+description: Define an outcome, completion evidence, and scope when the user requests goal creation or refinement.
 ---
 
 # Define Goal
@@ -24,7 +24,8 @@ This skill covers goal definition and goal-tool creation only. Do not create int
    - how completion will be verified
    - what is in scope
    - what is out of scope when ambiguity would matter
-   - the stop condition for asking the user instead of grinding
+   - required verification and correction before completion
+   - specific conditions that require user input or end bounded exploration
 
 3. Make it quantitative when the domain supports it.
    Prefer numbers that represent real success, not decorative precision:
@@ -35,10 +36,10 @@ This skill covers goal definition and goal-tool creation only. Do not create int
 
 4. Repair weak goals before setting them.
    - Rewrite vague goals into measurable objectives when local context makes the rewrite safe.
-   - Ask one concise clarification question when the missing detail changes the intended outcome or validation.
+   - Ask one concise clarification question when missing information prevents a sound choice of outcome, scope, or validation.
    - Reject pure activity goals such as "make progress," "keep investigating," "improve things," or "work on X" unless they are sharpened into a verifiable outcome.
 
-5. Check active goal state before creating a goal.
+5. Check active goal state when the user explicitly requests goal-tool creation.
    - Call `get_goal`.
    - If there is no active goal and the objective meets the quality bar, call `create_goal`.
    - If there is an active goal that still matches the user's intent, continue using it instead of creating a duplicate.
@@ -59,7 +60,8 @@ Before `create_goal`, the objective should answer:
 - What evidence will prove it?
 - What quantitative or binary threshold defines success?
 - What scope boundaries matter?
-- What should cause the agent to stop and ask?
+- Which checks and corrections must finish before the task is complete?
+- Which specific conditions require user input?
 
 Good:
 
@@ -76,6 +78,26 @@ Weak:
 Weak:
 
 > Keep investigating the PR comments.
+
+## Completion and Permission
+
+Define the complete requested result before execution. Include running the implementation,
+inspecting its behavior, and correcting failures when the request requires those actions.
+
+A first implementation is an intermediate result when verification remains. Add a
+review stop only when the user requests it or an actual permission boundary requires it.
+
+Preserve existing authorization for local checks and recovery. Name any action that
+requires new permission separately from the evidence needed for completion.
+
+Choose verification proportional to the change. Preserve required project checks;
+repeat checks when changes, failures, or unresolved concerns justify another run.
+
+For exploration, define the question, evidence scope, and stopping condition. Include
+an explicit user budget when provided; do not invent a token budget.
+
+Goal refinement can end with a clear objective. Use the goal tool only when explicitly
+requested, and let its active contract govern execution and status changes.
 
 ## Quantification Heuristics
 
@@ -96,4 +118,5 @@ Useful question shapes:
 - "Which environment should I verify against: local, staging, or production?"
 - "What is the minimum evidence you want before I mark this goal complete?"
 
-If the user cannot provide a metric, propose the most honest binary validator available and ask for confirmation.
+If no useful metric exists, use an observable pass/fail condition supported by the task.
+Ask only when a missing decision prevents a sound choice.

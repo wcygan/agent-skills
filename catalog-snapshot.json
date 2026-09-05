@@ -32,7 +32,7 @@
     "choose-workflow-control-model": "05d2d7916f6f582617173e07553ae4d550576290738af71d50c37a7a01b36584",
     "code-review": "0eafb2016d70027314832143e4e431137109b967309107eee0d92c165073cef2",
     "codebase-design": "edb4fdf72a12635e966685d2b880ce18f68fc3272565ec65e15047c9b3e7d4cb",
-    "define-goal": "6942c4029f283635fe00d3a96dae3428c1f76df1ffc67930866398a07f8f7d21",
+    "define-goal": "dda8c51d7c3af7d0d6ed2847878306290d614cb02014353a2c7c2495663109a1",
     "design-bounded-loop": "14031b06db9ff7221c1d553fc2d37c7c5d1c8565ba4601ab548480803199eb8a",
     "design-llm-evaluation-suite": "d3b7b243e3afe718c8c3ade1d30a554bece5c7a5ddd5a806625d3d1ad245dde1",
     "design-verification-strategy": "0c0bee4a30f5367205b7286f0a7fec7050ce5b9cd437b5881751baedbaf3c707",
@@ -100,9 +100,9 @@
     "shape-safe-change": "df720e8679861275089fa1b272dbed303725f3a7e050817e8711d8c6cb888b9a",
     "show-me": "268d18ef16be0124d85e0e2faff5d5b84caa5f556696590b6535c6794fab74fe",
     "simplify-code": "bd1083addd175aac7083d769ec9e92ccf4324840a3faa18b4d98d202b4e36194",
-    "skill-intake": "c6f405c39cf6796c214329046cfd7b9afa9700a13d620f9bf8c994986d4fb1e2",
+    "skill-intake": "68f6a301be9a663ceedb63090a9f4f4e8b0b3088f99727d1cd02c47d4d542458",
     "sloppy-commit-push": "703191f37cb07fbfa46a7001632276aa4eed00ddbc0faf87816a2f04c2304ed1",
-    "style-technical-visuals": "4e9bcd68cd817561ebe8f06b13b161a82f9d927187cfcb926c788e86012028ad",
+    "style-technical-visuals": "1b77bfad60397edfe5387ece01bd8c00877c9ff760ad62da445926e60775da14",
     "tdd": "66725959f5f1b8e0d32b74fc8c558b64627b2e211307a8d5db1f741ceef05bbf",
     "to-spec": "82c477606de383f8371d0094d462908f38d3c6e8c467b0d378de76ff2a4db94c",
     "to-tickets": "b491adf47067a93384498768d51ff273e3e0594f7422842f413166ef200eaaa8",
@@ -120,6 +120,6 @@
     "wayfinder": "51f0d9f8ec1c14c1620b9ccbd1725df631a4aaa82ebccb85201fa96bb923fca6",
     "web-design-guidelines": "a551df5b7649a8170be0b27be15852e3e34d54c2cfa8e414a317dde492d2ab4a",
     "wizard": "a31b64664ff5dbe998df1bade82eaebcc9a1843b22cd9a6e6025c2cb2e1e74ec",
-    "writing-for-agents": "41c4272c9bca46d407ed16a3626e1e4db30556408903f318f50914d2f56d8463"
+    "writing-for-agents": "50e1660c8227bba3f88b6a6a2603f5986171b8443346eef763e7794885b669e3"
   }
 }

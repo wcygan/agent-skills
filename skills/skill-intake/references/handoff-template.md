@@ -43,18 +43,17 @@ use it.>
 
 - <Nearby work and non-triggers.>
 
-## Required workflow
+## Workflow criteria
 
-1. <Ordered, imperative steps.>
+- <Required outcomes and decisions; specify order only where dependencies or risk require it.>
 
 ## Authority and safety
 
-- <Read-only default, implementation authority, side effects, and stop
-  conditions.>
+- <Existing authorization, permitted recovery, external actions, and specific conditions requiring user input.>
 
 ## Output contract
 
-- <Exact sections, artifacts, or verified state the skill must produce.>
+- <Required result, verification evidence, and correction needed before completion.>
 
 ## Resources
 
@@ -107,6 +106,8 @@ use it.>
   `gh skill install . --from-local --all --dir <scratch-directory>`.
 - Verify the installed `SKILL.md` and every referenced file explicitly.
 - Run `git diff --check` and report pre-existing warnings separately.
+
+Complete the implementation and required checks. Fix failures caused by the change and rerun affected checks within the authorized scope.
 
 Report the files created, validation evidence, assumptions, and residual gaps.
 ```
@@ -177,6 +178,10 @@ Add behavior-specific criteria before repository-format criteria. Include:
 - relevant edge cases;
 - catalog overlap resolution; and
 - validation proportional to the skill's risk.
+
+Keep descriptions short, with the distinguishing task condition early. State when
+each reference applies. Preserve mandatory checks without adding repeated tests
+that have no new change, failure, or unresolved concern to investigate.
 
 Do not use “works correctly,” “comprehensive,” or “production ready” without
 observable evidence.

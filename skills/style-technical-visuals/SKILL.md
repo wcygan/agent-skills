@@ -16,6 +16,24 @@ and editorial.
 
 Adapt the language to the target. Preserve existing product tokens and brand
 rules when they exist. Use this skill as the fallback system.
+
+## Start from the gallery
+
+Before building any new artifact, do this:
+
+1. Read `references/gallery/GALLERY.html` to see the quality bar and the
+   shared token block.
+2. Find the closest demo in `references/gallery/demos/` to the artifact you
+   were asked to build (pipeline, topology, table sampler, curve, matrix).
+3. Copy that demo's geometry, framing, and interaction patterns. Edit toward
+   the new content. Do not rebuild from prose alone when a working example
+   exists — the prose patterns in `references/design-patterns/` describe the
+   gallery demos; they are weaker than the demos themselves.
+
+Every demo in the gallery is a "good example": self-contained, zero-scroll,
+fixed-coordinate stage, exact pixel wire alignment, native SVG packets.
+Derivative artifacts must meet the same bar.
+
 The curated nine-animation tour lives in
 `references/gallery/GALLERY.html` (self-contained; dark theme only). Its header
 documents the shared color palette and design tokens; every demo under
@@ -72,13 +90,55 @@ Start an unbranded fallback palette from these PlanetScale-inspired anchors:
 
 | Role | Anchor | Use |
 | --- | --- | --- |
-| Ink | `#1a1a1a` | Dark canvas or light-theme text |
+| Ink | `#111111` | Dark canvas or light-theme text |
 | Paper | `#fafafa` | Light canvas or dark-theme text |
 | Signal | `#f35815` | Sparse emphasis and active state |
 
 Use black and off-white for most surfaces. Use orange to guide attention, not
 to decorate. Use `better-colors` when palette generation, gamut, or contrast
 calculations require exact values.
+
+For dark-theme artifacts — the default for gallery-style demos — use the
+canonical shared system verbatim. Keep these values in one `:root` token
+block and reference them only through their role names:
+
+```css
+:root {
+  color-scheme: dark;
+  /* Canvas & surfaces */
+  --canvas: #111111;                    /* page background */
+  --panel: #1c1c1c;                     /* demo panels, cards, table surfaces */
+  --border: rgba(255,255,255,.14);      /* 1px dividers and outlines */
+  --border-node: rgba(255,255,255,.22); /* emphasized node outlines */
+  --track: rgba(255,255,255,.10);       /* empty tracks, cell wells */
+  /* Text */
+  --text: #fafafa;                      /* primary */
+  --text-muted: rgba(250,250,250,.60);  /* captions, subheads */
+  --text-dim: rgba(250,250,250,.40);    /* x-axes, footnotes */
+  /* Accent (sparing: active state, focus, taught concept) */
+  --accent: #f35815;                    /* the one orange */
+  /* Series & states */
+  --good: #30a46c;                      /* success, hits, caught-up */
+  --warn: #d19f03;                      /* caution, wasted scans, mid lag */
+  --bad: #ff455d;                       /* errors, stale reads, saturation */
+  --info: #1e9de7;                      /* network, secondary series */
+}
+```
+
+Usage rules for this system:
+
+- Dark canvas only for gallery demos; do not invent new grays per artifact.
+- `--accent` appears sparingly: one dominant accent per focal area, never as
+  decoration or as a series color.
+- Map each series/state color to one stable meaning and repeat the same
+  mapping across nodes, edges, badges, and counters.
+- Monospace is the default face: `font: 13px/1.5 ui-monospace,
+  SFMono-Regular, Menlo, monospace`, with `font-variant-numeric:
+  tabular-nums` on all counters, offsets, and axes.
+- Demos never scroll: `body { overflow: hidden }`, natural-height content,
+  max reading width `860px`, stage canvases with fixed pixel dimensions.
+  The gallery header in `references/gallery/GALLERY.html` is authoritative
+  if this block and it ever disagree.
 
 ## Set the typography
 

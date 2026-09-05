@@ -1,6 +1,6 @@
 ---
 name: skill-intake
-description: Turn rambling, unstructured observations about manual, repetitive, error-prone, or agent-assisted work into a scoped skill intake decision and a self-contained paste-ready implementation handoff for this repository’s skills/new-plugin workflow. Use when a user says a process should become a skill, describes work they repeat or want to automate, or has a rough skill idea that needs triggers, boundaries, inputs, outputs, authority, resources, examples, overlap analysis, and validation formalized; recommend create, extend, split, script, document, one-off, or defer before drafting the handoff.
+description: Assess a rough skill idea, choose whether to create or extend a skill, and prepare an implementation handoff.
 license: MIT
 metadata:
   author: William Cygan
@@ -12,17 +12,13 @@ metadata:
 Turn rough observations into a decision about reusable automation and, when a
 skill is warranted, an implementation-ready handoff for `skills/new-plugin`.
 
-## Remain read-only
+## Intake scope
 
-Treat intake as a planning and synthesis task. Do not create or edit the
-proposed skill, run its automation, install dependencies, or change application
-state. Repository inspection is read-only. Preserve the user's raw notes and
-the current worktree.
+Treat intake as a read-only planning task. Preserve the user's notes and current worktree.
+The deliverable is a decision, a structured brief, and a self-contained handoff.
 
-The deliverable is a decision, a structured brief, and a self-contained
-paste-ready handoff. Stop after those outputs even when the idea is sufficiently
-clear to implement. Implementation belongs in a separate session using the
-handoff.
+Stop after the handoff when the request covers intake only. If the user also
+requests implementation, continue with the handoff within the existing authorization.
 
 ## Accept unstructured input
 
@@ -108,10 +104,11 @@ For each proposed skill, formalize:
 - **trigger:** requests and situations that should activate it;
 - **non-trigger:** nearby work it deliberately does not own;
 - **inputs:** required artifacts, context, repositories, or user choices;
-- **workflow:** ordered decisions and actions;
+- **workflow:** outcomes and decision criteria, with ordered steps where required;
 - **output:** concrete artifact, report, change, or verified state;
 - **authority:** read-only behavior and conditions that permit implementation;
-- **stop conditions:** ambiguity, risk, missing evidence, or completion;
+- **completion:** required result and the evidence that proves it;
+- **pause conditions:** specific missing decisions, permissions, or external dependencies;
 - **edge cases:** variants that materially change the workflow; and
 - **relationship:** overlap or composition with existing skills.
 
@@ -121,12 +118,10 @@ outputs, or need unrelated reference material.
 
 ## Draft activation metadata
 
-Write a complete proposed `description` that contains:
-
-1. what the skill does;
-2. when to use it;
-3. searchable trigger language and concrete contexts; and
-4. important scope or output distinctions needed for reliable activation.
+Write a short `description` that states the capability and the task that needs it.
+Put the distinguishing trigger early so shortened descriptions retain the boundary.
+Keep procedures, resource lists, and detailed outputs in the body or references.
+Add exclusions only when they prevent likely selection errors.
 
 Do not put essential activation rules only in the future skill body. Avoid
 marketing language, vague claims such as “improve code,” and descriptions that
@@ -146,8 +141,10 @@ Propose only resources that reduce repeated work or context:
 - use `assets/` for templates or files copied into final outputs; and
 - use no extra resources when the core workflow fits clearly in `SKILL.md`.
 
-Name each proposed file and state why it is needed. Do not add a script merely
-to rename an existing command. Do not add README, changelog, installation, or
+Name each proposed file and state why it is needed.
+For each reference, state when to read it. Keep shared constraints in the entrypoint.
+Use a minimal router only when substantial workflows need separate guidance.
+Do not add a script merely to rename an existing command. Do not add README, changelog, installation, or
 process-history files inside the skill.
 
 ## Ask only discriminating questions
@@ -198,7 +195,8 @@ Inputs:
 Workflow:
 Output:
 Authority:
-Stop conditions:
+Completion evidence:
+Pause conditions:
 Edge cases:
 Existing-skill relationship:
 
@@ -256,9 +254,10 @@ Before reporting, confirm:
 
 - the decision is explicit and justified;
 - the proposed name and description match the job;
+- instructions add useful knowledge beyond ordinary model behavior;
 - triggers and non-triggers separate nearby skills;
-- one output and stopping condition are clear;
-- authority does not expand beyond the user's notes;
+- completion includes required verification and correction, with separate pause conditions;
+- authority preserves existing permission without adding routine approval stops;
 - every proposed resource has a purpose;
 - the handoff contains no unresolved placeholders;
 - paths are repository-relative rather than machine-specific;

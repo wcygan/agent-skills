@@ -32,6 +32,12 @@ Weak repetition can still justify a skill when failure is expensive or the
 required knowledge is easy to lose. High frequency alone does not justify a
 skill when a deterministic command solves the entire problem.
 
+Identify what the skill adds beyond ordinary model behavior. Generic encouragement
+or an elaborate recipe alone does not establish reusable value.
+
+Consider the models and environments that will consume the skill. Preserve proven
+safeguards while removing instructions that add work without improving results.
+
 ## Create versus extend
 
 Prefer `extend` when an existing skill already shares:
@@ -121,7 +127,7 @@ If most answers are “anything,” “it depends,” or “better,” narrow th
 ## Resource selection
 
 Use a reference when detailed content is useful only for a branch, domain, or
-output variation. Keep essential procedure in `SKILL.md`.
+output variation. Keep shared constraints in `SKILL.md`. State when each reference should be read.
 
 Use a script when deterministic reliability, stable parsing, or repeated code
 justifies maintenance. Specify inputs, output, side effects, errors, timeout,
