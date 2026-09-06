@@ -1,90 +1,64 @@
-# Traffic Animation and State Transitions
+# Native SVG Tracers and Playback
 
-Mechanics for animated traffic packets, continuous loops, and visual arrival states.
+Use this procedure when traffic explains a request, write, delivery, or state transition.
+For node shapes, exact ports, and arrowheads, read [topology-diagrams.md](topology-diagrams.md).
 
-## Native SVG Traffic Orbs (`<circle>` + `<animateMotion>`)
+## Bind motion to a route
 
-Traffic orbs representing queries, writes, or binlog packets must be rendered as native SVG elements inside the same vector coordinate system as the interconnect paths.
+Create the wire and packet inside the same scene SVG. Use a native `<circle>` with `<animateMotion>`.
+Use the wire's exact path string for motion, ordered from source to destination. Keep the circle centered at its local origin.
 
-### Why Avoid DOM + CSS `offset-path`
-HTML `<div>` elements animated with CSS `offset-path` introduce subpixel rounding and coordinate drift. Native SVG `<circle>` elements with `<animateMotion>` lock exactly to the vector path center line across all display scalings.
+Copy `connect`, `line`, and `animate` from `../gallery/demos/outbox.html` for a working implementation.
+The packet layer sits above nodes. The wire layer sits below nodes and above container backgrounds.
 
-### Programmatic Packet Injection
+Create packets only for events that occur in the current transition. A static ownership edge does not imply continuous traffic.
+Use the route's semantic color for its packet. Use a dashed route and a waiting label for blocked work.
+
+## Start inserted animations explicitly
+
+Set `begin="indefinite"` before attaching an animation. Attach it to the live SVG, then call `beginElement()`.
+Without an explicit start, a late insertion can use document time zero and appear finished immediately.
+
 ```javascript
-function spawnPacket(svgContainer, pathString, durationMs, colorClass, onComplete) {
-  const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-  circle.setAttribute("r", "5");
-  circle.setAttribute("class", "packet " + colorClass);
-  
-  const anim = document.createElementNS("http://www.w3.org/2000/svg", "animateMotion");
-  anim.setAttribute("path", pathString);
-  anim.setAttribute("dur", durationMs + "ms");
-  anim.setAttribute("fill", "freeze");
-  anim.setAttribute("rotate", "auto");
-  
-  circle.appendChild(anim);
-  svgContainer.appendChild(circle);
-  anim.beginElement();
-  
-  setTimeout(() => {
-    circle.remove();
-    if (onComplete) onComplete();
-  }, durationMs + 40);
-}
+const motion = document.createElementNS("http://www.w3.org/2000/svg", "animateMotion");
+motion.setAttribute("path", wire.getAttribute("d"));
+motion.setAttribute("begin", "indefinite");
+motion.setAttribute("dur", "1.1s");
+motion.setAttribute("fill", "freeze");
+packet.append(motion);
+packetLayer.append(packet);
+motion.beginElement();
 ```
 
-### Packet Styling and Glow
-```css
-.packet {
-  pointer-events: none;
-}
-.packet.write {
-  fill: var(--accent);
-  filter: drop-shadow(0 0 5px rgba(243, 88, 21, 0.8));
-}
-.packet.binlog {
-  fill: var(--info);
-  filter: drop-shadow(0 0 5px rgba(30, 157, 231, 0.8));
-}
-.packet.read {
-  fill: var(--good);
-  filter: drop-shadow(0 0 5px rgba(48, 164, 108, 0.8));
-}
-```
+Fade or remove packets after arrival. Base destination effects on arrival when the effect teaches timing.
+For discrete schedules, state clearly that each step shows the event's resulting state.
 
-## Destination Node Pulse on Arrival
+## Preserve playback intent
 
-When a packet finishes its journey, the destination card pulses its border and shadow to acknowledge receipt:
+Start standalone demos automatically. Start embedded demos when their frames become visible.
+Loop after a short final-state pause. Keep Play, Pause, Step, and Reset available.
 
-```css
-@keyframes pulseGood {
-  0%   { border-color: rgba(48, 164, 108, 0.9); box-shadow: 0 0 8px rgba(48, 164, 108, 0.35); }
-  100% { border-color: var(--border-node); box-shadow: none; }
-}
-@keyframes pulseHot {
-  0%   { border-color: rgba(243, 88, 21, 0.95); box-shadow: 0 0 10px rgba(243, 88, 21, 0.45); }
-  100% { border-color: var(--accent); box-shadow: none; }
-}
-.pulse-good { animation: pulseGood 0.28s ease-out; }
-.pulse-hot  { animation: pulseHot 0.28s ease-out; }
-```
+Store user playback intent separately from frame visibility and document visibility.
+Scrolling or switching tabs suspends execution; returning restores the prior intent.
+Manual Step pauses automatic advancement. Reset and mode changes preserve the user's playback choice.
 
-## Speed as Meaning (The Lag Wave Pattern)
+For embedded demos, use a ready handshake and frame visibility messages from the gallery.
+Match incoming messages to the expected parent or child window. This also supports local `file://` pages.
+The main gallery's `data-stepped` frames show the complete protocol and automatic height reporting.
 
-In simulations explaining latency or lag (e.g. `replication-lag.html`), vary packet flight duration to represent real system costs:
-- 4-second replica: packet duration `800ms`.
-- 24-second replica: packet duration `4800ms` (6× slower).
-Physical speed on screen communicates bottleneck disparity without requiring the user to interpret numeric labels alone.
+## Support reduced motion
 
-## Accessible Reduced Motion State
+Check `matchMedia("(prefers-reduced-motion: reduce)")` before creating SVG animations.
+CSS animation rules alone do not disable SVG `<animateMotion>` or `<animateTransform>`.
+Keep static arrows, labels, counters, and discrete steps available. Respond when the preference changes.
 
-Always support `prefers-reduced-motion`:
-```css
-@media (prefers-reduced-motion: reduce) {
-  .packet, .pulse-good, .pulse-hot {
-    animation: none !important;
-    transition: none !important;
-  }
-}
-```
-When reduced motion is active, display static interconnect arrows or static status badges instead of continuous orbs.
+## Verify actual movement
+
+Load the page without clicking Play. Confirm automatic advancement and a complete loop.
+Insert a packet after the SVG document is older than its animation duration.
+Sample the packet's `getCTM()` at two times; its position must change along the declared route.
+
+Test pause, manual steps, reset, mode changes, frame visibility, and reduced motion.
+Open standalone files and the gallery offline. Confirm that playback needs no external asset requests.
+
+Completion: every demo moves real packets, respects playback intent, and preserves its explanation with reduced motion.

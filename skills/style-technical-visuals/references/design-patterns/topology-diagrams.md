@@ -1,75 +1,117 @@
-# Topology Diagrams and Flow Mechanics
+# Diagram Structure and Exact Ports
 
-Patterns for drawing distributed systems, database topologies, proxies, tiers, and interconnects.
+Use this procedure for diagrams with connected nodes. The working examples live in `../gallery/demos/`.
 
-## Tiered Multi-Column Architecture
+## 1. Assign shapes and roles
 
-Topologies arrange nodes into strict left-to-right or top-to-bottom pipeline tiers:
+Choose shapes from the meaning of each node before placing nodes.
 
-1. **Left / Top**: Clients, application servers, requesters (`.app-node`).
-2. **Center**: Intermediaries (proxies, load balancers, PgBouncer, connection poolers, routers).
-3. **Right / Bottom**: Data plane (primary database, replicas, partitioned shards).
+| Shape | Meaning | Example |
+| --- | --- | --- |
+| Cylinder | Database or durable sink | `outbox.html`, `consumer-replay.html` |
+| Server panel with indicator strip | Service, transaction, consumer, or Raft node | `deadlock.html`, `raft.html` |
+| Folded document | Record, row version, statement, or partition | `mvcc.html`, `consumer-groups.html` |
+| Divided table row | Stored row or index key | `deadlock.html`, `gap-locks.html` |
+| Queue with visible slots | Stream or bounded buffer | `outbox.html`, `backpressure.html` |
+| Hexagon | Transform or window operator | `backpressure.html`, `watermarks.html` |
 
-### Node Dimensions and Fixed Coordinates
-Never use fluid flex wrapping for nodes connected by SVG wires. Fix node positions so coordinates remain absolute:
-```css
-.node {
-  position: absolute;
-  border: 1px solid var(--border-node);
-  border-radius: 4px;
-  background: var(--panel);
-  text-align: center;
-  transition: border-color .15s ease, box-shadow .15s ease;
-}
-.app-node    { top: 24px; width: 120px; height: 52px; }
-.proxy-node  { top: 154px; left: 360px; width: 140px; height: 56px; }
-.shard-node  { top: 280px; width: 110px; height: 60px; }
-```
+Use a short shape key when one shape has a diagram-specific meaning. Keep the same meaning throughout that diagram.
 
-## Rectilinear and Direct Vector Interconnects
+Use MySQL, Kafka, and Flink SVG marks when they identify the actual technology. Keep generic systems generic.
+The examples contain inline Simple Icons paths with source and license comments. Reuse these assets with their provenance.
 
-Wires between tiers must connect card faces at exact center lines:
-- **Horizontal run**: `y = top + height / 2`
-- **Vertical run**: `x = left + width / 2`
+Render decorative marks with `aria-hidden="true"` beside visible technology names. Use `currentColor` and a consistent 20–24 pixel size.
+Select the scene by its unique ID or accessible label; a page can contain several logo SVGs.
 
-```javascript
-// Example: calculate 90-degree dogleg path from proxy bottom center to shard top center
-const proxyBottomX = proxy.left + proxy.width / 2;
-const proxyBottomY = proxy.top + proxy.height;
-const shardTopX = shard.left + shard.width / 2;
-const shardTopY = shard.top;
-const midY = (proxyBottomY + shardTopY) / 2;
+Completion: every shape and logo has an explicit role in the explanation.
 
-const pathData = `M ${proxyBottomX} ${proxyBottomY} V ${midY} H ${shardTopX} V ${shardTopY}`;
-```
+## 2. Place nodes and labels
 
-### Interconnect Styling
-- Inactive line: `stroke: #454545; stroke-width: 1.5px; fill: none;`
-- Active / Queued line: `stroke: rgba(243, 88, 21, 0.4); stroke-dasharray: 4 4;`
-- Trunk + Rail pattern: When fanout originates from one primary, draw a single horizontal trunk to a vertical rail, then branch to replicas.
+Use one fixed SVG `viewBox` for nodes, wires, arrowheads, and packets. Scale the whole scene to the available width.
+Store each node's `id`, `kind`, `x`, `y`, `width`, and `height` once. Derive drawing geometry and connection ports from these bounds.
 
-## Direct Wire Labels
+Arrange a pipeline in reading order. Put each buffer between the stages that write and read it.
+Group partitions by owner when this removes unrelated wire crossings. Show the grouping rule in a label.
+Use direct leader-to-follower connections for Raft messages.
 
-Place floating labels directly on or adjacent to wires rather than relying on detached legends:
-```css
-.wire-label {
-  position: absolute;
-  font-size: 9px;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: var(--text-dim);
-  background: var(--panel);
-  padding: 1px 5px;
-  z-index: 2;
-}
-```
+Size nodes for the longest label across every mode and step. Keep text clear of cylinder caps, folded corners, and connection ports.
+Use a database container around records that share a transaction. Mark containers separately from ordinary nodes for collision checks.
 
-## Secondary Legend Block
-When multiple traffic types share the canvas, provide a bottom legend with circular dot indicators:
+Paint layers in this order:
+
+1. Container backgrounds and boundaries.
+2. Connection wires and arrowheads.
+3. Node surfaces and labels.
+4. Moving packets.
+
+Internal database wires must remain visible between the container boundary and its records. See `outbox.html` for this layer order.
+
+Completion: every state fits inside the stage, with separate labels and clear space for connections.
+
+## 3. Derive ports and routes
+
+For bounds `(x, y, w, h)`, derive these face centers:
+
+| Face | Port |
+| --- | --- |
+| Left | `(x, y + h / 2)` |
+| Right | `(x + w, y + h / 2)` |
+| Top | `(x + w / 2, y)` |
+| Bottom | `(x + w / 2, y + h)` |
+
+For cylinders and hexagons, these bounds must describe the actual outline extrema. Keep port calculations independent of label positions.
+
+Choose facing ports first. Use a straight segment when the centers align.
+Otherwise, use the fewest orthogonal bends that clear unrelated nodes and labels.
+The first and last segments must leave and enter perpendicular to their node faces.
+
+Use a shared trunk for fanout. Use an explicit corridor for a return path or an intervening obstacle.
+Check the corridor against every state. Record why a route needs a detour.
+
+Generate one ordered point list from source to destination. Derive the SVG path and verification metadata from that list.
+Preserve exact coordinates, including half-pixels; rounding each endpoint independently causes drift.
+
+Completion: every route starts and ends on its declared ports, with no unrelated node or label crossings.
+
+## 4. Center directional arrowheads
+
+Attach a marker to the path's destination. Match its color to the wire's semantic token.
+Use `fill="none"` and a 1.5-unit stroke for the wire.
+
 ```html
-<div class="legend">
-  <span><i style="background: var(--accent)"></i>write → primary</span>
-  <span><i style="background: var(--info)"></i>binlog → replicas</span>
-  <span><i style="background: var(--good)"></i>read ← replica</span>
-</div>
+<marker id="arrow-info" viewBox="0 -4 8 8"
+        refX="8" refY="0" markerWidth="8" markerHeight="8"
+        markerUnits="userSpaceOnUse" orient="auto">
+  <path d="M 0 -3 L 8 0 L 0 3" fill="none"
+        stroke="var(--info)" stroke-width="1.3" />
+</marker>
+<path d="M 220 105 H 600" fill="none" stroke="var(--info)"
+      stroke-width="1.5" marker-end="url(#arrow-info)" />
 ```
+
+The marker tip is `(8, 0)`. Matching `refX` and `refY` places that tip exactly on the path endpoint.
+The symmetric wings center the arrowhead on the incoming wire. `orient="auto"` points it along the final segment.
+
+Center the tip on the destination face, pointing toward the node center. Keep the arrowhead outside the node's label area.
+Use the face boundary as the endpoint, rather than extending the wire to the node's interior center.
+
+Use unique marker IDs within each SVG. Keep marker dimensions stable when wire thickness changes.
+
+Completion: left, right, top, and bottom arrivals have centered tips, correct direction, and no visible gap or overshoot.
+
+## 5. Animate and verify
+
+Read [traffic-animation.md](traffic-animation.md) before adding packet motion or automatic playback.
+Reuse the route path verbatim for each native SVG packet.
+
+Check every mode and step at desktop and compact widths. Verify:
+
+- Node labels fit their bounds.
+- Nodes, labels, and wires avoid unintended intersections.
+- Every path endpoint equals its declared port.
+- Every segment is orthogonal and every arrow points toward its destination.
+- Moving packets stay centered on their wire, including bends and arrival.
+- Container backgrounds leave internal routes visible.
+
+The repository checks in `tests/browser/gallery_geometry.js` and `tests/browser/gallery_playback.js` demonstrate these assertions.
+Inspect browser screenshots as well; metadata checks cannot detect every painting or stacking error.

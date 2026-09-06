@@ -55,6 +55,11 @@
   figcaption span{font-size:11px;letter-spacing:.08em;opacity:.5;text-transform:uppercase;}
   figcaption p{font-size:12px;line-height:1.6;opacity:.7;margin:6px 0 0;max-width:78ch;}
   figcaption code{font-size:11px;background:rgba(255,255,255,.10);padding:1px 5px;border-radius:3px;}
+  h2{font-size:20px;margin-top:48px;}
+  #guided-demos>p{font-size:13px;color:var(--text-muted);line-height:1.6;}
+  #pause-all{font:inherit;color:var(--text);background:var(--panel);border:1px solid var(--border);padding:10px 14px;margin:8px 0 24px;cursor:pointer;}
+  a{color:var(--text);text-underline-offset:3px;}
+  a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px;}
 </style>
 </head>
 <body>
@@ -71,6 +76,7 @@
     end state — plus the database table sampler, backfill migration progress, connection pool
     exhaustion, the MySQL replication pipeline, and Change Data Capture (CDC) streaming
     with Debezium, Kafka, and downstream sinks.
+    The guided demos below cover transactions, consensus, replay, and stream processing.
     Each demo is self-contained. Open this file in a browser; every animation runs offline.</p>
     <p>No demo scrolls: every iframe grows to fit its content. The auto-fit script at
     the bottom of this file sizes each frame after load; the design-system comment at
@@ -367,10 +373,52 @@
       <p>Row-level mutations stream from MySQL <code>binlog</code> through a Debezium connector into an Apache Kafka topic partition, fanning out asynchronously to three consumers: a search index (upserting documents), a Redis cache (evicting stale keys), and an analytics lakehouse (appending partitioned delta rows). Demonstrates decoupled low-overhead event streaming without lock contention on the primary database.</p>
     </figcaption>
   </figure>
+  <section id="guided-demos" aria-labelledby="guided-title">
+    <h2 id="guided-title">Transactions and distributed systems</h2>
+    <p>Visible demos play automatically and repeat. Pause a demo to inspect each step.</p>
+    <button id="pause-all" aria-pressed="false">Pause guided demos</button>
+    <figure id="mvcc">
+      <iframe data-stepped src="demos/mvcc.html" height="980" scrolling="no" loading="lazy" title="Two readers, different snapshots"></iframe>
+      <figcaption><b>Two readers, different snapshots</b><p>Compare consistent reads under REPEATABLE READ and READ COMMITTED. <a href="demos/mvcc.html" target="_blank" rel="noreferrer">Open standalone ↗</a></p></figcaption>
+    </figure>
+    <figure id="deadlock">
+      <iframe data-stepped src="demos/deadlock.html" height="980" scrolling="no" loading="lazy" title="Two locks, one cycle"></iframe>
+      <figcaption><b>Two locks, one cycle</b><p>Compare opposite lock order with a shared order that prevents this cycle. <a href="demos/deadlock.html" target="_blank" rel="noreferrer">Open standalone ↗</a></p></figcaption>
+    </figure>
+    <figure id="gap-locks">
+      <iframe data-stepped src="demos/gap-locks.html" height="980" scrolling="no" loading="lazy" title="The locked space between rows"></iframe>
+      <figcaption><b>The locked space between rows</b><p>Insert within or outside a locked gap in an ordered index. <a href="demos/gap-locks.html" target="_blank" rel="noreferrer">Open standalone ↗</a></p></figcaption>
+    </figure>
+    <figure id="raft">
+      <iframe data-stepped src="demos/raft.html" height="980" scrolling="no" loading="lazy" title="A majority can make progress"></iframe>
+      <figcaption><b>A majority can make progress</b><p>Separate five Raft nodes, then restore communication and compare committed logs. <a href="demos/raft.html" target="_blank" rel="noreferrer">Open standalone ↗</a></p></figcaption>
+    </figure>
+    <figure id="outbox">
+      <iframe data-stepped src="demos/outbox.html" height="980" scrolling="no" loading="lazy" title="Commit the order and its event"></iframe>
+      <figcaption><b>Commit the order and its event</b><p>Compare separate writes with an atomic order and outbox transaction. <a href="demos/outbox.html" target="_blank" rel="noreferrer">Open standalone ↗</a></p></figcaption>
+    </figure>
+    <figure id="consumer-replay">
+      <iframe data-stepped src="demos/consumer-replay.html" height="980" scrolling="no" loading="lazy" title="One delivery can return twice"></iframe>
+      <figcaption><b>One delivery can return twice</b><p>Replay a Kafka record after a crash, with or without duplicate protection. <a href="demos/consumer-replay.html" target="_blank" rel="noreferrer">Open standalone ↗</a></p></figcaption>
+    </figure>
+    <figure id="consumer-groups">
+      <iframe data-stepped src="demos/consumer-groups.html" height="980" scrolling="no" loading="lazy" title="Partitions set the parallel limit"></iframe>
+      <figcaption><b>Partitions set the parallel limit</b><p>Change consumer counts, lose an owner, and follow partition assignments. <a href="demos/consumer-groups.html" target="_blank" rel="noreferrer">Open standalone ↗</a></p></figcaption>
+    </figure>
+    <figure id="watermarks">
+      <iframe data-stepped src="demos/watermarks.html" height="980" scrolling="no" loading="lazy" title="Arrival time is not event time"></iframe>
+      <figcaption><b>Arrival time is not event time</b><p>Compare late event handling while input watermarks advance at different rates. <a href="demos/watermarks.html" target="_blank" rel="noreferrer">Open standalone ↗</a></p></figcaption>
+    </figure>
+    <figure id="backpressure">
+      <iframe data-stepped src="demos/backpressure.html" height="980" scrolling="no" loading="lazy" title="A slow sink fills the upstream buffers"></iframe>
+      <figcaption><b>A slow sink fills the upstream buffers</b><p>Fill bounded buffers behind a slow sink, then restore sink capacity. <a href="demos/backpressure.html" target="_blank" rel="noreferrer">Open standalone ↗</a></p></figcaption>
+    </figure>
+  </section>
 </main>
 <script>
   // Auto-fit each demo iframe so nothing ever scrolls inside.
   const fit = (frame) => {
+    if (frame.hasAttribute("data-stepped")) return;
     try {
       const doc = frame.contentWindow.document;
       const bottom = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight);
@@ -387,7 +435,7 @@
     if (!e.data || !e.data.demoHeight) return;
     const f = [...document.querySelectorAll('figure iframe')]
       .find(fr => fr.contentWindow === e.source);
-    if (f) {
+    if (f && !f.hasAttribute("data-stepped")) {
       const targetH = Math.ceil(e.data.demoHeight + 12);
       // Only update if difference is noticeable, preventing runaway loops
       if (Math.abs(parseInt(f.style.height || f.getAttribute("height") || 0) - targetH) > 4) {
@@ -395,6 +443,43 @@
       }
     }
   });
+</script>
+<script>
+      const frames = [...document.querySelectorAll("iframe[data-stepped]")];
+      const visible = new Map(frames.map((frame) => [frame, false]));
+      let galleryPaused = false;
+      function sendState(frame) {
+        frame.contentWindow.postMessage(
+          {
+            demoVisible: visible.get(frame),
+            galleryPaused,
+          },
+          "*",
+        );
+      }
+      const observer = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          visible.set(entry.target, entry.isIntersecting);
+          sendState(entry.target);
+        }
+      });
+      frames.forEach((frame) => observer.observe(frame));
+      window.addEventListener("message", (event) => {
+        const frame = frames.find((f) => f.contentWindow === event.source);
+        if (!frame) return;
+        const height = event.data?.demoHeight;
+        if (Number.isFinite(height) && height > 0 && height < 5000)
+          frame.style.height = `${Math.ceil(height) + 2}px`;
+        if (event.data?.demoReady) sendState(frame);
+      });
+      document.querySelector("#pause-all").onclick = (event) => {
+        galleryPaused = !galleryPaused;
+        event.currentTarget.textContent = galleryPaused
+          ? "Resume guided demos"
+          : "Pause guided demos";
+        event.currentTarget.setAttribute("aria-pressed", String(galleryPaused));
+        frames.forEach(sendState);
+      };
 </script>
 </body>
 </html>

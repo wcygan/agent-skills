@@ -1,6 +1,6 @@
 ---
 name: style-technical-visuals
-description: Style technical diagrams, charts, interactive explainers, and dashboards with a consistent visual language. Use when creating or restyling technical visuals that need coherent color roles, typography, spacing, hierarchy, borders, or light and dark themes.
+description: Style technical diagrams, charts, interactive explainers, and dashboards with a consistent visual language. Use when creating or restyling technical visuals that need coherent color roles, typography, spacing, hierarchy, borders, light and dark themes, semantic node shapes, or directional SVG tracers aligned to exact node ports.
 license: MIT
 metadata:
   author: William Cygan
@@ -34,7 +34,7 @@ Every demo in the gallery is a "good example": self-contained, zero-scroll,
 fixed-coordinate stage, exact pixel wire alignment, native SVG packets.
 Derivative artifacts must meet the same bar.
 
-The curated nine-animation tour lives in
+The reviewed animation gallery lives in
 `references/gallery/GALLERY.html` (self-contained; dark theme only). Its header
 documents the shared color palette and design tokens; every demo under
 `references/gallery/demos/` must use that dark system.
@@ -118,7 +118,7 @@ block and reference them only through their role names:
   /* Accent (sparing: active state, focus, taught concept) */
   --accent: #f35815;                    /* the one orange */
   /* Series & states */
-  --good: #30a46c;                      /* success, hits, caught-up */
+  --good: #27b648;                      /* success, hits, caught-up */
   --warn: #d19f03;                      /* caution, wasted scans, mid lag */
   --bad: #ff455d;                       /* errors, stale reads, saturation */
   --info: #1e9de7;                      /* network, secondary series */
@@ -189,11 +189,28 @@ requiring the reader to search elsewhere.
 Use motion only when it explains sequence, transition, or causality. Provide a
 reduced-motion state that preserves the explanation.
 
-### Precise alignment and animation mechanics
+### Build connected diagrams
 
-- **Align wire endpoints to box geometric centers**: Calculate connection points at the exact center lines of card faces (e.g. `x = left + width / 2` for top/bottom connections, `y = top + height / 2` for left/right connections). Explicitly fix element heights and widths so layout changes cannot shift coordinates.
-- **Animate traffic orbs inside native SVG space**: Avoid animating HTML `<div>` elements with CSS `offset-path` along SVG wires. HTML layout boxes introduce subpixel rounding, border-box offsets, and coordinate drift that cause orbs to ride off-center. Instead, animate native SVG `<circle>` elements with `<animateMotion>` or GSAP inside the same `<svg>` element as the wire paths. Native SVG elements share the vector coordinate system, keeping the center of the orb locked onto the path stroke.
-- **Size badge containers for formatted text**: In SVG diagrams and tables, compute container rect widths generously from the longest text label plus horizontal padding. Avoid tight bounding boxes that clip or overflow compound labels (such as `in-tx • lock`).
+For node shapes, logos, ports, routing, or arrowheads, read
+[Diagram Structure and Exact Ports](references/design-patterns/topology-diagrams.md) before implementation.
+For moving packets or automatic playback, also read
+[Native SVG Tracers and Playback](references/design-patterns/traffic-animation.md).
+
+Follow this sequence:
+
+1. Assign semantic shapes and technology marks. Finish when each symbol has one stated role.
+2. Place nodes and labels in one fixed SVG scene. Finish when the longest labels fit every state.
+3. Derive face-center ports from node bounds. Finish when each route clears unrelated nodes and labels.
+4. Center each arrowhead tip on its destination port. Finish when the final segment points perpendicular into the node face.
+5. Animate native SVG packets on the exact wire path. Finish after browser checks confirm movement, alignment, looping, and reduced motion.
+
+Start database containers from `outbox.html`, partition grouping from
+`consumer-groups.html`, and bounded pipelines from `backpressure.html` in
+`references/gallery/demos/`. These examples include semantic shapes and exact port helpers.
+
+Keep new gallery entries in separate draft files during review. After approval, move them into
+`references/gallery/demos/` and add them to `references/gallery/GALLERY.html`.
+Preserve automatic playback and embedding behavior during promotion. Keep one maintained copy of each approved demo.
 
 Design light and dark themes as related systems. Preserve semantic roles,
 hierarchy, and emphasis across both themes.
@@ -210,8 +227,8 @@ Detailed mechanics, layout techniques, and implementation patterns extracted
 from `references/gallery/GALLERY.html` live in `references/design-patterns/`:
 
 - [`layout-and-framing.md`](references/design-patterns/layout-and-framing.md): Zero-scroll embedding, auto-fit message reporting, canvas boxes, and dual DOM+SVG layers.
-- [`topology-diagrams.md`](references/design-patterns/topology-diagrams.md): Multi-tier architecture (apps, proxies, shards), rectilinear center-line wires, and trunk-rail routing.
-- [`traffic-animation.md`](references/design-patterns/traffic-animation.md): Native SVG traffic orbs (`<circle>` + `<animateMotion>`), arrival pulse states, and latency simulation.
+- [`topology-diagrams.md`](references/design-patterns/topology-diagrams.md): Semantic shapes, inline technology marks, node bounds, exact ports, orthogonal routes, and centered arrowheads.
+- [`traffic-animation.md`](references/design-patterns/traffic-animation.md): Native SVG packets, explicit animation starts, automatic playback, visibility, reduced motion, and movement checks.
 - [`tables-and-matrices.md`](references/design-patterns/tables-and-matrices.md): Relational table samplers, row lock overlays, dual index comparison boards, and canvas matrices.
 - [`progress-and-queues.md`](references/design-patterns/progress-and-queues.md): SVG clip-path sliding progress reveal, stage state transitions, and connection pool exhaustion.
 - [`interactive-controls.md`](references/design-patterns/interactive-controls.md): Adjacent direct-manipulation controls, chip toggles, continuous math sliders (USL), and verdict callouts.
@@ -224,8 +241,8 @@ from `references/gallery/GALLERY.html` live in `references/design-patterns/`:
 - Use `better-colors` for color conversion and palette calculations.
 - Use `better-ui` for application interaction and interface polish.
 
-This skill owns presentation rules. The source skill owns facts, structure,
-interaction behavior, and output requirements.
+This skill owns presentation rules. The source skill owns domain facts, system behavior,
+and output requirements.
 
 ## Verify the result
 
