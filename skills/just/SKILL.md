@@ -21,14 +21,9 @@ affect the task.
 
 ## Establish current evidence
 
-1. Read the nearest repository instructions.
-2. Inspect `git status` and preserve unrelated work.
-3. Locate the active `justfile` from the working directory.
-4. Run `command -v just` and `just --version`.
-5. Run `just --list`, `just --summary`, and `just --dump`.
-6. Run `just --show <recipe>` for each relevant recipe.
-7. Run `just --evaluate` when variables affect behavior.
-8. Inspect every script or tool that the relevant recipes call.
+Locate the active `justfile` and relevant repository instructions. Inspect the recipes and underlying commands that determine the requested behavior. Use `just --list` or `--summary` for discovery, `--show <recipe>` for a known target, and `--dump` when the parsed configuration matters. Check `just --version` for version-sensitive syntax.
+
+Inspect expressions before using `just --evaluate` or `--dry-run`: evaluating variables can execute commands even when recipe bodies do not run. Avoid exposing secrets through evaluated output.
 
 Complete this step when the command surface, tool version, underlying commands,
 and possible side effects are known.
@@ -36,9 +31,9 @@ and possible side effects are known.
 ## Preserve authority
 
 - Keep explanation, review, and diagnosis work read-only.
-- Change a `justfile` only when the user requests implementation.
+- For combined diagnosis and implementation requests, continue the authorized changes once the cause is understood.
 - Inspect unfamiliar recipes before execution.
-- Get explicit authority for deploy, publish, cleanup, reset, or user-state changes.
+- Use existing authorization for deploy, publish, cleanup, reset, or user-state changes; ask only if the requested operation is not covered.
 - Preserve the underlying tool as the source of command behavior.
 - Keep secrets in process environment variables.
 
@@ -153,14 +148,7 @@ check: lint test
 
 ## Verify completion
 
-1. Run `just --fmt --check`.
-2. Run `just --list` and inspect every public description.
-3. Run `just --show <recipe>` for each changed recipe.
-4. Run `just --usage <recipe>` for each parameterized recipe.
-5. Run `just --dry-run <recipe> <arguments>` with representative inputs.
-6. Execute each safe changed path.
-7. Confirm that command failures return a nonzero status.
-8. Inspect the final diff and repository status.
+Choose checks that establish the changed contract, following repository requirements and user constraints. Formatting can use `just --fmt --check`; parameter and command behavior can use `--usage`, inspected dry runs, or safe execution with representative inputs. For wrapper changes, cover argument forwarding and failure exit status where affected. Avoid running overlapping discovery commands or recipes merely to complete a checklist.
 
 Report the installed version, changed recipes, commands run, side effects,
 validation evidence, and remaining version or environment assumptions.

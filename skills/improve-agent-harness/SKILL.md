@@ -1,6 +1,6 @@
 ---
 name: improve-agent-harness
-description: "Improve an agent harness through bounded experiments over a batch of traces or evaluations: cluster failures, classify layers, test one harness-variable hypothesis, cold-replay candidates, and require held-out or negative regression evidence. Use when recurring agent failures warrant controlled harness improvement rather than diagnosing one surprising run."
+description: "Improve an agent harness using controlled experiments over recurring trace or evaluation failures. Use when a batch of failures suggests a harness change."
 license: MIT
 ---
 

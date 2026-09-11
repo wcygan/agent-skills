@@ -1,6 +1,6 @@
 ---
 name: gh-stack-companion
-description: Assess and explain local and remote gh-stack health, topology, trunk freshness, atomic merge readiness, synchronization, rebase needs, recovery, CI shape, and safe next commands. Use when a stacked pull request may be stale, divergent, conflicted, misordered, ready to merge, or difficult to navigate.
+description: "Explain gh-stack health and recovery options. Use when stacked PRs are stale, divergent, conflicted, misordered, or being assessed for merge readiness."
 license: MIT
 ---
 

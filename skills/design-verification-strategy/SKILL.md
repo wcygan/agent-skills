@@ -1,6 +1,6 @@
 ---
 name: design-verification-strategy
-description: Design an evidence-backed verification strategy for a change, feature, migration, integration, or system claim by defining risks and invariants, authoritative oracles, test tiers, fixtures, negative and counterexample cases, environment fidelity, independent or held-out checks, and acceptance evidence. Use when deciding what tests or proof are needed, validation is too broad or weak, passing checks do not prove user-visible, packaged, or operational behavior, or implementation and release need explicit verification gates; plan only unless implementation is requested.
+description: "Plan evidence that proves a change works. Use when tests are missing, too broad, or insufficient to establish the claimed behavior."
 license: MIT
 metadata:
   author: William Cygan

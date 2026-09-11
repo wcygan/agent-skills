@@ -1,21 +1,26 @@
 ---
 name: to-spec
 description: Turn the current conversation into a spec and publish it to the project issue tracker — no interview, just synthesis of what you've already discussed.
+license: MIT
+metadata:
+  maintenance: "local"
+  upstream-repository: "https://github.com/mattpocock/skills.git"
+  upstream-skill: "skills/engineering/to-spec"
+  upstream-revision: "84fdeffd12f2ee307994d1eb6feb48173b6e0502"
+  upstream-license: "MIT"
 ---
 
 This skill takes the current conversation context and codebase understanding and produces a spec. Do NOT interview the user — just synthesize what you already know.
 
-The issue tracker and triage label vocabulary should have been provided to you — run `/setup-matt-pocock-skills` if not.
+Use the supplied or discoverable tracker configuration and label vocabulary. Load `setup-matt-pocock-skills` only when tracker setup is requested or needed for authorized publication. Missing tracker access does not block drafting the spec locally.
 
 ## Process
 
 1. Explore the repo to understand the current state of the codebase, if you haven't already. Use the project's domain glossary vocabulary throughout the spec, and respect any ADRs in the area you're touching.
 
-2. Sketch out the seams at which you're going to test the feature. Existing seams should be preferred to new ones. Use the highest seam possible. If new seams are needed, propose them at the highest point you can. The fewer seams across the codebase, the better - the ideal number is one.
+2. Identify where observable behavior can be verified using existing test boundaries where practical. Choose boundaries that expose the relevant failures without coupling tests to internal structure. Use supplied requirements and constraints; state unresolved assumptions rather than adding an interview round.
 
-Check with the user that these seams match their expectations.
-
-3. Write the spec using the template below, then publish it to the project issue tracker. Apply the `ready-for-agent` triage label - no need for additional triage.
+3. Write the spec using the applicable sections below. Publish when the user requests publication, including an explicit invocation of this publishing workflow; otherwise leave a local draft. Apply the configured `ready-for-agent` label only if the requirements are actionable and no blocking decisions remain. Continue implementation if it was also requested and its prerequisites are settled.
 
 <spec-template>
 
@@ -29,7 +34,7 @@ The solution to the problem, from the user's perspective.
 
 ## User Stories
 
-A LONG, numbered list of user stories. Each user story should be in the format of:
+List the distinct user behaviors needed to define acceptance, without repeating the same requirement. A useful format is:
 
 1. As an <actor>, I want a <feature>, so that <benefit>
 
@@ -37,7 +42,7 @@ A LONG, numbered list of user stories. Each user story should be in the format o
 1. As a mobile bank customer, I want to see balance on my accounts, so that I can make better informed decisions about my spending
 </user-story-example>
 
-This list of user stories should be extremely extensive and cover all aspects of the feature.
+Cover material actors, success paths, failure behavior, and boundaries relevant to this feature.
 
 ## Implementation Decisions
 
@@ -59,7 +64,7 @@ Exception: if a prototype produced a snippet that encodes a decision more precis
 
 A list of testing decisions that were made. Include:
 
-- A description of what makes a good test (only test external behavior, not implementation details)
+- Observable behaviors and failure cases the checks must establish
 - Which modules will be tested
 - Prior art for the tests (i.e. similar types of tests in the codebase)
 

@@ -1,6 +1,6 @@
 ---
 name: style-technical-visuals
-description: Style technical diagrams, charts, interactive explainers, and dashboards with a consistent visual language. Use when creating or restyling technical visuals that need coherent color roles, typography, spacing, hierarchy, borders, light and dark themes, semantic node shapes, or directional SVG tracers aligned to exact node ports.
+description: "Style technical diagrams, charts, and interactive explainers consistently. Use when a visual needs coherent color, typography, layout, or connection geometry."
 license: MIT
 metadata:
   author: William Cygan

@@ -21,10 +21,11 @@ its `skills/` component, so the same tree can be packaged as an Agent Plugin
 ## Core paths
 
 - `skills/` contains the distributable skill catalog.
-- `vendor/skills-lock.json` defines direct vendored sources.
+- `vendor/skills-lock.json` defines the skills still managed by upstream synchronization.
+- `vendor/LOCAL-ATTRIBUTIONS.md` preserves provenance for locally maintained adaptations.
 - `justfile` defines the supported maintenance commands.
-- `BOOTSTRAP.md` guides agent-led template creation.
-- `docs/catalog-inheritance.md` defines catalog adoption and upgrades.
+- Read `BOOTSTRAP.md` when creating a catalog from this template.
+- Read `docs/catalog-inheritance.md` when adopting or upgrading an inherited catalog.
 - `catalog-seed.json` and `catalog-projection.json` define inheritance inputs.
 - `catalog-snapshot.json` records distributable content hashes.
 - `.github/workflows/ci.yml` runs the shared validation gate.
@@ -46,6 +47,21 @@ its `skills/` component, so the same tree can be packaged as an Agent Plugin
 6. Optional frontmatter: `license`, `compatibility`, `metadata`, `allowed-tools`.
 7. Use relative paths for all file references from `SKILL.md` (e.g.
    `references/REFERENCE.md`, `scripts/extract.py`), kept one level deep.
+
+## Authoring and ownership
+
+Use `writing-for-agents` for instruction-writing guidance; its source is
+`skills/writing-for-agents/SKILL.md`. Keep the capability and distinguishing
+trigger early, retain essential knowledge and decision criteria, and load
+branch-specific resources only when their stated conditions apply. A phase
+boundary must not discard authorization for the rest of the requested work.
+
+When revising a vendored skill, convert it to local maintenance: remove its
+source mapping and `.vendored` marker, preserve upstream revision, original
+path, attribution, and license in metadata and `vendor/LOCAL-ATTRIBUTIONS.md`,
+and regenerate the remaining vendored listing from the lock. Do not fetch a
+newer revision as part of that conversion. Include attribution resources in
+`catalog-projection.json` and refresh the snapshot after distributable changes.
 
 ## Validation before merging/committing skills
 
@@ -77,6 +93,9 @@ just check-full
   enabling `gh skill update`.
 
 ## Official documentation references
+
+Consult these when the relevant format, installation, or packaging rule is
+uncertain; they are not prerequisites for every skill edit.
 
 - Agent Skills specification (format this repo follows):
   <https://agentskills.io/specification>

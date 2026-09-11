@@ -1,6 +1,13 @@
 ---
 name: planetscale-mysql
-description: Plan and review MySQL/InnoDB schema, indexing, query tuning, transactions, and operations. Use when creating or modifying MySQL tables, indexes, or queries; diagnosing slow/locking behavior; planning migrations; or troubleshooting replication and connection issues. Load when using a MySQL database.
+description: "Plan or troubleshoot MySQL/InnoDB schemas, queries, transactions, and operations. Use for MySQL migrations, indexing, slow queries, locking, or replication issues."
+license: MIT
+metadata:
+  maintenance: "local"
+  upstream-repository: "https://github.com/planetscale/database-skills.git"
+  upstream-skill: "skills/mysql"
+  upstream-revision: "af0ce0cfb65cca4cc21d18ca0d9cf270ca99d488"
+  upstream-license: "MIT"
 ---
 
 # MySQL

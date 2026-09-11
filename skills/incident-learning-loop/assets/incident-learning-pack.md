@@ -1,5 +1,7 @@
 # Incident Learning Pack
 
+Use the applicable sections for a durable incident record. Omit empty sections and link reused evidence rather than repeating it. A companion may be replaced by direct evidence-backed analysis.
+
 Use this template to produce the final response for one bounded closed or
 stabilized incident. Remove instructional text and unused rows. Keep unknowns
 visible rather than filling them with assumptions.
@@ -43,7 +45,7 @@ the status or confidence.]
 
 ## 4. Companion routing record
 
-| Question | Predicate result | Companion or reuse decision | Returned artifact or evidence | Remaining gap |
+| Question | Predicate result | Companion, direct analysis, or reuse | Returned artifact or evidence | Remaining gap |
 | --- | --- | --- | --- | --- |
 | Causal mechanism | [route or skip, with reason] | [diagnose-difficult-bug or skipped] | [artifact or evidence keys] | [gap] |
 | Impact and terminal outcome | [route or skip, with reason] | [map-production-scenario or skipped] | [artifact or evidence keys] | [gap] |
@@ -113,7 +115,7 @@ meets the evidence and priority threshold.
 - **Environment and fidelity:** [Required tier, real components, and limits.]
 - **Evidence artifact:** [Output retained by future authorized work.]
 - **Acceptance gate:** [Entry, pass, prohibited outcomes, stop conditions.]
-- **Authority requirement:** [Separate permission and owner.]
+- **Authority requirement:** [Existing authority, owner, and any missing permission.]
 - **What this will not prove:** [Residual proof boundary.]
 
 ## 10. Cross-artifact reconciliation
@@ -127,7 +129,7 @@ confidence.]
 
 ## 11. Downstream handoff and residual risk
 
-| Accepted work boundary | Downstream workflow | Inputs from this pack | Separate approval or evidence required |
+| Accepted work boundary | Downstream workflow | Inputs from this pack | Missing decision, authority, or evidence |
 | --- | --- | --- | --- |
 | [cross-cutting change] | [shape-safe-change] | [F, A, and P keys] | [authority] |
 | [behavior-preserving structure] | [plan-safe-refactor] | [F, A, and P keys] | [authority] |
@@ -139,5 +141,4 @@ confidence.]
 implementation, deployment, instrumentation, or test creation occurred in this
 learning run.
 
-**Next decision:** [Explicit human acceptance, authority, or evidence required
-before downstream work begins.]
+**Next decision:** [Any decision, authority, or evidence still missing; otherwise continue already-requested downstream work.]

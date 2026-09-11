@@ -1,6 +1,6 @@
 ---
 name: evaluate-agent-workflow
-description: Evaluate and diagnose one agent workflow across instructions, context, route selection, tools, orchestration, durable events, and user output. Use for surprising results, wrong child routes, tool misuse, model migrations, or state disagreements. Produce an evidence-backed layer classification and bounded evaluation plan.
+description: "Diagnose a surprising agent run or workflow result. Use for incorrect routing, tool misuse, state disagreements, or a model migration."
 license: MIT
 metadata:
   author: William Cygan
@@ -69,9 +69,7 @@ mark the layer unknown rather than inferring it from a later representation.
 Read `references/agent-evidence-model.md` for layer definitions, evidence
 classes, and the divergence ledger.
 
-When the scenario includes delegated work, invoke `route-agent-models` with the
-observed task contract. Require its Route Record before comparing requested and
-effective child behavior. Keep unavailable route evidence `unknown`.
+When the scenario includes delegated work, use `route-agent-models` when available to inspect the observed task contract. Otherwise record requested, resolved, and effective routes directly from available evidence. Keep unavailable route evidence `unknown`; do not block independent analysis merely because the companion is missing.
 
 ## Reconstruct the artifact chain
 

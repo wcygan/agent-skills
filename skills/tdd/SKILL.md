@@ -1,6 +1,13 @@
 ---
 name: tdd
-description: Test-driven development. Use when the user wants to build features or fix bugs test-first, mentions "red-green-refactor", or wants integration tests.
+description: "Implement features or fixes test-first. Use when the user requests TDD, red-green-refactor, or a test-first development workflow."
+license: MIT
+metadata:
+  maintenance: "local"
+  upstream-repository: "https://github.com/mattpocock/skills.git"
+  upstream-skill: "skills/engineering/tdd"
+  upstream-revision: "84fdeffd12f2ee307994d1eb6feb48173b6e0502"
+  upstream-license: "MIT"
 ---
 
 # Test-Driven Development

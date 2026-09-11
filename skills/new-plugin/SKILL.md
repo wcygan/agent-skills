@@ -1,42 +1,16 @@
 ---
 name: new-plugin
-description: >-
-  Scaffold a new Agent Skill or Agent Plugins package in this repository: create
-  skills/<name>/SKILL.md with valid frontmatter, optionally add a plugin.json,
-  and validate the result. Use when adding a new skill to the repo, initializing
-  an Agent Plugins package, or checking that a skill name and frontmatter meet the
-  Agent Skills naming rules.
+description: "Create a skill in this repository or package it as an Agent Plugin. Use when adding a catalog skill, scaffolding a plugin, or checking skill metadata."
 license: MIT
 ---
 
-# new-plugin
+# Create a catalog skill or plugin
 
-Create a new, spec-compliant skill (or Agent Plugins package) in this repo that
-`gh skill install` can discover and validate. Use this whenever you add a
-capability to the repo so every skill starts out conformant.
+Produce a usable skill at `skills/<name>/SKILL.md`. Choose an existing skill to extend when its trigger, result, and authority already cover the requested capability. Use a router only when distinct branches need different owners.
 
-## When to use
+## Scaffold
 
-- Adding a new skill to this repository.
-- Packaging a skill as an Agent Plugins package (`plugin.json` at repo root).
-- Verifying a skill name / frontmatter against the Agent Skills rules before validation.
-
-## Steps
-
-### 1. Choose a skill name
-
-The name IS the directory name and must follow the Agent Skills rules:
-
-- 1–64 characters
-- lowercase `a-z0-9` and hyphens only
-- must not start or end with a hyphen
-- must not contain consecutive hyphens (`--`)
-
-Valid: `code-review`, `pdf-processing`, `terraform-plan`. Invalid: `PDF`, `-lint`, `a--b`.
-
-### 2. Scaffold with the generator script
-
-Run the bundled generator (from the repo root):
+From the repository root:
 
 ```bash
 python skills/new-plugin/scripts/new_plugin.py my-skill \
@@ -44,79 +18,32 @@ python skills/new-plugin/scripts/new_plugin.py my-skill \
   --author "Your Name"
 ```
 
-It creates:
+The generator creates only `SKILL.md`. It rejects invalid names and an existing skill file. Names must match the directory, be 1–64 lowercase letters, digits, or hyphens, and have no leading, trailing, or consecutive hyphens.
 
-```text
-skills/my-skill/
-└── SKILL.md          # frontmatter + a fill-in template
-```
+Options retain the same interface: `--description`, `--author`, `--license` (default MIT), `--repo-root` (default the containing repository), and `--plugin` (also writes a root `plugin.json`). Use `--plugin` only when packaging is requested, and inspect any existing manifest before replacing it.
 
-Flags:
+## Compose the skill
 
-- `--description` (recommended): 1–1024 chars, e.g. "Extracts text from PDFs and merges forms. Use when handling PDF documents."
-- `--author`: stored in frontmatter `metadata.author`.
-- `--license`: SPDX identifier, e.g. `MIT` (defaults to `MIT`).
-- `--plugin`: also write a valid `plugin.json` at the repo root so the tree is
-  also an Agent Plugins package.
-- `--repo-root DIR`: repo root override (default: two levels up from the script).
+Use `writing-for-agents` when available for the authoring principles. The essentials for an independently installed copy are:
 
-The script validates the name and refuses invalid ones.
+- Put the capability and distinguishing trigger early in `description`. Keep it within the Agent Skills limit of 1–1024 characters. Preserve explicit-invocation boundaries where needed.
+- Explain the purpose, essential domain knowledge, and decisions that change the result. Avoid generic instructions the agent already follows.
+- Define completion evidence and authority. A skill phase may end while already-authorized work continues; do not add routine approval stops.
+- Specify ordering only where dependencies, correctness, or fragile operations require it.
+- Keep shared constraints in `SKILL.md`; put substantial branch-specific detail in references with explicit reading conditions. Create resources only when they contain useful material, and use relative paths from the skill root.
+- Treat companion skills as specialists, not automatic prerequisites. Preserve essential evidence or capability requirements when working without one.
 
-### 3. Write the body
+Replace the scaffold prompts with actual guidance. Simple skills can be a few paragraphs; the scaffold headings are optional. Keep the entrypoint under about 500 lines without using length as a quality target.
 
-Fill in `SKILL.md` after the frontmatter with step-by-step instructions and
-examples. Keep the whole file under ~500 lines; push detail into
-`references/`, `scripts/`, and `assets/` and reference them with relative
-paths from `SKILL.md`:
+## Completion and distribution
 
-```text
-my-skill/
-├── SKILL.md
-├── scripts/       # self-contained executable helpers
-├── references/    # docs loaded on demand (REFERENCE.md, FORMS.md, ...)
-└── assets/        # templates, examples, schemas
-```
-
-Structure for reliable activation:
-
-- `description`: what the skill does AND when to use it, with searchable keywords.
-- Body: step-by-step instructions, example inputs/outputs, common edge cases.
-- Relative file references kept one level deep (e.g. `references/REFERENCE.md`).
-
-### 4. Validate
+Deliver the completed skill and any resources it actually needs. Preserve supported frontmatter (`name`, `description`, and optional `license`, `compatibility`, `metadata`, `allowed-tools`). Follow the repository's validation and publication requirements; in this repository:
 
 ```bash
-gh skill publish --dry-run                 # validates the whole repo
-python skills/new-plugin/scripts/new_plugin.py --help
+uv tool run --from skills-ref agentskills validate ./skills/my-skill
+just check-full
 ```
 
-### 5. Test the install path
+Report checks performed or explicitly skipped under the user's constraints. Installation, commits, and publication follow the requested scope.
 
-```bash
-gh skill install . --from-local my-skill --all --dir /tmp/skill-check
-```
-
-Install the scaffolded skill into a scratch dir before committing.
-
-## Frontmatter template
-
-```yaml
----
-name: <directory-name>
-description: <what it does + when to use it, 1-1024 chars>
-license: MIT
-metadata:
-  author: <your-name>
-  version: "0.1.0"
----
-```
-
-Required frontmatter: `name` and `description`. Optional: `license`,
-`compatibility`, `metadata`, `allowed-tools`. See
-https://agentskills.io/specification for the authoritative rules.
-
-## Related references
-
-- Agent Skills specification: https://agentskills.io/specification
-- Repo layout and distribution notes: see `AGENTS.md` and `README.md` at the repo root.
-- Agent Plugins packaging: https://agent-plugins.org/plugin-authors/manifest
+Consult the [Agent Skills specification](https://agentskills.io/specification) for uncertain format rules and the [plugin manifest reference](https://agent-plugins.org/plugin-authors/manifest) when packaging a plugin. Read the repository's distribution documentation when preparing an install or release.

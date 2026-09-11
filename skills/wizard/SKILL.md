@@ -1,6 +1,13 @@
 ---
 name: wizard
 description: Generate an interactive bash wizard that walks a human through steps only they can perform. Use when provisioning infrastructure, setting up credentials or CI secrets, walking an unfamiliar third-party dashboard, or running a one-off migration or cutover. Don't invoke this for steps the agent can perform itself.
+license: MIT
+metadata:
+  maintenance: "local"
+  upstream-repository: "https://github.com/mattpocock/skills.git"
+  upstream-skill: "skills/engineering/wizard"
+  upstream-revision: "84fdeffd12f2ee307994d1eb6feb48173b6e0502"
+  upstream-license: "MIT"
 ---
 
 # Wizard
@@ -9,7 +16,7 @@ A **wizard** is a bash script that walks a human, step by step, through a manual
 
 The delightful UX is already solved by [template.sh](template.sh) — stage-by-stage progress, confirmation gates, cross-platform URL opening (including WSL), hidden secret entry, idempotent `.env` upserts, `gh secret`/`gh variable` writes, and a closing summary. **Your job is only to scope the procedure and author its stages.** The library above the `STAGES` marker is identical in every wizard; that consistency is the point — never hand-edit it.
 
-A wizard is ephemeral by default — built for one run, saved to a scratch or `scripts/` path, deleted when the job's done. Commit it only when the user wants a repeatable setup path that should live in the repo.
+A wizard is ephemeral by default — built for one run, saved to a scratch or `scripts/` path, deleted when the job's done. Keep it in the repository when the user wants a repeatable setup path; commit only when authorized.
 
 ## Process
 
@@ -20,7 +27,7 @@ Work out every manual step the human must take and every value that gets capture
 - For setup: `.env`, `.env.example`, `.env.*`, `README`, `docker-compose*`, framework config, and `.github/workflows/*` (every `secrets.*` / `vars.*` reference is a value the wizard must produce).
 - For a migration or transition: the current state, the target state, and the irreversible actions between them.
 
-Then show the user the ordered list of stages and the values each produces, and confirm — they may add, drop, or reorder.
+Use the requested procedure and discoverable configuration to select the stages. Ask only for missing decisions that affect what the wizard will do or where values will be written; otherwise make the concrete script reviewable without an extra scoping approval.
 
 **Done when:** every stage is named in order, and for each captured value you know (a) where the human gets it, (b) where it's written (`.env`, a GitHub secret, both, or nowhere — some stages are pure actions), and (c) whether it's secret (hidden entry) or public.
 
@@ -41,4 +48,4 @@ Hold the bar the template sets: open the URL before asking for its value, use `a
 - `bash -n <script>`; run `shellcheck` if available.
 - `chmod +x <script>`.
 - Don't run it end-to-end yourself — it opens browsers and blocks on human input. Trace it statically instead: every value from step 1 is captured and lands where step 1 said, and every `set_secret` name exactly matches a `secrets.*` reference in CI.
-- Tell the user how to run it. If it's a repeatable setup path, commit it and link it from the README so the next person runs the script instead of asking an AI.
+- Tell the user how to run it. For a requested repeatable setup path, link it from the README. Commit only when the user requests a commit.

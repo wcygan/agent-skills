@@ -1,6 +1,13 @@
 ---
 name: animate
-description: Build an animation from scratch, making the decisions in the order that determines whether it feels right — should it animate at all, what purpose, which tool, which properties, which curve and duration, how it interrupts, how it exits. Writes the implementation. Use when asked to animate something, add motion, make a component feel alive, or build a transition. For critiquing existing motion use review-animations; for auditing a whole codebase use improve-animations.
+description: "Build motion for a UI component or transition. Use when asked to add or implement animation; use review-animations to critique existing motion."
+license: MIT
+metadata:
+  maintenance: "local"
+  upstream-repository: "https://github.com/emilkowalski/skills.git"
+  upstream-skill: "skills/animate"
+  upstream-revision: "9075d1724a831411ab5cf138dd9b5cd406ffc2e2"
+  upstream-license: "MIT"
 ---
 
 # Building Animations
@@ -20,8 +27,8 @@ Never present motion options as a menu. Make the call, state the reasoning in on
 
 ## Hard Rules
 
-1. **Run the sequence in order.** Steps 1 and 2 gate everything. Don't reach for a curve before you know whether it animates at all.
-2. **No approximated values.** Every curve, duration, and spring config comes from the tables below. Never invent `cubic-bezier(0.4, 0, 0.2, 1)` because it looks familiar.
+1. **Establish purpose before implementation.** Use the criteria below to choose motion; the remaining decisions need no fixed sequence.
+2. **Use coherent values.** Prefer the project's motion tokens. The tables provide starting points when no convention fits; tune values to the interaction.
 3. **Extend the codebase's tokens, don't fork them.** If `--ease-out` or a duration scale already exists, use it. Adding a parallel system is a defect.
 4. **Reduced motion and hover gating ship with the animation**, not as a follow-up.
 5. **Cheapest tool that works.** Don't install a motion library for a fade.
@@ -70,7 +77,7 @@ Walk down; stop at the first that fits.
 
 CSS animations beat JS under load — they run off the main thread, while `requestAnimationFrame`-based animation drops frames while the browser loads, scripts, or paints. Use CSS for predetermined motion, JS for dynamic and interruptible motion.
 
-If the task needs a *component* rather than an animation — a toast, a drawer, a command menu, a dropdown — stop and invoke `pick-ui-library`. Hand-rolling those is how you end up with a `<div>` dropdown and no focus management.
+For a toast, drawer, command menu, or dropdown, prefer the project's existing accessible component. Use `pick-ui-library` when available and library selection is unresolved; its absence does not block work with suitable existing primitives. Preserve keyboard behavior, focus management, and semantics.
 
 ### 4. Pick the properties
 
@@ -162,7 +169,7 @@ Reduced motion means **fewer and gentler** animations, not zero — keep transit
 
 ## Recipes
 
-For ready-to-build implementations of the common cases — button press, dropdown, tooltip, modal, drawer, toast, accordion, stagger, hold-to-confirm, tab indicator, scroll reveal, drag-to-dismiss — see [RECIPES.md](RECIPES.md). Load it whenever the request matches one of those components; start from the recipe rather than from a blank file.
+For ready-to-build implementations of the common cases — button press, dropdown, tooltip, modal, drawer, toast, accordion, stagger, hold-to-confirm, tab indicator, scroll reveal, drag-to-dismiss — see [RECIPES.md](RECIPES.md). Load it when the request matches one of those components; start from the recipe rather than from a blank file.
 
 ## Never Ship
 

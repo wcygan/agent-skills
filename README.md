@@ -137,16 +137,23 @@ Use `just catalog-sync` to reproduce the current lock without moving it.
 This repository vendors selected skills from external repositories so the
 collection can be installed as one tested, versioned set. Source repositories,
 selected skills, and pinned revisions are recorded in
-`vendor/skills-lock.json`; attribution is kept in `vendor/ATTRIBUTIONS.md`.
+`vendor/skills-lock.json`; attribution is kept in [vendor/ATTRIBUTIONS.md](vendor/ATTRIBUTIONS.md).
+
+Five unchanged skills remain upstream-managed: `playwright-cli`, `handoff`,
+`writing-for-agents`, `wait-what`, and `define-goal`. Thirty-seven adapted skills
+are now locally maintained, with their original repositories, paths, revisions,
+and licenses recorded in [vendor/LOCAL-ATTRIBUTIONS.md](vendor/LOCAL-ATTRIBUTIONS.md)
+and each skill's metadata. Automatic source updates do not overwrite those
+adaptations. Catalog inheritance distributes both the skills and their attribution.
 
 Use the `uv`-managed maintenance tool to check or update an external source:
 
 ```bash
 uv run tools/sync_skills.py check
-uv run tools/sync_skills.py check planetscale/database-skills
+uv run tools/sync_skills.py check microsoft/playwright-cli
 uv run tools/sync_skills.py check --jobs 1  # sequential fallback
 uv run tools/sync_skills.py check --color always  # preserve color when piping
-uv run tools/sync_skills.py update planetscale/database-skills
+uv run tools/sync_skills.py update microsoft/playwright-cli
 uv run tools/sync_skills.py validate
 ```
 
@@ -162,11 +169,16 @@ The sync tool applies that compatibility normalization on every update.
 Provider-specific `openai.yaml` and `openai.yml` manifests are excluded from
 every vendored skill copy and rejected by vendored-skill validation.
 
-Vendored skills keep their upstream names when those names are collision-free.
-Sources with generic names are namespaced (`planetscale-mysql`,
-`planetscale-postgres`, and so on) to avoid collisions with independently
-maintained skills. Updating a source changes the vendored files and lock
-revision; tag the repository afterward to publish a tested collection version.
+Imported skills retain their established public names, including namespaced
+adaptations such as `planetscale-mysql` and `planetscale-postgres`. Updating a
+source changes only its remaining mapped skills and lock revision.
+
+To revise a vendored skill locally, remove its source mapping and `.vendored`
+marker, retain its provenance and license in metadata and the local attribution
+document, and regenerate the remaining vendored listing from the existing lock.
+Do not advance upstream revisions during this ownership conversion. Refresh
+`catalog-snapshot.json` after distributable changes. Follow the validation and
+release requirements below when preparing publication.
 
 Notes:
 - Skills installed with `--pin` are skipped until you unpin
@@ -200,6 +212,12 @@ This repo is distributed via `gh skill install`, so it follows the
   include a `description` (1-1024 chars).
 - Adding `plugin.json` at the repository root packages the same tree as an
   Agent Plugin.
+
+For authoring guidance, use [writing-for-agents](skills/writing-for-agents/SKILL.md).
+Use [new-plugin](skills/new-plugin/SKILL.md) for a catalog skill or plugin scaffold,
+and [new-router-skill](skills/new-router-skill/SKILL.md) when distinct workflows
+need a routing layer. Keep essential instructions in the entrypoint and load
+substantial branch-specific references only when relevant.
 
 ### Validate and release
 

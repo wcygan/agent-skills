@@ -1,6 +1,6 @@
 ---
 name: monitor-until
-description: Watch one authoritative state source, read-only, until a declared terminal condition, timeout, access loss, or poll budget. Use when an explicitly invoked status watcher needs normalized observations, meaningful-transition evidence, bounded backoff, and truthful cross-turn wakeup limits without repairing or changing the monitored target.
+description: "Watch one state source until a terminal condition or budget limit. Use only when explicitly asked to monitor; keep the watched target unchanged."
 license: MIT
 ---
 

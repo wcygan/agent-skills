@@ -1,6 +1,6 @@
 ---
 name: pi-coding-agent
-description: "Use and investigate the Pi coding agent CLI. Covers interactive, print, JSON, and RPC modes; model and tool flags; sessions; local OpenAI-compatible models; skills; extensions; and the pi monorepo. Use when running `pi`, automating it, configuring models.json, writing Pi extensions or skills, or answering how Pi implements a behavior."
+description: "Use or investigate the Pi coding agent CLI. Use for pi commands, automation, sessions, model configuration, extensions, or CLI implementation questions."
 ---
 
 # Pi Coding Agent

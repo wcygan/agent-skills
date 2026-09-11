@@ -1,14 +1,19 @@
 ---
 name: resolving-merge-conflicts
-description: "Use when you need to resolve an in-progress git merge/rebase conflict."
+description: "Resolve an in-progress Git merge or rebase while preserving the intent of both changes. Use when conflicts prevent the requested integration from completing."
+license: MIT
+metadata:
+  maintenance: "local"
+  upstream-repository: "https://github.com/mattpocock/skills.git"
+  upstream-skill: "skills/engineering/resolving-merge-conflicts"
+  upstream-revision: "84fdeffd12f2ee307994d1eb6feb48173b6e0502"
+  upstream-license: "MIT"
 ---
 
-1. **See the current state** of the merge/rebase. Check git history, and the conflicting files.
+# Resolve merge conflicts
 
-2. **Find the primary sources** for each conflict. Understand deeply why each change was made, and what the original intent was. Read the commit messages, check the PRs, check original issues/tickets.
+Identify the active Git operation, conflicting files, and unrelated staged or unstaged work before editing. Read the competing changes and their intent from history and relevant requirements; consult PRs or issues when they explain a consequential conflict.
 
-3. **Resolve each hunk.** Preserve both intents where possible. Where incompatible, pick the one matching the merge's stated goal and note the trade-off. Do **not** invent new behaviour. Always resolve; never `--abort`.
+Resolve hunks to preserve both intended behaviors where compatible. Use the merge's stated goal to resolve routine tradeoffs. If the alternatives require a missing product decision, isolate that conflict, continue independent resolutions, and ask about the decision. Do not silently introduce new behavior or discard either side.
 
-4. Discover the project's **automated checks** and run them — typically typecheck, then tests, then format. Fix anything the merge broke.
-
-5. **Finish the merge/rebase.** Stage everything and commit. If rebasing, continue the rebase process until all commits are rebased.
+Run checks appropriate to the merged behavior and the user's constraints, and repair failures caused by the resolution. Stage only files belonging to this operation, preserving unrelated work. Complete the requested merge or rebase using Git's operation-specific continuation; if the user requested only proposed resolutions or inspection, stop at that scope. Do not abort or discard work unless authorized. Report the resulting operation state and any unresolved conflicts.

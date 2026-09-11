@@ -1,8 +1,13 @@
 ---
 name: vercel-react-view-transitions
-description: Guide for implementing smooth, native-feeling animations using React's View Transition API (`<ViewTransition>` component, `addTransitionType`, and CSS view transition pseudo-elements). Use this skill whenever the user wants to add page transitions, animate route changes, create shared element animations, animate enter/exit of components, animate list reorder, implement directional (forward/back) navigation animations, or integrate view transitions in Next.js. Also use when the user mentions view transitions, `startViewTransition`, `ViewTransition`, transition types, or asks about animating between UI states in React without third-party animation libraries.
+description: "Implement React ViewTransition animations. Use for native route transitions, shared elements, Suspense reveals, or list and state transitions with React."
 license: MIT
 metadata:
+  maintenance: "local"
+  upstream-repository: "https://github.com/vercel-labs/agent-skills.git"
+  upstream-skill: "skills/react-view-transitions"
+  upstream-revision: "7c180d9044c9ae2b442b567aad4e42a28dd5ed62"
+  upstream-license: "MIT"
   author: vercel
   version: "1.0.0"
 ---
@@ -15,7 +20,7 @@ Animate between UI states using the browser's native `document.startViewTransiti
 
 Every `<ViewTransition>` should communicate a spatial relationship or continuity. If you can't articulate what it communicates, don't add it.
 
-Implement **all** applicable patterns from this list, in this order:
+Select the patterns that support the requested interaction:
 
 | Priority | Pattern | What it communicates |
 |----------|---------|---------------------|
@@ -25,7 +30,7 @@ Implement **all** applicable patterns from this list, in this order:
 | 4 | **State change** (`enter`/`exit`) | "Something appeared/disappeared" |
 | 5 | **Route change** (layout-level) | "Going to a new place" |
 
-This is an implementation order, not a "pick one" list. Implement every pattern that fits the app. Only skip a pattern if the app has no use case for it.
+The table is a selection guide. Implement only the requested transitions and their necessary supporting boundaries; do not expand a focused change to every pattern in the app.
 
 ### Choosing Animation Style
 
@@ -50,7 +55,7 @@ Reserve directional slides for hierarchical navigation (list → detail) and ord
 
 ## Implementation Workflow
 
-When adding view transitions to an existing app, **follow [references/implementation.md](references/implementation.md) step by step.** Start with the audit — do not skip it. Copy the CSS recipes from [references/css-recipes.md](references/css-recipes.md) into the global stylesheet — do not write your own animation CSS.
+For changes spanning multiple navigation or Suspense boundaries, read [references/implementation.md](references/implementation.md). Use relevant [CSS recipes](references/css-recipes.md) when they fit; preserve existing styling and load only the recipes needed by the requested transitions.
 
 ---
 
@@ -324,4 +329,4 @@ Always add the reduced motion CSS from [references/css-recipes.md](references/cs
 
 ## Full Compiled Document
 
-For the complete guide with all reference files expanded: `AGENTS.md`
+Use `AGENTS.md` only when a full offline guide is needed; it expands the same reference material and need not be loaded alongside those references.

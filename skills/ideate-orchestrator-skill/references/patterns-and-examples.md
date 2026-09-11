@@ -2,7 +2,7 @@
 
 Use these examples as structural precedents, not as mandatory skill proposals.
 Each example shows which layer owns the decision, how companion artifacts move,
-and where the workflow stops.
+and where each phase completes. Analysis-only requests stop at their artifact; combined requests continue into already-authorized work. The tables name useful specialists, while direct analysis is valid when it can establish the required evidence.
 
 ## Pattern comparison
 
@@ -26,9 +26,9 @@ Pack before implementation.
 
 | Skill | Selection | Receives | Returns |
 |---|---|---|---|
-| `codebase-design` | Required | Problem framing and current seams | Proposed ownership and interface design |
-| `map-change-impact` | Required | Proposed design | Blast-radius and compatibility map |
-| `design-verification-strategy` | Required | Design plus impact map | Evidence and acceptance strategy |
+| `codebase-design` | Core evidence | Problem framing and current seams | Proposed ownership and interface design |
+| `map-change-impact` | Core evidence | Proposed design | Blast-radius and compatibility map |
+| `design-verification-strategy` | Core evidence | Design plus impact map | Evidence and acceptance strategy |
 | `domain-modeling` | Conditional when terminology, entity boundaries, or business invariants are unclear | Ambiguous concepts and evidence | Vocabulary or decision proposals |
 | `plan-safe-refactor` | Conditional when the change is primarily behavior-preserving restructuring | Accepted design and impact map | Staged transition plan |
 
@@ -42,7 +42,7 @@ frame change
   -> add staged refactor plan only when applicable
   -> design verification
   -> reconcile into Change Design Pack
-  -> stop before implementation
+  -> continue implementation only when requested
 ```
 
 The parent owns cross-document consistency. If the impact map reveals a new
@@ -60,8 +60,8 @@ Diagnosis Dossier and a bounded next action.
 
 | Skill | Selection | Receives | Returns |
 |---|---|---|---|
-| `reproduce-bug` | Required | Symptom and constraints | Minimal reproduction and failure signature |
-| `trace-failure-path` | Required after a concrete failure exists | Reproduction evidence | Origin, propagation, translation, and surfacing trace |
+| `reproduce-bug` | Core evidence | Symptom and constraints | Minimal reproduction and failure signature |
+| `trace-failure-path` | Core evidence after a concrete failure exists | Reproduction evidence | Origin, propagation, translation, and surfacing trace |
 | `model-concurrency` | Conditional when correctness depends on timing, ordering, cancellation, or duplicate work | Actors, operations, and observed schedule | Invariants and counterexample schedule |
 | `audit-observability-path` | Conditional when the failure cannot be reconstructed or distinguished operationally | Scenario and trace gaps | Observability gap map |
 
@@ -75,7 +75,7 @@ bound the symptom
   -> audit observability only when evidence is insufficient
   -> reconcile competing hypotheses
   -> emit Diagnosis Dossier
-  -> stop before fixing
+  -> continue repair only when requested
 ```
 
 `tdd` and `code-review` are downstream implementation and verification seams,
@@ -93,9 +93,9 @@ evidence as a Production Scenario Dossier.
 
 | Skill | Selection | Receives | Returns |
 |---|---|---|---|
-| `trace-codepath` | Required | Scenario entrypoint and sink | Scenario-specific execution path |
-| `trace-data-lineage` | Required | Selected records or fields | Origin, transformation, persistence, and exposure lineage |
-| `audit-observability-path` | Required | Scenario and known boundaries | Detectability and correlation audit |
+| `trace-codepath` | Core evidence | Scenario entrypoint and sink | Scenario-specific execution path |
+| `trace-data-lineage` | Core evidence | Selected records or fields | Origin, transformation, persistence, and exposure lineage |
+| `audit-observability-path` | Core evidence | Scenario and known boundaries | Detectability and correlation audit |
 | `trace-failure-path` | Conditional for a broken or degraded variant | Concrete failure signature | Failure propagation and recovery trace |
 
 **Structure:**
@@ -148,9 +148,7 @@ author or revise agent-facing instructions
 ```
 
 This seam is already coherent. A new wrapper adds value only if it owns an
-integrated artifact and preserves the read-only stop after intake. Otherwise it
-is a playlist. Do not let intake create files, and do not let discovery install
-skills without separate authority.
+integrated artifact and preserves a read-only intake phase. Otherwise it is a playlist. Continue requested authoring after intake; install only when installation is within the user's authority.
 
 ## Example: diagnose agent weirdness
 
@@ -197,8 +195,7 @@ the proposal has crossed from routing into orchestration.
 
 `skill-intake` evaluates recurrence, judgment, determinism, overlap, authority,
 and maintenance ownership. It returns a create, extend, split, script,
-documentation, one-off, or defer decision plus a brief or handoff. It stops
-before implementation. The durable value is the quality of the decision, not
+documentation, one-off, or defer decision plus a brief or handoff. That completes intake; implementation follows when also requested. The durable value is the quality of the decision, not
 automatic chaining.
 
 ## Existing compositions worth studying

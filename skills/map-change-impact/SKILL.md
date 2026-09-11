@@ -1,6 +1,6 @@
 ---
 name: map-change-impact
-description: Map the likely blast radius of a proposed code, contract, schema, configuration, dependency, or infrastructure change before implementation. Use when planning a refactor, rename, API or event evolution, database migration, behavior change, dependency upgrade, feature removal, or configuration rollout; identify direct and transitive callers, consumers, persisted data, tests, operational surfaces, compatibility obligations, and rollout risks with evidence, confidence, and a focused validation plan.
+description: "Map the affected callers, consumers, data, and operations of a proposed change. Use when its blast radius or compatibility obligations are uncertain."
 license: MIT
 metadata:
   author: William Cygan

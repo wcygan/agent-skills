@@ -1,7 +1,6 @@
 ---
 name: live-test-changes
-description: >-
-  Deploy and live-test one bounded application change in an isolated local environment. Exercise relevant public paths and feature-flag states. Produce durable, reproducible evidence with exact Bash commands, requests, responses, observed outcomes, cleanup, and proof limits. Use after implementation for PR evidence, review, handoff, release checks, or manual acceptance. Do not use for test planning, development-loop improvement, or shared-environment deployment.
+description: "Run and exercise a completed change in an isolated local environment. Use when PR review or acceptance needs reproducible runtime evidence and cleanup."
 license: MIT
 metadata:
   author: William Cygan

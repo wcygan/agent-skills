@@ -1,6 +1,6 @@
 ---
 name: audit-resilience
-description: Audit code, services, workflows, and system designs for fragile states, failure amplification, weak recovery, poor debuggability, and difficult verification. Use before implementation, launch, migration, or reliability work when a system may be easy to break or hard to restore. Produce a read-only Resilience Audit Pack with ranked findings, matched hardening patterns, counterexample scenarios, and bounded verification handoffs.
+description: "Audit a system for fragile behavior and difficult recovery. Use when assessing reliability risks before implementation, launch, migration, or hardening."
 license: MIT
 metadata:
   author: William Cygan
@@ -19,9 +19,7 @@ Treat audit, review, assessment, and hardening-plan requests as read-only.
 Inspect source, configuration, tests, documentation, and authorized runtime
 evidence. Check repository instructions and dirty state before commands.
 
-Do not edit code, add tests, change configuration, inject production faults,
-replay shared work, or trigger external effects. Implement changes only after
-the user requests them separately.
+An audit-only request does not authorize code changes, new tests, configuration changes, fault injection, or external effects. If the user also requests fixes, complete the relevant analysis and continue those authorized changes. Operational experiments remain subject to their own authority and bounds.
 
 Prefer static evidence and existing isolated tests. Before any new experiment,
 define its environment, side effects, time bound, stop condition, and cleanup.
@@ -230,8 +228,7 @@ Return:
 7. **Verification and Handoffs** — smallest proof and bounded next owner.
 8. **Unknowns and Residual Risk** — unavailable evidence and remaining risk.
 
-Stop after the Resilience Audit Pack. Source changes, tests, fault injection,
-and operational actions need separate authority.
+The pack completes an audit-only request. For combined audit-and-fix work, continue the authorized implementation and appropriate verification; ask only when a missing decision or permission blocks the next action.
 
 ## Examples and non-triggers
 

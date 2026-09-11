@@ -1,6 +1,6 @@
 ---
 name: choose-workflow-control-model
-description: "Choose a control model for one bounded workflow: deterministic code, DAG, cyclic state graph, dynamic graph, simple agent loop, or multi-agent workflow. Use when orchestration, retries, state, approvals, agent discretion, fanout, recovery, or coordination make the workflow shape uncertain; produce a read-only Control Model Decision Record with evidence, rejected alternatives, and explicit authority boundaries."
+description: "Choose between code, a graph, and an agent loop for one workflow. Use when state, retries, concurrency, or agent discretion make its control model uncertain."
 license: MIT
 metadata:
   author: William Cygan
@@ -11,14 +11,13 @@ metadata:
 
 Choose the smallest control model that can enforce the workflow's required
 behavior. Produce one evidence-backed **Control Model Decision Record** (CMDR),
-then stop before design or implementation.
+as the basis for any requested design or implementation.
 
 ## Authority and boundary
 
-This is a read-only decision workflow. Inspect instructions, source, contracts,
+The decision phase is read-only. Inspect instructions, source, contracts,
 existing runtime history, tests, configuration, and authorized operational
-artifacts. Do not alter code, prompts, tools, schedules, workflow definitions,
-state, policies, or external systems.
+artifacts. A decision-only request does not authorize changes. If the user also requested design or implementation, complete this decision and continue that work within existing authority.
 
 Select one bounded scenario: a request, job, business process, recurring task,
 or state transition. If the scenario, policy owner, or authority boundary is
@@ -148,7 +147,7 @@ Choose one selected model and state its minimal control contract:
 If selection needs a product or policy decision, retain the viable options and
 return `decision-blocked`; do not invent a default.
 
-## Report the CMDR and stop
+## Report the CMDR
 
 Lead with `selected`, `decision-blocked`, or `evidence-blocked`. Then report:
 
@@ -161,7 +160,7 @@ Lead with `selected`, `decision-blocked`, or `evidence-blocked`. Then report:
    agent-authority rejection.
 6. **Design Boundary** — the next artifact required and unresolved decisions.
 
-Stop before creating nodes, edges, schemas, implementation tasks, or tests.
+For decision-only work, the CMDR is the deliverable. For a combined request, continue into the selected design or implementation workflow. Prefer available specialists; if one is missing, proceed directly when its required evidence and capabilities are available.
 If the selected model is a graph, hand off the CMDR to
 `design-workflow-graph`. If it is not a graph, name the appropriate owner or
 workflow without recreating another skill's procedure. Route an accepted

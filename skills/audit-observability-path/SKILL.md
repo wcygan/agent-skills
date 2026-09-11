@@ -1,6 +1,6 @@
 ---
 name: audit-observability-path
-description: Audit and design observability for one request, event, job, or state change across an application or distributed system using logs, metrics, traces, correlation identifiers, audit records, and operational artifacts. Use when making a flow measurable, defining success rate or latency breakdowns, finding bottlenecks, investigating observability blind spots, or planning instrumentation; produce an evidence-backed signal map, gap analysis, and prioritized instrumentation plan.
+description: "Audit observability for one request, event, or job. Use when its outcome, latency, or failure cannot be reconstructed, or when planning instrumentation."
 license: MIT
 metadata:
   author: William Cygan

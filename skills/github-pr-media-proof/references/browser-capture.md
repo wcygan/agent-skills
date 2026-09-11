@@ -1,6 +1,6 @@
 # Browser capture with Playwright CLI
 
-Use `playwright-cli` as the sole browser capture tool. Use the vendored skill for its complete command contract.
+This reference describes capture through `playwright-cli`; consult the companion skill or installed command help for its command contract. If using an equivalent capture tool, adapt the commands while preserving the scenario, isolated artifacts, successful recording finalization, and upload inspection.
 
 ## Preconditions
 
@@ -45,6 +45,6 @@ Use chapter cards to orient the reviewer. Use action callouts only when the inte
 4. Run the upload script with `--dry-run` to inspect codecs, dimensions, and sizes.
 5. Close the named session after artifact verification.
 
-If a command fails, run `playwright-cli list` and inspect the session with `playwright-cli show`. Close the named session and retry once. Use `kill-all` only when the Playwright CLI processes do not respond.
+If a command fails, run `playwright-cli list` and inspect the session with `playwright-cli show`. Close the named session and retry once. Avoid `kill-all` when other sessions may be running. Terminate only processes owned by this capture; broad cleanup needs authority covering the affected sessions.
 
 The capture is complete only when the expected image or video exists, the upload dry-run accepts it, and the product repository excludes all runtime artifacts.

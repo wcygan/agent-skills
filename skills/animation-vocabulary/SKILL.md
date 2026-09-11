@@ -1,6 +1,13 @@
 ---
 name: animation-vocabulary
-description: Reverse-lookup glossary that turns a vague description of a web animation or motion effect into its exact term ("the bouncy thing when a popover opens" → Pop in; "the iOS rubber-band scroll" → Rubber-banding). Use when the user asks "what's it called when…", or describes a motion effect without knowing its name and wants the right word to prompt an AI or designer with. For naming an effect, not designing or building one.
+description: "Name a web animation or motion effect from a plain-language description. Use when the user asks what an effect is called."
+license: MIT
+metadata:
+  maintenance: "local"
+  upstream-repository: "https://github.com/emilkowalski/skills.git"
+  upstream-skill: "skills/animation-vocabulary"
+  upstream-revision: "9075d1724a831411ab5cf138dd9b5cd406ffc2e2"
+  upstream-license: "MIT"
 ---
 
 # Animation Vocabulary

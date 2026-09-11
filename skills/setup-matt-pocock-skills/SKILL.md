@@ -1,6 +1,13 @@
 ---
 name: setup-matt-pocock-skills
-description: Configure this repo for the engineering skills — set up its issue tracker, triage label vocabulary, and domain doc layout. Run once before first use of the other engineering skills.
+description: "Configure issue tracking, triage labels, and domain-document conventions for the engineering skills. Use when those integrations need setup."
+license: MIT
+metadata:
+  maintenance: "local"
+  upstream-repository: "https://github.com/mattpocock/skills.git"
+  upstream-skill: "skills/engineering/setup-matt-pocock-skills"
+  upstream-revision: "84fdeffd12f2ee307994d1eb6feb48173b6e0502"
+  upstream-license: "MIT"
 ---
 
 # Setup Matt Pocock's Skills

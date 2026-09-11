@@ -1,6 +1,6 @@
 ---
 name: diagnose-difficult-bug
-description: Diagnose one intermittent, environment-dependent, stateful, or distributed bug by establishing a faithful reproduction, tracing its failure path, modeling a counterexample schedule when concurrency matters, and defining a regression oracle and repair boundary. Use when a bug cannot be explained from a deterministic unit failure or one stack trace; remain read-only by default and stop before repairing or reviewing code.
+description: "Diagnose one intermittent, stateful, or distributed bug. Use when a deterministic unit failure or single stack trace cannot explain the cause."
 license: MIT
 metadata:
   author: William Cygan
@@ -28,37 +28,27 @@ operation, one failure signature, and one environment boundary.
 
 ## Preserve the authority boundary
 
-Default to read-only inspection of tracked files. Read repository instructions
+Keep a diagnosis-only request read-only on tracked files. A combined diagnosis-and-fix request can continue into local repair after the causal evidence is established. Read repository instructions
 and inspect dirty state before diagnostics. Safe, isolated commands may create
 run-owned temporary or ignored artifacts, but must not alter shared or
 production state.
 
 Create a tracked reusable reproducer only when the user explicitly requests
-one. That permission covers only the reproducer and its smallest demonstrated
-control seam; it does not authorize a repair, production-code cleanup, TDD
-implementation, or code review. Preserve unrelated work and report every file
-created or changed for the reproducer.
+one or when it is necessary to an authorized repair. Reproducer permission alone covers its smallest demonstrated control seam, not unrelated production changes. Preserve unrelated work and report files created or changed.
 
 Do not inject faults into production, replay real traffic, mutate shared data,
 disable safeguards, or run unbounded stress or load. Stop before an experiment
 whose effects, limits, ownership, or cleanup are unclear. Prefer existing
 artifacts, isolated fixtures, deterministic controls, and bounded attempts.
 
-## Require the companion skills
+## Select useful companions
 
-Before investigating, confirm that both required companions are available:
+Prefer these specialists for the two core evidence needs:
 
 - `reproduce-bug` owns the faithful reproduction and its mechanical oracle.
 - `trace-failure-path` owns the evidence-backed propagation graph.
 
-If either is unavailable, name the missing companion and stop. Do not
-approximate its workflow or read a sibling skill file as a substitute. Invoke
-each companion by name, preserve its evidence labels and unknowns, and use its
-report as an input to this orchestration.
-
-Two conditional companions are required only when their predicates below are
-true. If a predicate is true and its companion is unavailable, record the
-blocked branch and stop before a causal conclusion.
+Use available companions by name and preserve their evidence labels and unknowns. If a companion is missing, perform the analysis directly when available tools and knowledge can establish the same evidence. Do not claim a companion was invoked when it was not. The conditional lenses below apply when their predicates are true; pause only claims that depend on evidence or capabilities that remain unavailable, and continue independent work.
 
 ## Run the diagnosis
 
@@ -74,8 +64,7 @@ without relying on incidental wording, timestamps, or intuition.
 
 ### 2. Establish the reproduction
 
-Invoke `reproduce-bug` with the framed symptom. Keep it read-only on tracked
-files unless a reusable reproducer was explicitly requested. Require its
+Use `reproduce-bug` when available, or establish reproduction directly, with the framed symptom. Keep tracked-file changes within the requested reproduction or repair scope. Record the
 reproduction status, failure signature, bounded attempt ledger, necessary
 conditions, negative control, artifacts, and oracle.
 
@@ -86,8 +75,7 @@ Reproduction and diagnosis are distinct:
   reproduction only when at least one captured attempt matches the signature
   and retains evidence for the same failure path.
 - For `not reproduced` or `blocked`, produce a partial Diagnosis Dossier with
-  the missing evidence and stop. A report, stack trace, or source inspection
-  alone does not replace the reproduction.
+  the missing evidence. Continue independent investigation, but do not assert a verified root cause. A report, stack trace, or source inspection alone does not replace reproduction.
 
 Do not call a condition causal merely because toggling it changes frequency.
 The reproduction establishes the phenomenon; later steps establish why it
@@ -95,7 +83,7 @@ happens.
 
 ### 3. Trace the reproduced failure
 
-Invoke `trace-failure-path` with the reproduction signature, controlled
+Use `trace-failure-path` when available, or trace directly with the reproduction signature, controlled
 conditions, and captured artifacts rather than the original report alone.
 Require the earliest supported divergence, every material propagation or
 translation edge, retry and timeout ownership, durable state effects, user and
@@ -125,7 +113,7 @@ Use these evidence classes consistently:
 
 ### 5. Model concurrency when ordering can change the outcome
 
-Invoke `model-concurrency` when at least one of these predicates is true:
+Use `model-concurrency` when available, or model the relevant ordering directly, when at least one of these predicates is true:
 
 - two or more independently advancing actors access shared or durable state and
   their overlap can affect the signature;
@@ -141,7 +129,7 @@ state that the counterexample schedule is not applicable.
 
 ### 6. Audit observability when signals block reconstruction
 
-Invoke `audit-observability-path` when any of these predicates prevents the
+Use `audit-observability-path` when available, or audit signals directly, when any of these predicates prevents the
 failure graph from being completed:
 
 - the initiating operation cannot be correlated with its attempts or
@@ -193,19 +181,18 @@ Specify a regression oracle even when no test is created. It must name:
 Avoid blind sleeps, log substrings when structured state exists, and assertions
 that pass after either success or timeout. If the user requested a reusable
 reproducer, let `reproduce-bug` own its implementation and validation, then
-return to this dossier without repairing the bug.
+return to the diagnosis before proceeding with any authorized repair.
 
 Define the repair boundary, not the repair: name the authoritative owner, the
 violated invariant, the first and last causal points a future change must
 cover, compatibility or state constraints, and the oracle that future work
-must satisfy. Do not patch, refactor, select a final implementation, or review
-code in this run.
+must satisfy. For diagnosis-only work, this proposed boundary is the deliverable. For a combined request, use it to guide the authorized repair and verification.
 
 ## Stop conditions
 
 Stop and issue the Diagnosis Dossier when any of these occurs:
 
-- a required or activated conditional companion is unavailable;
+- an essential evidence source or capability is unavailable;
 - the symptom cannot be reproduced faithfully;
 - a material edge lacks safe evidence;
 - an experiment would be unsafe, unbounded, or outside granted authority;
@@ -213,12 +200,11 @@ Stop and issue the Diagnosis Dossier when any of these occurs:
 - the diagnosis is complete and evidence-backed.
 
 Stopping means reporting the current evidence and smallest next evidence, not
-substituting an assumption. A complete diagnosis stops before repair and code
-review even when the likely patch appears obvious.
+substituting an assumption. A diagnosis-only request ends here. Continue into repair or review when the user already requested it, without adding a routine approval stop.
 
 ## Diagnosis Dossier
 
-Return this structure for both complete and blocked investigations:
+Cover the following evidence in both complete and partial investigations. Combine overlapping sections and omit inapplicable detail; retain the causal chain, oracle, and material unknowns:
 
 1. **Scope and authority:** symptom, operation, environment, exclusions,
    allowed artifacts, and companion availability.
@@ -237,11 +223,10 @@ Return this structure for both complete and blocked investigations:
    negative control, bounds, reset, artifacts, and known-bad/post-repair
    expectations.
 8. **Repair boundary:** owner, invariant, causal span, constraints, and future
-   acceptance oracle, without implementation or review.
+   acceptance oracle; report implementation separately when also requested.
 9. **Next evidence:** smallest safe, bounded evidence for every remaining gap,
    what each result would discriminate, and why the investigation stopped.
 
 Keep reproduction artifacts and diagnosis claims traceable to each other. If
 the dossier is partial, say so at the top and preserve unknowns rather than
-filling them with plausible explanations. Annotate every conclusion in every
-section with its evidence class and confidence.
+filling them with plausible explanations. Attach evidence class and confidence to consequential claims without repeating identical annotations throughout the report.

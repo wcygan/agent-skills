@@ -1,6 +1,13 @@
 ---
 name: "pdf"
-description: "Use when tasks involve reading, creating, or reviewing PDF files where rendering and layout matter; prefer visual checks by rendering pages (Poppler) and use Python tools such as `reportlab`, `pdfplumber`, and `pypdf` for generation and extraction."
+description: "Read, create, or review PDFs when rendered layout matters. Use for PDF extraction, generation, or visual document checks."
+license: Apache-2.0
+metadata:
+  maintenance: "local"
+  upstream-repository: "https://github.com/openai/skills.git"
+  upstream-skill: "skills/.curated/pdf"
+  upstream-revision: "49f948faa9258a0c61caceaf225e179651397431"
+  upstream-license: "Apache-2.0"
 ---
 
 

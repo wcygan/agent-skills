@@ -1,8 +1,13 @@
 ---
 name: planetscale-postgres
-description: PostgreSQL best practices, query optimization, connection troubleshooting, and performance improvement. Load when working with Postgres databases.
+description: "Plan or troubleshoot PostgreSQL schemas, queries, connections, and performance. Use when changing PostgreSQL behavior or investigating a database problem."
 license: MIT
 metadata:
+  maintenance: "local"
+  upstream-repository: "https://github.com/planetscale/database-skills.git"
+  upstream-skill: "skills/postgres"
+  upstream-revision: "af0ce0cfb65cca4cc21d18ca0d9cf270ca99d488"
+  upstream-license: "MIT"
   author: planetscale
   version: "1.0.0"
 ---

@@ -15,6 +15,7 @@
     "tools/sync_skills.py",
     "uv.lock",
     "vendor/ATTRIBUTIONS.md",
+    "vendor/LOCAL-ATTRIBUTIONS.md",
     "vendor/skills-lock.json"
   ],
   "schema": 1

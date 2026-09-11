@@ -1,6 +1,6 @@
 ---
 name: trace-codepath
-description: Trace and visualize one scenario-specific execution path from an entrypoint to a requested sink across functions, modules, services, transports, queues, workflows, datastores, and external dependencies. Use when explaining how a request, event, command, job, or data change flows through a codebase or distributed system, including calls, branches, asynchronous hops, reads, writes, retries, and trust boundaries; produce an evidence-backed call graph, flowchart, sequence diagram, or state diagram with source locations, confidence labels, and explicit unknowns.
+description: "Trace one execution path from an entrypoint to a requested sink. Use when explaining how a request, event, command, or job runs through code."
 license: MIT
 metadata:
   author: William Cygan

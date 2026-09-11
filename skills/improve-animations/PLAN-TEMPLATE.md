@@ -1,6 +1,6 @@
 # Plan Template
 
-Every plan written by `improve-animations` follows this structure. The executor may be a less capable model with zero context and zero taste — the plan must contain everything, exactly. No references to "the audit above" or "the easing we discussed."
+Use the applicable sections to make a plan usable without the original conversation. Include the target, essential constraints, design decisions, and completion evidence. Combine repeated fields and omit irrelevant sections.
 
 ```markdown
 # NNN — <Short imperative title>
@@ -14,7 +14,7 @@ Every plan written by `improve-animations` follows this structure. The executor 
 ## Problem
 
 What is wrong, where, and why it matters to how the product feels. Cite every
-location as `path/to/file.tsx:123` and include the current code verbatim:
+relevant location as `path/to/file.tsx:123`. Include a short current snippet when it explains the defect:
 
 ​```css
 /* src/components/dropdown.css:14 — current */
@@ -23,8 +23,7 @@ location as `path/to/file.tsx:123` and include the current code verbatim:
 
 ## Target
 
-The exact end state. Every value spelled out — curves, durations, spring
-configs, media queries. Never "use a nicer easing":
+Specify the target behavior, necessary timing or curve decisions, and accessibility requirements. Use existing tokens where suitable; include code when it makes the intended change precise:
 
 ​```css
 /* target */
@@ -44,7 +43,7 @@ imitate (token names, file placement, prop patterns):
 
 ## Steps
 
-1. <One concrete edit per step: file, what changes, resulting code.>
+1. <Required dependency or coordinated change, with its purpose and target.>
 2. …
 
 ## Boundaries
@@ -52,22 +51,22 @@ imitate (token names, file placement, prop patterns):
 - Do NOT touch <files/components out of scope>.
 - Do NOT change markup/structure — motion properties only (unless a step says otherwise).
 - Do NOT add new dependencies.
-- If a step doesn't match the code you find (drift since the commit stamp), STOP and report instead of improvising.
+- If code has changed since the plan was written, inspect the drift and adapt routine details while preserving the intended behavior. Ask only when the drift changes scope, authority, or a consequential design decision.
 
 ## Verification
 
-- **Mechanical**: <exact commands — typecheck, lint, build — with expected outcome>.
+- **Mechanical**: <checks appropriate to the changed behavior, with expected outcome>.
 - **Feel check**: run the UI, trigger <interaction>, and confirm:
   - <observable check, e.g. "the dropdown scales from its trigger, not from center">
   - <e.g. "spamming the toggle never restarts the animation from zero">
-  - In DevTools, set playback to 10% (Animations panel) and confirm <detail>.
-  - Toggle `prefers-reduced-motion` (Rendering panel) and confirm movement is dropped but opacity feedback remains.
+  - Where timing is uncertain, use slow playback to inspect <detail>.
+  - Toggle `prefers-reduced-motion` and confirm unnecessary movement is removed while the state change remains understandable.
 - **Done when**: <machine- or eye-checkable completion criteria>.
 ```
 
 ## Notes for the plan author
 
 - One plan per finding. If two findings share every file and the same fix pattern (e.g. the same easing token swap across components), they may merge into one plan.
-- Pull every value from [AUDIT.md](AUDIT.md) — never approximate from memory.
+- Prefer existing project tokens. Use [AUDIT.md](AUDIT.md) for starting values when needed, adapting them to the interaction.
 - The feel check is not optional. Motion can be mechanically correct and still feel wrong; give the executor (or the human reviewing the executor's diff) concrete things to watch for in slow motion.
 - After writing plans, create or update `plans/README.md` with: a table of plans (number, title, severity, status), the recommended execution order, and any dependencies between plans.

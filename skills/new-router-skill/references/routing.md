@@ -16,9 +16,7 @@ specialist should own the work. Compare the candidates before committing:
 | Script | run a deterministic flow | no agent judgment is needed |
 | Extend an existing skill | reuse an owner | trigger, output, and authority already match one skill |
 
-The full decision belongs to `ideate-orchestrator-skill` (a read-only brief);
-this file is the implementation lens on top of it. When the request is still
-an idea, run that brief first and scaffold from its blueprint.
+Use `ideate-orchestrator-skill` when that choice needs exploration. A supplied blueprint or a clear set of distinct routes is enough to proceed directly.
 
 ## The routing map
 
@@ -38,17 +36,15 @@ branch.
 
 ## Activation — the description is the pointer
 
-The agent reaches the router from its description. The description
-front-loads the leading word, lists the branches that should trigger it, and
-states what the router returns. It earns pruning like any always-loaded line:
-one trigger per branch, no identity the body already carries.
+The description states the capability and distinguishing trigger early. Put the full branch map in the body; include a branch in the description only when it materially distinguishes activation from a nearby skill.
 
 ## Body layout for a router
 
-- Keep `SKILL.md` small: the map and the steps only.
+- Keep purpose, route predicates, essential knowledge, completion, and authority in `SKILL.md`.
 - Route-specific detail lives in `references/`, one level deep, reached by
   relative paths.
-- Every step ends on a completion criterion that is checkable and exhaustive.
+- State the evidence needed to select a route and finish the requested work. Specify order only where decisions depend on earlier results.
+- Define fallback behavior for unavailable owners: use available capabilities when sufficient; otherwise identify the missing evidence or capability and continue independent work.
 
 ## Avoid the playlist trap
 

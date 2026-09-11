@@ -1,6 +1,6 @@
 ---
 name: route-agent-models
-description: Select and verify one agent model route. Cover provider, model, reasoning effort, service tier, role, context fork, tools, permissions, and fallback. Use before heterogeneous dispatch, route changes, route comparisons, inheritance diagnosis, unsupported-route diagnosis, or route receipt design.
+description: "Choose and verify an agent model route. Use for model overrides, heterogeneous dispatch, route comparisons, or unsupported and incorrectly inherited routes."
 license: MIT
 metadata:
   author: William Cygan

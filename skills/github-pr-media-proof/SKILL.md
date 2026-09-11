@@ -1,6 +1,6 @@
 ---
 name: github-pr-media-proof
-description: Capture browser proof with Playwright CLI, prepare and upload images or videos for GitHub pull requests, then review or update PR descriptions. Use when a PR needs screenshots, recordings, media conversion, attachment recovery, before/after evidence, or description cleanup.
+description: "Prepare browser screenshots or recordings as GitHub PR evidence and review or update the PR description. Use when a pull request needs visual proof, media uploads, or attachment recovery."
 license: MIT
 ---
 
@@ -25,7 +25,7 @@ Every write step must have a checkable result: upload responses contain a URL, t
 
 ## Capture browser proof
 
-Use the vendored `playwright-cli` skill as the sole browser capture tool. Use a screenshot for a stable state. Use a video for interaction, timing, animation, or state transitions.
+Prefer the `playwright-cli` workflow when available. An equivalent available capture tool is acceptable if it produces inspectable media of the requested scenario and preserves the same isolation, privacy, and upload checks. Use a screenshot for a stable state. Use a video for interaction, timing, animation, or state transitions.
 
 Read [references/browser-capture.md](references/browser-capture.md) before generating browser media. It defines the temporary workspace, recording sequence, recovery path, and completion checks.
 
@@ -88,7 +88,7 @@ Prefer this table shape:
 
 Put video URLs on their own lines so GitHub renders the player. Use image Markdown for still images. Keep the overview media short and move detailed proof to `Evidence`.
 
-Read [references/description-guidelines.md](references/description-guidelines.md) for the review checklist and generic template.
+Read [references/description-guidelines.md](references/description-guidelines.md) when restructuring a PR body or needing examples beyond the required headings above.
 
 ## Safety and access
 

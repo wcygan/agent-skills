@@ -1,48 +1,13 @@
-# Writing the body for agents
+# Authoring a router
 
-The `writing-for-agents` skill is the authority on this discipline; this file
-is the recipe applied when composing a router skill's body.
+These are the essentials from `writing-for-agents`, retained here so this skill works independently. Use that skill for broader instruction design.
 
-## The description is a context pointer
+The description should state the capability and distinguishing trigger early. Detailed route lists, procedures, examples, and output schemas belong in the body or a conditional reference.
 
-The description is always loaded, so it does its triggering work in the fewest
-words: front-load the leading word, list the branches that should fire, and
-state what the router returns. Cut identity the body already carries. One
-trigger per branch — synonyms are one branch written twice.
+Keep the route predicates and essential constraints in the entrypoint. Explain the observable evidence that selects an owner, resolves overlap, or reveals that no route applies. Avoid invented terminology when familiar words suffice.
 
-## Leading words
+Describe the result and completion evidence. Use steps when their order affects correctness; a router usually needs decision criteria rather than a prescribed sequence. An explicit prohibition is useful when it prevents a concrete failure; phrase ordinary guidance directly without adding bans or positivity rules for their own sake.
 
-Reach for compact concepts already in the model's pretraining (`route`, `gate`,
-`pointer`, `map`) and repeat them as tokens, never as sentences. A made-up
-word pays definition tokens for what a pretrained word gives free.
+Preserve authority from the user's request. Selecting a route is phase completion, not a reason to stop before already-requested work. Prefer specialist skills when useful, but allow direct work when the necessary knowledge and capabilities are available. Do not claim a specialist was used when it was not.
 
-## Phrase positively
-
-Steer by the target behaviour, not the ban: "state the selected skill and the
-evidence" beats "don't forget to say which skill you picked". A prohibition
-earns its place only as a hard guardrail, and even then it is paired with the
-positive target.
-
-## Completion criteria
-
-Every step ends on a checkable, exhaustive bound. A vague bound invites
-premature completion — sharpen the bound first; split the sequence only when
-the bound is irreducibly fuzzy and the later steps are pulling attention away
-from the one in front.
-
-## Prune
-
-- One meaning in one place: duplication costs maintenance and inflates a
-  meaning's prominence past its real rank.
-- The environment is a source of truth too — do not restate what the agent can
-  look up cheaply (config files, `--help` output).
-- Delete any sentence that changes nothing versus the default; the test is
-  model-relative and settled by running the document, not by debate.
-- Shorter documents stay relevant. Without pruning, layers of sediment bury
-  what is still live.
-
-## Progressive disclosure
-
-Inline what every branch needs; push what only some branches reach into
-`references/`, one level deep, behind relative paths from `SKILL.md`. The top
-of the file stays legible, and attention lands on the live steps.
+Keep each rule in one place within the skill. References should contain substantial material used by a subset of routes and be linked with an explicit reading condition. Small skills need no references. Remove generic engineering advice, repeated templates, and environment facts that are cheaper to discover than maintain.

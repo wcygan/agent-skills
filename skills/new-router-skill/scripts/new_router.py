@@ -15,9 +15,9 @@ Creates the standardized tree under the target (default ~/.agents/skills, the
 installed skills home; pass --target skills to author inside this repo):
 
     <target>/my-router/
-    ├── SKILL.md          # frontmatter + router-shaped fill-in template
-    ├── references/       # .gitkeep seeded so the folder survives git
-    └── scripts/          # .gitkeep seeded so the folder survives git
+    └── SKILL.md          # frontmatter + router-shaped fill-in template
+
+Add references and scripts only when they have useful content.
 
 Validates the name against the Agent Skills naming rules before writing
 anything. Stdlib only; no dependencies. Mirrors new-plugin's validation regex;
@@ -25,6 +25,7 @@ guarded by tests/test_new_router_skill.py.
 """
 
 import argparse
+import json
 import os
 import re
 import sys
@@ -51,50 +52,36 @@ def skill_template(name: str, description: str, author: str) -> str:
     body = []
     body.append("---")
     body.append(f"name: {name}")
-    body.append(f"description: {description}")
+    body.append(f"description: {json.dumps(description, ensure_ascii=False)}")
     body.append("license: MIT")
     body.append("metadata:")
-    body.append("  version: 0.1.0")
+    body.append('  version: "0.1.0"')
     if author:
-        body.append(f"  author: {author}")
+        body.append(f"  author: {json.dumps(author, ensure_ascii=False)}")
     body.append("---")
     body.append("")
     body.append(f"# {name}")
     body.append("")
-    body.append("> Fill in: one line — the router's recurring job, and when an agent should reach for it.")
-    body.append("")
-    body.append("## The route")
-    body.append("")
-    body.append("> Fill in: the routing map. For every branch an agent can arrive with, name the")
-    body.append("> one specialist that owns it and the predicate that selects it. One specialist per")
-    body.append("> branch; no overlapping routes; cut branches that route nowhere.")
-    body.append("")
-    body.append("| Branch (what the agent arrives with) | Predicate (what selects the route) | Owner (skill that handles it) |")
-    body.append("| --- | --- | --- |")
-    body.append("|  |  |  |")
-    body.append("")
-    body.append("## When to use / not to use")
-    body.append("")
-    body.append("- Triggers: ...")
-    body.append("- Non-triggers: ...")
-    body.append("")
-    body.append("## How to route")
-    body.append("")
-    body.append("1. Step with a completion criterion: ...")
-    body.append("2. ...")
-    body.append("")
-    body.append("## Authority")
-    body.append("")
-    body.append("- May inspect: ...")
-    body.append("- May create or change: ...")
-    body.append("")
-    body.append("## References")
-    body.append("")
-    body.append("> Detail belongs here, one level deep, loaded on demand:")
-    body.append("> references/ROUTING.md — the routing discipline behind this map.")
-    body.append("> references/SCRIPTING.md — UV script conventions for helpers in scripts/.")
-    body.append("> references/WRITING.md — how this body was composed.")
-    body.append("")
+    body.extend([
+        "## Purpose",
+        "",
+        "Describe the recurring result and why selecting a specialist needs this router.",
+        "",
+        "## The route",
+        "",
+        "| Request condition | Evidence that selects this branch | Owner |",
+        "| --- | --- | --- |",
+        "| Fill in an observable condition | Required evidence | Skill or direct capability |",
+        "",
+        "Define overlap resolution, unmatched requests, and essential knowledge needed to choose. Keep detailed branch guidance behind conditional references only when useful.",
+        "",
+        "## Completion and authority",
+        "",
+        "State the selected owner and evidence, then continue the requested work within existing authorization. Explain fallback behavior when a companion is unavailable; stop dependent work only for an essential missing capability, decision, or permission.",
+        "",
+        "Replace these prompts with the router's actual guidance. Add resources only when needed and link real files with explicit reading conditions.",
+        "",
+    ])
     return "\n".join(body)
 
 
@@ -133,21 +120,16 @@ def main(argv: list[str] | None = None) -> int:
         print(f"error: already exists: {skill_file}", file=sys.stderr)
         return 2
 
-    for sub in ("references", "scripts"):
-        os.makedirs(os.path.join(skill_dir, sub), exist_ok=True)
-        gitkeep = os.path.join(skill_dir, sub, ".gitkeep")
-        if not os.path.exists(gitkeep):
-            open(gitkeep, "w").close()
+    os.makedirs(skill_dir, exist_ok=True)
 
     with open(skill_file, "w") as f:
         f.write(skill_template(args.name, args.description, args.author))
 
     print(f"created: {skill_file}")
-    print(f"created: {os.path.join(skill_dir, 'references')}/")
-    print(f"created: {os.path.join(skill_dir, 'scripts')}/")
     print("\nnext steps:")
-    print("  1. Fill in the routing map and steps in SKILL.md (see references/routing.md and references/writing-for-agents.md).")
-    print("  2. Add reference files and UV scripts as the router grows (see references/scripting.md).")
+    print("  Compose the routes, essential knowledge, completion, and authority in SKILL.md.")
+    print("  Add resources only when a branch needs them, with conditional reading pointers.")
+    print("  Follow the target repository's validation and publication requirements.")
     return 0
 
 

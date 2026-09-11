@@ -1,6 +1,6 @@
 ---
 name: design-bounded-loop
-description: "Design or audit a bounded feedback loop before it runs: define an outcome, authoritative observation, baseline, bounded action, authority, sole writer, evaluator, progress, checkpoint, state, budgets, terminal conditions, escalation, wakeup, and final evidence. Use when planning or reviewing a monitoring, repair, research, optimization, or supervisory loop without executing it."
+description: "Design or audit a feedback loop before execution. Use when observation, action limits, recovery, or stopping conditions need to be defined."
 license: MIT
 ---
 
@@ -16,7 +16,7 @@ Use this skill for a repeated observe-decide-act-verify proposal or audit. Keep
 the design distinct from the run:
 
 - A design names authority, measurements, safeguards, and terminal evidence.
-- A run consumes an accepted contract under separately granted authority.
+- A run consumes an accepted contract within the user's execution authority, including authority already supplied in the same request.
 
 Inspect the request, applicable instructions, and available state sources
 read-only. Stop for direction when a missing decision would change outcome,

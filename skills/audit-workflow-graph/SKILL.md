@@ -1,6 +1,6 @@
 ---
 name: audit-workflow-graph
-description: Audit a workflow graph for reachability, guards, terminal paths, cycles, retries, state, fanout, agent routes, authority, observability, and proof. Use when a graph can stall, duplicate work, use a wrong child route, lose state, evade policy, or lack evidence. Produce a read-only ranked report.
+description: "Audit an existing workflow graph for stalled, duplicated, unsafe, or unobservable execution. Use when reviewing graph correctness and recovery."
 license: MIT
 metadata:
   author: William Cygan
@@ -15,11 +15,11 @@ does, what it only declares, and what remains unknown; do not redesign it.
 
 ## Authority and audit boundary
 
-This workflow is read-only. Inspect repository instructions, graph definitions,
+The audit phase is read-only. Inspect repository instructions, graph definitions,
 state schemas, node code, guards, tests, runtime histories, logs, metrics,
 traces, and authorized operational artifacts. Do not edit a graph, replay an
 action, create state, trigger external effects, change a policy, add tests, or
-alter observability.
+alter observability during an audit-only request. A combined audit-and-fix request may proceed into authorized local changes once the findings are established.
 
 Scope the audit to one workflow identity, version, scenario, environment, and
 time window when runtime evidence is involved. If the graph, state owner, or
@@ -160,10 +160,9 @@ highest-severity supported finding. Then report:
    proof.
 5. **Coverage Assessment** — invariant-to-oracle map and missing cases.
 6. **Bounded Next Evidence and Handoffs** — smallest safe discriminating step,
-   no redesign or implementation.
+   with redesign or implementation only when also requested.
 
-Stop after the report. The audit does not authorize graph changes, tests,
-replays, instrumentation, remediation, or operational action.
+The report completes an audit-only request. If the user also requested fixes, continue into the authorized changes and checks after the findings are established. Replays and operational actions follow their own authority and safety bounds.
 
 ## Examples and counterexamples
 

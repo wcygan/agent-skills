@@ -1,6 +1,6 @@
 ---
 name: reproduce-bug
-description: Turn an intermittent or poorly understood symptom into the smallest reliable, bounded reproduction with an explicit failure signature, controlled variables, captured evidence, and a regression oracle. Use when a bug is flaky, environment-dependent, timing-sensitive, data-dependent, difficult to trigger, or reported only through logs, screenshots, traces, or incidents; distinguish reproduction from diagnosis, test competing hypotheses, control time, randomness, concurrency, state, resources, and external dependencies, and automate a deterministic reproducer when implementation is requested.
+description: "Establish a reliable reproducer for an intermittent or hard-to-trigger bug. Use when a reported failure cannot yet be reproduced consistently."
 license: MIT
 metadata:
   author: William Cygan

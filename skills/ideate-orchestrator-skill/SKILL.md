@@ -1,6 +1,6 @@
 ---
 name: ideate-orchestrator-skill
-description: Ideate and structure higher-order agent skills that compose existing skills as orchestrators, routers, or decision frameworks. Use when designing a reusable workflow skill from several specialist skills, deciding whether composition is warranted, defining routing and authority boundaries, or documenting phase contracts and examples before implementation; produce a read-only composition brief and skill blueprint, not the child skills themselves.
+description: "Design a skill that composes other skills. Use when deciding whether a reusable orchestrator or router is warranted and defining its responsibilities."
 license: MIT
 metadata:
   author: William Cygan
@@ -9,7 +9,7 @@ metadata:
 
 # Ideate Orchestrator Skill
 
-Design a higher-order skill without creating or editing it. Treat composition as
+Design a higher-order skill before authoring its implementation. Treat composition as
 an explicit protocol between independently owned skills, not as filesystem
 inclusion.
 
@@ -23,8 +23,7 @@ inclusion.
 - Keep this ideation pass read-only even when the proposed runtime skill would
   have broader authority; describe that future authority instead of exercising
   it.
-- If the user later requests implementation, hand the blueprint to the
-  repository's skill-authoring workflow as a separate task.
+- If implementation is also requested, continue from the blueprint into the repository's authoring workflow in the current task. Ideation completion does not require another routine approval.
 
 ## Decide whether composition is warranted
 
@@ -56,19 +55,18 @@ result.
 The orchestrator must:
 
 - own the integrated output and stopping condition;
-- define required and conditional companions;
+- define required evidence and useful conditional companions;
 - pass explicit artifacts between phases;
 - state completion criteria for every phase;
 - reconcile conflicts and duplicate findings;
-- preserve the strictest applicable authority boundary;
-- define what happens when a required companion is unavailable.
+- preserve the user's authority and applicable operational safeguards;
+- distinguish required evidence from companion availability and define direct fallbacks.
 
 ### Router
 
 Use a router when classification is the hard part and one specialist should own
 the work. The router returns the selected skill, the evidence for that choice,
-and any missing input. It stops after routing and does not merge specialist
-outputs.
+and any missing input. Routing completes that phase; continue the selected workflow when the user also requested the work. A router does not own a merged specialist report.
 
 ### Decision framework
 
@@ -88,7 +86,7 @@ For every proposed companion, record:
 | Contract | Required question |
 |---|---|
 | Role | What unique responsibility does this companion own? |
-| Predicate | Is it always required, or exactly when is it selected? |
+| Predicate | Which evidence is required, and when is this companion useful or essential to obtain it? |
 | Input | What bounded artifact does it receive? |
 | Output | What bounded artifact must it return? |
 | Completion | What proves this phase is done? |
@@ -107,8 +105,7 @@ Then define the parent contract:
 - stop condition and handoff boundary;
 - portability and missing-companion behavior.
 
-The parent may narrow a child's authority but never broaden it. A read-only
-parent remains read-only even if a child can implement changes in other uses.
+Pass the requested phase's authority to each companion. A read-only parent remains read-only even if a child can implement changes in other uses. A combined request can transition from analysis to already-authorized implementation without adopting an unnecessary stop from a companion.
 An agent route cannot add tools, permissions, credentials, or external effects.
 Model inspection, command execution, temporary or ignored artifacts, durable
 file writes, and external mutations separately. A child's mutating prerequisite
@@ -125,11 +122,11 @@ Agent Skills do not provide a dependency manifest. Design accordingly:
 - Do not reference sibling paths such as `../other-skill/SKILL.md`.
 - Do not copy companion instructions into the parent.
 - State whether companions are required, optional, or replaceable.
-- Detect missing required companions and stop with an actionable message.
+- If a companion is missing, use available knowledge and tools when they can establish the required evidence. Pause only dependent claims or actions when an essential capability, decision, or permission is missing; continue independent work.
 - When a client cannot enumerate installed skills, state that limitation and
   treat availability as unknown until the named companion returns its required
   artifact; do not claim that it is installed or missing without evidence.
-- Allow an explicit degraded mode only when its output remains truthful.
+- Label direct analysis and unsupported claims truthfully; do not invent a companion invocation or artifact.
 - State collection-install assumptions when the composition depends on a
   catalog being installed together.
 - Keep client-specific invocation metadata out unless the target repository
@@ -151,9 +148,7 @@ boundary.
 3. **Select the primary pattern.** Choose orchestrator, router, or decision
    framework. Record any secondary mechanics and explain why the other patterns
    are secondary or unsuitable.
-4. **Define companion contracts.** Separate always-required companions from
-   conditional ones. Give every conditional edge a concrete predicate. Require
-   a Route Record for each selectable agent route.
+4. **Define companion contracts.** Separate required evidence from optional or essential capabilities. Give every conditional edge a concrete predicate. Record the route contract when the composition uses selectable agent routes.
 5. **Design artifact flow.** Specify phase inputs, outputs, completion criteria,
    reconciliation, and the integrated final artifact.
 6. **Audit authority and portability.** Preserve read-only boundaries, add
@@ -161,9 +156,11 @@ boundary.
 7. **Test the idea with counterexamples.** Check whether one existing skill can
    already do the job, two routes overlap, a branch has no predicate, or the
    output is merely concatenated child reports.
-8. **Return the brief.** Produce the format below and stop before implementation.
+8. **Return the brief.** Use the relevant fields below. Finish here for ideation-only requests; otherwise continue into the authorized authoring work.
 
-## Output format
+## Brief contents
+
+Include the fields needed to implement and review the design. Combine overlapping sections; omit empty route, context, or phase tables when the proposed skill does not need them.
 
 ```markdown
 ## Composition decision

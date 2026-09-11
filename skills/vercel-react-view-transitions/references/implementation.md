@@ -1,19 +1,19 @@
 # Implementation Workflow
 
-Follow these steps in order when adding view transitions to an app. Each step builds on the previous one.
+Inspect the affected navigation and select the sections needed by the requested transitions. Establish shared-element identity and boundary placement before applying dependent styles; the remaining sections are conditional patterns.
 
 ## Step 1: Audit the App
 
-Before writing any code, scan the codebase thoroughly. Search for:
+Inspect the requested routes and the boundaries they share. Expand the search only when it reveals a dependency that affects those transitions. Look for:
 
-- **Every `<Link>` and `router.push`** — these are your navigation triggers. Open every file that contains one.
-- **Every `<Suspense>` boundary** — each one is a candidate for a reveal animation. Check what its fallback renders.
-- **Every page/route component** — list them all. Each page needs a VT placement decision.
+- **Relevant `<Link>` and `router.push` calls** — these are your navigation triggers. Read the callers for the affected navigation.
+- **Affected `<Suspense>` boundaries** — each one is a candidate for a reveal animation. Check what its fallback renders.
+- **Affected page/route components** — identify where transition boundaries belong.
 - **Persistent elements** — headers, navbars, sidebars, sticky controls that stay on screen across navigations. These need `viewTransitionName` isolation.
 - **Shared visual elements** — images, cards, or avatars that appear on both a source and target view (e.g., a thumbnail in a list and the same image on a detail page).
 - **Skeleton-to-content control pairs** — if a Suspense fallback renders a control (search input, tab bar) that also exists in the real content, both need a matching `viewTransitionName`.
 
-Then classify every navigation and produce a navigation map:
+For multiple navigation paths, a compact map can clarify which pattern applies:
 
 ```
 | Route           | Navigates to         | Direction    | VT pattern            |
@@ -29,9 +29,9 @@ For each shared element (`name` prop), note every navigation where a pair forms 
 
 ## Step 2: Add CSS Recipes
 
-Copy the **complete** CSS recipe set from [css-recipes.md](css-recipes.md) into your global stylesheet. This includes timing variables, shared keyframes, fade, slide (vertical), directional navigation (forward/back), shared element morph, persistent element isolation, and reduced motion.
+Use the relevant recipes from [css-recipes.md](css-recipes.md), including their required variables and reduced-motion handling. Reuse existing equivalent styles instead of copying the complete set.
 
-Do not write your own animation CSS — the recipes handle staggered timing, motion blur on morphs, and reduced motion that are easy to get wrong. You can customize timing variables (`--duration-exit`, `--duration-enter`, `--duration-move`) after the initial setup.
+Adapt timing variables (`--duration-exit`, `--duration-enter`, `--duration-move`) and styles to the project while preserving boundary behavior and accessibility.
 
 ## Step 3: Isolate Persistent Elements
 

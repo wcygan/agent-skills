@@ -1,6 +1,13 @@
 ---
 name: find-skills
-description: Helps users discover and install agent skills when they ask questions like "how do I do X", "find a skill for X", "is there a skill that can...", or express interest in extending capabilities. This skill should be used when the user is looking for functionality that might exist as an installable skill.
+description: "Discover installable agent skills. Use when the user asks to find a skill or extend an agent with a missing capability."
+license: MIT
+metadata:
+  maintenance: "local"
+  upstream-repository: "https://github.com/vercel-labs/skills.git"
+  upstream-skill: "skills/find-skills"
+  upstream-revision: "941a7bcfeca4bf07913b9fb6f8ed81f20ff5297c"
+  upstream-license: "MIT"
 ---
 
 # Find Skills
@@ -40,17 +47,13 @@ When a user asks for help with something, identify:
 2. The specific task (e.g., writing tests, creating animations, reviewing PRs)
 3. Whether this is a common enough task that a skill likely exists
 
-### Step 2: Check the Leaderboard First
+### Optional: browse a catalog
 
-Before running a CLI search, check the [skills.sh leaderboard](https://skills.sh/) to see if a well-known skill already exists for the domain. The leaderboard ranks skills by total installs, surfacing the most popular and battle-tested options.
-
-For example, top skills for web development include:
-- `vercel-labs/agent-skills` — React, Next.js, web design (100K+ installs each)
-- `anthropics/skills` — Frontend design, document processing (100K+ installs)
+The [skills.sh catalog](https://skills.sh/) can help when the user wants broad discovery. For a specific capability, search directly. Installation counts alone do not establish quality or suitability.
 
 ### Step 3: Search for Skills
 
-If the leaderboard doesn't cover the user's need, run the find command:
+For a specific capability, run the find command:
 
 ```bash
 npx skills find [query] [--owner <owner>]

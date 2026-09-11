@@ -1,6 +1,6 @@
 ---
 name: operate-kubernetes-gitops
-description: Diagnose and operate Kubernetes systems managed by GitOps by reconciling repository intent, rendered manifests, controller status, Kubernetes objects, events, logs, dependencies, and user-visible health. Use for Flux or Argo CD reconciliation failures, rollout stalls, DNS, networking, storage, secret, RBAC, or configuration drift issues, and safe GitOps repair planning; work read-only first, distinguish desired, rendered, applied, live, and external state, and mutate only with explicit authority, rollback, and acceptance criteria.
+description: "Diagnose and repair Kubernetes workloads managed by Flux or Argo CD. Use for reconciliation failures, stalled rollouts, configuration drift, or cluster service failures."
 license: MIT
 metadata:
   author: William Cygan

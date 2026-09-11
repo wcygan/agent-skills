@@ -1,6 +1,6 @@
 ---
 name: check-my-prs
-description: Inspect the current GitHub pull request or stacked pull request as a read-only terminal dashboard, combining review threads, comments, CI, stack health, merge order, naming, visual proof, description quality, testing evidence, and split signals. Use when asked to check PR state, stack health, readiness, or what needs attention.
+description: "Report the health and next actions for the current GitHub PR or its stack. Use for PR status, review readiness, CI, or stack attention checks."
 license: MIT
 ---
 
@@ -20,10 +20,10 @@ Use these specialist skills when available:
 - `github-pr-media-proof` for visual-proof review, attachment handling, and authorized PR-body updates.
 - `code-review` only when the user asks for a deep Standards and Spec review or passes equivalent intent such as `--deep`.
 - `gh-address-comments` after the user asks to inspect or implement selected review feedback.
-- `gh-fix-ci` after the user asks to diagnose failing GitHub Actions checks; require a separate approval before code changes.
+- `gh-fix-ci` when the user asks to diagnose or fix failing GitHub Actions checks; a fix request authorizes the corresponding local repair.
 - `monitor-until` only when the user explicitly asks to watch a state until a terminal condition.
 
-If a named optional skill is unavailable, keep the inspection read-only and tell the user which follow-up capability is unavailable.
+If a specialist is unavailable, continue the requested inspection or authorized repair directly when tools and evidence suffice. Identify an essential missing capability rather than treating skill availability alone as a blocker.
 
 Treat this skill as the read-only router for PR follow-up work. Report the
 smallest useful next action and name the specialist that owns it:
@@ -34,9 +34,7 @@ smallest useful next action and name the specialist that owns it:
 - Stack propagation or merge-order issues route to `gh-stack-companion`.
 - Missing or weak visual proof routes to `github-pr-media-proof`.
 
-Do not invoke a specialist's mutation path automatically. Preserve the
-specialist's authority gate and ask the user to select comments or approve
-implementation after diagnosis.
+A health-check request alone stays read-only. Use an already-supplied selection of comments or request to fix CI as authorization for the corresponding local work. Ask only when the selection, a consequential decision, or additional authority is missing.
 
 When the user authorizes new visual proof, route the work to `github-pr-media-proof`. That skill uses `playwright-cli` for browser capture.
 
@@ -94,9 +92,9 @@ For every PR in scope, collect:
 
 Treat unresolved active threads as attention unless repository rules prove they are a merge blocker. Never count outdated threads as active.
 
-### 4. Delegate analysis, then integrate once
+### 4. Apply relevant analysis and integrate the findings
 
-Run `pr-guidelines` against each PR snapshot. For observable behavior, apply the visual-proof standard and route missing evidence to `github-pr-media-proof`. In stack mode, run `gh-stack-companion` against local and remote topology. Do not ask specialists to produce competing final reports.
+Use `pr-guidelines` for PR presentation and `gh-stack-companion` for stack topology when available, or perform those analyses directly. For observable behavior, assess visual proof and use `github-pr-media-proof` for requested capture or updates. Delegate only when useful and permitted; integrate the evidence into one report.
 
 The parent report owns:
 
@@ -127,11 +125,11 @@ When AI generation is explicit, pass `--ai-generated` to the inspector and apply
 
 Keep this path practical: identify the first layer whose intent or evidence is unclear, name the exact human review needed, and avoid treating AI authorship itself as a defect. The canonical GitHub tutorials and their current merge caveat are indexed in [references/official-github-docs.md](references/official-github-docs.md).
 
-### 7. Recommend; mutate only with a new authority gate
+### 7. Recommend or act within the requested scope
 
 End with the smallest useful next action, prioritizing the bottommost stack blocker. Suggestions may include exact commands, but label their side effects and say they were not run.
 
-If the user asks to act, restate the selected mutation and invoke the owning specialist. Do not treat the original health-check request as authorization to rebase, push, edit descriptions, resolve threads, rerun workflows, enable auto-merge, or merge.
+If the user has already asked to act, continue the selected work, using the owning specialist when available. Ask only about missing decisions or additional authority. Do not treat the original health-check request as authorization to rebase, push, edit descriptions, resolve threads, rerun workflows, enable auto-merge, or merge.
 
 ## Completion criteria
 

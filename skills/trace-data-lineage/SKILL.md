@@ -1,6 +1,6 @@
 ---
 name: trace-data-lineage
-description: Trace a selected field, record, event, or dataset from origin through validation, transformation, transport, persistence, projection, and exposure. Use when determining where data comes from, who owns it, how its meaning or shape changes, where it is copied, which consumers depend on it, or where sensitive data can flow across modules, services, queues, databases, caches, files, analytics systems, and external APIs; produce evidence-backed lineage with source locations and explicit gaps.
+description: "Trace a field or record from origin through transformation and storage to its consumers. Use when investigating data meaning, ownership, copies, or exposure."
 license: MIT
 metadata:
   author: William Cygan

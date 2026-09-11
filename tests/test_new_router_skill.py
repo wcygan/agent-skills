@@ -44,8 +44,8 @@ class ScaffoldTest(unittest.TestCase):
         self.assertIn("name: my-router", body)
         self.assertIn("Picks a route.", body)
         self.assertIn("## The route", body)
-        self.assertTrue((skill_dir / "references" / ".gitkeep").is_file())
-        self.assertTrue((skill_dir / "scripts" / ".gitkeep").is_file())
+        self.assertFalse((skill_dir / "references").exists())
+        self.assertFalse((skill_dir / "scripts").exists())
 
     def test_refuses_existing_skill(self) -> None:
         skill_dir = self.target / "existing"

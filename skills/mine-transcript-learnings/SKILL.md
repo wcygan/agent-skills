@@ -1,6 +1,6 @@
 ---
 name: mine-transcript-learnings
-description: Mine bounded local agent transcripts for recurring failures, verified workarounds, and reusable workflow knowledge. Use when reviewing Codex rollout sessions or other supported transcripts, including locating tasks by working directory, date, thread identifier, or durable markers. Produce a ranked skill-candidate report with evidence, overlap, and promotion rationale. Remain read-only.
+description: "Extract recurring failures and reusable workflow lessons from local agent transcripts. Use when turning past sessions into evidence-backed skill candidates."
 license: MIT
 metadata:
   author: William Cygan

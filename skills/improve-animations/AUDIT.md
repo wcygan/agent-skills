@@ -1,6 +1,6 @@
 # Animation Audit Playbook
 
-The eight audit categories, what to look for in each, and the exact target values to cite in findings and plans. Distilled from Emil Kowalski's design engineering philosophy ([emilkowal.ski](https://emilkowal.ski/)). Never approximate a value that appears here — copy it.
+The eight audit categories, evidence to inspect, and example values for findings and plans. Distilled from Emil Kowalski's design engineering philosophy ([emilkowal.ski](https://emilkowal.ski/)). Treat values as starting points, preserve existing project tokens where appropriate, and support findings with observed user impact.
 
 ## 1. Purpose & frequency
 
@@ -8,7 +8,7 @@ Every animation must answer "why does this animate?" — spatial consistency, st
 
 | Frequency | Decision |
 | --- | --- |
-| 100+ times/day (keyboard shortcuts, command palette toggle) | No animation. Ever. |
+| 100+ times/day (keyboard shortcuts, command palette toggle) | Prefer immediate feedback; avoid recurring delays |
 | Tens of times/day (hover effects, list navigation) | Remove or drastically reduce |
 | Occasional (modals, drawers, toasts) | Standard animation |
 | Rare / first-time (onboarding, feedback, celebrations) | Can add delight |
@@ -25,7 +25,7 @@ Decision order for easing:
 - Constant motion (marquee, progress) → **`linear`**
 - Default → **`ease-out`**
 
-**`ease-in` on UI is always a finding** — it starts slow, delaying the exact moment the user is watching. Built-in CSS easings are too weak for deliberate motion; plans should introduce strong custom curves (as tokens, matching repo conventions):
+Investigate `ease-in` when its slow start delays feedback. Preserve suitable project easing tokens; these stronger curves are examples when a change is justified:
 
 ```css
 --ease-out: cubic-bezier(0.23, 1, 0.32, 1);        /* strong ease-out for UI */
@@ -33,7 +33,7 @@ Decision order for easing:
 --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);     /* iOS-like drawer curve */
 ```
 
-Duration budgets — **UI animations stay under 300ms**:
+Starting duration ranges — small UI responses usually benefit from staying under 300ms:
 
 | Element | Duration |
 | --- | --- |
@@ -43,7 +43,7 @@ Duration budgets — **UI animations stay under 300ms**:
 | Modals, drawers | 200–500ms |
 | Marketing / explanatory | Can be longer |
 
-Hunt for: `ease-in` anywhere, bare `ease`/`linear` on entrances, durations > 300ms on UI elements, tooltip delay + animation on every tooltip in a toolbar (after the first, they should be instant).
+Investigate slow or unresponsive entrances, repeated tooltip delays, and timings that conflict with established product motion. The presence of a curve or a numeric threshold alone is not a finding.
 
 ## 3. Physicality & origin
 
@@ -59,22 +59,22 @@ Hunt for: `scale(0)`, pure-fade entrances with no initial transform, `transform-
 
 ## 4. Interruptibility
 
-CSS **transitions** retarget from the current state mid-animation; **keyframes** restart from zero. Anything triggered rapidly or reversible mid-motion (toasts stacking, toggles, drags, expand/collapse) must use transitions or springs.
+For rapidly triggered or reversible motion, verify that the implementation retargets from the current state without jumps. Transitions and springs commonly support this; restarting a keyframe sequence may require explicit continuity handling.
 
 - Entry without JS: `@starting-style` (legacy fallback: a `data-mounted` attribute set in `useEffect`).
 - Gesture-driven motion should use springs — they carry velocity when interrupted.
 - Spring configs, Apple-style (recommended): `{ type: "spring", duration: 0.5, bounce: 0.2 }`. Keep bounce subtle (0.1–0.3); reserve visible bounce for drag-to-dismiss and playful moments.
-- **Asymmetric timing**: deliberate phases (press, hold, destructive confirm) animate slower; the system's response snaps. Symmetric timing on press-and-release is a finding.
+- **Asymmetric timing**: deliberate phases (press, hold, destructive confirm) animate slower; the system's response snaps. Report symmetric timing when it delays the system response or obscures a deliberate hold.
 
 Hunt for: `@keyframes` on toasts/toggles/rapidly-triggered UI, gesture handlers that tween with fixed-duration keyframes, drags without velocity-based dismissal (dismiss on `Math.abs(distance)/elapsedMs > ~0.11`, not distance thresholds alone), hard stops at drag boundaries instead of rising friction.
 
 ## 5. Performance
 
-- **Animate `transform` and `opacity` only.** `width`/`height`/`margin`/`padding`/`top`/`left` trigger layout + paint + composite.
+- **Prefer `transform` and `opacity` for motion that does not need to change layout.** When layout animation is necessary, such as an accordion, inspect rendering cost and interaction quality rather than replacing the behavior blindly.
 - **`transition: all`** animates unintended properties off-GPU — always a finding.
-- **Framer Motion `x`/`y`/`scale` shorthands are not hardware-accelerated** — they run on the main thread and drop frames under load. Target: the full transform string, `animate={{ transform: "translateX(100px)" }}`.
+- **Check the installed Motion version and rendering path before making acceleration claims.** Compare shorthand props and full transform strings only when performance evidence warrants it; verify the chosen form under representative load.
 - **Don't drive child transforms via a CSS variable on the parent** — it recalcs styles for all children. Set `transform` directly on the element.
-- CSS (and WAAPI) beat rAF-based JS under load — use CSS for predetermined motion, JS/springs for dynamic and gesture-driven motion.
+- Prefer browser-managed animation for predetermined motion and JS/springs where dynamic control is useful. Verify performance on the actual rendering path.
 - Keep transition-time `filter: blur()` under 20px — heavy blur is expensive, especially in Safari.
 
 Hunt for: `transition: all`, animated layout properties, Framer Motion shorthand props on busy pages, `setProperty('--x', …)` driving child transforms, rAF loops doing what CSS could.
@@ -90,9 +90,9 @@ Hunt for: `transition: all`, animated layout properties, Framer Motion shorthand
 }
 ```
 
-Reduced motion means fewer and gentler animations, **not zero** — keep transitions that aid comprehension, remove position changes. In JS: `useReducedMotion()` and branch transform values.
+Respect reduced-motion preferences by removing unnecessary movement. Immediate updates or brief opacity changes can both preserve understandable feedback. In JS, `useReducedMotion()` can select the appropriate behavior.
 
-Hunt for: movement with no `prefers-reduced-motion` handling, ungated `:hover` motion, reduced-motion implementations that nuke all feedback.
+Hunt for: movement with no `prefers-reduced-motion` handling, ungated `:hover` motion, reduced-motion implementations that hide state changes or necessary feedback.
 
 ## 7. Cohesion & tokens
 
@@ -101,7 +101,7 @@ Hunt for: movement with no `prefers-reduced-motion` handling, ungated `:hover` m
 - Everything-at-once group entrances where a **30–80ms stagger** belongs. Stagger is decorative — it must never block interaction.
 - A jarring crossfade that shows two overlapping states can be masked with subtle `filter: blur(2px)` during the transition.
 
-Hunt for: duplicated near-identical easings/durations, one bouncy component in a crisp app, list/grid entrances with no stagger, crossfades that visibly double-expose.
+Hunt for: duplicated near-identical easings/durations, one bouncy component in a crisp app, list/grid entrances whose timing obscures hierarchy, crossfades that visibly double-expose.
 
 ## 8. Missed opportunities
 

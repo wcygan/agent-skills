@@ -1,13 +1,15 @@
 ---
 name: gh-stack
-description: >
-  Manages stacked PRs and splits multi-part work into reviewable branches with gh-stack.
-  Use for stack creation, viewing, edits, push, submit, sync, rebase, merge, or checkout;
-  when asked to split or isolate work for review; whenever a user mentions a stack,
-  branch layers, dependent PRs, or gh stack; or when a stack is checked out.
+description: "Manage stacked pull requests with gh-stack. Use for stack creation, splitting work, navigation, synchronization, submission, or merging."
 metadata:
+  maintenance: "local"
+  upstream-repository: "https://github.com/github/gh-stack.git"
+  upstream-skill: "skills/gh-stack"
+  upstream-revision: "14fc42ed9b6c376a53b2f999f138d3bd26dac546"
+  upstream-license: "MIT"
   author: github
   version: "0.1.0"
+license: MIT
 ---
 
 # gh-stack

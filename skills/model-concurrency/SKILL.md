@@ -1,6 +1,6 @@
 ---
 name: model-concurrency
-description: Model concurrent or distributed behavior with actors, state, operations, invariants, causal order, and counterexample schedules. Use for races, lost updates, deadlocks, duplicates, ordering, cancellation, retries, fanout, fanin, or nested agents. Separate safety from liveness and design deterministic tests.
+description: "Model concurrent behavior and counterexample schedules. Use when reasoning about races, deadlocks, ordering, cancellation, duplicate work, or distributed state."
 license: MIT
 metadata:
   author: William Cygan

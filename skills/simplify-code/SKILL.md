@@ -1,6 +1,6 @@
 ---
 name: simplify-code
-description: Simplify one bounded code target and its same-behavior tests through verified edits. Use it when the user asks to simplify code, remove dead code or unnecessary indirection, flatten control flow, or consolidate repeated meaning. Also use it for bounded readability and test cleanup without a cross-cutting redesign. Preserve intended behavior. Require separate authority and proof for each bug fix.
+description: "Simplify a bounded code target while preserving its behavior. Use for dead code, unnecessary indirection, tangled control flow, or duplicated meaning."
 license: MIT
 metadata:
   author: William Cygan

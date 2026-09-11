@@ -1,15 +1,21 @@
 ---
 name: "gh-fix-ci"
-description: "Use when a user asks to debug or fix failing GitHub PR checks that run in GitHub Actions; use `gh` to inspect checks and logs, summarize failure context, draft a fix plan, and implement only after explicit approval. Treat external providers (for example Buildkite) as out of scope and report only the details URL."
+description: "Diagnose or fix failing GitHub Actions checks on a PR. Use when investigating CI failures or implementing their repair."
+license: Apache-2.0
+metadata:
+  maintenance: "local"
+  upstream-repository: "https://github.com/openai/skills.git"
+  upstream-skill: "skills/.curated/gh-fix-ci"
+  upstream-revision: "49f948faa9258a0c61caceaf225e179651397431"
+  upstream-license: "Apache-2.0"
 ---
 
 
-# Gh Pr Checks Plan Fix
+# Diagnose and fix GitHub Actions checks
 
 ## Overview
 
-Use gh to locate failing PR checks, fetch GitHub Actions logs for actionable failures, summarize the failure snippet, then propose a fix plan and implement after explicit approval.
-- If a plan-oriented skill (for example `create-plan`) is available, use it; otherwise draft a concise plan inline and request approval before implementing.
+Use gh to locate failing PR checks and retrieve actionable GitHub Actions logs. For a diagnosis-only request, report the cause and proposed repair. A request to fix CI authorizes the corresponding local changes; continue from diagnosis through repair without another routine approval step.
 
 Prereq: authenticate with the standard GitHub CLI once (for example, run `gh auth login`), then confirm with `gh auth status` (repo + workflow scopes are typically required).
 
@@ -50,12 +56,11 @@ Prereq: authenticate with the standard GitHub CLI once (for example, run `gh aut
 5. Summarize failures for the user.
    - Provide the failing check name, run URL (if any), and a concise log snippet.
    - Call out missing logs explicitly.
-6. Create a plan.
-   - Use the `create-plan` skill to draft a concise plan and request approval.
-7. Implement after approval.
-   - Apply the approved plan, summarize diffs/tests, and ask about opening a PR.
-8. Recheck status.
-   - After changes, suggest re-running the relevant tests and `gh pr checks` to confirm.
+6. Repair within the requested scope.
+   - Identify the cause before editing. Implement the relevant fix when authorized; ask only about missing decisions or actions beyond that scope. A separate planning skill is optional.
+7. Verify and report.
+   - Run focused checks appropriate to the repair, respecting the user's testing constraints. Inspect remote check status when useful, and distinguish local evidence from a new CI run: an unchanged remote run cannot validate a local fix.
+   - Report the cause, changes, checks performed, and remaining failures or unavailable evidence. Pushes, remote reruns, and PR creation follow the user's authorization.
 
 ## Bundled Resources
 

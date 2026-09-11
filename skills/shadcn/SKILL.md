@@ -1,7 +1,14 @@
 ---
 name: shadcn
-description: Manages shadcn components and projects — adding, searching, fixing, debugging, styling, and composing UI, including chat interfaces. Provides project context, component docs, and usage examples. Applies when working with shadcn/ui, component registries, presets, --preset codes, or any project with a components.json file. Also triggers for "shadcn init", "create an app with --preset", or "switch to --preset".
+description: "Build or troubleshoot shadcn/ui components and registries. Use when adding, composing, styling, or updating shadcn components, presets, or project configuration."
 allowed-tools: Bash(npx shadcn@latest *), Bash(pnpm dlx shadcn@latest *), Bash(bunx --bun shadcn@latest *)
+license: MIT
+metadata:
+  maintenance: "local"
+  upstream-repository: "https://github.com/shadcn-ui/ui.git"
+  upstream-skill: "skills/shadcn"
+  upstream-revision: "5eb130d72dbe723d0c4324769d250eda668b1813"
+  upstream-license: "MIT"
 ---
 
 # shadcn/ui
@@ -171,7 +178,7 @@ Run `npx shadcn@latest docs <component>` to get the URLs for a component's docum
 npx shadcn@latest docs button dialog select
 ```
 
-**When creating, fixing, debugging, or using a component, always run `npx shadcn@latest docs` and fetch the URLs first.** This ensures you're working with the correct API and usage patterns rather than guessing.
+When adding an unfamiliar component or resolving uncertain API behavior, use `npx shadcn@latest docs` and read the relevant URLs. Small edits can use the installed source and established local examples when those provide sufficient evidence. Match documentation to the project's component version.
 
 ## Workflow
 
@@ -182,8 +189,8 @@ npx shadcn@latest docs button dialog select
 5. **Install or update** — `npx shadcn@latest add`. When updating existing components, use `--dry-run` and `--diff` to preview changes first (see [Updating Components](#updating-components) below).
 6. **Fix imports in third-party components** — After adding components from community registries (e.g. `@bundui`, `@magicui`), check the added non-UI files for hardcoded import paths like `@/components/ui/...`. These won't match the project's actual aliases. Use `npx shadcn@latest info` to get the correct `ui` alias (e.g. `@workspace/ui/components`) and rewrite the imports accordingly. The CLI rewrites imports for its own UI files, but third-party registry components may use default paths that don't match the project.
 7. **Review added components** — After adding a component or block from any registry, **always read the added files and verify they are correct**. Check for missing sub-components (e.g. `SelectItem` without `SelectGroup`), missing imports, incorrect composition, or violations of the [Critical Rules](#critical-rules). Also replace any icon imports with the project's `iconLibrary` from the project context (e.g. if the registry item uses `lucide-react` but the project uses `hugeicons`, swap the imports and icon names accordingly). Fix all issues before moving on.
-8. **Registry must be explicit** — When the user asks to add a block or component, **do not guess the registry**. If no registry is specified (e.g. user says "add a login block" without specifying `@shadcn`, `@tailark`, `owner/repo`, etc.), ask which registry to use. Never default to a registry on behalf of the user.
-9. **Switching presets** — Ask the user first: **overwrite**, **partial**, **merge**, or **skip**?
+8. **Resolve the registry** — Use a supplied prefix or the project's configured registry and existing conventions when they identify the source. Ask when multiple plausible registries would materially change the requested component.
+9. **Switching presets** — Use the requested overwrite, partial, merge, or skip behavior. If unspecified, inspect the affected changes and ask when the choice would replace user work or materially change scope.
    - **Inspect current preset**: `npx shadcn@latest preset resolve`. Use `--json` when you need structured values.
    - **Inspect incoming preset**: `npx shadcn@latest preset decode <code>`. Use `preset url <code>` or `preset open <code>` to share or open the preset builder.
    - **Overwrite**: `npx shadcn@latest apply <code>`. Overwrites detected components, fonts, and CSS variables.

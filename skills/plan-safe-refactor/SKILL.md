@@ -1,6 +1,6 @@
 ---
 name: plan-safe-refactor
-description: Plan a staged, behavior-preserving refactor with explicit invariants, dependency seams, compatibility states, checkpoints, validation, rollback, and cleanup. Use when restructuring modules, extracting components, replacing implementations, moving ownership, decomposing a monolith, removing duplication, or changing architecture without intentionally changing externally visible behavior; separate mechanical and behavioral changes, keep each slice independently verifiable, and implement only when explicitly requested.
+description: "Plan a staged refactor that preserves behavior. Use when changing module boundaries, implementations, or ownership requires a transition and rollback plan."
 license: MIT
 metadata:
   author: William Cygan

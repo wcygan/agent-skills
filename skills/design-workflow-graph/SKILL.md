@@ -1,6 +1,6 @@
 ---
 name: design-workflow-graph
-description: Design one bounded graph-shaped workflow as a read-only Graph Design Pack covering state ownership, node and typed edge contracts, loops, fanout, recovery, authority gates, observability, and verification. Use after a graph control model is justified, or when a workflow graph needs an implementation-ready design; stop before implementation and route non-graph work to choose-workflow-control-model.
+description: "Design a workflow graph after choosing a graph control model. Use when state, transitions, recovery, and execution contracts need an implementation-ready design."
 license: MIT
 metadata:
   author: William Cygan
@@ -15,30 +15,20 @@ implementation request.
 
 ## Authority, entry, and companions
 
-Keep this run read-only. Inspect instructions, source, contracts, existing
-workflow definitions, state stores, tests, runtime histories, and authorized
-operational evidence. Do not write workflow code, state schemas, prompts,
-policies, schedules, tests, integrations, or external effects.
+Keep graph design read-only. Inspect relevant source, contracts, state stores, tests, workflow histories, and authorized operational evidence. If implementation is also requested, continue into that work after the graph contract and required decisions are settled; designing a graph alone does not authorize dispatch or external effects.
 
-Require a CMDR from `choose-workflow-control-model` whose selected model is
-`DAG`, `cyclic state graph`, or `dynamic graph`. If no such record exists,
-invoke that skill first with the scenario. If it selects deterministic code, a
-simple agent loop, or a multi-agent workflow, stop and return that non-graph
-decision; do not draw a graph for it.
+Start from an evidence-backed control-model decision selecting a DAG, cyclic state graph, or dynamic graph. Use a supplied decision or `choose-workflow-control-model` when available; make the selection directly if necessary. If the evidence favors deterministic code or an agent loop, report that decision and continue any authorized work with the appropriate model instead of forcing a graph.
 
-Resolve companions through the installed skill mechanism by exact name, never
-by a sibling filesystem path. Keep their authority read-only.
+Prefer these companions when useful. Their contracts identify necessary evidence, not installation prerequisites:
 
-| Companion | Exact predicate | Required input and returned artifact |
+| Companion | Predicate | Evidence needed |
 | --- | --- | --- |
-| `model-concurrency` | Any two nodes, retries, fanout children, cancellation, or resume path can overlap on authoritative state or one external effect. | Pass the CMDR and overlap question; require its bounded concurrency model. |
-| `route-agent-models` | Any model or agent node can inherit, override, or specialize its route. | Pass the node outcome, risk, context, tools, authority, and fallback; require one Route Record per selectable route. |
-| `design-verification-strategy` | Always, after the candidate graph's states, transitions, risks, and terminal outcomes are known. | Pass the candidate graph contract; require a Proof Matrix and acceptance gates. |
-| `audit-observability-path` | A required identity, terminal outcome, or operational reconstruction claim cannot be supported by the inspected design/runtime evidence. | Pass one named observability question; require its signal map or stated gap. |
+| `model-concurrency` | Nodes, retries, fanout, cancellation, or resume can overlap on state or effects. | Bounded concurrency model and violating schedules. |
+| `route-agent-models` | A model or agent node can inherit or specialize its route. | Route Record for each selectable route. |
+| `design-verification-strategy` | Candidate states, transitions, risks, and terminal outcomes are known. | Proof Matrix and acceptance gates. |
+| `audit-observability-path` | Identity, terminal outcome, or reconstruction claims lack support. | Signal map or explicit evidence gap. |
 
-If a predicate fires and its companion is unavailable, mark the pack `blocked`,
-name the missing artifact, and stop before asserting what it would establish.
-Do not copy a companion's procedure into this skill.
+If a companion is unavailable, analyze directly when tools and evidence suffice. Stop only the claims that depend on an essential missing capability or evidence source, and continue independent design work.
 
 Use these terms consistently: **state** is data persisted or carried across a
 transition; **progress** is a named measurable reduction in remaining work or
@@ -166,10 +156,10 @@ Reconcile artifacts into one pack. Do not concatenate the CMDR, concurrency
 model, observability audit, and verification strategy; revise linked sections
 when one contract changes.
 
-## Report and stop
+## Report and continue within scope
 
-Lead with `ready for implementation approval`, `decision-blocked`, or
-`evidence-blocked`. Report:
+Lead with `ready for implementation`, `decision-blocked`, or
+`evidence-blocked`. Cover these areas without repeating evidence across sections:
 
 1. **Scenario and Graph Boundary** — entry, outcome, invariants, exclusions,
    and CMDR decision.
@@ -186,7 +176,7 @@ Lead with `ready for implementation approval`, `decision-blocked`, or
 7. **Implementation Handoff** — ordered build slices, required owners,
    unresolved decisions, and no implied mutation authority.
 
-Stop before implementation, dispatch, test creation, or operational changes.
+For design-only requests, the pack completes the task. If implementation is already authorized, use the handoff to continue it without another routine approval stop. Dispatch and operational changes remain subject to their own authorization.
 
 ## Examples and counterexamples
 

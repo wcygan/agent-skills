@@ -1,6 +1,6 @@
 ---
 name: distill
-description: Distill long responses or supplied text into a concise Human Brief with the gist, key points, practical meaning, actions, and important caveats. Use when the user asks for a summary, TLDR, salient points, plain-language explanation, executive brief, or compact visual understanding without losing essential meaning.
+description: "Summarize supplied text or a long response into a concise brief. Use for a TLDR, key points, practical meaning, or executive summary."
 license: MIT
 metadata:
   author: William Cygan
@@ -9,142 +9,29 @@ metadata:
 
 # Distill
 
-Turn a large source into a short Human Brief. Preserve the source meaning while
-you reduce its reading cost.
+Turn supplied text into a short Human Brief that preserves its meaning while reducing reading effort. Use the previous response when the user refers to “this,” “that,” or “your last response.” Infer the audience from the conversation unless the user specifies one.
 
-## Route nearby work
+## Preserve the source
 
-Use `distill` when compression is the primary job.
+The supplied source determines the brief's content. Research, verify, or expand it only when that work is also requested. Preserve exact identifiers, quantities, commands, ownership, and domain terms when they affect the meaning.
 
-- Use `wait-what` when the previous message needs a new explanation or more context.
-- Use `show-me` when a visual explanation is the primary result.
-- Use `handoff` when another agent needs complete continuation context.
-- Use `explore-topic` when the user wants broader coverage instead of compression.
+Prioritize the main conclusion, practical effects, decisions and actions, and material risks or uncertainty. Retain a detail when omitting it could change a decision or interpretation. Merge repetition; remove background and examples that do not serve the requested depth.
 
-Continue with `distill` when the user also wants one small visual. The Human
-Brief remains the integrated result.
+Preserve confidence levels, disagreement, and unresolved questions. Distinguish source claims from your inference. Do not invent conclusions, actions, or urgency.
 
-## 1. Bound the source
+## Choose the form
 
-Identify the exact text to distill. Use the previous response when the user says
-"this," "that," or "your last response."
+A Human Brief may contain a gist, key points, practical meaning, decisions or actions, and caveats. Use only the sections that help the reader; a TLDR may need just a paragraph. Match the user's requested format and depth without filling a point quota.
 
-Identify the audience and requested depth when the user supplies them. Otherwise,
-write for the current user and use the standard brief format.
+Use a comparison table for repeated fields or a small diagram when relationships are central. `show-me` can help when available; a clear direct visual is sufficient without it. Omit a visual when prose is easier to understand.
 
-Treat the supplied source as the authority for content. Research, verify, or
-expand it only when the user asks for that separate work.
+The brief is complete when it is shorter, easier to read, and faithful to the source. State when the requested compression necessarily omits decision-relevant context.
 
-This step is complete when the source, audience, and depth are clear.
+## Nearby requests
 
-## 2. Build a content ledger
+- `wait-what`: explain a confusing previous answer again, with a different framing or more context.
+- `handoff`: preserve the continuation context another agent needs.
+- `explore-topic`: broaden coverage instead of compressing a supplied source.
+- `show-me`: make a visual explanation the primary result.
 
-Extract these source elements before you write:
-
-- the main conclusion or message;
-- the claims that support it;
-- decisions already made;
-- actions assigned or requested;
-- practical effects for the user;
-- risks, conditions, and uncertainty; and
-- open questions or missing evidence.
-
-Keep exact identifiers, quantities, commands, and domain terms when they affect
-meaning. Separate source claims from your inferences.
-
-This step is complete when each important source element has one ledger entry.
-
-## 3. Rank by user value
-
-Use this order unless the user gives another priority:
-
-1. Bottom line.
-2. User effect.
-3. Decisions and required actions.
-4. Risks and uncertainty.
-5. Supporting detail.
-
-Merge repeated points. Remove history, examples, and implementation detail that
-do not change the bottom line.
-
-Retain a detail when removing it could change a decision, action, risk, or
-interpretation.
-
-This step is complete when every retained point affects user understanding.
-
-## 4. Choose the smallest useful form
-
-Use the standard Human Brief unless the user requests another form.
-
-- Use a quick brief for requests such as "TLDR" or "just the gist."
-- Use a visual brief when relationships are central to understanding.
-- Use a comparison table for exact mappings or repeated fields.
-- Use a small text diagram for sequence, hierarchy, ownership, or flow.
-- Use Mermaid only when interaction or state changes need it.
-
-Apply `show-me` when it is available and a visual is necessary. If it is not
-available, use one small, copyable table or text diagram.
-
-Omit the visual when prose and bullets are clearer.
-
-This step is complete when the selected form reduces reading effort.
-
-## 5. Write the Human Brief
-
-Use plain language and short sentences. Use established domain terms when they
-are more precise than a substitute. Define an uncommon term when it must remain.
-
-Use only the sections that contain useful source information:
-
-```markdown
-## The gist
-
-[One or two sentences.]
-
-## Key points
-
-- [Three to seven points.]
-
-## Why this matters
-
-[The practical meaning for the user.]
-
-## Visual
-
-[One small visual when it improves understanding.]
-
-## Decisions or actions
-
-- [Only decisions or actions present in the source.]
-
-## Important caveats
-
-- [Risks, conditions, uncertainty, or omitted context.]
-```
-
-For a quick brief, return the gist and no more than five key points. Add a
-caveat only when omission would change the meaning.
-
-## 6. Check fidelity
-
-Confirm each brief statement against the source.
-
-- Preserve the source confidence level.
-- Label your inference as an inference.
-- Preserve important disagreement and uncertainty.
-- Preserve required actions and their owners.
-- Remove invented conclusions, actions, and urgency.
-- State when severe compression hides important context.
-
-Stop when the brief is shorter, easier to scan, and faithful to the source.
-
-## Activation examples
-
-- "Distill that response into the points I need to remember."
-- "Give me the TLDR and tell me why it matters."
-- "Turn this design review into a one-minute brief."
-- "Summarize this in plain language and show the flow."
-- "What decisions, actions, and risks are buried in this text?"
-
-Do not use this skill to summarize a source that the user has not supplied or
-authorized you to access.
+Use the appropriate companion when useful, or complete the requested work directly with available evidence.

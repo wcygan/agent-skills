@@ -1,8 +1,6 @@
 ---
 name: uv-python
-description: |
-  Guide Python work with uv across Python versions, PEP 723 scripts, uvx and uv tool commands, pyproject.toml projects, dependencies, uv.lock, configuration, indexes, resolution, and caching.
-  Use when choosing or applying a uv workflow, maintaining uv-managed Python code, migrating an existing Python workflow to uv, or diagnosing uv behavior.
+description: "Develop and troubleshoot Python projects with uv. Use for uv workflows, dependencies, lockfiles, scripts, tools, or migration to uv."
 license: MIT
 compatibility: Requires uv. Verify version-sensitive flags against the installed command.
 metadata:

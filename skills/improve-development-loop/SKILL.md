@@ -1,9 +1,6 @@
 ---
 name: improve-development-loop
-description: |
-  Inspect and improve an application's development loops from a change to trustworthy feedback.
-  Use when setup, startup, fixtures, tests, builds, browser actions, logs, validation, or cleanup consume repeated developer or agent effort.
-  Add the smallest useful automation and promote stable workflows into project-specific agent skills when implementation is requested.
+description: "Improve the path from a code change to trustworthy feedback. Use when setup, startup, tests, observation, or cleanup repeatedly slows development."
 license: MIT
 metadata:
   author: William Cygan

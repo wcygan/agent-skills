@@ -1,6 +1,6 @@
 ---
 name: incremental-execution
-description: Run an explicitly requested, bounded software delivery loop from deliverable framing through current-state inspection, vertical implementation slices, and evidence-backed verification. Use for one scoped local change that should progress autonomously, preserve unrelated work, recover from verifier evidence, and optionally create an explicitly authorized Git commit.
+description: "Run an explicitly requested delivery loop for one bounded local change. Use when implementation should continue through verification and recovery within agreed limits."
 license: MIT
 metadata:
   author: William Cygan

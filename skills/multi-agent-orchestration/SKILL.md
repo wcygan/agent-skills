@@ -56,8 +56,7 @@ Dispatch a task only when its required contracts and dependencies are ready.
 Keep dependent implementation tasks waiting until their inputs are exact.
 Blocked implementation waits. Bounded read-only research may start early.
 
-Use one shared checkout for read-only work or one mutating worker. Use isolated
-worktrees for concurrent mutation or uncertain file overlap.
+Use a shared checkout when file ownership is disjoint and integration is coordinated. Use isolated worktrees for uncertain overlap or changes that need independent repository state. Serialize conflicting mutations.
 
 Serialize access when workers share services, ports, databases, caches,
 generated state, credentials, or external side effects.
@@ -89,8 +88,7 @@ requirement. Request an authorized decision when valid requirements conflict.
 
 ## 5. Verify the combined result
 
-Run targeted checks for each contribution on the integrated state. Then run all
-applicable repository checks against the same final state.
+Verify the integrated state with checks appropriate to the combined risks and applicable repository requirements. Reuse trustworthy evidence when the integration has not invalidated it; rerun checks when changes or failures justify it.
 
 Accept the result only when every requirement has integrated evidence and all
 combined checks pass. A clean merge is not sufficient.
@@ -98,6 +96,4 @@ combined checks pass. A clean merge is not sufficient.
 Report the task graph, integrated contributions, checks, blockers, residual
 risks, and actions that still require approval.
 
-Stop and request direction when ownership overlaps, a dependency is
-contradictory, shared state cannot be isolated, or final validation cannot prove
-the combined outcome.
+Resolve routine ownership overlaps and scheduling conflicts by reassigning or serializing work. Continue independent tasks when one dependency is blocked. Ask for direction only when conflicting requirements, unavailable essential capabilities, or missing authority prevent a correct integration; report any verification gap without claiming completion.

@@ -1,6 +1,6 @@
 ---
 name: prompt-kit
-description: Use PromptKit’s official docs, machine-readable indexes, registry items, blocks, primitives, and source code to answer, debug, or implement React AI UI requests involving prompt-kit or prompt-kit.com. Trigger when a request names PromptKit, a PromptKit component, block, primitive, or registry URL. Verify current APIs, dependencies, shadcn setup, React/Next.js/Tailwind compatibility, and AI SDK assumptions. Change project files only when implementation is explicitly requested.
+description: "Build or troubleshoot React UI with PromptKit. Use when a request names PromptKit, prompt-kit.com, or one of its components, blocks, or registry items."
 license: MIT
 ---
 

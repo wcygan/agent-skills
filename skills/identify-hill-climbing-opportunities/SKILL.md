@@ -1,12 +1,6 @@
 ---
 name: identify-hill-climbing-opportunities
-description: >-
-  Identify and rank hill-climbing opportunities by connecting desired outcomes
-  to numeric target, driver, and guard metrics, measurement methods, and
-  editable levers. Use when a codebase, system, deployment pipeline, or
-  developer experience should improve, but the metric or causal neighborhood
-  remains unclear. Produce a read-only Metric Opportunity Map and one
-  Hill-Climbing Target Brief, or explain why no safe target is ready.
+description: "Identify measurable optimization targets and editable drivers. Use when an improvement goal lacks a useful metric or bounded experiment target."
 license: MIT
 metadata:
   author: William Cygan
@@ -16,10 +10,10 @@ metadata:
 # Identify Hill-Climbing Opportunities
 
 Turn a broad improvement goal into ranked metric opportunities and one
-decision-ready target. Stop before changing the system.
+decision-ready target. Keep discovery read-only; system changes belong to the requested execution phase.
 
 This skill owns discovery before `hill-climbing`. The execution skill owns
-experiments only after the user approves a complete target contract.
+experiments under its explicit-invocation policy and a complete target contract. Honor any target and experiment authorization already supplied; do not add another approval round for settled decisions.
 
 ## Keep the discovery read-only
 
@@ -31,7 +25,7 @@ experiments only after the user approves a complete target contract.
 - Put run-owned caches and artifacts in a unique temporary directory.
 - Preserve shared caches. Model cold state with an isolated cache directory.
 - Report a measurement plan when safe measurement is unavailable.
-- Stop before source edits, instrumentation changes, dependency installation,
+- During discovery, stop before source edits, instrumentation changes, dependency installation,
   deployments, production traffic, or external writes.
 - Do not commit, push, publish, or grant authority to a later workflow.
 
@@ -215,8 +209,7 @@ a stable workload, a correctness oracle, a safe measure, or missing signals.
 
 ## Keep adjacent skill boundaries clear
 
-- Use `hill-climbing` after explicit approval of the target and experiment
-  authority.
+- Use `hill-climbing` only when explicitly invoked and the target and experiment authority are settled, including authorization already supplied.
 - Use `improve-development-loop` to redesign or implement a repeated developer
   workflow.
 - Use `trace-codepath` when one runtime path needs a detailed source trace.
@@ -227,12 +220,11 @@ a stable workload, a correctness oracle, a safe measure, or missing signals.
 - Use `design-bounded-loop` when the future loop needs a general control
   contract beyond metric selection.
 
-Recommend the next skill and pass a bounded artifact. Do not borrow its
-authority during this discovery.
+Pass a bounded artifact to the next workflow. For discovery-only requests, recommend it without execution. For combined requests, continue authorized work subject to that workflow's explicit-invocation policy and essential prerequisites. Companion availability alone does not block direct analysis supported by evidence.
 
 ## Report
 
-Return this structure:
+Use the applicable sections below, combining repeated material:
 
 ```markdown
 ## Opportunity frame
@@ -256,8 +248,7 @@ Return this structure:
 ## Residual gaps and next handoff
 ```
 
-The report is complete when it contains one `ready_for_approval` target or an
-evidence-backed reason that no safe target is ready.
+The discovery phase is complete when it contains one `ready_for_approval` target or an evidence-backed reason that no safe target is ready. This label describes target readiness; it does not require re-approval when the user has already authorized the completed contract.
 
 ## Examples
 

@@ -1,6 +1,6 @@
 ---
 name: ephemeral-chooser
-description: "Create, compare, share, and promote temporary component variants with an Ephemeral Chooser. Use when the user asks for several UI variants, a prototype switcher, query-parameter review links, Leva-style tuning controls, or to keep one winner and tear down the chooser and losing prototypes."
+description: "Build a temporary chooser for UI variants. Use to compare component alternatives, share variant links, or promote a winner and remove the chooser."
 ---
 
 # Ephemeral Chooser

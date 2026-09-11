@@ -1,6 +1,6 @@
 ---
 name: audit-skill-catalog
-description: Audit a local project skill catalog for overlapping, fragmented, or poorly routed skills. Use when a workspace has folders such as `.agents/skills`, `.claude/skills`, `.codex/skills`, or `skills/`, users cannot find the right skill, or maintainers need safe merge candidates, umbrella skills, routers, or taxonomy improvements. Produce a read-only catalog rationalization report and semantic tree; do not modify skills.
+description: "Audit a skill catalog for confusing selection, overlap, and fragmentation. Use when deciding which skills to retain, combine, or route differently."
 license: MIT
 metadata:
   author: William Cygan
@@ -9,15 +9,14 @@ metadata:
 
 # Audit Skill Catalog
 
-Audit one skill catalog. Return a rationalization report. Do not change the
-catalog.
+Audit one skill catalog and return a rationalization report. Keep the audit phase separate from any requested edits.
 
 ## Keep the audit read-only
 
 - Inspect skill files, catalog metadata, and repository state.
-- Do not create, edit, move, merge, delete, install, publish, commit, or push.
+- For audit-only requests, do not change files or external state. Combined requests may continue into the authorized changes after the audit.
 - Do not run a companion skill that changes files or external state.
-- Stop when catalog access, evidence, or an authority decision is missing.
+- Pause only work that depends on missing catalog access, evidence, or authority; continue independent inspection.
 
 ## Preserve the distribution contract
 
@@ -28,7 +27,7 @@ Use a semantic tree, not nested distributable directories. A tree branch can
 be one of these forms:
 
 - **umbrella:** owns an integrated outcome from several specialists;
-- **router:** selects one specialist and stops; or
+- **router:** selects one specialist, then continues its work when requested; or
 - **documentation group:** helps discovery but invokes no workflow.
 
 Do not call a documentation group a skill. Do not create an umbrella that only
@@ -139,7 +138,7 @@ For each merge, state whether old names need a compatibility router or a major
 catalog change. For each umbrella, state the integrated output that makes it a
 real skill. For each router, state the selection result and stopping condition.
 
-Stop after the report. Hand approved implementation work to a separate session.
+The report completes an audit-only request. If changes are also requested, continue into that authorized work in the current session; a separate session or routine approval is unnecessary.
 
 ## Examples
 

@@ -1,6 +1,6 @@
 ---
 name: pr-guidelines
-description: Evaluate one pull request for concise description structure, visual proof, testing evidence, naming consistency, reviewability, code-quality signals, CI state, stack context, and split signals. Use when preparing, checking, or improving an individual PR, including stacked or AI-generated changes.
+description: "Review a PR's description, evidence, naming, and reviewability. Use when preparing or improving PR presentation, including whether work should be split."
 license: MIT
 ---
 

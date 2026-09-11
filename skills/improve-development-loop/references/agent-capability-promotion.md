@@ -58,8 +58,7 @@ Use companion skills only when their surface applies:
 Do not require `just` or uv when the project has an adequate command surface.
 Do not install a missing tool without user authority.
 
-If a required companion skill is unavailable, keep the validated tooling
-improvement. Report that project-skill promotion remains incomplete.
+If a companion is unavailable, continue with the available tools, repository conventions, and authoring knowledge. Report promotion incomplete only when an essential capability or evidence requirement cannot be satisfied. Preserve the validated tooling improvement.
 
 ## Define the project skill contract
 

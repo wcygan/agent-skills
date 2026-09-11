@@ -1,6 +1,6 @@
 ---
 name: trace-failure-path
-description: Trace how a concrete failure originates, propagates, is translated, retried, suppressed, recovered, recorded, and surfaced across code and system boundaries. Use when diagnosing error handling, retry storms, duplicate work, timeouts, fallbacks, circuit breakers, dead letters, partial failures, user-visible errors, or missing alerts in synchronous or asynchronous flows; produce an evidence-backed failure graph with source locations, state effects, terminal outcomes, and explicit unknowns.
+description: "Trace how a concrete failure propagates, is handled, and reaches its final outcome. Use for error translation, retries, fallbacks, recovery, or missing failure signals."
 license: MIT
 metadata:
   author: William Cygan

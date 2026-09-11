@@ -1,6 +1,6 @@
 ---
 name: hill-climbing
-description: "Run an explicitly invoked, bounded metric-driven Codex improvement loop: establish a mechanical baseline, change one variable, measure against noise tolerance, keep only guarded improvements, restore loop-owned regressions, and stop at the target or plateau. Use with $hill-climbing for benchmarks, latency, bundle size, coverage, error counts, eval scores, or other numeric optimization."
+description: "Run an explicitly requested metric-driven improvement loop. Use with $hill-climbing to optimize a numeric target within fixed experiment and regression limits."
 ---
 
 # Hill-Climbing Loop

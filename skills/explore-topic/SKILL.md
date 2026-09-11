@@ -26,7 +26,7 @@ Route these nearby jobs to their owning skill:
   repository Markdown report.
 - Use `find-skills` to find an installable agent capability.
 - Use `prototype` to build a temporary artifact that answers a design question.
-- Use the relevant implementation skill after the user selects an approach.
+- Continue into the relevant implementation workflow when the user has already selected an approach and requested implementation. Missing companion skills do not block work supported by available evidence.
 
 Continue when exploration itself is the requested result.
 
@@ -38,11 +38,7 @@ assumption that the user did not state.
 Ask a question only when a wrong interpretation would change the domain,
 safety boundary, or output. Otherwise, make a narrow assumption and continue.
 
-When the user gives no bounds, use these first-pass limits:
-
-- four to seven landscape dimensions;
-- six to twelve representative resources; and
-- two to four learning trails.
+When the user gives no bounds, choose enough distinct dimensions and resources to reveal the main choices without duplicating coverage. Add learning trails only for meaningful alternative goals.
 
 The frame is complete when the topic, purpose, scope, depth, and freshness
 needs are explicit.
@@ -142,7 +138,7 @@ broad search.
 
 ## 6. Produce the Topic Exploration Map
 
-Use this structure:
+Include the relevant material below, combining or omitting sections to fit the question:
 
 ```markdown
 # Topic Exploration Map: [Topic]
@@ -171,11 +167,10 @@ Stop the first pass when all these conditions hold:
 - each selected dimension has representative evidence;
 - each recommended resource has a useful annotation;
 - major tensions and uncertainty are visible;
-- at least two next branches are actionable; and
+- useful next directions are actionable; and
 - known coverage gaps are explicit.
 
-Also stop when the user budget ends, access fails, or reliable evidence is
-unavailable. Report the limiting condition and the best next action.
+Respect the user budget. When access fails or evidence is unavailable, continue independent coverage, mark the unsupported portion, and report the limiting condition. Stop only the work that depends on missing evidence.
 
 ## Handle important variants
 

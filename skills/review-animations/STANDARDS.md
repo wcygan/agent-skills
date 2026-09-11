@@ -1,17 +1,17 @@
 # Animation Standards Reference
 
-The precise values, curves, and rules behind the review. Cite these in findings instead of approximating. Distilled from Emil Kowalski's design engineering philosophy.
+Use these principles and example values to judge observed interactions. Prefer project tokens and supported user impact over enforcing these examples as universal rules. Distilled from Emil Kowalski's design engineering philosophy.
 
 ## Should it animate? (frequency table)
 
 | Frequency | Decision |
 | --- | --- |
-| 100+ times/day (keyboard shortcuts, command palette toggle) | No animation. Ever. |
+| 100+ times/day (keyboard shortcuts, command palette toggle) | Prefer immediate feedback; avoid recurring delays |
 | Tens of times/day (hover effects, list navigation) | Remove or drastically reduce |
 | Occasional (modals, drawers, toasts) | Standard animation |
 | Rare / first-time (onboarding, feedback, celebrations) | Can add delight |
 
-**Never animate keyboard-initiated actions** — they repeat hundreds of times daily; animation makes them feel slow and disconnected. (Raycast has no open/close animation — correct for something used hundreds of times a day.)
+For frequent keyboard actions, prioritize immediate response. Remove motion that delays repeated use, while preserving feedback needed to understand state.
 
 Valid purposes for motion: spatial consistency, state indication, explanation, feedback, preventing jarring change. "It looks cool" on a frequently-seen element is not valid.
 
@@ -24,9 +24,9 @@ Decision order:
 - Constant motion (marquee, progress) → **`linear`**
 - Default → **`ease-out`**
 
-**Never `ease-in` on UI.** It starts slow, delaying the exact moment the user is watching. `ease-out` at 200ms *feels* faster than `ease-in` at 200ms.
+`ease-out` is a useful default for responsive feedback. Flag `ease-in` when its slow start makes the interaction feel delayed, rather than treating the curve name alone as a defect.
 
-Built-in CSS easings are too weak. Use strong custom curves:
+Use established project curves; these stronger curves are starting points when suitable:
 
 ```css
 --ease-out: cubic-bezier(0.23, 1, 0.32, 1);        /* strong ease-out for UI */
@@ -46,7 +46,7 @@ Find curves at [easing.dev](https://easing.dev/) or [easings.co](https://easings
 | Modals, drawers | 200–500ms |
 | Marketing / explanatory | Can be longer |
 
-**Rule: UI animations stay under 300ms.** A 180ms dropdown feels more responsive than a 400ms one. Faster spinners make load feel faster (same actual time). Instant tooltips after the first (skip delay + animation) make a toolbar feel faster.
+Most small UI responses benefit from durations under 300ms; adapt to distance and purpose. A 180ms dropdown feels more responsive than a 400ms one. Faster spinners make load feel faster (same actual time). Instant tooltips after the first (skip delay + animation) make a toolbar feel faster.
 
 ## Physicality
 
@@ -76,7 +76,7 @@ Mouse interactions: interpolate with `useSpring` rather than tying value directl
 
 ## Interruptibility
 
-CSS **transitions** can be interrupted and retargeted mid-animation; **keyframes** restart from zero. For anything triggered rapidly (toasts being added, toggles), transitions are smoother.
+CSS transitions can retarget from the current state. Restarted keyframe sequences can jump; for rapidly triggered interactions, choose transitions, springs, or explicit keyframe continuity that preserves the current state.
 
 ```css
 /* Interruptible — good for dynamic UI */
@@ -109,19 +109,19 @@ Slow where the user is deciding, fast where the system responds.
 
 ## Performance
 
-- **Only animate `transform` and `opacity`** — they skip layout/paint and run on the GPU. `padding`/`margin`/`height`/`width`/`top`/`left` trigger all three rendering steps.
+- **Prefer `transform` and `opacity`** for motion that does not need to change layout. For necessary size or layout changes, inspect rendering cost on the target browser and device.
 - **Don't drive child transforms via a CSS variable on the parent** — it recalcs styles for all children. Set `transform` directly on the element.
   ```js
   element.style.setProperty('--swipe-amount', `${d}px`); // bad: recalc on all children
   element.style.transform = `translateY(${d}px)`;        // good: only this element
   ```
-- **Framer Motion shorthands are NOT hardware-accelerated.** `x`/`y`/`scale` run on the main thread via rAF and drop frames under load. Use the full transform string:
+- **Check the installed Motion version and rendering path.** If profiling identifies transform handling as a bottleneck, compare shorthand props with a full transform string:
   ```jsx
-  <motion.div animate={{ x: 100 }} />                          // drops frames under load
-  <motion.div animate={{ transform: "translateX(100px)" }} />  // hardware accelerated
+  <motion.div animate={{ x: 100 }} />                          // shorthand form
+  <motion.div animate={{ transform: "translateX(100px)" }} />  // full transform form
   ```
-- **CSS animations beat JS under load** — they run off the main thread; rAF-based animations stutter while the browser loads/scripts/paints. Use CSS for predetermined motion, JS for dynamic/interruptible.
-- **WAAPI** gives JS control with CSS performance (hardware-accelerated, interruptible, no library):
+- **Prefer browser-managed animation for predetermined motion when it meets the interaction needs.** Main-thread work can delay rAF updates; profile the actual properties and rendering path before promising off-thread performance.
+- **WAAPI** provides browser animation control from JS without a library; acceleration depends on properties and browser support:
   ```js
   element.animate([{ clipPath: 'inset(0 0 100% 0)' }, { clipPath: 'inset(0 0 0 0)' }],
     { duration: 1000, fill: 'forwards', easing: 'cubic-bezier(0.77, 0, 0.175, 1)' });
@@ -173,7 +173,7 @@ const reduce = useReducedMotion();
 const closedX = reduce ? 0 : '-100%';
 ```
 
-Reduced motion means fewer and gentler animations, not zero — keep transitions that aid comprehension, remove movement/position changes.
+Respect reduced-motion preferences by removing unnecessary movement and ensuring state changes remain understandable. Immediate updates or brief opacity changes can both be appropriate; feedback must not depend on animation.
 
 ## Debugging (recommend in reviews when feel is uncertain)
 

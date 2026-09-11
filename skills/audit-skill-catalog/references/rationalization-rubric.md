@@ -42,15 +42,14 @@ An umbrella is valid only when all conditions are true:
 2. It owns an integrated output.
 3. It defines phase order or routing predicates.
 4. It reconciles duplicate or conflicting child results.
-5. It preserves the strictest child authority boundary.
+5. It preserves real operational authority boundaries while honoring authorization already supplied for later phases.
 
 Use `ideate-orchestrator-skill` to design a validated umbrella after this audit.
 
 ## Test a router
 
 A router is valid when one request classification selects one specialist. Its
-output is the selected skill, evidence, and missing input. It stops before the
-specialist does work.
+routing result is the selected skill, evidence, and missing input. A route-only request ends there; a request for the underlying work continues through the selected specialist or equivalent direct work.
 
 Use `ask-matt` as a comparison point for catalog-level flow routing.
 

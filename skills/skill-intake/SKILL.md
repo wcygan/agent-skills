@@ -1,6 +1,6 @@
 ---
 name: skill-intake
-description: Assess a rough skill idea, choose whether to create or extend a skill, and prepare an implementation handoff.
+description: "Assess a rough skill idea, choose whether to create or extend a skill, and prepare an implementation handoff."
 license: MIT
 metadata:
   author: William Cygan
@@ -10,7 +10,7 @@ metadata:
 # Skill Intake
 
 Turn rough observations into a decision about reusable automation and, when a
-skill is warranted, an implementation-ready handoff for `skills/new-plugin`.
+skill is warranted, an implementation-ready handoff for `new-plugin`.
 
 ## Intake scope
 
@@ -92,8 +92,7 @@ When the target skill catalog is accessible:
 Do not treat a shared keyword as overlap when the jobs differ. Do not create a
 second skill merely because the existing one uses a different example.
 
-If the catalog is unavailable, state that overlap review remains an explicit
-implementation-session gate.
+If the catalog is unavailable, report the overlap uncertainty and use available descriptions to continue the brief. Pause authoring only when unresolved ownership would materially change which skill should be created or extended.
 
 ## Define one bounded skill job
 
@@ -127,8 +126,7 @@ Do not put essential activation rules only in the future skill body. Avoid
 marketing language, vague claims such as “improve code,” and descriptions that
 trigger on nearly every software task.
 
-Provide at least three representative trigger prompts and two plausible
-non-trigger prompts. Preserve strong examples from the user's notes.
+Provide representative trigger prompts and plausible nearby non-triggers that expose the selection boundary. Preserve strong examples from the user's notes.
 
 ## Select reusable resources
 
@@ -166,115 +164,6 @@ and place unresolved decisions in the handoff.
 
 ## Produce the intake brief
 
-Use this structure:
+Report the primary decision and why it fits better than the nearest alternative. Preserve the source motivation, overlap findings, proposed job and trigger, authority, completion evidence, conditional resources, and material open decisions. Include representative trigger and nearby non-trigger examples; choose enough to expose the actual boundary rather than filling a quota.
 
-```markdown
-## Intake decision
-
-Decision:
-Confidence:
-Why:
-Nearest alternative:
-
-## Source notes
-
-Motivation:
-Observed repeated process:
-Concrete examples:
-User constraints:
-Assumptions:
-
-## Proposed skill contract
-
-Name:
-Job:
-Description:
-Triggers:
-Non-triggers:
-Inputs:
-Workflow:
-Output:
-Authority:
-Completion evidence:
-Pause conditions:
-Edge cases:
-Existing-skill relationship:
-
-## Resource plan
-
-SKILL.md:
-References:
-Scripts:
-Assets:
-
-## Open decisions
-
-...
-```
-
-For `extend`, name the existing skill and describe the narrow addition. For
-`split`, provide one compact contract per skill and recommend an implementation
-order. For `script`, `document`, `one-off`, or `defer`, omit fictional skill
-metadata and explain the recommended next action.
-
-## Generate the paste-ready handoff
-
-Read `references/handoff-template.md` and produce a fenced prompt after the
-brief.
-
-For `create`, `extend`, or `split`, direct the implementation session to work
-in the agent-skills repository and use `skills/new-plugin`. Replace every
-template marker with intake-derived content. A `split` decision needs one
-self-contained handoff per proposed skill unless a shared ordering constraint
-requires one staged prompt.
-
-For a non-skill decision, produce a self-contained next-step prompt for the
-recommended script, documentation, one-off task, or missing decision. State
-explicitly that `skills/new-plugin` should not be invoked.
-
-The handoff must include:
-
-- goal and condensed user context;
-- exact proposed name and description;
-- owned and excluded behavior;
-- workflow, authority, output, and edge cases;
-- resource files with purpose;
-- representative triggers and non-triggers;
-- repository-preservation rules;
-- acceptance criteria;
-- validation commands; and
-- unresolved assumptions that the implementation session must verify.
-
-Do not write “as discussed above,” “use the prior context,” or otherwise depend
-on this conversation.
-
-## Verify handoff readiness
-
-Before reporting, confirm:
-
-- the decision is explicit and justified;
-- the proposed name and description match the job;
-- instructions add useful knowledge beyond ordinary model behavior;
-- triggers and non-triggers separate nearby skills;
-- completion includes required verification and correction, with separate pause conditions;
-- authority preserves existing permission without adding routine approval stops;
-- every proposed resource has a purpose;
-- the handoff contains no unresolved placeholders;
-- paths are repository-relative rather than machine-specific;
-- validation covers reference compliance and actual installer discovery; and
-- the implementation session can proceed without the original conversation.
-
-If a blocking decision prevents a valid handoff, produce the strongest partial
-brief, state the blocker, and ask only the necessary question.
-
-## Examples
-
-- Turn “I keep manually chasing a request across services and drawing it for
-  people” into a create decision for a scenario-specific tracing skill.
-- Turn “add another database checklist” into an extend decision when an
-  existing database skill already owns that engine and workflow.
-- Turn “I want a skill that scaffolds files and also reviews architecture” into
-  a split decision because generation and review have different triggers and
-  outputs.
-- Turn “run these three fixed formatting commands” into a script decision
-  rather than a judgment-free skill.
+When the brief will travel to another session, use `references/handoff-template.md` to make it self-contained. When implementation continues in this session, use the brief directly without restating it as a second full prompt. Intake-only work ends with the decision and handoff; already-requested implementation proceeds within existing authority.

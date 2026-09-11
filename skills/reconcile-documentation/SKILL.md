@@ -1,6 +1,6 @@
 ---
 name: reconcile-documentation
-description: Audit and reconcile project documentation against authoritative repository and runtime evidence. Use when READMEs, documentation sites, runbooks, examples, agent instructions, or skill directories may be stale after code, configuration, interface, workflow, dependency, or layout changes; discover documentation wherever the project stores it, determine which side of each mismatch is authoritative, update only confirmed project-owned documentation, and validate commands, paths, links, examples, and documentation builds.
+description: "Reconcile project documentation with code and runtime behavior. Use when commands, examples, interfaces, runbooks, or agent instructions may be stale."
 license: MIT
 metadata:
   author: William Cygan
@@ -261,9 +261,7 @@ proved. Use `incomplete` when the bounded run produced useful findings but a
 material claim remains unknown. Use `blocked` when scope, authority, safe
 inspection, or safe writing cannot be established.
 
-Stop after reporting. Recommend the appropriate implementation, research,
-publishing, or ownership workflow for non-documentation work without invoking
-it or broadening this run.
+The report completes documentation-only work. If the user also requested implementation, research, or publishing, continue into that authorized scope using a specialist when useful. Otherwise report non-documentation work as a recommendation.
 
 ## Trigger examples
 

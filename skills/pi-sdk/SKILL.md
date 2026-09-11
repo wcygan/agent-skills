@@ -1,6 +1,6 @@
 ---
 name: pi-sdk
-description: "Build, debug, or explain TypeScript integrations with the Pi coding agent SDK. Use for @earendil-works/pi-coding-agent, createAgentSession, AgentSession, AgentSessionRuntime, ModelRuntime, ResourceLoader, custom tools, SDK events, in-process agent embedding, or questions about the version-matched Pi SDK docs."
+description: "Build or debug TypeScript integrations with the Pi coding agent SDK. Use for embedded agent sessions, custom tools, runtime events, and SDK APIs."
 ---
 
 # Pi SDK

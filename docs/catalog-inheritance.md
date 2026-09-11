@@ -104,6 +104,20 @@ Parent synchronization preserves those local paths.
 An upgrade stops when the parent adds a conflicting local name.
 Rename the local skill or keep the current parent commit.
 
+## Preserve attribution and maintenance ownership
+
+The catalog projection includes `vendor/ATTRIBUTIONS.md` for skills still
+managed by original upstream sources and `vendor/LOCAL-ATTRIBUTIONS.md` for
+adaptations maintained by the parent catalog. Both documents travel with
+inherited skills. Adapted entrypoints retain upstream repository, original
+path, pinned revision, and license metadata; existing license files remain
+inside the skill tree.
+
+Local maintenance relative to an original upstream source does not make an
+inherited skill child-owned. Parent upgrades still manage that skill. To
+maintain a different adaptation in a derived catalog, block its inherited name
+as described below and preserve its attribution with the local copy.
+
 ## Block one inherited skill
 
 Use `blocked_skills` when a local skill replaces an inherited skill.

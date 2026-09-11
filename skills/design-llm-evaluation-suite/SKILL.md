@@ -1,6 +1,6 @@
 ---
 name: design-llm-evaluation-suite
-description: Design a regression-oriented evaluation suite for an LLM, RAG pipeline, tool-using agent, or multi-agent workflow by defining behavioral cases, datasets, deterministic and model-graded oracles, trace or receipt requirements, stochastic thresholds, framework selection, CI tiers, and retained evidence. Use when deciding what LLM or agent evals to add, choosing an evaluation harness for Python, Rust, TypeScript, or an HTTP service, preparing a prompt, model, tool, or orchestration migration, or explicitly implementing an eval harness; remain read-only unless implementation is requested.
+description: "Design regression evaluations for an LLM or agent system. Use when choosing behavioral cases, graders, or a harness for a prompt, model, tool, or workflow change."
 license: MIT
 metadata:
   author: William Cygan

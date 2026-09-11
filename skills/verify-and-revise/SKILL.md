@@ -1,6 +1,6 @@
 ---
 name: verify-and-revise
-description: Run a bounded producer-verifier revision loop for one explicitly authorized artifact against a fixed acceptance rubric or oracle. Use when an artifact needs repeated evidence-backed revision with actionable feedback, an attempt ledger, minimal coherent changes, and clear pass, retry-cap, plateau, authority, and conflict stopping rules.
+description: "Revise one authorized artifact against a fixed acceptance rubric. Use when completion requires a bounded cycle of evidence-backed feedback and correction."
 license: MIT
 ---
 

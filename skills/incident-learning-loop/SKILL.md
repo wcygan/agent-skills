@@ -1,6 +1,6 @@
 ---
 name: incident-learning-loop
-description: Turn a closed or stabilized engineering incident into an evidence-backed Incident Learning Pack that distinguishes trigger, cause, contributing conditions, material impact, detection and recovery gaps, and verifiable corrective actions. Use after an outage, retry storm, data inconsistency, degraded workflow, or other incident when teams need to decide what to prevent, detect, or improve next; remain read-only and stop before remediation or active incident response.
+description: "Extract lessons and corrective actions from a stabilized incident. Use for a post-incident review of causes, impact, detection, and recovery."
 license: MIT
 metadata:
   author: William Cygan
@@ -11,7 +11,7 @@ metadata:
 
 Turn one closed or stabilized engineering incident into one reconciled,
 evidence-backed Incident Learning Pack. Use the pack to decide what should be
-prevented, detected, or improved next, then stop before remediation.
+prevented, detected, or improved next.
 
 ## Confirm the activation boundary
 
@@ -36,7 +36,7 @@ stabilized incident belongs to `diagnose-difficult-bug`, not this workflow.
 
 ## Preserve the authority boundary
 
-Keep the run read-only. Inspect repository instructions, source,
+Keep the learning phase read-only. Inspect repository instructions, source,
 configuration, incident records, redacted telemetry, existing tests, and
 other already-authorized artifacts. Preserve source references, time windows,
 and redactions.
@@ -44,8 +44,7 @@ and redactions.
 Do not deploy, restart, reconcile, patch, roll back, add instrumentation,
 create tests, generate production traffic, replay live messages, mutate data,
 widen telemetry access, or create tracked files, issues, tasks, or remediation
-records. Produce the pack in the response. Treat every corrective action and
-proof plan as a proposal requiring separate authority.
+records. Produce the pack in the response. Treat corrective actions and proof plans as proposals during learning. When the user also requested remediation, continue into that authorized work after the incident evidence and decisions are settled.
 
 Stop before evidence collection whose access, sensitivity, blast radius,
 retention, or cleanup is unclear. Name opaque third-party boundaries and the
@@ -54,9 +53,7 @@ claims they prevent instead of requesting or exposing sensitive values.
 ## Preflight the companions
 
 Resolve companions through the client's installed skill mechanism by exact
-name. Pass this run's read-only authority boundary into every invocation; a
-companion's mutating mode remains out of scope even when available. Do not read
-sibling skill files or recreate a missing companion's method.
+name when available. Keep companion analysis within the learning phase's read-only authority. Use direct analysis when the necessary evidence and capabilities are available.
 
 The following companions are conditional:
 
@@ -67,9 +64,7 @@ The following companions are conditional:
 | `audit-observability-path` | A named detection or reconstruction question remains unanswered and neither routed dossier already contains the needed signal-gap evidence. | Observability audit evidence |
 | `design-verification-strategy` | One or more evidence-supported corrective work packages are prioritized for proof planning. | Verification strategy for each selected package |
 
-Check availability before invoking a route. If a predicate fires and its
-companion is unavailable, mark the pack `blocked`, name the missing artifact,
-and stop before the claims that artifact would support. `shape-safe-change`,
+If a companion is unavailable, continue direct and independent analysis. Mark claims blocked only when essential evidence or capabilities are missing. `shape-safe-change`,
 `plan-safe-refactor`, and domain skills are downstream handoffs, not companions
 invoked during this learning run.
 
@@ -226,15 +221,15 @@ resolve a contradiction, lower confidence or mark the pack incomplete. Read
 the detailed reconciliation examples when a cross-artifact contradiction
 cannot otherwise be resolved.
 
-### 8. Report and stop
+### 8. Report and hand off
 
-Compose one final pack from the reusable output template. Lead with one status:
+Use the reusable template when a full incident record is useful; otherwise summarize its applicable evidence, decisions, and actions without empty sections. Lead with one status:
 
 - `complete`: causal, impact, gap, action, and selected proof claims reconcile;
 - `incomplete`: the incident is bounded and safe to analyze, but material
   evidence remains unknown; or
 - `blocked`: the incident is active or unbounded, authority is ambiguous,
-  evidence collection is unsafe, or a required routed companion is unavailable.
+  evidence collection is unsafe, or an essential capability is unavailable.
 
 An incomplete or blocked pack must state the last supported conclusion and the
 smallest next evidence. Never claim a proven root cause, successful prevention,
@@ -248,9 +243,7 @@ End with text-only downstream handoff boundaries:
   change; or
 - use the relevant domain skill for a narrower accepted change.
 
-Do not invoke the handoff skill, design the change, create tracked remediation
-artifacts, or begin implementation in this run. State the separate approval,
-authority, and evidence needed next.
+For learning-only requests, finish with the pack and proposed next work. For combined requests, continue into authorized design or remediation, using a downstream specialist when useful. State only the decisions, evidence, or permissions that are actually missing.
 
 ## Trigger examples
 

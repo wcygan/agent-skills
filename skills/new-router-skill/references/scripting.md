@@ -44,8 +44,7 @@ uv run scripts/<name>.py ...
 - lowercase `a-z0-9` and hyphens only
 - no leading/trailing hyphen, no consecutive hyphens (`--`)
 
-This mirrors `new-plugin`'s validation; the deliberate copy is guarded by the
-test suite (`tests/test_new_router_skill.py`) so the two cannot drift silently.
+Both generators follow these Agent Skills name rules. Keep their validation aligned when the specification changes.
 
 ## Deeper UV
 

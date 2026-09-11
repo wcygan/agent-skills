@@ -1,6 +1,6 @@
 ---
 name: map-production-scenario
-description: Map one bounded production request, event, job, or state transition across executable code, data lineage, and operational signals, optionally including a named failure variant. Use when a team needs an integrated explanation of how a concrete scenario executes, what material data changes and who owns it, and whether operators can reconstruct its outcome; produce a read-only Production Scenario Dossier by coordinating trace-codepath, trace-data-lineage, audit-observability-path, and, for a named broken variant, trace-failure-path. Do not use for repository-wide architecture surveys, live incident repair, production traffic generation, or single-lens traces.
+description: "Explain one production scenario across code execution, data changes, and operational evidence. Use when all three need a combined account."
 license: MIT
 metadata:
   author: William Cygan
@@ -16,30 +16,15 @@ evidence for its lens.
 
 ## Preserve the authority boundary
 
-Remain read-only. Inspect source, configuration, schemas, tests, and existing
-authorized operational artifacts. Use redacted structure and metadata instead
-of sensitive production records.
+Keep scenario mapping read-only. Inspect source, configuration, schemas, tests, and existing authorized operational artifacts. Use redacted structure and metadata instead of sensitive production records.
 
-Do not generate production traffic, replay messages, trigger jobs or failures,
-change state, add instrumentation, edit schemas, or repair the system. Treat
-recommendations as proposals. If proof requires broader access or mutation,
-record the missing evidence and the smallest safe next inspection without
-performing it.
+Mapping alone does not authorize production traffic, replays, instrumentation, schema edits, or repairs. Record missing evidence and the smallest safe inspection. If the user also requests changes, finish the evidence-backed map and continue into those authorized changes; retain access and operational safeguards.
 
 ## Preflight the dossier
 
-Verify that these required companion skills are available by exact name:
+Prefer `trace-codepath`, `trace-data-lineage`, and `audit-observability-path` for the execution, data, and signal lenses. Use `trace-failure-path` for the named failure variant when its predicate applies.
 
-- `trace-codepath`
-- `trace-data-lineage`
-- `audit-observability-path`
-
-Verify `trace-failure-path` only when the failure routing predicate below is
-true. A conditional companion becomes required for that requested dossier.
-
-If a required companion is unavailable, stop before evidence gathering. Name
-the missing skill, the phase it blocks, and the requested scope that cannot be
-claimed. Do not imitate a missing companion or call the dossier complete.
+If a companion is unavailable, establish its lens directly with available evidence and capabilities. Report the method used and preserve evidence labels. Continue independent lenses; block only claims that require missing evidence or an essential capability.
 
 ## Define one scenario
 
@@ -69,8 +54,7 @@ across every phase.
 
 ## Route the companions
 
-Invoke companions in this order. Give each companion the phase input and
-require its phase output; do not duplicate or replace its internal procedure.
+Establish execution first, then use that path to select material data and signals. Reuse existing evidence rather than repeating a completed analysis. The table defines the evidence each lens needs, whether obtained through a companion or directly.
 
 | Phase | Companion | Route | Phase input | Required phase output |
 | --- | --- | --- | --- | --- |
@@ -141,8 +125,7 @@ companions beside the claims they support.
 
 ## Handle stopping conditions
 
-Mark the dossier **complete** only when every routed companion returned its
-required output, all scenario-critical ledger rows reconcile through shared
+Mark the dossier **complete** only when every applicable lens has its required evidence, all scenario-critical ledger rows reconcile through shared
 identities, and the three required lenses reach the terminal sink without an
 opaque boundary that could change the answer.
 
@@ -152,8 +135,7 @@ terminal outcome cannot be reconstructed. Stop claims at the last supported
 stage, identify the exact boundary or ledger row, and state the next evidence
 needed.
 
-Mark it **blocked** when the scenario cannot be bounded or a companion required
-by routing is unavailable. List completed phases, if any, but do not present a
+Mark it **blocked** when the scenario cannot be bounded or essential evidence or capabilities are unavailable. List completed phases, if any, but do not present a
 partial result as a complete dossier.
 
 Assign confidence by lens and overall:
@@ -170,7 +152,7 @@ scenario-critical lens.
 
 ## Report the Production Scenario Dossier
 
-Return one dossier with these sections:
+Cover these areas in one dossier. Combine overlapping sections and link detailed ledgers rather than repeating them:
 
 1. **Status and conclusion:** complete, incomplete, or blocked; the established
    behavior and whether operators can reconstruct the outcome.
@@ -182,7 +164,7 @@ Return one dossier with these sections:
 4. **Shared identity map:** operation, attempt, message, job, and domain
    identities with mappings and discontinuities.
 5. **Reconciliation matrix:** one row per material stage or boundary.
-6. **Companion ledgers:** execution, lineage, and coverage ledgers, plus the
+6. **Supporting ledgers:** execution, lineage, and coverage ledgers, plus the
    failure ledger when routed, without repeating identical evidence.
 7. **Confidence, contradictions, and gaps:** per-lens and overall confidence,
    opaque boundaries, conflicts, and their consequences.

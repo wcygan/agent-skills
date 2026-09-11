@@ -16,7 +16,6 @@ import json
 import os
 import re
 import sys
-from datetime import date
 
 NAME_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$")
 NAME_MAX = 64
@@ -53,28 +52,32 @@ def skill_frontmatter(name: str, description: str, author: str, license_: str) -
     body = []
     body.append("---")
     body.append(f"name: {name}")
-    body.append(f"description: {description}")
-    body.append(f"license: {license_}")
+    body.append(f"description: {json.dumps(description, ensure_ascii=False)}")
+    body.append(f"license: {json.dumps(license_, ensure_ascii=False)}")
     if author:
         body.append("metadata:")
-        body.append(f"  author: {author}")
+        body.append(f"  author: {json.dumps(author, ensure_ascii=False)}")
         body.append('  version: "0.1.0"')
     body.append("---")
     body.append("")
     body.append(f"# {name}")
     body.append("")
-    body.append("What this skill does and when to use it. Step-by-step instructions, example inputs/outputs, and common edge cases.")
-    body.append("")
-    body.append("Keep this file under ~500 lines; move detail into `references/`, `scripts/`, and `assets/` and reference files with relative paths:")
-    body.append("")
-    body.append("```text")
-    body.append(f"{name}/")
-    body.append("├── SKILL.md")
-    body.append("├── scripts/       # self-contained executable helpers")
-    body.append("├── references/    # docs loaded on demand (REFERENCE.md, FORMS.md, ...)")
-    body.append("└── assets/        # templates, examples, schemas")
-    body.append("```")
-    body.append("")
+    body.extend([
+        "## Purpose",
+        "",
+        "Describe the result this skill helps produce and what distinguishes it from nearby skills.",
+        "",
+        "## Essential knowledge and decisions",
+        "",
+        "Add domain facts, constraints, and decision criteria the agent needs. Specify order only where correctness requires it.",
+        "",
+        "## Completion and authority",
+        "",
+        "Define completion evidence and the actions in scope. Preserve authorization already supplied by the user; identify decisions or capabilities that would block dependent work.",
+        "",
+        "Add conditional resource pointers only for files this skill actually needs. Remove these prompts and any unused headings from the finished skill.",
+        "",
+    ])
     return "\n".join(body)
 
 
@@ -103,7 +106,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--plugin", action="store_true",
                     help="also write a plugin.json at the repo root (Agent Plugins package)")
     ap.add_argument("--repo-root", default=None,
-                    help="repo root (default: two levels up from this script)")
+                    help="repo root (default: the repository containing this script)")
     args = ap.parse_args(argv)
 
     if not (1 <= len(args.description) <= 1024):
@@ -136,9 +139,9 @@ def main(argv: list[str] | None = None) -> int:
         print(f"created: {manifest_file}")
 
     print("\nnext steps:")
-    print("  1. Fill in the SKILL.md body with instructions and examples.")
-    print("  2. Validate the whole repo:  gh skill publish --dry-run")
-    print("  3. Test discovery:            gh skill install . --from-local --all --dir /tmp/skill-check")
+    print("  Compose the purpose, domain guidance, decision criteria, completion, and authority.")
+    print(f"  Validate the skill: uv tool run --from skills-ref agentskills validate ./skills/{args.name}")
+    print("  Follow the repository publication gate: just check-full")
     return 0
 
 

@@ -1,6 +1,6 @@
 ---
 name: shape-safe-change
-description: Shape one cross-cutting or architecture-sensitive change by aligning domain meaning, module seams, blast radius, compatibility, staged transition, rollback, and verification. Use before implementing API, event, schema, configuration, dependency, ownership, migration, or behavior changes whose impact or rollout is uncertain; produce a read-only Change Design Pack and stop before implementation.
+description: "Plan a cross-cutting change with uncertain compatibility or rollout. Use when domain meaning, module boundaries, migration, and verification need a combined design."
 license: MIT
 metadata:
   author: William Cygan
@@ -16,20 +16,11 @@ change.
 
 ## Preserve the authority boundary
 
-Treat the entire shaping run as read-only. Inspect repository instructions,
-source, contracts, configuration, schemas, tests, history, and available
-operational artifacts, but leave the repository and external systems
-unchanged. Do not implement code, update dependencies, create or apply
-migrations, access production, deploy, or publish.
+Keep the shaping phase read-only: inspect relevant source, contracts, schemas, tests, history, and authorized operational artifacts. For a shaping-only request, report proposed changes in the pack. A combined design-and-implementation request can proceed into the authorized local work once the design and required decisions are settled. Production operations and external publication follow their own authority boundaries.
 
-Running this skill does not authorize domain-document edits. Consult existing
-domain language on every run. Route glossary or ADR changes to
-`domain-modeling` only as a separate action after the user explicitly
-authorizes updates to those files. Without that authority, record proposed
-language and unresolved decisions in the pack.
+Consult existing domain language when relevant. Use `domain-modeling` for glossary or ADR changes when those changes are in scope; otherwise retain proposed wording in the pack.
 
-If the user asks to implement an already approved plan, this is the wrong
-workflow. Hand off the approved phases and stop using this skill.
+If the user supplied an approved plan and asks to implement it, proceed to implementation rather than repeating this shaping phase.
 
 ## Check the proposal and companions
 
@@ -38,26 +29,17 @@ analysis. If the proposal lacks a concrete anchor or target behavior, choose a
 narrow stated interpretation when safe; otherwise record the decision needed
 before a complete pack is possible.
 
-Resolve companions through the client's installed skill mechanism by skill
-name. Do not read sibling skill files by filesystem path or recreate a missing
-companion's method inside this skill.
+Prefer the following specialists when available. Their phase evidence is required, but invoking a particular installed skill is not: use available knowledge and tools directly when sufficient, and identify any missing evidence or capability.
 
 | Companion | Routing predicate | Phase artifact |
 |---|---|---|
-| `codebase-design` | Required for every run after the change contract and domain delta are understood. | Seam Decision |
-| `map-change-impact` | Required for every run after a candidate seam exists. | Impact Ledger and Compatibility Matrix |
+| `codebase-design` | Relevant after the change contract and domain delta are understood. | Seam Decision |
+| `map-change-impact` | Relevant after a candidate seam exists. | Impact Ledger and Compatibility Matrix |
 | `plan-safe-refactor` | Invoke only when the proposal contains a behavior-preserving structural lane. Pass only that lane. | Structural Slice Plan |
-| `design-verification-strategy` | Required after critical risks, compatibility states, and transition phases are known. | Proof Matrix and acceptance gates |
-| `domain-modeling` | Invoke only after explicit authority to update named glossary or ADR files; ordinary domain consultation does not trigger it. | Authorized domain-document change, handled separately from the read-only pack |
+| `design-verification-strategy` | Relevant after critical risks, compatibility states, and transition phases are known. | Proof Matrix and acceptance gates |
+| `domain-modeling` | Use when glossary or ADR updates are within the user's authorization; ordinary domain consultation does not trigger it. | Authorized domain-document change, following the read-only design phase |
 
-Before analysis, confirm that all required companions are available. If
-`codebase-design`, `map-change-impact`, or `design-verification-strategy` is
-missing, report the missing name and blocked artifacts, then stop without
-presenting a complete Change Design Pack. If the structural predicate fires
-and `plan-safe-refactor` is unavailable, report the structural lane as blocked
-rather than improvising its plan. A missing `domain-modeling` skill does not
-block read-only shaping; expose it only when an authorized documentation action
-cannot be routed.
+Continue independent analysis if a companion is missing. Mark only unsupported artifacts or claims as blocked; do not present the pack as complete while essential evidence is missing.
 
 ## Build the Change Design Pack
 
@@ -89,7 +71,7 @@ explicitly authorized.
 
 ### 3. Select the ownership boundary and seam
 
-Invoke `codebase-design` with the change contract and Domain Delta. Use its
+Use `codebase-design` with the change contract and Domain Delta. Use its
 vocabulary and decision criteria to select the module, interface, seam,
 adapters, ownership, and dependency direction. Evaluate the proposed seam even
 when the request already names one.
@@ -101,7 +83,7 @@ symmetry.
 
 ### 4. Map impact and compatibility
 
-Invoke `map-change-impact` with the change contract and recommended seam. Make
+Use `map-change-impact` with the change contract and recommended seam. Make
 its evidence-backed traversal cover direct and transitive callers, consumers,
 contracts, persisted or retained state, configuration, generated artifacts,
 operations, verification, and human-facing contract surfaces.
@@ -166,7 +148,7 @@ recovery as rollback.
 
 ### 8. Bind risks to proof
 
-Invoke `design-verification-strategy` with the reconciled contract, domain
+Use `design-verification-strategy` with the reconciled contract, domain
 delta, seam, Impact Ledger, Compatibility Matrix, phase plan, rollback design,
 and critical risks. Carry its authoritative oracles and acceptance gates into
 one Proof Matrix.
@@ -199,8 +181,8 @@ choosing silently.
 
 ## Report one Change Design Pack
 
-Lead with pack status: `ready for implementation approval`,
-`decision-blocked`, or `evidence-blocked`. Then report:
+Lead with pack status: `ready for implementation`,
+`decision-blocked`, or `evidence-blocked`. Cover these areas, combining overlapping sections and omitting inapplicable detail:
 
 1. **Change Contract** — anchor, old state, new state, invariants, intentional
    differences, scope, constraints, and non-goals.
@@ -219,13 +201,11 @@ Lead with pack status: `ready for implementation approval`,
 8. **Proof Matrix** — risk or invariant, scenario, oracle, tier, environment,
    evidence artifact, owner, gap, and acceptance gate.
 9. **Implementation Handoff** — ordered authorized work packages,
-   prerequisites, owners, acceptance criteria, and the first safe phase after
-   approval. This is a handoff, not implementation.
+   prerequisites, owners, acceptance criteria, and the first safe phase within the user's authorization.
 10. **Unknowns** — unresolved meaning, ownership, consumer, evidence, authority,
     and rollback questions, with their consequence and next resolver.
 
-End by stating that implementation has not started and naming the explicit
-approval or evidence needed next.
+State what is complete and any missing decision, evidence, or authority. If implementation is already requested, continue into it; otherwise the pack completes the shaping request.
 
 ## Trigger examples
 
