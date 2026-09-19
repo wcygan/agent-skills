@@ -24,3 +24,10 @@ These skills are copied from their upstream repositories.
 - Revision: `49f948faa9258a0c61caceaf225e179651397431`
 
 - `define-goal` from `skills/.curated/define-goal`
+
+## https://github.com/architecture-decision-record/architecture-decision-record.git
+
+- License: CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/); third-party templates retain their original licenses; see vendor/architecture-decision-record-LICENSE.md
+- Revision: `b1de91256a57110b655ff3572ce1fc41fbc2dac6`
+
+- `architecture-decision-record-skill` from `skills/architecture-decision-record-skill`

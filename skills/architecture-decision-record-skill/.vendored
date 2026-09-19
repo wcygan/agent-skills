@@ -1,0 +1,3 @@
+source=https://github.com/architecture-decision-record/architecture-decision-record.git
+upstream_skill=architecture-decision-record-skill
+revision=b1de91256a57110b655ff3572ce1fc41fbc2dac6

@@ -32,6 +32,15 @@
         ".curated/define-goal": "define-goal"
       },
       "license": "Apache-2.0"
+    },
+    {
+      "repository": "https://github.com/architecture-decision-record/architecture-decision-record.git",
+      "branch": "main",
+      "ref": "b1de91256a57110b655ff3572ce1fc41fbc2dac6",
+      "skills": {
+        "architecture-decision-record-skill": "architecture-decision-record-skill"
+      },
+      "license": "CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/); third-party templates retain their original licenses; see vendor/architecture-decision-record-LICENSE.md"
     }
   ]
 }
