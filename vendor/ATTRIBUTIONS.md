@@ -31,10 +31,3 @@ These skills are copied from their upstream repositories.
 - Revision: `b1de91256a57110b655ff3572ce1fc41fbc2dac6`
 
 - `architecture-decision-record-skill` from `skills/architecture-decision-record-skill`
-
-## https://github.com/typesafe-ai/skills.git
-
-- License: MIT
-- Revision: `65a39f393687675ce170e6094757de20370365b9`
-
-- `typesafe-ai` from `skills/skills/typesafe-ai`

@@ -10,6 +10,21 @@ and server endpoints; Effect owns backend workflows, dependencies, errors, and
 resource lifetimes. These are application defaults, not a request to migrate an
 existing app or add every optional integration.
 
+## TypeSafe guidance
+
+For typed AI decision work, use the separately installed
+[upstream TypeSafe skill](https://github.com/typesafe-ai/skills). This catalog
+does not vendor it; upstream owns its guidance and updates. If it is missing,
+install it directly:
+
+```sh
+gh skill install typesafe-ai/skills skills/typesafe-ai --dir ~/.agents/skills
+```
+
+The bundled demos use mocked providers and run without installing this companion
+skill or configuring a provider key. The companion supplies development guidance,
+not an application runtime dependency.
+
 ## Bootstrap an application
 
 Run the bundled generator when creating an independent application:
