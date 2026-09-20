@@ -72,6 +72,7 @@
     "incremental-execution": "512f880aa32662044b49586f83be0df8c48f5601480f06bcc483c3998ac1640a",
     "just": "1048351d684910d6ef028468f25255b103a3a063d558ed2fd610df6833d0b617",
     "live-test-changes": "26abc0dde49e55a304468b20db771dac3adcaf4867754a85e178f5f4ea28b72c",
+    "logical-compaction": "33d2dba613cd669891b3b23380256958c3cd0509bfe553a9db1e7c4afa87b591",
     "map-change-impact": "3209492b80b7c7580328cdfcdd15e25cc440b0a170f9748c428d4c40222fa01b",
     "map-production-scenario": "fe86d407810f492f860dfc02cf5156f72edc08679285afccf4d3f7b93ba81834",
     "mine-transcript-learnings": "320493442aafef5ae3146a4fb54c6b920ddb96f2fe73882865b2e460cbf9a2ed",
