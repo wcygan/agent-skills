@@ -14,10 +14,10 @@
     "tools/catalog.py": "96d000ca4a86ef78e87e53a632137e0a547251acf8b3ea4d5366d15cbc11d165",
     "tools/sync_skills.py": "4726c4e7702a586522031e2684aea035d921ec90a1ba83d49a4daac01b564dab",
     "uv.lock": "b8088892e84e2a71c92df67f4b74ec1b7b9b3d7f6fffa4eebbec26fd22be8f9d",
-    "vendor/ATTRIBUTIONS.md": "510c6fb934e32b59154632beb87008952743b40a316a04560f7b681a5202b6c7",
+    "vendor/ATTRIBUTIONS.md": "26939e01755a3548482099d7ce2e97c03688c3d7957efa62559ccc8cc5e8dabc",
     "vendor/LOCAL-ATTRIBUTIONS.md": "0096c7a3c38de298bf8e8b7f02254189908b2828eb09723bd12514b412460c4a",
     "vendor/architecture-decision-record-LICENSE.md": "fdd10dd615a587c0631e5e2a2251c67840e3d06a80d35ced0408e064b90d23cd",
-    "vendor/skills-lock.json": "b2a1a087edce6d0f9dbd2a24d811997da86c2649ae64911ed18ae1aafb101812"
+    "vendor/skills-lock.json": "bc9a994ca1453f5038a5002c1ca08913fe0ceb08ba37ca20ffd9d15ef89ec61d"
   },
   "schema": 1,
   "skills": {
@@ -59,7 +59,7 @@
     "github-pr-media-proof": "9a05be978106ff6d76139a73ea1efa2a2c0252295f6e7db86df5323e2b4d9634",
     "grill-with-docs": "c22d63bac16d66a23a01567207195a17cddaad352f10915523a5150e44455cab",
     "grilling": "787cdac478b92374e1c567db26c5505b6341871d08ebe78a8be5608f55cbfa15",
-    "handoff": "0927d1ff6d6bd47188acd2b9000913332aa9df900c83596e10f72a6a99f8ef33",
+    "handoff": "80abf68b18b4dc7fd370110ba68f617e54883199a33e1057663b997c0e47b0ae",
     "hill-climbing": "23a6ecb3a7ccbc1906503f9475016a6bd469d4e84b861b916a3388a86476614c",
     "ideate-orchestrator-skill": "354fccdcebf00124a9db0ec3d6085f4339e1f4bb8a8e94ba5a9c5a15624adc91",
     "identify-hill-climbing-opportunities": "09499f8c444af4697eb88048dcdac785329c9cd74b6f7cc094670c42d86063cb",
@@ -88,7 +88,7 @@
     "plan-safe-refactor": "3149838daf09b7e5bc58d32d0988c46c822cf4e36f7433e5dbf367a315323029",
     "planetscale-mysql": "bbba338212a40271786f40e7446d7dc68305df384bea6334cb9d36e724c75d85",
     "planetscale-postgres": "975569a6b6a6154e9c63c85445c5879fb454cd6ab1dd3b6f6a6999481165816b",
-    "playwright-cli": "a9c07c50e51c04875a52b234fdf7a91af9d74dc0bcafd498adadbb7e7a1881ff",
+    "playwright-cli": "77aa683c7a9c3a551ed2b2021924648237a6f4bf298bbfb9d3aeffe3a9ba7e9b",
     "pr-guidelines": "3c54c7dc2719847ccffe66b7ad02ad4e0508ed29e26abbad65dd1800548dcaa2",
     "prompt-kit": "aee7c5ba30c4869532d4e6431cca5bf8a6db6535dd60efe2d9f87e9d958ebf12",
     "prototype": "4f954fb9e533d64486e22117e8b50a50fa6457c71a2ec855129297a2aaad7afb",
@@ -120,10 +120,10 @@
     "vercel-react-best-practices": "485cc48818fba9e898d251c5665c4f6ec568a6781862f73274a36bd3d05489a0",
     "vercel-react-view-transitions": "41bb609ec9263557108e153354c34ab689271a752d99e6ab2fe0a03a86534a0f",
     "verify-and-revise": "5a407a87d39088254e5c172d882856085d57b362a54f4bfd8d65079c83201711",
-    "wait-what": "b64a638ce2cf557af7128913bce128efa59852646becc6ed84eb244ba72f0b64",
+    "wait-what": "70d16a53b7c747d8e935c1420833b524b66bc8b87a2adf970b9b81bdfc9d888d",
     "wayfinder": "5c56da58d21e407b70c63e678bf63ae025f6f6c92d529995b15d7a22d9e92ccc",
     "web-design-guidelines": "c6c3aba8ce9fe5cde97d1e072408537445af4ec3165bdd92c00e5e91bcea4f8a",
     "wizard": "67e6530e8b829287d0910fb847bf91bda5fd1406388ee0663c952a9b1dfebbeb",
-    "writing-for-agents": "50e1660c8227bba3f88b6a6a2603f5986171b8443346eef763e7794885b669e3"
+    "writing-for-agents": "34928a84d2bf1e9ead7078dbe930bad78b3d5aa86c57773ed407743432bd60db"
   }
 }
