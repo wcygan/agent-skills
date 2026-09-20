@@ -1,0 +1,140 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-paper: #fafafa;
+  --color-ink: #18181b;
+  --color-accent: #2563eb;
+}
+
+@layer base {
+  body {
+    @apply m-0 bg-paper text-ink antialiased;
+  }
+  button,
+  a,
+  textarea {
+    @apply focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent;
+  }
+  button {
+    @apply cursor-pointer;
+  }
+  button:disabled {
+    @apply cursor-not-allowed;
+  }
+}
+
+@layer components {
+  .panel {
+    @apply rounded-2xl border border-slate-200 bg-white;
+  }
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.16em] text-accent;
+  }
+  .primary-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50;
+  }
+}
+
+@layer components {
+  .chat-markdown > * + * {
+    @apply mt-4;
+  }
+  .chat-markdown h1,
+  .chat-markdown h2,
+  .chat-markdown h3 {
+    @apply mt-6 font-semibold text-ink;
+  }
+  .chat-markdown h1 {
+    @apply text-xl;
+  }
+  .chat-markdown h2 {
+    @apply text-lg;
+  }
+  .chat-markdown ul {
+    @apply list-disc space-y-1 pl-5;
+  }
+  .chat-markdown ol {
+    @apply list-decimal space-y-1 pl-5;
+  }
+  .chat-markdown blockquote {
+    @apply border-l-2 border-blue-200 pl-4 text-slate-500;
+  }
+  .chat-markdown :not(pre) > code {
+    @apply rounded bg-slate-100 px-1 py-0.5 font-mono text-xs;
+  }
+  .chat-markdown table {
+    @apply my-4 block max-w-full overflow-x-auto text-left text-xs;
+  }
+  .chat-markdown th,
+  .chat-markdown td {
+    @apply border border-slate-200 px-3 py-2;
+  }
+}
+
+/* Decision diagrams: categorical hues and semantic outcomes, all within sRGB. */
+@layer components {
+  [data-tone="blue"] {
+    --tone-ink: oklch(0.32 0.041 250);
+    --tone-fill: oklch(0.5 0.092 250);
+    --tone-soft: oklch(0.96 0.008 250);
+  }
+  [data-tone="violet"] {
+    --tone-ink: oklch(0.32 0.077 300);
+    --tone-fill: oklch(0.5 0.173 300);
+    --tone-soft: oklch(0.96 0.009 300);
+  }
+  [data-tone="teal"] {
+    --tone-ink: oklch(0.32 0.025 190);
+    --tone-fill: oklch(0.5 0.056 190);
+    --tone-soft: oklch(0.96 0.023 190);
+  }
+  [data-tone="green"] {
+    --tone-ink: oklch(0.32 0.04 150);
+    --tone-fill: oklch(0.5 0.09 150);
+    --tone-soft: oklch(0.96 0.026 150);
+  }
+  [data-tone="amber"] {
+    --tone-ink: oklch(0.32 0.03 80);
+    --tone-fill: oklch(0.5 0.067 80);
+    --tone-soft: oklch(0.96 0.015 80);
+  }
+  [data-tone="red"] {
+    --tone-ink: oklch(0.32 0.058 25);
+    --tone-fill: oklch(0.5 0.132 25);
+    --tone-soft: oklch(0.96 0.008 25);
+  }
+  [data-tone="neutral"] {
+    --tone-ink: oklch(0.32 0.007 250);
+    --tone-fill: oklch(0.5 0.011 250);
+    --tone-soft: oklch(0.96 0.002 250);
+  }
+  .decision-tint {
+    color: var(--tone-ink);
+    background-color: var(--tone-soft);
+  }
+  .decision-ink {
+    color: var(--tone-ink);
+  }
+  .decision-fill {
+    background-color: var(--tone-fill);
+  }
+  .decision-card {
+    border-inline-start: 3px solid var(--tone-fill);
+  }
+  .decision-chip {
+    @apply inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium;
+    color: var(--tone-ink);
+    background-color: var(--tone-soft);
+  }
+  .decision-range {
+    accent-color: var(--tone-fill);
+    min-height: 44px;
+  }
+  .decision-mark {
+    color: var(--tone-ink);
+    background-color: var(--tone-soft);
+    border-bottom: 2px solid var(--tone-fill);
+    @apply rounded px-1;
+  }
+}

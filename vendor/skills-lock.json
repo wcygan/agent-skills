@@ -41,6 +41,15 @@
         "architecture-decision-record-skill": "architecture-decision-record-skill"
       },
       "license": "CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/); third-party templates retain their original licenses; see vendor/architecture-decision-record-LICENSE.md"
+    },
+    {
+      "repository": "https://github.com/typesafe-ai/skills.git",
+      "branch": "main",
+      "ref": "65a39f393687675ce170e6094757de20370365b9",
+      "skills": {
+        "skills/typesafe-ai": "typesafe-ai"
+      },
+      "license": "MIT"
     }
   ]
 }

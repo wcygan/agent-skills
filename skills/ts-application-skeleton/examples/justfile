@@ -1,0 +1,44 @@
+# List supported application commands.
+default:
+    @just --list
+
+# Install the locked application dependencies.
+setup:
+    bun install --frozen-lockfile
+
+# Run the Bun dev server through Portless with Vite hot reload.
+dev:
+    bun run dev
+
+# Validate recipes and run lint, types, tests, and the production build.
+check:
+    just --fmt --check
+    bun run check
+
+# Build the production application.
+build:
+    bun run build
+
+# Serve the production build on loopback.
+start:
+    bun run start
+
+# Check local prerequisites and configuration without printing credentials.
+doctor:
+    bun scripts/doctor.ts
+
+# Add missing demo items without replacing existing edits.
+seed:
+    bun scripts/database.ts seed
+
+# Write a consistent SQLite backup to a new file.
+backup destination:
+    bun scripts/database.ts backup {{ quote(destination) }}
+
+# Restore to a new database file; destination parent must already exist.
+restore source destination:
+    bun scripts/database.ts restore {{ quote(source) }} {{ quote(destination) }}
+
+# Build and exercise the app in a real browser with disposable SQLite data.
+test-browser:
+    bun run test:e2e

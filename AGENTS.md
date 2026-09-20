@@ -80,6 +80,10 @@ just check-full
 ## Distribution
 
 - Installation: `gh skill install OWNER/agent-skills --agent <agent> --scope <scope>` (`--all` to install every skill; a trailing skill name selects one).
+- Prefer the shared Agent Skills directory `~/.agents/skills` for user-level
+  installations. When using `gh skill install`, pass `--dir ~/.agents/skills`
+  explicitly; do not default to host-specific directories such as
+  `~/.codex/skills`.
 - Support each agent listed by `gh skill install --help`.
   For example, install all skills for Codex:
 

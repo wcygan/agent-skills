@@ -61,3 +61,7 @@ check:
 # Run the local gate and the GitHub skill publication check.
 check-full: check
     gh skill publish --dry-run
+
+# Bootstrap a disposable foundation app and verify its production routes (requires Bun).
+foundation-bootstrap-test:
+    bun test skills/ts-application-skeleton/scripts/create.test.ts
