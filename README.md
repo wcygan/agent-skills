@@ -23,12 +23,12 @@ loaded as a plugin by plugin-capable clients.
 Browse the complete [skills directory](https://github.com/wcygan/agent-skills/tree/main/skills).
 
 - [`prompt-kit`](skills/prompt-kit/SKILL.md) — evidence-backed PromptKit component, block, and primitive integration.
-- [`delegate-and-verify`](skills/delegate-and-verify/SKILL.md) — let a worker complete a task while the primary session scopes, reviews, and verifies it. The thin [`luna`](skills/luna/SKILL.md), [`sol`](skills/sol/SKILL.md), and [`terra`](skills/terra/SKILL.md) entry points select the worker model.
+- [`delegate-and-verify`](skills/delegate-and-verify/SKILL.md) — let a worker complete a task while the primary session scopes, reviews, and verifies it. The thin [`luna`](skills/luna/SKILL.md) and [`sol`](skills/sol/SKILL.md) entry points select the worker model.
 
 For supervised delegation, select Astra in the primary session and invoke an
-entry point with a task, for example: `$terra Implement the settings change and
+entry point with a task, for example: `$sol Implement the settings change and
 run the relevant checks.` Install `delegate-and-verify` alongside any entry
-point you select individually; `--all` includes the parent and all three.
+point you select individually; `--all` includes the parent and both entry points.
 
 Use [`audit-skill-catalog`](skills/audit-skill-catalog/SKILL.md) to review a
 flat catalog and propose safe semantic grouping or consolidation.

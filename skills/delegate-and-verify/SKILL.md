@@ -1,6 +1,6 @@
 ---
 name: delegate-and-verify
-description: "Delegate a complete task to a selected worker model, then review and verify the result in the primary session. Use for explicitly requested supervised delegation, including the luna, sol, and terra entry points."
+description: "Delegate a complete task to a selected worker model, then review and verify the result in the primary session. Use for explicitly requested supervised delegation, including the luna and sol entry points."
 license: MIT
 compatibility: Requires subagent tools with explicit model selection and artifact access shared with the primary session.
 metadata:
@@ -47,15 +47,15 @@ choose a starting route according to the assignment:
 
 | Worker model | Starting use |
 | --- | --- |
-| `gpt-5.6-luna` | Narrow, explicit tasks with inexpensive verification |
-| `gpt-5.6-terra` | Defined implementation and analysis tasks; default route |
-| `gpt-5.6-sol` | Complex implementation, ambiguity, or substantial judgment |
+| Latest available Luna model | Narrow, explicit tasks with inexpensive verification |
+| Latest available Sol model | Complex implementation, ambiguity, or substantial judgment |
 
-Check the live subagent schema for the exact model and compatible reasoning
-settings. Honor an explicit user effort; otherwise use the selected model's
-default. API availability or a model picker alone does not prove a subagent
-route works. If the requested route is unavailable, report that limitation
-instead of silently substituting another model or doing the task locally.
+Resolve the latest available model for the selected family from the live
+subagent schema, then check its compatible reasoning settings. Honor an
+explicit user effort; otherwise use the selected model's default. API
+availability or a model picker alone does not prove a subagent route works. If
+the requested route is unavailable, report that limitation instead of silently
+substituting another model or doing the task locally.
 
 Use a fresh worker context with a self-contained brief. In runtimes exposing
 `fork_turns`, use `"none"` with an explicit `model`; a full-history fork can
