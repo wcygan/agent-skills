@@ -19,7 +19,8 @@ match the installed Pi version. Do not infer SDK behavior from the CLI alone.
 3. If the application uses Effect v4, read
    [effect-integration.md](references/effect-integration.md) and the
    project-pinned Effect documentation.
-4. If the application should use a ChatGPT Plus/Pro Codex subscription, read
+4. If the application should use Sign in with ChatGPT for subscription access
+   and credits, or legacy `openai-codex` OAuth, read
    [openai-codex-subscription.md](references/openai-codex-subscription.md).
 5. Prefer the smallest surface that meets the requirement:
    - SDK for in-process TypeScript control;
