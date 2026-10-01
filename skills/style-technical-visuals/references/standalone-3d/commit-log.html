@@ -76,9 +76,19 @@ figure { margin-top: 16px; }
 svg g[role="button"] { cursor:pointer; }
 svg g[role="button"]:focus-visible { outline:2px solid var(--accent); }
 button:disabled { opacity:.4; cursor:default; }
+
+/* The viewport keeps its height while the camera zooms. */
+.scene-viewport{max-width:100%;min-width:0;overflow:hidden}
+.scene-viewport,.scene-viewport *{user-select:none;-webkit-user-select:none}
+.scene-viewport:focus-visible{outline:2px solid var(--info);outline-offset:3px}
+.controls.scene-camera{gap:8px;align-items:center;margin:12px 0}
+.scene-camera button{min-height:40px}
+.scene-camera button:disabled{opacity:.45;cursor:default}
+.scene-camera .zoom-level{min-width:5ch;text-align:right;font-variant-numeric:tabular-nums;color:var(--text-muted)}
+.scene-camera .zoom-hint{color:var(--text-muted);font-size:11px}
 </style></head><body><main><header><div class="eyebrow">STORAGE STRUCTURES / INTERACTIVE 3D</div><h1>A tape of immutable changes.</h1><p>Append at the tail; every ninth position advances to a fresh tape window. Rotate the tape and select any block to inspect its sequence number, payload, and UTF-8 byte lengths.</p></header>
 <div class="controls"><button id="append" type="button">Append change</button><button id="reset" type="button">Reset log</button><span id="count" class="hint" aria-live="polite"></span></div>
-<figure><svg id="scene" viewBox="0 0 800 440" tabindex="0" role="group" aria-labelledby="scene-title scene-description"><title id="scene-title">Orbitable 3D commit log tape</title><desc id="scene-description">Drag horizontally or use arrow keys to orbit. Each raised block is a record, numbered in append order. Select a block with a click or keyboard to inspect its fields below. Orange marks the selected record.</desc><g id="world"></g></svg>
+<figure><svg id="scene" viewBox="0 0 800 440" tabindex="0" role="group" aria-labelledby="scene-title scene-description" data-reset-view="reset"><title id="scene-title">Orbitable 3D commit log tape</title><desc id="scene-description">Drag horizontally or use arrow keys to orbit. Each raised block is a record, numbered in append order. Select a block with a click or keyboard to inspect its fields below. Orange marks the selected record.</desc><g id="world"></g></svg>
 <div id="detail" class="details" aria-label="Selected log record"></div>
 <figcaption><strong>Updates append; earlier records remain in the log.</strong> Blue outlines identify records; orange identifies your selection. Replay in LSN order reconstructs the latest value for each key. Only the current eight-record window is shown: LSN 9 starts the next window, then 17, 25, and so on. This example uses record sequence numbers, not byte-offset LSNs or a database-specific WAL format.</figcaption></figure><footer>Drag to orbit · click a record to inspect · offline · no durability simulated</footer></main><script>
 (() => {
@@ -140,4 +150,99 @@ document.querySelector('#append').addEventListener('click',()=>{
 document.querySelector('#reset').addEventListener('click',()=>{records=initial.map(r=>[...r]);next=0;selected=3;angle=.35;render();});
 render();
 })();
-</script></body></html>
+</script><script>
+// Kept inline so each reference remains a standalone, offline demo.
+(() => {
+  const minZoom = .25, maxZoom = 4, zoomStep = 1.2;
+  for (const svg of document.querySelectorAll('svg[viewBox]')) {
+    const world = svg.querySelector(':scope > g');
+    if (!world) continue;
+    const original = svg.getAttribute('viewBox').trim().split(/[\s,]+/).map(Number);
+    const aspect = original[2] / original[3];
+    let fitted = [...original], zoom = 1;
+    svg.id ||= `${world.id}-scene`;
+    svg.classList.add('scene-viewport');
+    svg.style.aspectRatio = `${original[2]} / ${original[3]}`;
+
+    const controls = document.createElement('div');
+    controls.className = 'controls scene-camera';
+    controls.setAttribute('role', 'group');
+    controls.setAttribute('aria-label', `${svg.querySelector('title').textContent} view controls`);
+    function button(label, action, handler) {
+      const control = document.createElement('button');
+      control.type = 'button';
+      control.textContent = label;
+      control.dataset.zoom = action;
+      control.setAttribute('aria-controls', svg.id);
+      control.addEventListener('click', handler);
+      controls.append(control);
+      return control;
+    }
+    const zoomOut = button('Zoom out', 'out', () => changeZoom(1 / zoomStep));
+    const zoomIn = button('Zoom in', 'in', () => changeZoom(zoomStep));
+    button('Fit scene', 'fit', fitScene);
+    const level = document.createElement('output');
+    level.className = 'zoom-level';
+    level.setAttribute('aria-label', 'Scene zoom');
+    level.setAttribute('aria-live', 'off');
+    const hint = document.createElement('span');
+    hint.id = `${svg.id}-zoom-help`;
+    hint.className = 'zoom-hint';
+    hint.textContent = 'Scroll to zoom · drag to orbit · + / − zoom · 0 fit';
+    controls.append(level, hint);
+    svg.before(controls);
+    svg.setAttribute('aria-describedby', [svg.getAttribute('aria-describedby'), hint.id].filter(Boolean).join(' '));
+
+    function updateView() {
+      const width = fitted[2] / zoom, height = fitted[3] / zoom;
+      const x = fitted[0] + (fitted[2] - width) / 2;
+      const y = fitted[1] + (fitted[3] - height) / 2;
+      svg.setAttribute('viewBox', `${x} ${y} ${width} ${height}`);
+      level.textContent = `${Math.round(zoom * 100)}%`;
+      zoomOut.disabled = zoom <= minZoom;
+      zoomIn.disabled = zoom >= maxZoom;
+    }
+    function changeZoom(factor) {
+      zoom = Math.max(minZoom, Math.min(maxZoom, zoom * factor));
+      updateView();
+    }
+    function fitScene() {
+      // Measure the current projection, including labels after orbiting or scaling.
+      fitted = [...original];
+      let bounds;
+      try { bounds = world.getBBox(); } catch { /* Use the original frame if hidden. */ }
+      if (bounds && [bounds.x, bounds.y, bounds.width, bounds.height].every(Number.isFinite) && bounds.width > 0 && bounds.height > 0) {
+        const padding = Math.max(24, Math.max(bounds.width, bounds.height) * .04);
+        const width = Math.max(bounds.width + padding * 2, (bounds.height + padding * 2) * aspect);
+        const height = width / aspect;
+        fitted = [bounds.x + (bounds.width - width) / 2, bounds.y + (bounds.height - height) / 2, width, height];
+      }
+      zoom = 1;
+      updateView();
+    }
+    svg.addEventListener('keydown', event => {
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if (['+', '='].includes(event.key)) changeZoom(zoomStep);
+      else if (['-', '−', '_'].includes(event.key)) changeZoom(1 / zoomStep);
+      else if (event.key === '0') fitScene();
+      else return;
+      event.preventDefault();
+    });
+    svg.addEventListener('pointerdown', event => {
+      if (event.button !== 0 || event.pointerType === 'touch') return;
+      // Suppress native text selection while retaining focus on clickable records.
+      event.preventDefault();
+      (event.target.closest('[tabindex]') || svg).focus({preventScroll: true});
+    });
+    svg.addEventListener('wheel', event => {
+      // Wheel and trackpad gestures zoom only while the pointer is over the scene.
+      event.preventDefault();
+      const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? svg.clientHeight : 1;
+      changeZoom(Math.exp(-Math.max(-100, Math.min(100, event.deltaY * unit)) * .002));
+    }, {passive: false});
+    document.getElementById(svg.dataset.resetView)?.addEventListener('click', fitScene);
+    fitScene();
+  }
+})();
+</script>
+</body></html>

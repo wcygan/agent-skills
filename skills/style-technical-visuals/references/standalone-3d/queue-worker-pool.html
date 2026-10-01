@@ -68,8 +68,18 @@ figure { margin-top: 16px; }
 
 .remaining-track { height: 5px; background: var(--track); margin-top: 12px; overflow: hidden; }
 .remaining-fill { height: 100%; background: var(--warn); transform: scaleX(0); transform-origin: left center; }
+
+/* The viewport keeps its height while the camera zooms. */
+.scene-viewport{max-width:100%;min-width:0;overflow:hidden}
+.scene-viewport,.scene-viewport *{user-select:none;-webkit-user-select:none}
+.scene-viewport:focus-visible{outline:2px solid var(--info);outline-offset:3px}
+.controls.scene-camera{gap:8px;align-items:center;margin:12px 0}
+.scene-camera button{min-height:40px}
+.scene-camera button:disabled{opacity:.45;cursor:default}
+.scene-camera .zoom-level{min-width:5ch;text-align:right;font-variant-numeric:tabular-nums;color:var(--text-muted)}
+.scene-camera .zoom-hint{color:var(--text-muted);font-size:11px}
 </style></head><body><main><header><div class="eyebrow">ASYNC PROCESSING / INTERACTIVE 3D</div><h1>One shared queue. Three busy workers.</h1><p>A producer adds a job every 0.8 seconds. Each available worker takes the oldest queued job, processes it, then returns for another.</p></header><figure>
-<svg id="scene" viewBox="0 0 800 440" tabindex="0" role="img" aria-labelledby="scene-title scene-description"><title id="scene-title">Orbitable producer, queue, and three-worker simulation</title><desc id="scene-description">Drag horizontally or use arrow keys to orbit. Blue jobs travel from the producer to the shared queue, then to available workers. Yellow workers are processing jobs; green marks completion for half a second.</desc><g id="world"></g></svg>
+<svg id="scene" viewBox="0 0 800 440" tabindex="0" role="img" aria-labelledby="scene-title scene-description" data-reset-view="reset"><title id="scene-title">Orbitable producer, queue, and three-worker simulation</title><desc id="scene-description">Drag horizontally or use arrow keys to orbit. Blue jobs travel from the producer to the shared queue, then to available workers. Yellow workers are processing jobs; green marks completion for half a second.</desc><g id="world"></g></svg>
 <div class="legend"><span><i class="producer"></i>Producer</span><span><i></i>Queued / moving jobs</span><span><i class="busy"></i>Processing</span><span><i class="complete"></i>Completed</span></div>
 <div class="status-grid" aria-label="Worker processing status"><div id="worker-0" class="worker-card"><strong>worker 01</strong><span>Available</span><div class="remaining-track" aria-hidden="true"><div class="remaining-fill"></div></div></div><div id="worker-1" class="worker-card"><strong>worker 02</strong><span>Available</span><div class="remaining-track" aria-hidden="true"><div class="remaining-fill"></div></div></div><div id="worker-2" class="worker-card"><strong>worker 03</strong><span>Available</span><div class="remaining-track" aria-hidden="true"><div class="remaining-fill"></div></div></div></div><div class="controls"><button id="pause" type="button" aria-pressed="false">Pause simulation</button><button id="reset" type="button">Reset simulation</button><span class="hint">Drag to orbit · ← / → keys</span></div><p id="stats" class="hint" aria-live="off"></p>
 <figcaption><strong>Jobs keep moving; each worker handles one at a time.</strong> Blue marks queued and in-flight jobs; yellow marks processing, and green marks completion for 0.5 seconds. The queue holds at most 12 pending/inbound jobs, then slows the producer. This simplified simulation covers successful processing; real queues also need acknowledgments, retries, and duplicate handling.</figcaption></figure><footer>Offline · shared dark palette · reduced motion starts paused</footer></main><script>
@@ -110,12 +120,31 @@ function advance(dt){
  for(let i=outgoing.length-1;i>=0;i--){const j=outgoing[i];j.t+=dt/1.2;if(j.t>=1){workers[j.worker].remaining=2.2+j.worker*.35;outgoing.splice(i,1);}}
  for(let i=0;i<workers.length;i++){const w=workers[i];if(w.job===null&&queue.length){w.job=queue.shift();outgoing.push({id:w.job,worker:i,t:0});}}
 }
+
+// Fixed world ports; shaft and filled tip share the same projected final segment.
+function connection(path,color,project,add){
+ for(let i=1;i<path.length;i++){
+  const a=path[i-1],b=path[i],pa=project(...a),pb=project(...b),length=Math.hypot(pb.x-pa.x,pb.y-pa.y);
+  const end=i===path.length-1,trim=end?Math.min(.45,11/length):0;
+  for(let k=0;k<20;k++){
+   const t=(1-trim)*k/20,u=(1-trim)*(k+1)/20;
+   const v=project(...a.map((n,j)=>n+(b[j]-n)*t)),w=project(...a.map((n,j)=>n+(b[j]-n)*u));
+   add((v.depth+w.depth)/2,()=>el('line',{x1:v.x,y1:v.y,x2:w.x,y2:w.y,stroke:color,'stroke-width':1.8}));
+  }
+  if(end){const ux=(pb.x-pa.x)/length,uy=(pb.y-pa.y)/length,tip={x:pb.x-ux*1.5,y:pb.y-uy*1.5};
+   add(pb.depth+.01,()=>el('path',{d:`M${tip.x} ${tip.y} L${tip.x-ux*10-uy*4} ${tip.y-uy*10+ux*4} L${tip.x-ux*10+uy*4} ${tip.y-uy*10-ux*4} Z`,fill:color}));
+  }
+ }
+}
+function along(path,t){const lengths=path.slice(1).map((b,i)=>Math.hypot(...b.map((n,j)=>n-path[i][j])));let distance=t*lengths.reduce((a,b)=>a+b,0);for(let i=0;i<lengths.length;i++){if(distance<=lengths[i]||i===lengths.length-1)return path[i].map((n,j)=>n+(path[i+1][j]-n)*Math.min(1,distance/lengths[i]));distance-=lengths[i];}}
+function incomingRoute(){return [[producer.x+37.5,45,producer.z],[-90,10,0]];}
+function outgoingRoute(w){return [[90,10,0],[w.x-35,47.5,w.z]];}
 function render(){
  world.replaceChildren();poly([p(-320,0,-240),p(320,0,-240),p(320,0,240),p(-320,0,240)],{class:'platform'});
  for(let a=-200;a<=200;a+=100){line([p(a,0,-240),p(a,0,240)],{class:'grid'});line([p(-320,0,a),p(320,0,a)],{class:'grid'});}
- line([p(producer.x,35,producer.z),p(-90,35,0)],{class:'wire'});
- for(const w of workers)line([p(90,35,0),p(w.x,35,w.z)],{class:'wire'});
  const objects=[];
+ connection(incomingRoute(),'var(--info)',p,(depth,draw)=>objects.push({depth,draw}));
+ for(const w of workers)connection(outgoingRoute(w),'var(--info)',p,(depth,draw)=>objects.push({depth,draw}));
  function add(x,z,f){objects.push({depth:p(x,0,z).depth,draw:f});}
  add(producer.x,producer.z,()=>box(producer.x,producer.z,75,65,90,'var(--accent)'));
  // The tray lies below every job. Paint it first, then depth-sort each job
@@ -136,8 +165,8 @@ function render(){
    id.textContent=String(i+1).padStart(2,'0');
  });
 }
- for(const j of incoming){const x=producer.x+(-90-producer.x)*j.t,z=producer.z*(1-j.t);add(x,z,()=>box(x,z,15,15,15,'var(--info)',35));}
- for(const j of outgoing){const w=workers[j.worker],x=90+(w.x-90)*j.t,z=w.z*j.t;add(x,z,()=>box(x,z,15,15,15,'var(--info)',35));}
+ for(const j of incoming){const [x,y,z]=along(incomingRoute(),j.t);add(x,z,()=>box(x,z,15,15,15,'var(--info)',y-7.5));}
+ for(const j of outgoing){const w=workers[j.worker],[x,y,z]=along(outgoingRoute(w),j.t);add(x,z,()=>box(x,z,15,15,15,'var(--info)',y-7.5));}
  objects.sort((a,b)=>a.depth-b.depth).forEach(o=>o.draw());
  const a=p(producer.x,0,producer.z);label('PRODUCER',a.x,a.y+40,'role');
  const q=p(0,0,0);label('SHARED QUEUE',q.x,q.y+62,'role');label(`${queue.length} waiting · FIFO`,q.x,q.y+84);
@@ -163,4 +192,99 @@ svg.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key
 function frame(now){if(last!==null&&playing&&!document.hidden){advance(Math.min((now-last)/1000,.05));render();}last=now;requestAnimationFrame(frame);}
 reset();control();requestAnimationFrame(frame);
 })();
-</script></body></html>
+</script><script>
+// Kept inline so each reference remains a standalone, offline demo.
+(() => {
+  const minZoom = .25, maxZoom = 4, zoomStep = 1.2;
+  for (const svg of document.querySelectorAll('svg[viewBox]')) {
+    const world = svg.querySelector(':scope > g');
+    if (!world) continue;
+    const original = svg.getAttribute('viewBox').trim().split(/[\s,]+/).map(Number);
+    const aspect = original[2] / original[3];
+    let fitted = [...original], zoom = 1;
+    svg.id ||= `${world.id}-scene`;
+    svg.classList.add('scene-viewport');
+    svg.style.aspectRatio = `${original[2]} / ${original[3]}`;
+
+    const controls = document.createElement('div');
+    controls.className = 'controls scene-camera';
+    controls.setAttribute('role', 'group');
+    controls.setAttribute('aria-label', `${svg.querySelector('title').textContent} view controls`);
+    function button(label, action, handler) {
+      const control = document.createElement('button');
+      control.type = 'button';
+      control.textContent = label;
+      control.dataset.zoom = action;
+      control.setAttribute('aria-controls', svg.id);
+      control.addEventListener('click', handler);
+      controls.append(control);
+      return control;
+    }
+    const zoomOut = button('Zoom out', 'out', () => changeZoom(1 / zoomStep));
+    const zoomIn = button('Zoom in', 'in', () => changeZoom(zoomStep));
+    button('Fit scene', 'fit', fitScene);
+    const level = document.createElement('output');
+    level.className = 'zoom-level';
+    level.setAttribute('aria-label', 'Scene zoom');
+    level.setAttribute('aria-live', 'off');
+    const hint = document.createElement('span');
+    hint.id = `${svg.id}-zoom-help`;
+    hint.className = 'zoom-hint';
+    hint.textContent = 'Scroll to zoom · drag to orbit · + / − zoom · 0 fit';
+    controls.append(level, hint);
+    svg.before(controls);
+    svg.setAttribute('aria-describedby', [svg.getAttribute('aria-describedby'), hint.id].filter(Boolean).join(' '));
+
+    function updateView() {
+      const width = fitted[2] / zoom, height = fitted[3] / zoom;
+      const x = fitted[0] + (fitted[2] - width) / 2;
+      const y = fitted[1] + (fitted[3] - height) / 2;
+      svg.setAttribute('viewBox', `${x} ${y} ${width} ${height}`);
+      level.textContent = `${Math.round(zoom * 100)}%`;
+      zoomOut.disabled = zoom <= minZoom;
+      zoomIn.disabled = zoom >= maxZoom;
+    }
+    function changeZoom(factor) {
+      zoom = Math.max(minZoom, Math.min(maxZoom, zoom * factor));
+      updateView();
+    }
+    function fitScene() {
+      // Measure the current projection, including labels after orbiting or scaling.
+      fitted = [...original];
+      let bounds;
+      try { bounds = world.getBBox(); } catch { /* Use the original frame if hidden. */ }
+      if (bounds && [bounds.x, bounds.y, bounds.width, bounds.height].every(Number.isFinite) && bounds.width > 0 && bounds.height > 0) {
+        const padding = Math.max(24, Math.max(bounds.width, bounds.height) * .04);
+        const width = Math.max(bounds.width + padding * 2, (bounds.height + padding * 2) * aspect);
+        const height = width / aspect;
+        fitted = [bounds.x + (bounds.width - width) / 2, bounds.y + (bounds.height - height) / 2, width, height];
+      }
+      zoom = 1;
+      updateView();
+    }
+    svg.addEventListener('keydown', event => {
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if (['+', '='].includes(event.key)) changeZoom(zoomStep);
+      else if (['-', '−', '_'].includes(event.key)) changeZoom(1 / zoomStep);
+      else if (event.key === '0') fitScene();
+      else return;
+      event.preventDefault();
+    });
+    svg.addEventListener('pointerdown', event => {
+      if (event.button !== 0 || event.pointerType === 'touch') return;
+      // Suppress native text selection while retaining focus on clickable records.
+      event.preventDefault();
+      (event.target.closest('[tabindex]') || svg).focus({preventScroll: true});
+    });
+    svg.addEventListener('wheel', event => {
+      // Wheel and trackpad gestures zoom only while the pointer is over the scene.
+      event.preventDefault();
+      const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? svg.clientHeight : 1;
+      changeZoom(Math.exp(-Math.max(-100, Math.min(100, event.deltaY * unit)) * .002));
+    }, {passive: false});
+    document.getElementById(svg.dataset.resetView)?.addEventListener('click', fitScene);
+    fitScene();
+  }
+})();
+</script>
+</body></html>

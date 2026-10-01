@@ -1,0 +1,438 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Temporal + MySQL · Interactive 3D</title><style>
+:root {
+  color-scheme: dark;
+  --canvas: #111111; --panel: #1c1c1c;
+  --border: rgba(255,255,255,.14); --border-node: rgba(255,255,255,.22);
+  --track: rgba(255,255,255,.10);
+  --text: #fafafa; --text-muted: rgba(250,250,250,.60);
+  --text-dim: rgba(250,250,250,.40);
+  --accent: #f35815; --good: #27b648; --warn: #d19f03;
+  --bad: #ff455d; --info: #1e9de7;
+  --scale-app:#73dbac;--scale-storage:#f6a76b;--scale-wire:#747474;--scale-front:#69c9f4;--scale-history:#c6a0f6;--scale-matching:#f0c96a;--scale-worker:#73dbac;--scale-platform:#15181b;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--canvas); color: var(--text);
+  font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+main { max-width: 860px; margin: auto; padding: 56px 28px 32px; }
+.eyebrow { color: var(--text-muted); font-size: 11px; letter-spacing: .12em; }
+h1 { margin: 12px 0; font-size: clamp(22px, 4vw, 30px); font-weight: 500; letter-spacing: -.04em; }
+header p { color: var(--text-muted); max-width: 62ch; margin: 0; }
+figure { margin: 32px 0 0; }
+svg { display: block; width: 100%; height: auto; font: inherit; }
+.node { fill: var(--panel); stroke: var(--border-node); stroke-width: 1.5; }
+.primary { stroke: var(--accent); }
+.wire { fill: none; stroke: var(--info); stroke-width: 1.5; }
+.label { fill: var(--text); font-size: 19px; }
+.meta { fill: var(--text-muted); font-size: 13px; }
+.role { fill: var(--accent); font-size: 12px; letter-spacing: 1px; }
+.caption { fill: var(--info); font-size: 12px; }
+figcaption { border-top: 1px solid var(--border); padding-top: 18px;
+  color: var(--text-muted); max-width: 100%; }
+figcaption strong { color: var(--text); font-weight: 500; }
+footer { margin-top: 24px; color: var(--text-muted); font-size: 11px; }
+@media (max-width: 540px) { main { padding: 28px 16px; } }
+
+
+main{max-width:1100px}.controls{display:flex;gap:12px;flex-wrap:wrap;margin:24px 0}button{font:inherit;color:var(--text);background:var(--panel);border:1px solid var(--border-node);padding:9px 14px;cursor:pointer}button:focus-visible{outline:2px solid var(--info);outline-offset:3px}#status{min-height:3em;color:var(--text-muted)}.details{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:20px 0}.details article{background:var(--panel);border:1px solid var(--border);padding:16px}h2{font-size:14px;font-weight:500;margin:0 0 8px}pre{white-space:pre-wrap;margin:0;color:var(--text-muted)}a{color:var(--text)}@media(max-width:600px){.details{grid-template-columns:1fr}}
+main{max-width:1300px}
+.scale-section{margin-top:56px;border-top:1px solid var(--border);padding-top:32px}
+.scale-section>h2{margin:12px 0;font-size:clamp(20px,3vw,28px);letter-spacing:-.04em}
+.scale-intro,.scale-note,.scale-section .details p{color:var(--text-muted)}
+.scale-intro{max-width:85ch}.scale-note{font-size:12px}.scale-section h3{font-size:14px;font-weight:500;margin:0 0 8px}.scale-section .details p{margin:0}
+.scale-counts{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0}.scale-counts div{border:1px solid var(--border);padding:12px}.scale-counts dt{color:var(--text-muted);font-size:11px}.scale-counts dd{margin:6px 0 0;font-size:20px;font-variant-numeric:tabular-nums}
+#scale-status{min-height:3em;color:var(--text-muted)}.scale-stage{overflow-x:auto;overscroll-behavior-x:contain}.scale-stage svg{min-width:0;cursor:grab;touch-action:pan-x pan-y}.scale-stage svg.dragging{cursor:grabbing}.scale-stage:focus-visible,#scale-scene:focus-visible{outline:2px solid var(--info);outline-offset:3px}.scale-view-controls{align-items:center;font-size:12px}.scale-view-controls span{color:var(--text-muted)}button:disabled{opacity:.45;cursor:default}
+@media(max-width:600px){.scale-counts{grid-template-columns:repeat(2,1fr)}}
+
+/* The viewport keeps its height while the camera zooms. */
+.scene-viewport{max-width:100%;min-width:0;overflow:hidden}
+.scene-viewport,.scene-viewport *{user-select:none;-webkit-user-select:none}
+.scene-viewport:focus-visible{outline:2px solid var(--info);outline-offset:3px}
+.controls.scene-camera{gap:8px;align-items:center;margin:12px 0}
+.scene-camera button{min-height:40px}
+.scene-camera button:disabled{opacity:.45;cursor:default}
+.scene-camera .zoom-level{min-width:5ch;text-align:right;font-variant-numeric:tabular-nums;color:var(--text-muted)}
+.scene-camera .zoom-hint{color:var(--text-muted);font-size:11px}
+</style></head><body><main><header><div class="eyebrow">DURABLE EXECUTION / INTERACTIVE 3D</div><h1>The server remembers. Your workers execute.</h1><p>Minimal logical Temporal architecture with MySQL persistence. Orbit the scene while one Workflow Task travels through the same steps as the 2D demo.</p></header><div class="controls"><button id="pause">Pause demo</button><button id="step">Next step</button><button id="reset">Replay</button><button id="view">Reset view</button><span>Drag to orbit · ← / →</span></div><p id="status"></p><p style="color:var(--text-muted);font-size:12px">Client: SDK requests · Workers: your Workflow and Activity code · Frontend: gRPC gateway · History: state and scheduling · Matching: task queues · MySQL: durable persistence<br>Orange: current step · gray connections: RPC / persistence paths</p><figure><svg id="scene" viewBox="0 0 1200 1000" tabindex="0" style="touch-action:pan-y;cursor:grab" role="img" aria-labelledby="title" data-reset-view="view"><title id="title">Minimal Temporal deployment: external client and SDK workers, Frontend, History, Matching, and MySQL</title><g id="world"></g></svg><figcaption><strong>All application RPCs enter Frontend.</strong> History owns workflow state and scheduling; Matching hosts task queues. Your workers execute Workflow and Activity code outside the server. MySQL persists Event History, mutable state, internal tasks, and task-queue backlog. These are logical components, not a one-process-per-machine deployment recommendation. Visibility, the internal background Worker Service, replicas, and sharding are omitted.</figcaption></figure><div class="details"><article><h2>MySQL persistence</h2><pre id="history"></pre></article><article><h2>Application worker</h2><pre id="worker"></pre></article></div><section class="scale-section" aria-labelledby="scale-title">
+  <div class="eyebrow">SERVICE SCALING / OPTIONAL VITESS PERSISTENCE</div>
+  <h2 id="scale-title">More capacity. Different kinds of shards.</h2>
+  <p class="scale-intro">Orbit a simplified Temporal service topology with an optional Vitess/MySQL persistence layout. Twelve symbolic History Shards keep their IDs while service instances, application workers, and physical database shards scale independently.</p>
+  <div class="controls" role="group" aria-label="Scale the deployment">
+    <button id="scale-history" type="button" aria-controls="scale-scene">Add History instance</button>
+    <button id="scale-workers" type="button" aria-controls="scale-scene">Add SDK workers</button>
+    <button id="scale-storage" type="button" aria-controls="scale-scene">Reshard MySQL</button>
+    <button id="scale-reset" type="button" aria-controls="scale-scene">Reset scaling</button>
+  </div>
+  <dl class="scale-counts">
+    <div><dt>History instances</dt><dd id="scale-history-count">2</dd></div>
+    <div><dt>Logical History Shards</dt><dd>12 · fixed</dd></div>
+    <div><dt>Application workers</dt><dd id="scale-worker-count">3</dd></div>
+    <div><dt>Physical write shards</dt><dd id="scale-storage-count">3</dd></div>
+  </dl>
+  <p id="scale-status" role="status" aria-live="polite"></p>
+  <figure>
+    <div class="scale-stage" tabindex="0" role="region" aria-label="Scaled deployment diagram; scroll horizontally on small screens">
+      <svg id="scale-scene" viewBox="0 0 1600 1300" tabindex="0" role="img" aria-labelledby="scale-svg-title scale-description" data-reset-view="scale-view">
+        <title id="scale-svg-title">Horizontally scaled Temporal with Vitess and MySQL persistence</title>
+        <desc id="scale-description">Drag with a mouse or use the left and right arrow keys to orbit. Clients and application workers enter a gRPC load balancer and three Frontend instances. History instances own twelve logical shards; two Matching instances host task queue partitions. History and Matching use VTGate SQL routing to reach MySQL primaries and replicas, plus an unsharded keyspace.</desc>
+        <g id="scale-world"></g>
+      </svg>
+    </div>
+    <div class="controls scale-view-controls" role="group" aria-label="Rotate the scaled deployment">
+      <button id="scale-left" type="button" aria-controls="scale-scene">Rotate left</button>
+      <button id="scale-right" type="button" aria-controls="scale-scene">Rotate right</button>
+      <button id="scale-view" type="button" aria-controls="scale-scene">Reset view</button>
+      <span>Mouse drag to orbit · ← / → · gray arrows: RPC / SQL / replication</span>
+    </div>
+    <figcaption><strong>Logical History Shards and physical MySQL shards scale separately.</strong> Adding a History instance redistributes H1–H12 among owners. Adding SDK workers increases application execution capacity. Resharding changes example data placement behind VTGate. The storage samples illustrate placement for shard-keyed tables, not actual Vindex output. Real routing uses per-table VSchema/Vindex rules; task queue tables use different keys. Q0–Q3 illustrate four partitions of the orders Workflow Task Queue; their ownership can move among Matching instances.</figcaption>
+  </figure>
+  <div class="details">
+    <article><h3>Service capacity</h3><p>Three stateless Frontend instances receive application RPCs through a gRPC load balancer. History owns workflow state; Matching distributes named task queue partitions. SDK workers run your Workflow and Activity code outside the server.</p></article>
+    <article><h3>Persistence capacity</h3><p>Each MySQL cylinder includes its own VTTablet. Each example write shard has one primary and two replicas; replicas provide redundancy. Resharding represents the topology after copying data, catching up replication, and switching traffic; it does not simulate that migration.</p></article>
+  </div>
+  <p class="scale-note">Illustrative counts, not sizing recommendations. Logical History Shard count is fixed after initialization. This view shows workflow data paths; Frontend metadata access, visibility, the server’s internal Worker Service, and Vitess control-plane components are omitted.</p>
+  <p class="scale-note"><strong>Vitess is an optional integration.</strong> <a href="https://docs.temporal.io/temporal-service/persistence">Temporal’s persistence documentation</a> states that its compatibility tests do not cover Vitess. The <a href="https://planetscale.com/blog/temporal-workflows-at-scale-sharding-in-production">2022 PlanetScale deployment</a> is a customer-specific example. Validate the deployed Temporal schema, table routing, transaction locality, and database versions before using this layout in production.</p>
+  <p class="scale-note">Sources: <a href="https://docs.temporal.io/temporal-service/temporal-server">Temporal Server architecture</a> · <a href="https://vitess.io/docs/24.0/overview/architecture/">Vitess architecture</a> · <a href="https://planetscale.com/blog/temporal-workflows-at-scale-sharding-in-production">Temporal sharding in production</a></p>
+</section>
+<footer><a href="https://github.com/temporalio/temporal/blob/main/docs/_assets/matching-context.svg">Temporal Matching context diagram</a> · <a href="https://github.com/temporalio/temporal/blob/main/docs/architecture/workflow-lifecycle.md">Workflow lifecycle</a> · <a href="https://docs.temporal.io/temporal-service/temporal-server">Server architecture</a><br>Offline · autoplay · reduced motion starts paused · simplified Workflow Task lifecycle.</footer></main><script>(()=>{
+const ns='http://www.w3.org/2000/svg',world=document.querySelector('#world'),svg=document.querySelector('#scene'),reduced=matchMedia('(prefers-reduced-motion: reduce)');let elapsed=0,last=null,playing=!reduced.matches,angle=.14,drag=null;
+const paths={
+client:[[-220,40,695],[-220,40,490],[-230,40,490],[-230,40,255]],
+worker:[[40,40,695],[40,40,490],[-230,40,490],[-230,40,255]],
+history:[[-170,40,-190],[-20,40,-190]],
+matching:[[-170,40,190],[-20,40,190]],
+dispatch:[[70,40,-130],[70,40,130]],
+historyDb:[[160,40,-190],[280,40,-190],[280,40,0],[320,40,0]],
+matchingDb:[[160,40,190],[280,40,190],[280,40,0],[320,40,0]]
+};
+const reverse=p=>p.slice().reverse();
+const phases=[
+{path:paths.client,message:'Your application starts a Workflow via the Frontend gRPC API.'},
+{path:paths.history,message:'Frontend routes the start request to History.'},
+{path:paths.historyDb,message:'History durably records Event History, mutable state, and a transfer task in MySQL.'},
+{path:paths.dispatch,message:'A History transfer-task processor dispatches the Workflow Task to Matching.'},
+{path:paths.worker,message:'An application worker long-polls Frontend for a Workflow Task.'},
+{path:paths.matching,message:'Frontend routes the poll to Matching.'},
+{path:reverse(paths.dispatch),message:'Matching asks History to record that the Workflow Task has started.'},
+{path:paths.historyDb,message:'History persists task-start state before the task is delivered.'},
+{path:reverse(paths.matching),message:'Matching returns the task through Frontend to the waiting poller.'},
+{path:reverse(paths.worker),message:'Your worker receives history and runs deterministic Workflow code.'},
+{path:paths.worker,message:'The worker reports commands/results through Frontend.'},
+{path:[...paths.history,...paths.historyDb],message:'History processes the completion and persists resulting state and events in MySQL.'}
+];
+function p(x,y,z){const X=x*Math.cos(angle)-z*Math.sin(angle),Z=x*Math.sin(angle)+z*Math.cos(angle);return{x:600+X,y:365+Z*.56-y*.9,depth:Z+y*.622};}
+let sceneFragment;
+function el(tag,a){const e=document.createElementNS(ns,tag);for(const[k,v]of Object.entries(a))e.setAttribute(k,v);sceneFragment.append(e);return e;}
+function render(){sceneFragment=document.createDocumentFragment();const faces=[],labels=[],stage=Math.min(11,Math.floor(elapsed/3)),phase=phases[stage];
+function face(v,fill,stroke,layer=1){faces.push({v,fill,stroke,layer,depth:v.reduce((s,a)=>s+p(...a).depth,0)/v.length});}
+function box(x,z,w,d,h,color,base=0,layer=1){const a=x-w/2,b=x+w/2,c=z-d/2,e=z+d/2,fill=layer===0?'var(--scale-platform)':'var(--panel)';face([[a,base,e],[b,base,e],[b,h,e],[a,h,e]],fill,color,layer);const side=angle<0?a:b;face([[side,base,c],[side,base,e],[side,h,e],[side,h,c]],fill,color,layer);face([[a,h,c],[b,h,c],[b,h,e],[a,h,e]],fill,color,layer);}
+function label(value,x,y,z,color,size=14){labels.push({value,x,y,z,color,size});}
+box(-90,750,470,190,4,'var(--border-node)',0,0);box(-70,0,520,640,4,'var(--border-node)',0,0);box(380,0,200,240,4,'var(--border-node)',0,0);
+// Ports, shafts, active arrowheads, and packets share exact world coordinates.
+// Baseline paths describe connections; the highlighted path shows this step's direction.
+function connection(path,color,arrow=false){
+ for(let i=1;i<path.length;i++){
+  const a=path[i-1],b=path[i],start=p(...a),end=p(...b),length=Math.hypot(end.x-start.x,end.y-start.y);
+  const trim=arrow&&i===path.length-1?Math.min(.45,9.5/length):0;
+  for(let k=0;k<20;k++){
+   const t=(1-trim)*k/20,u=(1-trim)*(k+1)/20;
+   const v=a.map((c,j)=>c+(b[j]-c)*t),w=a.map((c,j)=>c+(b[j]-c)*u),pa=p(...v),pb=p(...w);
+   faces.push({layer:1,depth:(pa.depth+pb.depth)/2,draw:()=>el('line',{x1:pa.x,y1:pa.y,x2:pb.x,y2:pb.y,stroke:color,'stroke-width':arrow?2:1.4})});
+  }
+ }
+ if(arrow){
+  const a=path.at(-2),b=path.at(-1),tip=p(...b),tail=p(...a),length=Math.hypot(tip.x-tail.x,tip.y-tail.y),ux=(tip.x-tail.x)/length,uy=(tip.y-tail.y)/length;
+  faces.push({layer:1,depth:tip.depth+.02,draw:()=>el('path',{d:`M${tip.x} ${tip.y} L${tip.x-ux*10-uy*4} ${tip.y-uy*10+ux*4} L${tip.x-ux*10+uy*4} ${tip.y-uy*10-ux*4} Z`,fill:color,'data-arrow':'active','data-tip':`${tip.x},${tip.y}`,'data-port':b.join(','),'data-direction':`${ux},${uy}`})});
+ }
+}
+for(const path of Object.values(paths))connection(path,'var(--scale-wire)');
+connection(phase.path,'var(--accent)',true);
+
+box(-220,750,130,110,80,'var(--scale-app)');label('Client',-220,94,750,'var(--scale-app)');
+box(40,750,130,110,80,'var(--scale-worker)');label('Your workers',40,94,750,'var(--scale-worker)');
+box(-230,0,120,510,80,'var(--scale-front)');label('Frontend',-230,94,0,'var(--scale-front)');
+box(70,-190,180,120,80,'var(--scale-history)');label('History',70,94,-190,'var(--scale-history)');
+box(70,190,180,120,80,'var(--scale-matching)');label('Matching',70,105,190,'var(--scale-matching)');
+for(let i=0;i<3;i++)box(20+i*48,154,24,20,87,stage>=3&&stage<8&&i===0?'var(--scale-matching)':'var(--border-node)',80,2);
+const top=p(380,100,0),base=p(380,0,0);faces.push({layer:1,depth:p(380,50,0).depth,draw:()=>{el('path',{d:`M${top.x-60} ${top.y} V${base.y} A60 34 0 0 0 ${base.x+60} ${base.y} V${top.y} Z`,fill:'var(--panel)',stroke:'var(--scale-storage)','stroke-width':1.5});for(const h of [33,66]){const q=p(380,h,0);el('path',{d:`M${q.x-60} ${q.y} A60 34 0 0 0 ${q.x+60} ${q.y}`,fill:'none',stroke:'var(--scale-storage)'});}el('ellipse',{cx:top.x,cy:top.y,rx:60,ry:34,fill:'var(--panel)',stroke:'var(--scale-storage)'});}});label('MySQL',380,100,0,'var(--scale-storage)');
+if(phase.path){const path=phase.path,lengths=path.slice(1).map((v,i)=>Math.hypot(...v.map((c,k)=>c-path[i][k]))),total=lengths.reduce((a,b)=>a+b,0);let remaining=total*(elapsed%3)/3;for(let i=0;i<lengths.length;i++){if(remaining<=lengths[i]){const t=remaining/lengths[i],q=p(...path[i].map((v,k)=>v+(path[i+1][k]-v)*t));faces.push({layer:1,depth:q.depth,draw:()=>el('circle',{cx:q.x,cy:q.y,r:6,fill:'var(--accent)','data-packet':'active'})});break;}remaining-=lengths[i];}}
+faces.sort((a,b)=>a.layer-b.layer||a.depth-b.depth).forEach(f=>f.draw?f.draw():el('polygon',{points:f.v.map(v=>{const q=p(...v);return q.x+','+q.y;}).join(' '),fill:f.fill,stroke:f.stroke,'stroke-width':1.4}));
+label('YOUR APPLICATION',-90,0,895,'var(--scale-app)',14);label('TEMPORAL SERVER',-70,0,370,'var(--scale-front)',14);label('MYSQL STORAGE',380,0,180,'var(--scale-storage)',14);
+for(const l of labels){const q=p(l.x,l.y,l.z),e=el('text',{x:q.x,y:q.y,fill:l.color,'font-size':l.size,'text-anchor':'middle','dominant-baseline':'central'});e.textContent=l.value;}
+world.replaceChildren(sceneFragment);
+document.querySelector('#status').textContent=`${stage+1}/12 · ${phase.message}`;document.querySelector('#history').textContent=stage<3?'Awaiting persisted execution.':stage<11?'Event History + mutable state durable.\nInternal transfer/timer tasks recorded.':'Workflow Task completion and resulting state durable.';document.querySelector('#worker').textContent=stage<9?'Long-polling through Frontend.':stage<10?'Running Workflow code using delivered history.':'Reporting commands/results through Frontend.';document.querySelector('#pause').textContent=playing?'Pause demo':'Play demo';}
+document.querySelector('#pause').addEventListener('click',()=>{playing=!playing;render();});document.querySelector('#step').addEventListener('click',()=>{playing=false;elapsed=(Math.floor(elapsed/3)*3+3)%39;render();});document.querySelector('#reset').addEventListener('click',()=>{elapsed=0;playing=!reduced.matches;render();});document.querySelector('#view').addEventListener('click',()=>{angle=.14;render();});
+svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointerId,x:e.clientX};svg.setPointerCapture(e.pointerId);});svg.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;angle=Math.max(-.35,Math.min(.35,angle+(e.clientX-drag.x)*.004));drag.x=e.clientX;render();});for(const event of ['pointerup','pointercancel','lostpointercapture'])svg.addEventListener(event,()=>drag=null);svg.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();angle=Math.max(-.35,Math.min(.35,angle+(e.key==='ArrowRight'?.08:-.08)));render();});function frame(now){if(last!==null&&playing&&!document.hidden){elapsed=(elapsed+Math.min((now-last)/1000,.05))%39;render();}last=now;requestAnimationFrame(frame);}render();requestAnimationFrame(frame);
+})();</script><script>
+(()=>{
+  const ns='http://www.w3.org/2000/svg';
+  const world=document.querySelector('#scale-world'),svg=document.querySelector('#scale-scene');
+  const initialAngle=.08,minAngle=-.22,maxAngle=.22;
+  let historyCount=2,workerCount=3,dbCount=3,angle=initialAngle,drag=null;
+  let message='Start: 2 History instances own H1–H12; 3 physical MySQL write shards hold example data. Scale each layer independently.';
+  const colors={app:'var(--scale-app)',frontend:'var(--scale-front)',history:'var(--scale-history)',matching:'var(--scale-matching)',worker:'var(--scale-worker)',storage:'var(--scale-storage)'};
+  function project(x,y,z){
+    const X=x*Math.cos(angle)-z*Math.sin(angle),Z=x*Math.sin(angle)+z*Math.cos(angle);
+    return{x:800+X*.76,y:355+(Z*.62-y*.95)*.76,depth:Z+y*.653};
+  }
+  let fragment;
+  function element(tag,attrs){const e=document.createElementNS(ns,tag);for(const[k,v]of Object.entries(attrs))e.setAttribute(k,v);fragment.append(e);return e;}
+  function render(){
+    fragment=document.createDocumentFragment();
+    const faces=[],labels=[],segments=new Set(),arrows=new Set();
+    function face(vertices,fill,stroke,layer=1){
+      faces.push({layer,depth:vertices.reduce((sum,v)=>sum+project(...v).depth,0)/vertices.length,draw:()=>element('polygon',{points:vertices.map(v=>{const q=project(...v);return q.x+','+q.y;}).join(' '),fill,stroke,'stroke-width':1.3})});
+    }
+    function box(x,z,w,d,h,color,base=0,layer=1){
+      const a=x-w/2,b=x+w/2,c=z-d/2,e=z+d/2,fill=layer===0?'var(--scale-platform)':'var(--panel)';
+      face([[a,base,e],[b,base,e],[b,h,e],[a,h,e]],fill,color,layer);
+      const side=angle<0?a:b;
+      face([[side,base,c],[side,base,e],[side,h,e],[side,h,c]],fill,color,layer);
+      face([[a,h,c],[b,h,c],[b,h,e],[a,h,e]],fill,color,layer);
+    }
+    function label(value,x,y,z,color='var(--text)',size=15){labels.push({value,x,y,z,color,size});}
+    // Every route and shape shares this projection. Splitting wire segments
+    // preserves painter ordering around raised faces while the scene rotates.
+    function route(path,arrow=false){
+      for(let i=1;i<path.length;i++){
+        const a=path[i-1],b=path[i],key=JSON.stringify([a,b].sort());
+        if(segments.has(key))continue;segments.add(key);
+        const length=Math.hypot(...b.map((v,j)=>v-a[j])),parts=Math.max(1,Math.ceil(length/40));
+        const start=project(...a),end=project(...b),screenLength=Math.hypot(end.x-start.x,end.y-start.y);
+        const trim=arrow&&i===path.length-1?Math.min(.9,8.5/screenLength):0;
+        for(let k=0;k<parts;k++){
+          const p=project(...a.map((v,j)=>v+(b[j]-v)*(1-trim)*k/parts)),q=project(...a.map((v,j)=>v+(b[j]-v)*(1-trim)*(k+1)/parts));
+          faces.push({layer:1,depth:(p.depth+q.depth)/2,draw:()=>element('line',{x1:p.x,y1:p.y,x2:q.x,y2:q.y,stroke:'var(--scale-wire)','stroke-width':1.4})});
+        }
+      }
+      if(arrow){
+        const a=path.at(-2),b=path.at(-1),key=JSON.stringify([a,b]);
+        if(arrows.has(key))return;arrows.add(key);
+        const tip=project(...b),tail=project(...a),length=Math.hypot(tip.x-tail.x,tip.y-tail.y),ux=(tip.x-tail.x)/length,uy=(tip.y-tail.y)/length;
+        faces.push({layer:1,depth:tip.depth+.02,draw:()=>element('path',{d:`M${tip.x} ${tip.y} L${tip.x-ux*9-uy*3.5} ${tip.y-uy*9+ux*3.5} L${tip.x-ux*9+uy*3.5} ${tip.y-uy*9-ux*3.5} Z`,fill:'var(--scale-wire)','data-arrow':'request','data-tip':`${tip.x},${tip.y}`,'data-port':b.join(','),'data-direction':`${ux},${uy}`})});
+      }
+    }
+    function cylinder(x,z,r,h,color,kind){
+      const top=project(x,h,z),base=project(x,4,z),radius=r*.76,ry=r*.62*.76;
+      faces.push({layer:1,depth:project(x,h/2,z).depth,draw:()=>{
+        element('path',{d:`M${top.x-radius} ${top.y} V${base.y} A${radius} ${ry} 0 0 0 ${base.x+radius} ${base.y} V${top.y} Z`,fill:'var(--panel)',stroke:color,'stroke-width':1.4,'data-kind':kind});
+        const band=project(x,h/2,z);
+        element('path',{d:`M${band.x-radius} ${band.y} A${radius} ${ry} 0 0 0 ${band.x+radius} ${band.y}`,fill:'none',stroke:color,'stroke-width':1});
+        element('ellipse',{cx:top.x,cy:top.y,rx:radius,ry,fill:'var(--panel)',stroke:color,'stroke-width':1.4});
+      }});
+    }
+    box(-590,40,240,960,4,'var(--border-node)',0,0);
+    box(125,40,1050,960,4,'var(--border-node)',0,0);
+    box(0,1080,1380,980,4,'var(--border-node)',0,0);
+    label('YOUR APPLICATION',-590,0,-465,colors.app,16);
+    label('TEMPORAL SERVER',125,0,-625,colors.frontend,17);
+    label('VITESS / MYSQL PERSISTENCE',0,0,1630,colors.storage,17);
+
+    box(-590,-335,180,90,52,colors.app);label('Client',-590,60,-335,colors.app);
+    route([[-500,26,-335],[-435,26,-335],[-435,26,-285],[-370,26,-285]],true);
+    for(let i=0;i<workerCount;i++){
+      const z=-175+i*160;
+      box(-590,z,180,58,36,colors.worker);label('SDK worker '+(i+1),-590,45,z,colors.worker);
+      route([[-500,26,z],[-435,26,z],[-435,26,-285],[-370,26,-285]],true);
+    }
+    box(-305,-285,130,90,52,colors.frontend);
+    label('gRPC load',-305,64,-305,colors.frontend,14);label('balancer',-305,64,-267,colors.frontend,14);
+    for(let i=0;i<3;i++){
+      const z=-100+i*190;
+      box(-305,z,140,70,52,colors.frontend);label('Frontend '+(i+1),-305,64,z,colors.frontend,14);
+      route([[-305,26,-240],[-405,26,-240],[-405,26,z],[-375,26,z]],true);
+      route([[-235,26,z],[-185,26,z],[-185,26,-395]]);
+      route([[-235,26,z],[-185,26,z],[-185,26,450]]);
+    }
+
+    const hosts=historyCount===2?[-20,400]:[-40,210,460],width=historyCount===2?260:200,per=12/historyCount;
+    for(let host=0;host<historyCount;host++){
+      const x=hosts[host];
+      box(x,-250,width,220,64,colors.history);label('History '+(host+1),x,80,-335,colors.history);
+      route([[-185,26,-395],[x,26,-395],[x,26,-360]],true);
+      route([[x,26,-140],[x,26,80]]);
+      route([[x,26,-140],[x,26,-110],[690,26,-110],[690,26,600],[0,26,600],[0,26,645]],true);
+      for(let k=0;k<per;k++){
+        const id=host*per+k+1,columns=historyCount===2?3:2;
+        const xx=x+(k%columns-(columns-1)/2)*62,zz=-265+Math.floor(k/columns)*67;
+        box(xx,zz,50,42,76,colors.history,64,2);label('H'+id,xx,84,zz,colors.history,13);
+      }
+    }
+    // Task queue partitions stay inside Matching; they are not database shards.
+    for(let i=0;i<2;i++){
+      const x=i===0?-20:400;
+      box(x,260,260,160,64,colors.matching);label('Matching '+(i+1),x,80,200,colors.matching);
+      route([[-185,26,450],[x,26,450],[x,26,340]],true);
+      route([[-40,26,80],[460,26,80]]);
+      route([[x,26,80],[x,26,180]],true);
+      route([[x,26,340],[x,26,390],[670,26,390],[670,26,600],[0,26,600],[0,26,645]],true);
+      for(let k=0;k<2;k++){
+        const xx=x+(k-.5)*108;
+        box(xx,270,88,56,77,colors.matching,64,2);label('Q'+(i*2+k),xx,85,270,colors.matching,13);
+      }
+    }
+    box(0,700,300,110,52,colors.frontend);label('VTGate pool · SQL',0,72,700,colors.frontend);
+
+    const shards=dbCount===3?[-470,-155,160]:[-480,-235,10,255];
+    for(let i=0;i<dbCount;i++){
+      const x=shards[i];
+      box(x,1175,210,650,4,colors.storage,0,0);
+      label('MySQL shard '+String.fromCharCode(65+i),x,100,900,colors.storage,15);
+      cylinder(x,1060,36,78,colors.storage,'primary');label('primary',x,92,1060,colors.storage,13);
+      label('VTTablet + MySQL',x,92,950,'var(--text-muted)',12);
+      route([[0,26,755],[0,26,870],[x,26,870],[x,26,1024]],true);
+      for(const dx of [-54,54]){
+        cylinder(x+dx,1300,24,48,'var(--border-node)','replica');label('replica',x+dx,65,1300,'var(--text-muted)',12);
+        route([[x,26,1096],[x,26,1200],[x+dx,26,1200],[x+dx,26,1276]],true);
+      }
+      // Symbolic placement samples; this is not a Vitess Vindex implementation.
+      const sample=Array.from({length:12},(_,k)=>k+1).filter((_,k)=>k%dbCount===i).map(id=>'H'+id).join('·');
+      label('sample: '+sample,x,0,1480,colors.history,11);
+    }
+    box(540,1175,220,650,4,'var(--border-node)',0,0);
+    label('Unsharded keyspace',540,100,900,'var(--text)',15);
+    cylinder(540,1060,36,78,'var(--border-node)','metadata');label('VTTablet + MySQL',540,0,1245,'var(--text-muted)',12);
+    label('selected metadata',540,0,1410,'var(--text-muted)',12);
+    route([[0,26,755],[0,26,870],[540,26,870],[540,26,1024]],true);
+
+    faces.sort((a,b)=>a.layer-b.layer||a.depth-b.depth).forEach(f=>f.draw());
+    for(const l of labels){
+      const q=project(l.x,l.y,l.z),e=element('text',{x:q.x,y:q.y,fill:l.color,'font-size':l.size,'text-anchor':'middle','dominant-baseline':'central'});e.textContent=l.value;
+    }
+    world.replaceChildren(fragment);
+    document.querySelector('#scale-history-count').textContent=historyCount;
+    document.querySelector('#scale-worker-count').textContent=workerCount;
+    document.querySelector('#scale-storage-count').textContent=dbCount;
+    document.querySelector('#scale-status').textContent=message;
+    document.querySelector('#scale-history').disabled=historyCount===3;
+    document.querySelector('#scale-workers').disabled=workerCount===4;
+    document.querySelector('#scale-storage').disabled=dbCount===4;
+    document.querySelector('#scale-description').textContent=`${historyCount} History instances own twelve logical History Shards; ${workerCount} application SDK workers enter three Frontend instances through a gRPC load balancer. Two Matching instances host orders queue partitions. VTGate routes SQL to ${dbCount} physical MySQL write shards, each with one primary and two replicas, plus an unsharded keyspace. Drag with a mouse or use the left and right arrow keys to orbit.`;
+  }
+  document.querySelector('#scale-history').addEventListener('click',()=>{
+    historyCount=3;message='History scaled from 2 to 3 instances. H1–H12 redistribute among owners; logical shard IDs and physical MySQL shard count stay unchanged.';render();
+  });
+  document.querySelector('#scale-workers').addEventListener('click',()=>{
+    workerCount=4;message='Application SDK workers scaled from 3 to 4. Execution capacity increases independently of Temporal service counts and persistence topology.';render();
+  });
+  document.querySelector('#scale-storage').addEventListener('click',()=>{
+    dbCount=4;message='Physical MySQL write shards scaled from 3 to 4. Sample storage groups change behind VTGate; H1–H12 retain their IDs and History owners. This shows the topology after migration.';render();
+  });
+  document.querySelector('#scale-reset').addEventListener('click',()=>{
+    historyCount=2;workerCount=3;dbCount=3;message='Reset: 2 History instances own H1–H12; 3 SDK workers and 3 physical MySQL write shards. Scale each layer independently.';render();
+  });
+  function rotate(delta){const next=Math.max(minAngle,Math.min(maxAngle,angle+delta));if(next===angle)return;angle=next;render();}
+  document.querySelector('#scale-left').addEventListener('click',()=>rotate(-.06));
+  document.querySelector('#scale-right').addEventListener('click',()=>rotate(.06));
+  document.querySelector('#scale-view').addEventListener('click',()=>{angle=initialAngle;render();});
+  svg.addEventListener('pointerdown',e=>{
+    if(e.button!==0||e.pointerType==='touch')return;
+    drag={id:e.pointerId,x:e.clientX};svg.setPointerCapture(e.pointerId);svg.classList.add('dragging');
+  });
+  svg.addEventListener('pointermove',e=>{
+    if(!drag||drag.id!==e.pointerId)return;
+    rotate((e.clientX-drag.x)*.003);drag.x=e.clientX;
+  });
+  for(const event of ['pointerup','pointercancel','lostpointercapture'])svg.addEventListener(event,()=>{drag=null;svg.classList.remove('dragging');});
+  svg.addEventListener('keydown',e=>{
+    if(!['ArrowLeft','ArrowRight'].includes(e.key))return;
+    e.preventDefault();rotate(e.key==='ArrowLeft'?-.06:.06);
+  });
+  // Scaling changes are immediate; this section adds no automatic motion.
+  render();
+})();
+</script><script>
+// Kept inline so each reference remains a standalone, offline demo.
+(() => {
+  const minZoom = .25, maxZoom = 4, zoomStep = 1.2;
+  for (const svg of document.querySelectorAll('svg[viewBox]')) {
+    const world = svg.querySelector(':scope > g');
+    if (!world) continue;
+    const original = svg.getAttribute('viewBox').trim().split(/[\s,]+/).map(Number);
+    const aspect = original[2] / original[3];
+    let fitted = [...original], zoom = 1;
+    svg.id ||= `${world.id}-scene`;
+    svg.classList.add('scene-viewport');
+    svg.style.aspectRatio = `${original[2]} / ${original[3]}`;
+
+    const controls = document.createElement('div');
+    controls.className = 'controls scene-camera';
+    controls.setAttribute('role', 'group');
+    controls.setAttribute('aria-label', `${svg.querySelector('title').textContent} view controls`);
+    function button(label, action, handler) {
+      const control = document.createElement('button');
+      control.type = 'button';
+      control.textContent = label;
+      control.dataset.zoom = action;
+      control.setAttribute('aria-controls', svg.id);
+      control.addEventListener('click', handler);
+      controls.append(control);
+      return control;
+    }
+    const zoomOut = button('Zoom out', 'out', () => changeZoom(1 / zoomStep));
+    const zoomIn = button('Zoom in', 'in', () => changeZoom(zoomStep));
+    button('Fit scene', 'fit', fitScene);
+    const level = document.createElement('output');
+    level.className = 'zoom-level';
+    level.setAttribute('aria-label', 'Scene zoom');
+    level.setAttribute('aria-live', 'off');
+    const hint = document.createElement('span');
+    hint.id = `${svg.id}-zoom-help`;
+    hint.className = 'zoom-hint';
+    hint.textContent = 'Scroll to zoom · drag to orbit · + / − zoom · 0 fit';
+    controls.append(level, hint);
+    svg.before(controls);
+    svg.setAttribute('aria-describedby', [svg.getAttribute('aria-describedby'), hint.id].filter(Boolean).join(' '));
+
+    function updateView() {
+      const width = fitted[2] / zoom, height = fitted[3] / zoom;
+      const x = fitted[0] + (fitted[2] - width) / 2;
+      const y = fitted[1] + (fitted[3] - height) / 2;
+      svg.setAttribute('viewBox', `${x} ${y} ${width} ${height}`);
+      level.textContent = `${Math.round(zoom * 100)}%`;
+      zoomOut.disabled = zoom <= minZoom;
+      zoomIn.disabled = zoom >= maxZoom;
+    }
+    function changeZoom(factor) {
+      zoom = Math.max(minZoom, Math.min(maxZoom, zoom * factor));
+      updateView();
+    }
+    function fitScene() {
+      // Measure the current projection, including labels after orbiting or scaling.
+      fitted = [...original];
+      let bounds;
+      try { bounds = world.getBBox(); } catch { /* Use the original frame if hidden. */ }
+      if (bounds && [bounds.x, bounds.y, bounds.width, bounds.height].every(Number.isFinite) && bounds.width > 0 && bounds.height > 0) {
+        const padding = Math.max(24, Math.max(bounds.width, bounds.height) * .04);
+        const width = Math.max(bounds.width + padding * 2, (bounds.height + padding * 2) * aspect);
+        const height = width / aspect;
+        fitted = [bounds.x + (bounds.width - width) / 2, bounds.y + (bounds.height - height) / 2, width, height];
+      }
+      zoom = 1;
+      updateView();
+    }
+    svg.addEventListener('keydown', event => {
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if (['+', '='].includes(event.key)) changeZoom(zoomStep);
+      else if (['-', '−', '_'].includes(event.key)) changeZoom(1 / zoomStep);
+      else if (event.key === '0') fitScene();
+      else return;
+      event.preventDefault();
+    });
+    svg.addEventListener('pointerdown', event => {
+      if (event.button !== 0 || event.pointerType === 'touch') return;
+      // Suppress native text selection while retaining focus on clickable records.
+      event.preventDefault();
+      (event.target.closest('[tabindex]') || svg).focus({preventScroll: true});
+    });
+    svg.addEventListener('wheel', event => {
+      // Wheel and trackpad gestures zoom only while the pointer is over the scene.
+      event.preventDefault();
+      const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? svg.clientHeight : 1;
+      changeZoom(Math.exp(-Math.max(-100, Math.min(100, event.deltaY * unit)) * .002));
+    }, {passive: false});
+    document.getElementById(svg.dataset.resetView)?.addEventListener('click', fitScene);
+    fitScene();
+  }
+})();
+</script>
+</body></html>

@@ -44,7 +44,17 @@ svg.dragging { cursor: grabbing; }
 button { font: inherit; background: var(--panel); color: var(--text); border: 1px solid var(--border-node); padding: 8px 12px; cursor: pointer; }
 button:focus-visible, svg:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 .hint { color: var(--text-muted); }
-main{max-width:1100px}.cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:20px 0}.cards article{padding:12px;background:var(--panel);border:1px solid var(--border-node)}.cards h2{font-size:13px;margin:0 0 8px;font-weight:500}.cards p{font-size:11px;color:var(--text-muted);margin:6px 0}.track{height:5px;background:var(--track)}.fill{height:100%;background:var(--warn)}#status{min-height:4em}@media(max-width:700px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}a{color:var(--text)}</style></head><body><main><header><div class="eyebrow">DISTRIBUTED SYSTEMS / INTERACTIVE 3D</div><h1>No heartbeat. Suspect the leader.</h1><p>Five Raft-style nodes use leader heartbeats and independent election timers. Missing messages trigger an election; they cannot distinguish a crash from a slow or disconnected peer.</p></header><p id="status"></p><figure><svg id="scene" viewBox="0 0 900 530" tabindex="0" role="img" aria-labelledby="title desc"><title id="title">Five-node heartbeat failure detector</title><desc id="desc">Drag horizontally or use arrow keys to orbit. Blue heartbeats reset follower timers. The leader crashes, a different follower times out and requests votes, and three votes elect it leader. The old leader returns as a follower.</desc><g id="world"></g></svg><div class="cards"><article><h2 style="color:#f6a76b">node 01</h2><p id="role0"></p><p>Current Leader: <span id="leader0"></span></p><p>Current Term: <span id="term0"></span></p><p id="timer0"></p><div class="track"><div id="bar0" class="fill"></div></div></article><article><h2 style="color:#69c9f4">node 02</h2><p id="role1"></p><p>Current Leader: <span id="leader1"></span></p><p>Current Term: <span id="term1"></span></p><p id="timer1"></p><div class="track"><div id="bar1" class="fill"></div></div></article><article><h2 style="color:#c6a0f6">node 03</h2><p id="role2"></p><p>Current Leader: <span id="leader2"></span></p><p>Current Term: <span id="term2"></span></p><p id="timer2"></p><div class="track"><div id="bar2" class="fill"></div></div></article><article><h2 style="color:#73dbac">node 04</h2><p id="role3"></p><p>Current Leader: <span id="leader3"></span></p><p>Current Term: <span id="term3"></span></p><p id="timer3"></p><div class="track"><div id="bar3" class="fill"></div></div></article><article><h2 style="color:#f0c96a">node 05</h2><p id="role4"></p><p>Current Leader: <span id="leader4"></span></p><p>Current Term: <span id="term4"></span></p><p id="timer4"></p><div class="track"><div id="bar4" class="fill"></div></div></article></div><div class="controls"><button id="pause">Pause demo</button><button id="fail">Fail leader now</button><button id="reset">Reset demo</button><button id="view">Reset view</button><span class="hint">Drag to orbit · ← / →</span></div><figcaption>Node badges: <strong>L1 = known leader 1 · T1 = current term 1</strong>. Leader cells match node colors; term cells change color with the term.<br><strong>Timeout means suspicion, not proof.</strong> Blue: heartbeat · yellow: candidate / vote request · green: vote granted · orange: leader · red: crashed. A five-node cluster needs three votes, including the candidate’s own vote. Followers monitor their leader locally; there is no separate detector server. Heartbeats are empty AppendEntries messages. This slow teaching sequence shuffles timeout samples each round, ensuring every node gets a turn as leader. It uses separated timeout samples to illustrate Raft’s randomized election timers. Logs are assumed equally up to date; log replication, split votes, and network partitions are omitted.</figcaption></figure><footer>Automatic 26-second story: heartbeats → crash → timeout → majority election → old leader rejoins.<br><a href="https://raft.github.io/raft.pdf">Original Raft paper: leader election, heartbeats, and randomized timeouts</a> · <a href="https://github.com/etcd-io/raft">Open-source etcd Raft implementation</a><br>Offline · reduced motion starts paused; use Play to run the sequence.</footer></main><script>
+main{max-width:1100px}.cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:20px 0}.cards article{padding:12px;background:var(--panel);border:1px solid var(--border-node)}.cards h2{font-size:13px;margin:0 0 8px;font-weight:500}.cards p{font-size:11px;color:var(--text-muted);margin:6px 0}.track{height:5px;background:var(--track)}.fill{height:100%;background:var(--warn)}#status{min-height:4em}@media(max-width:700px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}a{color:var(--text)}
+/* The viewport keeps its height while the camera zooms. */
+.scene-viewport{max-width:100%;min-width:0;overflow:hidden}
+.scene-viewport,.scene-viewport *{user-select:none;-webkit-user-select:none}
+.scene-viewport:focus-visible{outline:2px solid var(--info);outline-offset:3px}
+.controls.scene-camera{gap:8px;align-items:center;margin:12px 0}
+.scene-camera button{min-height:40px}
+.scene-camera button:disabled{opacity:.45;cursor:default}
+.scene-camera .zoom-level{min-width:5ch;text-align:right;font-variant-numeric:tabular-nums;color:var(--text-muted)}
+.scene-camera .zoom-hint{color:var(--text-muted);font-size:11px}
+</style></head><body><main><header><div class="eyebrow">DISTRIBUTED SYSTEMS / INTERACTIVE 3D</div><h1>No heartbeat. Suspect the leader.</h1><p>Five Raft-style nodes use leader heartbeats and independent election timers. Missing messages trigger an election; they cannot distinguish a crash from a slow or disconnected peer.</p></header><p id="status"></p><figure><svg id="scene" viewBox="0 0 900 530" tabindex="0" role="img" aria-labelledby="title desc" data-reset-view="view"><title id="title">Five-node heartbeat failure detector</title><desc id="desc">Drag horizontally or use arrow keys to orbit. Red hearts reset follower timers. The leader crashes, a different follower times out and requests votes, and three votes elect it leader. The old leader returns as a follower.</desc><g id="world"></g></svg><div class="cards"><article><h2 style="color:#f6a76b">node 01</h2><p id="role0"></p><p>Current Leader: <span id="leader0"></span></p><p>Current Term: <span id="term0"></span></p><p id="timer0"></p><div class="track"><div id="bar0" class="fill"></div></div></article><article><h2 style="color:#69c9f4">node 02</h2><p id="role1"></p><p>Current Leader: <span id="leader1"></span></p><p>Current Term: <span id="term1"></span></p><p id="timer1"></p><div class="track"><div id="bar1" class="fill"></div></div></article><article><h2 style="color:#c6a0f6">node 03</h2><p id="role2"></p><p>Current Leader: <span id="leader2"></span></p><p>Current Term: <span id="term2"></span></p><p id="timer2"></p><div class="track"><div id="bar2" class="fill"></div></div></article><article><h2 style="color:#73dbac">node 04</h2><p id="role3"></p><p>Current Leader: <span id="leader3"></span></p><p>Current Term: <span id="term3"></span></p><p id="timer3"></p><div class="track"><div id="bar3" class="fill"></div></div></article><article><h2 style="color:#f0c96a">node 05</h2><p id="role4"></p><p>Current Leader: <span id="leader4"></span></p><p>Current Term: <span id="term4"></span></p><p id="timer4"></p><div class="track"><div id="bar4" class="fill"></div></div></article></div><div class="controls"><button id="pause">Pause demo</button><button id="fail">Fail leader now</button><button id="reset">Reset demo</button><button id="view">Reset view</button><span class="hint">Drag to orbit · ← / →</span></div><figcaption>Green base rings fill from zero to 100% toward the scripted return of crashed nodes; yellow rings show election timeouts. Recovery timing is illustrative, not a Raft guarantee.<br>Node panels: <strong>known leader · current term · vote cast in that term</strong>. Leader and vote backgrounds match node identity colors; term backgrounds change each term. A dash means no vote cast in the new term. Node IDs remain on top of each database.<br><strong>Timeout means suspicion, not proof.</strong> Red hearts: heartbeat · blue: connection · yellow: candidate / vote request · green: vote granted · orange: leader · red: crashed. A five-node cluster needs three votes, including the candidate’s own vote. Followers monitor their leader locally; there is no separate detector server. Heartbeats are empty AppendEntries messages. This slow teaching sequence shuffles timeout samples each round, ensuring every node gets a turn as leader. It uses separated timeout samples to illustrate Raft’s randomized election timers. Logs are assumed equally up to date; log replication, split votes, and network partitions are omitted.</figcaption></figure><footer>Automatic 52-second story (half speed): heartbeats → crash → timeout → majority election → old leader rejoins.<br><a href="https://raft.github.io/raft.pdf">Original Raft paper: leader election, heartbeats, and randomized timeouts</a> · <a href="https://github.com/etcd-io/raft">Open-source etcd Raft implementation</a><br>Design references: <a href="https://wcygan.net/failure-detectors/">Failure Detectors</a> · <a href="https://wcygan.net/leader-election/">Leader Election</a><br>Offline · reduced motion starts paused; use Play to run the sequence.</footer></main><script>
 (() => {
 const svg=document.querySelector('#scene'),world=document.querySelector('#world'),pause=document.querySelector('#pause'),status=document.querySelector('#status');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)'),ns='http://www.w3.org/2000/svg';
@@ -71,7 +81,7 @@ function render(){
  const votes=candidate?1+(elapsed>=10.9?1:0)+(elapsed>=11.15?1:0):elapsed>=won?3:0;
  world.replaceChildren();el('polygon',{points:pts([[-320,0,-250],[320,0,-250],[320,0,250],[-320,0,250]].map(p=>project(...p))),fill:'var(--panel)',stroke:'var(--border)'});
  const objects=[];
- function link(from,to,color,t){const [a,b]=route(nodes[from],nodes[to]),pa=project(a.x,40,a.z),pb=project(b.x,40,b.z);el('line',{x1:pa.x,y1:pa.y,x2:pb.x,y2:pb.y,stroke:color,'stroke-width':1.3,opacity:.5});if(t>=0&&t<=1){const p=project(a.x+(b.x-a.x)*t,40,a.z+(b.z-a.z)*t);objects.push({depth:p.depth,draw:()=>el('circle',{cx:p.x,cy:p.y,r:4,fill:color})});}}
+ function link(from,to,color,t){const [a,b]=route(nodes[from],nodes[to]),pa=project(a.x,40,a.z),pb=project(b.x,40,b.z);el('line',{x1:pa.x,y1:pa.y,x2:pb.x,y2:pb.y,stroke:color,'stroke-width':1.3,opacity:.5});if(t>=0&&t<=1){const p=project(a.x+(b.x-a.x)*t,40,a.z+(b.z-a.z)*t);objects.push({depth:p.depth,draw:()=>color==='var(--info)'?el('path',{d:'M0 6 C-2 4 -7 1 -7 -3 C-7 -7 -2 -8 0 -4 C2 -8 7 -7 7 -3 C7 1 2 4 0 6 Z',transform:`translate(${p.x} ${p.y})`,fill:'var(--bad)'}):el('circle',{cx:p.x,cy:p.y,r:4,fill:color})});}}
  if(leader!==null){for(let i=0;i<5;i++)if(i!==leader&&!(i===previousLeader&&crashed))link(leader,i,'var(--info)',((elapsed-(leader===nextLeader?won:0))%.9)/.35);}
  if(candidate){const voters=[0,1,2,3,4].filter(i=>i!==previousLeader&&i!==nextLeader);voters.forEach((id,k)=>{link(nextLeader,id,'var(--warn)',(elapsed-election)/.25);if(k<2)link(id,nextLeader,'var(--good)',(elapsed-(k===0?10.65:10.9))/.25);});}
  for(let i=0;i<5;i++){
@@ -83,9 +93,10 @@ function render(){
   else if(leader===null)age=Math.max(0,elapsed-lastBeforeCrash);
   else if(leader===nextLeader&&i!==nextLeader)age=Math.max(0,(elapsed-won-.35)% .9);
   const remaining=Math.max(0,(timeout[i]||3)-age);
-  if(!failed&&i!==leader){
+  const recoveryRemaining=Math.max(0,20-elapsed);
+  if(failed||i!==leader){
    // World-space ground ring shares the follower's exact election timer.
-   const fraction=Math.min(1,remaining/(timeout[i]||3)),segments=64;
+   const fraction=failed?1-recoveryRemaining/12:Math.min(1,remaining/(timeout[i]||3)),segments=64;
    // Match the rendered base ellipse exactly. Anchor the disappearing end
    // to its camera-facing midpoint, independently of orbit azimuth.
    const center=project(n.x,0,n.z);
@@ -93,8 +104,8 @@ function render(){
    const track=Array.from({length:segments+1},(_,k)=>ring(k/segments*Math.PI*2));
    const count=Math.ceil(segments*fraction);
    const arc=Array.from({length:count+1},(_,k)=>ring((fraction-Math.min(k/segments,fraction))*Math.PI*2));
-   el('polyline',{points:pts(track),fill:'none',stroke:'var(--track)','stroke-width':3});
-   if(fraction>0)el('polyline',{points:pts(arc),fill:'none',stroke:'var(--warn)','stroke-width':4,'stroke-linecap':'round'});
+   el('polyline',{points:pts(track),fill:'none',stroke:failed?'var(--good)':'var(--track)',opacity:failed?.25:1,'stroke-width':3});
+   if(fraction>0)el('polyline',{points:pts(arc),fill:'none',stroke:failed?'var(--good)':'var(--warn)','stroke-width':4,'stroke-linecap':'round'});
   }
   document.querySelector('#role'+i).textContent=role;
   // Crashed nodes retain their last local view until they rejoin.
@@ -105,19 +116,25 @@ function render(){
   document.querySelector('#term'+i).textContent=String(failed?roundTerm:term);
   const localTerm=failed?roundTerm:term;
   objects.push({depth:project(n.x,60,n.z).depth+.01,draw:()=>{
-   const face=project(n.x,60,n.z),size=Math.max(28,String(localTerm).length*8+12),gap=4,pad=4,width=size*2+gap+pad*2;
-   el('rect',{x:face.x-width/2,y:face.y-size/2-pad,width,height:size+pad*2,rx:3,fill:'var(--panel)',stroke:'var(--border-node)'});
-   // Golden-angle hue spacing makes adjacent term colors clearly distinct.
+   const face=project(n.x,60,n.z),width=66,row=18,gap=3,pad=3,left=face.x-width/2,top=face.y-30;
+   el('rect',{x:left-pad,y:top-pad,width:width+pad*2,height:row*3+gap*2+pad*2,rx:4,fill:'var(--panel)',stroke:'var(--border-node)'});
    const termColor=`hsl(${(210+(localTerm-1)*137.508)%360} 65% 72%)`;
-   const cells=[{value:knownLeader===null?'L?':`L${knownLeader+1}`,color:knownLeader===null?'#a5abb3':nodeColors[knownLeader]},{value:`T${localTerm}`,color:termColor}];
-   cells.forEach((cell,j)=>{
-    const x=face.x-width/2+pad+j*(size+gap);
-    el('rect',{x,y:face.y-size/2,width:size,height:size,rx:2,fill:cell.color});
-    const label=el('text',{x:x+size/2,y:face.y,'text-anchor':'middle','dominant-baseline':'central',fill:'var(--canvas)','font-size':11,'font-weight':600});label.textContent=cell.value;
+   const voters=[0,1,2,3,4].filter(id=>id!==previousLeader&&id!==nextLeader);
+   const voterIndex=voters.indexOf(i);
+   const votedFor=localTerm===roundTerm?previousLeader:i===nextLeader?nextLeader:voterIndex>=0&&voterIndex<2&&elapsed>=(voterIndex===0?10.65:10.9)?nextLeader:null;
+   const cells=[
+    {x:left,y:top,width,value:knownLeader===null?'Leader ?':`Leader ${knownLeader+1}`,color:knownLeader===null?'#a5abb3':nodeColors[knownLeader]},
+    {x:left,y:top+row+gap,width,value:`Term ${localTerm}`,color:termColor},
+    {x:left,y:top+(row+gap)*2,width,value:votedFor===null?'Vote –':`Vote ${votedFor+1}`,color:votedFor===null?'#a5abb3':nodeColors[votedFor]}
+   ];
+   cells.forEach(cell=>{
+    el('rect',{x:cell.x,y:cell.y,width:cell.width,height:row,rx:3,fill:cell.color});
+    const label=el('text',{x:cell.x+cell.width/2,y:cell.y+row/2,'text-anchor':'middle','dominant-baseline':'central',fill:'var(--canvas)','font-size':9,'font-weight':600});label.textContent=cell.value;
    });
   }});
-  document.querySelector('#timer'+i).textContent=failed?'No messages sent':i===leader?'Heartbeat every 0.9s':candidate&&i===nextLeader?`${votes} / 3 votes`:remaining===0?'Election timeout':`${remaining.toFixed(1)}s until timeout`;
-  document.querySelector('#bar'+i).style.width=failed||i===leader?'0%':`${Math.min(100,remaining/(timeout[i]||3)*100)}%`;
+  document.querySelector('#timer'+i).textContent=failed?`${(recoveryRemaining*2).toFixed(1)}s until back online`:i===leader?'Heartbeat every 0.9s':candidate&&i===nextLeader?`${votes} / 3 votes`:remaining===0?'Election timeout':`${remaining.toFixed(1)}s until timeout`;
+  document.querySelector('#bar'+i).style.background=failed?'var(--good)':'var(--warn)';
+  document.querySelector('#bar'+i).style.width=failed?`${(1-recoveryRemaining/12)*100}%`:i===leader?'0%':`${Math.min(100,remaining/(timeout[i]||3)*100)}%`;
  }
  objects.sort((a,b)=>a.depth-b.depth).forEach(o=>o.draw());
  status.textContent=elapsed<8?`Term ${roundTerm} · node 0${previousLeader+1} sends heartbeats. Each follower resets its own election timer.`:elapsed<election?'Leader crash · heartbeats stop. Followers cannot distinguish failure from delay; their timers continue.':elapsed<won?`Node 0${nextLeader+1} timed out first · term ${roundTerm+1} · candidate requests votes (${votes} of 3 needed).`:elapsed<20?`Three votes elect node 0${nextLeader+1} · term ${roundTerm+1}. New heartbeats prevent other elections.`:`Node 0${previousLeader+1} rejoins as a follower of node 0${nextLeader+1}. The next round will use a different timeout winner.`;
@@ -125,5 +142,100 @@ function render(){
 }
 pause.addEventListener('click',()=>{playing=!playing;render();});document.querySelector('#fail').addEventListener('click',()=>{elapsed=8;render();});document.querySelector('#reset').addEventListener('click',()=>{elapsed=0;previousLeader=0;roundTerm=1;bag=[];prepareElection();playing=!reduced.matches;render();});document.querySelector('#view').addEventListener('click',()=>{angle=.3;render();});
 svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointerId,x:e.clientX};svg.setPointerCapture(e.pointerId);svg.classList.add('dragging');});svg.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;angle+=(e.clientX-drag.x)*.008;drag.x=e.clientX;render();});function stop(){drag=null;svg.classList.remove('dragging');}for(const e of ['pointerup','pointercancel','lostpointercapture'])svg.addEventListener(e,stop);svg.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();angle+=e.key==='ArrowRight'?.12:-.12;render();});
-function frame(now){if(last!==null&&playing&&!document.hidden){elapsed+=Math.min((now-last)/1000,.05);if(elapsed>=26){elapsed-=26;previousLeader=nextLeader;roundTerm++;prepareElection();}render();}last=now;requestAnimationFrame(frame);}render();requestAnimationFrame(frame);
-})();</script></body></html>
+function frame(now){if(last!==null&&playing&&!document.hidden){elapsed+=Math.min((now-last)/1000,.05)*.5;if(elapsed>=26){elapsed-=26;previousLeader=nextLeader;roundTerm++;prepareElection();}render();}last=now;requestAnimationFrame(frame);}render();requestAnimationFrame(frame);
+})();</script><script>
+// Kept inline so each reference remains a standalone, offline demo.
+(() => {
+  const minZoom = .25, maxZoom = 4, zoomStep = 1.2;
+  for (const svg of document.querySelectorAll('svg[viewBox]')) {
+    const world = svg.querySelector(':scope > g');
+    if (!world) continue;
+    const original = svg.getAttribute('viewBox').trim().split(/[\s,]+/).map(Number);
+    const aspect = original[2] / original[3];
+    let fitted = [...original], zoom = 1;
+    svg.id ||= `${world.id}-scene`;
+    svg.classList.add('scene-viewport');
+    svg.style.aspectRatio = `${original[2]} / ${original[3]}`;
+
+    const controls = document.createElement('div');
+    controls.className = 'controls scene-camera';
+    controls.setAttribute('role', 'group');
+    controls.setAttribute('aria-label', `${svg.querySelector('title').textContent} view controls`);
+    function button(label, action, handler) {
+      const control = document.createElement('button');
+      control.type = 'button';
+      control.textContent = label;
+      control.dataset.zoom = action;
+      control.setAttribute('aria-controls', svg.id);
+      control.addEventListener('click', handler);
+      controls.append(control);
+      return control;
+    }
+    const zoomOut = button('Zoom out', 'out', () => changeZoom(1 / zoomStep));
+    const zoomIn = button('Zoom in', 'in', () => changeZoom(zoomStep));
+    button('Fit scene', 'fit', fitScene);
+    const level = document.createElement('output');
+    level.className = 'zoom-level';
+    level.setAttribute('aria-label', 'Scene zoom');
+    level.setAttribute('aria-live', 'off');
+    const hint = document.createElement('span');
+    hint.id = `${svg.id}-zoom-help`;
+    hint.className = 'zoom-hint';
+    hint.textContent = 'Scroll to zoom · drag to orbit · + / − zoom · 0 fit';
+    controls.append(level, hint);
+    svg.before(controls);
+    svg.setAttribute('aria-describedby', [svg.getAttribute('aria-describedby'), hint.id].filter(Boolean).join(' '));
+
+    function updateView() {
+      const width = fitted[2] / zoom, height = fitted[3] / zoom;
+      const x = fitted[0] + (fitted[2] - width) / 2;
+      const y = fitted[1] + (fitted[3] - height) / 2;
+      svg.setAttribute('viewBox', `${x} ${y} ${width} ${height}`);
+      level.textContent = `${Math.round(zoom * 100)}%`;
+      zoomOut.disabled = zoom <= minZoom;
+      zoomIn.disabled = zoom >= maxZoom;
+    }
+    function changeZoom(factor) {
+      zoom = Math.max(minZoom, Math.min(maxZoom, zoom * factor));
+      updateView();
+    }
+    function fitScene() {
+      // Measure the current projection, including labels after orbiting or scaling.
+      fitted = [...original];
+      let bounds;
+      try { bounds = world.getBBox(); } catch { /* Use the original frame if hidden. */ }
+      if (bounds && [bounds.x, bounds.y, bounds.width, bounds.height].every(Number.isFinite) && bounds.width > 0 && bounds.height > 0) {
+        const padding = Math.max(24, Math.max(bounds.width, bounds.height) * .04);
+        const width = Math.max(bounds.width + padding * 2, (bounds.height + padding * 2) * aspect);
+        const height = width / aspect;
+        fitted = [bounds.x + (bounds.width - width) / 2, bounds.y + (bounds.height - height) / 2, width, height];
+      }
+      zoom = 1;
+      updateView();
+    }
+    svg.addEventListener('keydown', event => {
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if (['+', '='].includes(event.key)) changeZoom(zoomStep);
+      else if (['-', '−', '_'].includes(event.key)) changeZoom(1 / zoomStep);
+      else if (event.key === '0') fitScene();
+      else return;
+      event.preventDefault();
+    });
+    svg.addEventListener('pointerdown', event => {
+      if (event.button !== 0 || event.pointerType === 'touch') return;
+      // Suppress native text selection while retaining focus on clickable records.
+      event.preventDefault();
+      (event.target.closest('[tabindex]') || svg).focus({preventScroll: true});
+    });
+    svg.addEventListener('wheel', event => {
+      // Wheel and trackpad gestures zoom only while the pointer is over the scene.
+      event.preventDefault();
+      const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? svg.clientHeight : 1;
+      changeZoom(Math.exp(-Math.max(-100, Math.min(100, event.deltaY * unit)) * .002));
+    }, {passive: false});
+    document.getElementById(svg.dataset.resetView)?.addEventListener('click', fitScene);
+    fitScene();
+  }
+})();
+</script>
+</body></html>

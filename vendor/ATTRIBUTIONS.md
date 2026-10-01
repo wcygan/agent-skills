@@ -31,3 +31,24 @@ These skills are copied from their upstream repositories.
 - Revision: `b1de91256a57110b655ff3572ce1fc41fbc2dac6`
 
 - `architecture-decision-record-skill` from `skills/architecture-decision-record-skill`
+
+## https://github.com/ayghri/i-have-adhd.git
+
+- License: MIT
+- Revision: `839872f9d1cd634fed642b4589ce7226199cc15f`
+
+- `i-have-adhd` from `skills/i-have-adhd`
+
+## https://github.com/cathrynlavery/diagram-design.git
+
+- License: MIT; bundled icons retain their upstream licenses (see references/THIRD_PARTY_LICENSES.md)
+- Revision: `57148ac6f7cf8f2d0080f23437ab2929bca15f3e`
+
+- `diagram-design` from `skills/diagram-design`
+
+## https://github.com/blader/humanizer.git
+
+- License: MIT
+- Revision: `225a6f39ac85f76ee48dbad772ea4abe4ed6c9d8`
+
+- `humanizer` from `.`

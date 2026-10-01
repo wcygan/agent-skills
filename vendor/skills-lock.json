@@ -41,6 +41,51 @@
         "architecture-decision-record-skill": "architecture-decision-record-skill"
       },
       "license": "CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/); third-party templates retain their original licenses; see vendor/architecture-decision-record-LICENSE.md"
+    },
+    {
+      "repository": "https://github.com/ayghri/i-have-adhd.git",
+      "branch": "main",
+      "ref": "839872f9d1cd634fed642b4589ce7226199cc15f",
+      "skills": {
+        "i-have-adhd": "i-have-adhd"
+      },
+      "remove_frontmatter": [
+        "disable-model-invocation"
+      ],
+      "license": "MIT",
+      "license_files": {
+        "LICENSE": "LICENSE"
+      }
+    },
+    {
+      "repository": "https://github.com/cathrynlavery/diagram-design.git",
+      "branch": "main",
+      "ref": "57148ac6f7cf8f2d0080f23437ab2929bca15f3e",
+      "skills": {
+        "diagram-design": "diagram-design"
+      },
+      "license": "MIT; bundled icons retain their upstream licenses (see references/THIRD_PARTY_LICENSES.md)",
+      "license_files": {
+        "LICENSE": "LICENSE",
+        "THIRD_PARTY_LICENSES.md": "references/THIRD_PARTY_LICENSES.md"
+      },
+      "supplemental_files": {
+        "vendor/diagram-design-third-party-LICENSES.md": "references/THIRD_PARTY_LICENSE_TEXTS.md"
+      }
+    },
+    {
+      "repository": "https://github.com/blader/humanizer.git",
+      "branch": "main",
+      "ref": "225a6f39ac85f76ee48dbad772ea4abe4ed6c9d8",
+      "skills_root": ".",
+      "skills": {
+        ".": "humanizer"
+      },
+      "include": [
+        "SKILL.md",
+        "LICENSE"
+      ],
+      "license": "MIT"
     }
   ]
 }

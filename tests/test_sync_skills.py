@@ -4,8 +4,12 @@ import argparse
 import os
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
+
+from skill_catalog import vendor
 
 from tools import sync_skills
 
@@ -58,7 +62,52 @@ class SyncSkillsCharacterizationTests(unittest.TestCase):
             capture_output=True,
         )
 
-        self.assertEqual(result.stdout, "validated 6 vendored skills\n")
+        count = sum(len(source["skills"]) for source in sync_skills.load_lock()["sources"])
+        self.assertEqual(result.stdout, f"validated {count} vendored skills\n")
+
+    def test_root_skill_import_is_selective_pinned_and_preserves_license(self) -> None:
+        source = {
+            "repository": "example/repo",
+            "branch": "main",
+            "ref": "pinned-revision",
+            "skills_root": ".",
+            "skills": {".": "demo"},
+            "include": ["SKILL.md"],
+            "license_files": {"LICENSE": "references/LICENSE"},
+            "supplemental_files": {"NOTICE": "references/NOTICE"},
+        }
+
+        def clone(source: dict, checkout: Path, ref: str) -> str:
+            self.assertEqual(ref, "pinned-revision")
+            checkout.mkdir()
+            (checkout / "SKILL.md").write_text("---\nname: demo\ndescription: Demo\n---\nBody\n")
+            (checkout / "LICENSE").write_text("Copyright and permission notice\n")
+            (checkout / ".git").mkdir()
+            (checkout / "README.md").write_text("Repository infrastructure\n")
+            return ref
+
+        with tempfile.TemporaryDirectory() as scratch:
+            skills = Path(scratch)
+            (skills / "NOTICE").write_text("Bundled resource notice\n")
+            with patch.object(vendor, "SKILLS_DIR", skills), patch.object(vendor, "ROOT", skills), patch.object(vendor, "clone_source", clone):
+                vendor.sync_source(source, update_lock=False)
+            target = skills / "demo"
+            self.assertTrue((target / "SKILL.md").is_file())
+            self.assertFalse((target / ".git").exists())
+            self.assertFalse((target / "README.md").exists())
+            self.assertEqual((target / "references/LICENSE").read_text(), "Copyright and permission notice\n")
+            self.assertEqual((target / "references/NOTICE").read_text(), "Bundled resource notice\n")
+            self.assertIn("revision=pinned-revision", (target / ".vendored").read_text())
+
+    def test_root_skill_attribution_uses_original_path(self) -> None:
+        with tempfile.TemporaryDirectory() as scratch:
+            attribution = Path(scratch) / "ATTRIBUTIONS.md"
+            with patch.object(vendor, "ATTRIBUTIONS_PATH", attribution):
+                vendor.write_attributions({"sources": [{
+                    "repository": "example/repo", "ref": "abc", "license": "MIT",
+                    "skills_root": ".", "skills": {".": "demo"},
+                }]})
+            self.assertIn("`demo` from `.`", attribution.read_text())
 
 
 if __name__ == "__main__":

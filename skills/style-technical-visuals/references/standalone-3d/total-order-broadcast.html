@@ -1,0 +1,200 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Total order broadcast · Interactive 3D</title><style>
+:root {
+  color-scheme: dark;
+  --canvas: #111111; --panel: #1c1c1c;
+  --border: rgba(255,255,255,.14); --border-node: rgba(255,255,255,.22);
+  --track: rgba(255,255,255,.10);
+  --text: #fafafa; --text-muted: rgba(250,250,250,.60);
+  --text-dim: rgba(250,250,250,.40);
+  --accent: #f35815; --good: #27b648; --warn: #d19f03;
+  --bad: #ff455d; --info: #1e9de7;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--canvas); color: var(--text);
+  font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+main { max-width: 860px; margin: auto; padding: 56px 28px 32px; }
+.eyebrow { color: var(--text-muted); font-size: 11px; letter-spacing: .12em; }
+h1 { margin: 12px 0; font-size: clamp(22px, 4vw, 30px); font-weight: 500; letter-spacing: -.04em; }
+header p { color: var(--text-muted); max-width: 62ch; margin: 0; }
+figure { margin: 32px 0 0; }
+svg { display: block; width: 100%; height: auto; font: inherit; }
+.node { fill: var(--panel); stroke: var(--border-node); stroke-width: 1.5; }
+.primary { stroke: var(--accent); }
+.wire { fill: none; stroke: var(--info); stroke-width: 1.5; }
+.label { fill: var(--text); font-size: 19px; }
+.meta { fill: var(--text-muted); font-size: 13px; }
+.role { fill: var(--accent); font-size: 12px; letter-spacing: 1px; }
+.caption { fill: var(--info); font-size: 12px; }
+figcaption { border-top: 1px solid var(--border); padding-top: 18px;
+  color: var(--text-muted); max-width: 100%; }
+figcaption strong { color: var(--text); font-weight: 500; }
+footer { margin-top: 24px; color: var(--text-muted); font-size: 11px; }
+@media (max-width: 540px) { main { padding: 28px 16px; } }
+
+main{max-width:1150px}.controls{display:flex;gap:12px;flex-wrap:wrap;margin:24px 0}button{font:inherit;color:var(--text);background:var(--panel);border:1px solid var(--border-node);padding:9px 14px;cursor:pointer}button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}.compare{display:grid;grid-template-columns:1fr 1fr;gap:24px}.compare figure{margin:0;padding:18px 12px;background:var(--panel);border:1px solid var(--border-node)}h2{font-size:18px;font-weight:500;margin:0 0 8px}.summary{color:var(--text-muted);min-height:3em;margin:0 0 12px}.verdict{min-height:3em;color:var(--text)}.messages{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0}.message{padding:6px 12px;border:1px solid var(--message-color);color:var(--message-color)}a{color:var(--text)}@media(max-width:750px){.compare{grid-template-columns:1fr}}
+/* The viewport keeps its height while the camera zooms. */
+.scene-viewport{max-width:100%;min-width:0;overflow:hidden}
+.scene-viewport,.scene-viewport *{user-select:none;-webkit-user-select:none}
+.scene-viewport:focus-visible{outline:2px solid var(--info);outline-offset:3px}
+.controls.scene-camera{gap:8px;align-items:center;margin:12px 0}
+.scene-camera button{min-height:40px}
+.scene-camera button:disabled{opacity:.45;cursor:default}
+.scene-camera .zoom-level{min-width:5ch;text-align:right;font-variant-numeric:tabular-nums;color:var(--text-muted)}
+.scene-camera .zoom-hint{color:var(--text-muted);font-size:11px}
+</style></head><body><main><header><div class="eyebrow">REPLICATION / INTERACTIVE 3D</div><h1>Same messages. One shared order.</h1><p>Three nodes receive the same six messages. Without agreed delivery order, their logs can diverge. With total order broadcast, they append the messages in the same relative order—even if one node is slower.</p></header><div class="messages" aria-label="Message identity colors"><span class="message" style="--message-color:#69c9f4">A</span><span class="message" style="--message-color:#f6a76b">B</span><span class="message" style="--message-color:#c6a0f6">C</span><span class="message" style="--message-color:#73dbac">D</span><span class="message" style="--message-color:#f0c96a">E</span><span class="message" style="--message-color:#f18eae">F</span></div><div class="controls"><button id="pause">Pause delivery</button><button id="step">Deliver next</button><button id="reset">Replay</button><button id="view">Reset view</button><span>Drag either scene to orbit · ← / → keys</span></div><div class="compare"><figure><h2>Without total ordering</h2><p class="summary">Each node appends in its own arrival order.</p><svg viewBox="-70 0 640 430" tabindex="0" style="touch-action:pan-y;cursor:grab" role="img" aria-labelledby="unordered-title" data-reset-view="view"><title id="unordered-title">Three logs containing the same messages in different positions</title><g id="unordered"></g></svg><p id="unordered-verdict" class="verdict"></p></figure><figure><h2>With total ordering</h2><p class="summary">Deliver only the next message in the agreed sequence.</p><svg viewBox="-70 0 640 430" tabindex="0" style="touch-action:pan-y;cursor:grab" role="img" aria-labelledby="ordered-title" data-reset-view="view"><title id="ordered-title">Three logs sharing the ordered sequence A B C D E F</title><g id="ordered"></g></svg><p id="ordered-verdict" class="verdict"></p></figure></div><figure><figcaption><strong>Compare message identity at each position.</strong> Equal colors and letters identify the same message. Dashed slots are not yet delivered. Light dashed links connect matching messages on adjacent nodes. The right-hand nodes may have different-length logs, but their delivered prefixes agree. Once all six messages are delivered, every position matches. Total order alone concerns relative delivery order; reliable delivery is also needed to ensure all correct nodes eventually deliver the same messages. This illustrates the guarantee, not a particular consensus protocol.</figcaption></figure><footer><a href="https://infoscience.epfl.ch/server/api/core/bitstreams/cf4017c0-d5d3-40b3-a12b-32a5564d1601/content">Défago, Schiper, and Urbán: Total Order Broadcast and Multicast Algorithms</a><br>Original offline 3D demo · repeats after a comparison hold · reduced motion starts paused; Deliver next remains available.</footer></main><script>
+(() => {
+const ns='http://www.w3.org/2000/svg',colors=['#69c9f4','#f6a76b','#c6a0f6','#73dbac','#f0c96a','#f18eae'];
+const orders=[[0,1,2,3,4,5],[1,0,3,2,5,4],[2,1,0,5,3,4]],delays=[0,.3,.65],reduced=matchMedia('(prefers-reduced-motion: reduce)');
+let elapsed=0,last=null,playing=!reduced.matches;
+function el(parent,tag,a){const e=document.createElementNS(ns,tag);for(const[k,v]of Object.entries(a))e.setAttribute(k,v);parent.append(e);return e;}
+function text(parent,value,x,y,color,size=13){const e=el(parent,'text',{x,y,fill:color,'font-size':size,'text-anchor':'middle','dominant-baseline':'central'});e.textContent=value;}
+let angle=.18,drag=null;
+function project(x,y,z){const X=x*Math.cos(angle)-z*Math.sin(angle),Z=x*Math.sin(angle)+z*Math.cos(angle);return {x:250+X*.83,y:218+Z*.57-y*.83,depth:Z+y*(.57/.83)};}
+function point(v){const p=project(...v);return `${p.x},${p.y}`;}
+function render(){
+ for(const mode of ['unordered','ordered']){
+  const world=document.querySelector('#'+mode);world.replaceChildren();
+  const faces=[],labels=[];
+  function face(vertices,fill,stroke,extra={}){const depth=vertices.reduce((s,v)=>s+project(...v).depth,0)/vertices.length;faces.push({vertices,fill,stroke,depth,extra});}
+  function box(x,z,w,d,h,fill,stroke,base=0){
+   const a=x-w/2,b=x+w/2,c=z-d/2,e=z+d/2;
+   const edges=base?{'stroke-dasharray':'3 2'}:{};
+   face([[a,base,e],[b,base,e],[b,h,e],[a,h,e]],fill,stroke,edges);
+   if(angle<0)face([[a,base,c],[a,base,e],[a,h,e],[a,h,c]],fill,stroke,edges);
+   else face([[b,base,c],[b,base,e],[b,h,e],[b,h,c]],fill,stroke,edges);
+   face([[a,h,c],[b,h,c],[b,h,e],[a,h,e]],fill,stroke,edges);
+  }
+  for(let node=0;node<2;node++){
+   const upper=mode==='ordered'?orders[0]:orders[node],lower=mode==='ordered'?orders[0]:orders[node+1];
+   const counts=[node,node+1].map(n=>Math.min(6,Math.floor(Math.max(0,elapsed-delays[n])/1.1)));
+   for(let id=0;id<6;id++){
+    const a=upper.indexOf(id),b=lower.indexOf(id);if(a>=counts[0]||b>=counts[1])continue;
+    const p=project(-150+a*60,0,-155+node*155+29),q=project(-150+b*60,0,-155+(node+1)*155-29);
+    el(world,'line',{x1:p.x,y1:p.y,x2:q.x,y2:q.y,stroke:colors[id],'stroke-opacity':.5,'stroke-width':1.2,'stroke-dasharray':'3 5'});
+   }
+  }
+  for(let node=0;node<3;node++){
+   const z=-155+node*155,count=Math.min(6,Math.floor(Math.max(0,elapsed-delays[node])/1.1)),order=mode==='ordered'?orders[0]:orders[node];
+   const platformStart=faces.length;
+   box(0,z,376,68,5,'#242424','var(--border-node)');
+   for(let i=platformStart;i<faces.length;i++)faces[i].platform=true;
+   for(let slot=0;slot<6;slot++){
+    const x=-150+slot*60,id=order[slot];
+    if(slot<count){box(x,z,48,48,30,colors[id],'#111111',5);labels.push({x,y:30,z,value:String.fromCharCode(65+id),color:'var(--canvas)',size:16});}
+    else face([[x-24,6,z-24],[x+24,6,z-24],[x+24,6,z+24],[x-24,6,z+24]],'none','var(--border-node)',{'stroke-dasharray':'3 5'});
+   }
+   labels.push({x:-238,y:0,z,value:`node 0${node+1}`,color:'var(--text)',size:12});
+  }
+  faces.sort((a,b)=>Number(!a.platform)-Number(!b.platform)||a.depth-b.depth).forEach(f=>el(world,'polygon',{points:f.vertices.map(point).join(' '),fill:f.fill,stroke:f.stroke,'stroke-width':1,...f.extra}));
+  for(const l of labels){const p=project(l.x,l.y,l.z);text(world,l.value,p.x,p.y,l.color,l.size);}
+ }
+ const finished=elapsed>=7.25;
+ document.querySelector('#unordered-verdict').textContent=finished?'Same six messages, different order. Position 1 is A, B, or C depending on the node.':'Watch how different messages occupy the same position.';
+ document.querySelector('#ordered-verdict').textContent=finished?'All three logs agree: A → B → C → D → E → F.':'A slower node can lag. Every delivered prefix still agrees.';
+ const pause=document.querySelector('#pause');pause.textContent=playing?'Pause delivery':'Play delivery';pause.setAttribute('aria-pressed',String(!playing));
+}
+document.querySelector('#view').addEventListener('click',()=>{angle=.18;render();});
+for(const svg of document.querySelectorAll('svg')){
+ svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointerId,x:e.clientX};svg.setPointerCapture(e.pointerId);});
+ svg.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;angle=Math.max(-.65,Math.min(.65,angle+(e.clientX-drag.x)*.005));drag.x=e.clientX;render();});
+ for(const event of ['pointerup','pointercancel'])svg.addEventListener(event,()=>{drag=null;});
+ svg.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();angle=Math.max(-.65,Math.min(.65,angle+(e.key==='ArrowRight'?.08:-.08)));render();});
+}
+document.querySelector('#pause').addEventListener('click',()=>{playing=!playing;render();});document.querySelector('#step').addEventListener('click',()=>{playing=false;elapsed=elapsed>=7.3?0:Math.min(7.3,elapsed+1.1);render();});document.querySelector('#reset').addEventListener('click',()=>{elapsed=0;playing=!reduced.matches;render();});
+function frame(now){if(last!==null&&playing&&!document.hidden){elapsed=(elapsed+Math.min((now-last)/1000,.05))%12;render();}last=now;requestAnimationFrame(frame);}render();requestAnimationFrame(frame);
+})();</script><script>
+// Kept inline so each reference remains a standalone, offline demo.
+(() => {
+  const minZoom = .25, maxZoom = 4, zoomStep = 1.2;
+  for (const svg of document.querySelectorAll('svg[viewBox]')) {
+    const world = svg.querySelector(':scope > g');
+    if (!world) continue;
+    const original = svg.getAttribute('viewBox').trim().split(/[\s,]+/).map(Number);
+    const aspect = original[2] / original[3];
+    let fitted = [...original], zoom = 1;
+    svg.id ||= `${world.id}-scene`;
+    svg.classList.add('scene-viewport');
+    svg.style.aspectRatio = `${original[2]} / ${original[3]}`;
+
+    const controls = document.createElement('div');
+    controls.className = 'controls scene-camera';
+    controls.setAttribute('role', 'group');
+    controls.setAttribute('aria-label', `${svg.querySelector('title').textContent} view controls`);
+    function button(label, action, handler) {
+      const control = document.createElement('button');
+      control.type = 'button';
+      control.textContent = label;
+      control.dataset.zoom = action;
+      control.setAttribute('aria-controls', svg.id);
+      control.addEventListener('click', handler);
+      controls.append(control);
+      return control;
+    }
+    const zoomOut = button('Zoom out', 'out', () => changeZoom(1 / zoomStep));
+    const zoomIn = button('Zoom in', 'in', () => changeZoom(zoomStep));
+    button('Fit scene', 'fit', fitScene);
+    const level = document.createElement('output');
+    level.className = 'zoom-level';
+    level.setAttribute('aria-label', 'Scene zoom');
+    level.setAttribute('aria-live', 'off');
+    const hint = document.createElement('span');
+    hint.id = `${svg.id}-zoom-help`;
+    hint.className = 'zoom-hint';
+    hint.textContent = 'Scroll to zoom · drag to orbit · + / − zoom · 0 fit';
+    controls.append(level, hint);
+    svg.before(controls);
+    svg.setAttribute('aria-describedby', [svg.getAttribute('aria-describedby'), hint.id].filter(Boolean).join(' '));
+
+    function updateView() {
+      const width = fitted[2] / zoom, height = fitted[3] / zoom;
+      const x = fitted[0] + (fitted[2] - width) / 2;
+      const y = fitted[1] + (fitted[3] - height) / 2;
+      svg.setAttribute('viewBox', `${x} ${y} ${width} ${height}`);
+      level.textContent = `${Math.round(zoom * 100)}%`;
+      zoomOut.disabled = zoom <= minZoom;
+      zoomIn.disabled = zoom >= maxZoom;
+    }
+    function changeZoom(factor) {
+      zoom = Math.max(minZoom, Math.min(maxZoom, zoom * factor));
+      updateView();
+    }
+    function fitScene() {
+      // Measure the current projection, including labels after orbiting or scaling.
+      fitted = [...original];
+      let bounds;
+      try { bounds = world.getBBox(); } catch { /* Use the original frame if hidden. */ }
+      if (bounds && [bounds.x, bounds.y, bounds.width, bounds.height].every(Number.isFinite) && bounds.width > 0 && bounds.height > 0) {
+        const padding = Math.max(24, Math.max(bounds.width, bounds.height) * .04);
+        const width = Math.max(bounds.width + padding * 2, (bounds.height + padding * 2) * aspect);
+        const height = width / aspect;
+        fitted = [bounds.x + (bounds.width - width) / 2, bounds.y + (bounds.height - height) / 2, width, height];
+      }
+      zoom = 1;
+      updateView();
+    }
+    svg.addEventListener('keydown', event => {
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if (['+', '='].includes(event.key)) changeZoom(zoomStep);
+      else if (['-', '−', '_'].includes(event.key)) changeZoom(1 / zoomStep);
+      else if (event.key === '0') fitScene();
+      else return;
+      event.preventDefault();
+    });
+    svg.addEventListener('pointerdown', event => {
+      if (event.button !== 0 || event.pointerType === 'touch') return;
+      // Suppress native text selection while retaining focus on clickable records.
+      event.preventDefault();
+      (event.target.closest('[tabindex]') || svg).focus({preventScroll: true});
+    });
+    svg.addEventListener('wheel', event => {
+      // Wheel and trackpad gestures zoom only while the pointer is over the scene.
+      event.preventDefault();
+      const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? svg.clientHeight : 1;
+      changeZoom(Math.exp(-Math.max(-100, Math.min(100, event.deltaY * unit)) * .002));
+    }, {passive: false});
+    document.getElementById(svg.dataset.resetView)?.addEventListener('click', fitScene);
+    fitScene();
+  }
+})();
+</script>
+</body></html>

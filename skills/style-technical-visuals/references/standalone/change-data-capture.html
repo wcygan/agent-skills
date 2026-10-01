@@ -1,0 +1,72 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Change data capture · MySQL to search</title><style>
+:root {
+  color-scheme: dark;
+  --canvas: #111111; --panel: #1c1c1c;
+  --border: rgba(255,255,255,.14); --border-node: rgba(255,255,255,.22);
+  --track: rgba(255,255,255,.10);
+  --text: #fafafa; --text-muted: rgba(250,250,250,.60);
+  --text-dim: rgba(250,250,250,.40);
+  --accent: #f35815; --good: #27b648; --warn: #d19f03;
+  --bad: #ff455d; --info: #1e9de7;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--canvas); color: var(--text);
+  font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+main { max-width: 860px; margin: auto; padding: 56px 28px 32px; }
+.eyebrow { color: var(--text-muted); font-size: 11px; letter-spacing: .12em; }
+h1 { margin: 12px 0; font-size: clamp(22px, 4vw, 30px); font-weight: 500; letter-spacing: -.04em; }
+header p { color: var(--text-muted); max-width: 62ch; margin: 0; }
+figure { margin: 32px 0 0; }
+svg { display: block; width: 100%; height: auto; font: inherit; }
+.node { fill: var(--panel); stroke: var(--border-node); stroke-width: 1.5; }
+.primary { stroke: var(--accent); }
+.wire { fill: none; stroke: var(--info); stroke-width: 1.5; }
+.label { fill: var(--text); font-size: 19px; }
+.meta { fill: var(--text-muted); font-size: 13px; }
+.role { fill: var(--accent); font-size: 12px; letter-spacing: 1px; }
+.caption { fill: var(--info); font-size: 12px; }
+figcaption { border-top: 1px solid var(--border); padding-top: 18px;
+  color: var(--text-muted); max-width: 100%; }
+figcaption strong { color: var(--text); font-weight: 500; }
+footer { margin-top: 24px; color: var(--text-muted); font-size: 11px; }
+@media (max-width: 540px) { main { padding: 28px 16px; } }
+
+
+main{max-width:1100px}.controls{display:flex;gap:12px;flex-wrap:wrap;margin:24px 0}button{font:inherit;color:var(--text);background:var(--panel);border:1px solid var(--border-node);padding:9px 14px;cursor:pointer}button:focus-visible{outline:2px solid var(--info);outline-offset:3px}#status{min-height:3em;color:var(--text-muted)}.details{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:20px 0}.details article{background:var(--panel);border:1px solid var(--border);padding:16px}h2{font-size:14px;font-weight:500;margin:0 0 8px}pre{white-space:pre-wrap;margin:0;color:var(--text-muted)}a{color:var(--text)}@media(max-width:600px){.details{grid-template-columns:1fr}}
+</style></head><body><main><header><div class="eyebrow">STREAMING / CHANGE DATA CAPTURE</div><h1>One database change. A searchable document.</h1><p>MySQL records a row change in its binary log. Debezium captures it, Kafka retains the event, and a consumer applies it to an OpenSearch index.</p></header><div class="controls"><button id="pause">Pause demo</button><button id="step">Next stage</button><button id="reset">Reset demo</button></div><p id="status" aria-live="off"></p><figure><svg viewBox="0 0 1000 570" role="img" aria-labelledby="title desc"><title id="title">MySQL binlog through Debezium and Kafka to a search index</title><desc id="desc">Follow the arrows across the top row, then back across the bottom row. Create, update and delete events keep the search document in sync, with a visible delay.</desc><g id="world"></g></svg><figcaption><strong>The database is the source of truth; search follows asynchronously.</strong> Blue arrows show fixed routes; colored payloads identify concurrent changes. The animation shows streaming after the initial snapshot. MySQL uses row-based binlogging; Debezium runs as a Kafka Connect source connector. Binlog positions and Kafka offsets are separate cursors. The consumer uses the row’s primary key as the document ID: create/update replace that document, delete removes it. Repeated delivery must be safe, and per-key ordering must be preserved. This simplified single-partition demo omits retries, tombstones, schema changes, and initial snapshots.</figcaption></figure><div class="details"><article><h2>Change event envelope</h2><pre id="event"></pre></article><article><h2>Search document · ID 42</h2><pre id="document"></pre></article></div><footer>References: <a href="https://debezium.io/documentation/reference/stable/connectors/mysql.html">Debezium MySQL connector</a> · <a href="https://docs.opensearch.org/latest/api-reference/document-apis/index-document/">OpenSearch document indexing</a><br>Offline demo · autoplay · five overlapping changes repeat · reduced motion starts paused.</footer></main><script>
+(()=>{
+const ns='http://www.w3.org/2000/svg',world=document.querySelector('#world'),reduced=matchMedia('(prefers-reduced-motion: reduce)');
+const changes=[{op:'c',name:'INSERT',before:null,after:{id:42,title:'Distributed Systems',price:40}},{op:'u',name:'UPDATE',before:{id:42,title:'Distributed Systems',price:40},after:{id:42,title:'Distributed Systems',price:35}},{op:'d',name:'DELETE',before:{id:42,title:'Distributed Systems',price:35},after:null}];
+changes.splice(2,0,{op:'u',name:'UPDATE',before:{id:42,title:'Distributed Systems',price:35},after:{id:42,title:'Distributed Systems',price:30}},{op:'u',name:'UPDATE',before:{id:42,title:'Distributed Systems',price:30},after:{id:42,title:'Distributed Systems',price:25}});
+changes[4].before.price=25;
+const centers=[[150,130],[500,130],[850,130],[850,405],[500,405],[150,405]],labels=['MySQL','Binary log','Debezium','Kafka','Consumer','OpenSearch'],notes=['inventory.books','row-based binlog','Kafka Connect source','inventory.books · P0','apply by primary key','search index'];
+const componentColors=['#f6a76b','#f0c96a','#c6a0f6','#69c9f4','#f18eae','#73dbac'];
+let elapsed=0,last=null,playing=!reduced.matches;
+function el(tag,attrs){const e=document.createElementNS(ns,tag);for(const[k,v]of Object.entries(attrs))e.setAttribute(k,v);world.append(e);return e;}
+function text(value,x,y,color='var(--text)',size=16){const e=el('text',{x,y,fill:color,'font-size':size,'text-anchor':'middle','dominant-baseline':'central'});e.textContent=value;}
+function render(){
+world.replaceChildren();
+const eventColors=['#69c9f4','#f0c96a','#c6a0f6','#73dbac','#f18eae'],events=changes.map((change,index)=>({change,index,age:elapsed-index*6,color:eventColors[index]})).filter(e=>e.age>=0);
+const newest=events[events.length-1],{change,index}=newest;
+const lastAt=node=>events.filter(e=>e.age>=node*2).at(-1);
+for(let i=0;i<5;i++){const[a,b]=[centers[i],centers[i+1]],dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy),sx=a[0]+dx/len*(dy?60:110),sy=a[1]+dy/len*60,ex=b[0]-dx/len*(dy?61:111),ey=b[1]-dy/len*61;
+el('line',{x1:sx,y1:sy,x2:ex,y2:ey,stroke:'var(--info)','stroke-width':2});const ux=dx/len,uy=dy/len;el('path',{d:`M${ex-ux*13-uy*5} ${ey-uy*13+ux*5} L${ex} ${ey} L${ex-ux*13+uy*5} ${ey-uy*13-ux*5} Z`,fill:'var(--info)',stroke:'var(--info)','stroke-linejoin':'miter'});
+for(const event of events){if(event.age>=i*2&&event.age<(i+1)*2){const t=(event.age-i*2)/2,x=sx+(ex-sx)*t,y=sy+(ey-sy)*t;el('rect',{x:x-12,y:y-12,width:24,height:24,rx:3,fill:event.color});text(event.change.op.toUpperCase(),x,y,'var(--canvas)',13);}}}
+
+for(let i=0;i<6;i++){const[x,y]=centers[i],lastProcessed=lastAt(i),stroke=lastProcessed?lastProcessed.color:componentColors[i];
+if(i===0||i===5){el('path',{d:`M${x-110} ${y-45} V${y+40} A110 20 0 0 0 ${x+110} ${y+40} V${y-45} Z`,fill:'var(--panel)',stroke,'stroke-width':1.5});el('ellipse',{cx:x,cy:y-45,rx:110,ry:20,fill:'var(--panel)',stroke});}
+else el('rect',{x:x-110,y:y-60,width:220,height:120,rx:4,fill:'var(--panel)',stroke,'stroke-width':1.5});
+const cylinder=i===0||i===5;
+text(labels[i],x,y+(cylinder?0:-20),componentColors[i]);text(notes[i],x,y+(cylinder?24:5),'var(--text-muted)',12);
+if(i===1||i===3){for(let slot=0;slot<5;slot++){const filled=elapsed>=slot*6+i*2;el('rect',{x:x-94+slot*38,y:y+22,width:34,height:25,rx:2,fill:filled?eventColors[slot]:'none',stroke:'var(--border-node)'});if(filled)text(changes[slot].op,x-77+slot*38,y+35,'var(--canvas)',12);}}
+}
+text('commit → append',325,52,'var(--text-muted)',12);text('read binlog → emit',675,52,'var(--text-muted)',12);text('produce',915,268,'var(--text-muted)',12);text('poll records',675,510,'var(--text-muted)',12);text('index / delete',325,510,'var(--text-muted)',12);
+const applied=lastAt(5)?.change.after;
+document.querySelector('#document').textContent=applied?JSON.stringify(applied,null,2):'No document (not indexed or deleted).';
+document.querySelector('#event').textContent=JSON.stringify({key:{id:42},op:change.op,before:change.before,after:change.after},null,2);
+document.querySelector('#status').textContent=`${events.filter(e=>e.age<10).length} events in flight · ${lastAt(3)?'Kafka has received offset '+lastAt(3).index:'Waiting for Kafka'} · ${lastAt(5)?'Search applied '+lastAt(5).change.name:'Search is waiting'}. A new change starts when the previous event reaches Kafka.`;
+document.querySelector('#pause').textContent=playing?'Pause demo':'Play demo';
+}
+document.querySelector('#pause').addEventListener('click',()=>{playing=!playing;render();});document.querySelector('#step').addEventListener('click',()=>{playing=false;elapsed=(Math.floor(elapsed/2)*2+2)%38;render();});document.querySelector('#reset').addEventListener('click',()=>{elapsed=0;playing=!reduced.matches;render();});
+function frame(now){if(last!==null&&playing&&!document.hidden){elapsed=(elapsed+Math.min((now-last)/1000,.05))%38;render();}last=now;requestAnimationFrame(frame);}render();requestAnimationFrame(frame);
+})();</script></body></html>

@@ -1,0 +1,222 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Change data capture · Interactive 3D</title><style>
+:root {
+  color-scheme: dark;
+  --canvas: #111111; --panel: #1c1c1c;
+  --border: rgba(255,255,255,.14); --border-node: rgba(255,255,255,.22);
+  --track: rgba(255,255,255,.10);
+  --text: #fafafa; --text-muted: rgba(250,250,250,.60);
+  --text-dim: rgba(250,250,250,.40);
+  --accent: #f35815; --good: #27b648; --warn: #d19f03;
+  --bad: #ff455d; --info: #1e9de7;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--canvas); color: var(--text);
+  font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+main { max-width: 860px; margin: auto; padding: 56px 28px 32px; }
+.eyebrow { color: var(--text-muted); font-size: 11px; letter-spacing: .12em; }
+h1 { margin: 12px 0; font-size: clamp(22px, 4vw, 30px); font-weight: 500; letter-spacing: -.04em; }
+header p { color: var(--text-muted); max-width: 62ch; margin: 0; }
+figure { margin: 32px 0 0; }
+svg { display: block; width: 100%; height: auto; font: inherit; }
+.node { fill: var(--panel); stroke: var(--border-node); stroke-width: 1.5; }
+.primary { stroke: var(--accent); }
+.wire { fill: none; stroke: var(--info); stroke-width: 1.5; }
+.label { fill: var(--text); font-size: 19px; }
+.meta { fill: var(--text-muted); font-size: 13px; }
+.role { fill: var(--accent); font-size: 12px; letter-spacing: 1px; }
+.caption { fill: var(--info); font-size: 12px; }
+figcaption { border-top: 1px solid var(--border); padding-top: 18px;
+  color: var(--text-muted); max-width: 100%; }
+figcaption strong { color: var(--text); font-weight: 500; }
+footer { margin-top: 24px; color: var(--text-muted); font-size: 11px; }
+@media (max-width: 540px) { main { padding: 28px 16px; } }
+
+
+main{max-width:1100px}.controls{display:flex;gap:12px;flex-wrap:wrap;margin:24px 0}button{font:inherit;color:var(--text);background:var(--panel);border:1px solid var(--border-node);padding:9px 14px;cursor:pointer}button:focus-visible{outline:2px solid var(--info);outline-offset:3px}#status{min-height:3em;color:var(--text-muted)}.details{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:20px 0}.details article{background:var(--panel);border:1px solid var(--border);padding:16px}h2{font-size:14px;font-weight:500;margin:0 0 8px}pre{white-space:pre-wrap;margin:0;color:var(--text-muted)}a{color:var(--text)}@media(max-width:600px){.details{grid-template-columns:1fr}}
+main{max-width:1450px}
+/* The viewport keeps its height while the camera zooms. */
+.scene-viewport{max-width:100%;min-width:0;overflow:hidden}
+.scene-viewport,.scene-viewport *{user-select:none;-webkit-user-select:none}
+.scene-viewport:focus-visible{outline:2px solid var(--info);outline-offset:3px}
+.controls.scene-camera{gap:8px;align-items:center;margin:12px 0}
+.scene-camera button{min-height:40px}
+.scene-camera button:disabled{opacity:.45;cursor:default}
+.scene-camera .zoom-level{min-width:5ch;text-align:right;font-variant-numeric:tabular-nums;color:var(--text-muted)}
+.scene-camera .zoom-hint{color:var(--text-muted);font-size:11px}
+</style></head><body><main><header><div class="eyebrow">STREAMING / INTERACTIVE 3D</div><h1>Capture once. Consume in parallel.</h1><p>MySQL → binary log → Debezium → three Kafka partitions → three parallel Flink tasks → OpenSearch.</p></header><div class="controls"><button id="pause">Pause demo</button><button id="step">Next second</button><button id="reset">Reset demo</button><button id="view">Reset view</button><span>Drag to orbit · ← / →</span></div><p id="status"></p><figure><svg id="scene" viewBox="0 0 1400 700" tabindex="0" style="touch-action:pan-y;cursor:grab" role="img" aria-labelledby="title" data-reset-view="view"><title id="title">Orbitable change data capture pipeline with three Kafka partitions and Flink tasks</title><g id="world"></g></svg><figcaption><strong>One partition per source subtask in this example.</strong> The three consumers belong to one Flink job, each shown with its downstream indexing task. Key-based partitioning keeps changes for each book in one lane; offsets start at zero independently. Kafka retains consumed records. Every fifth record starts a new visible tape window: the newest record moves to slot one and earlier records move offscreen, without deleting history. OpenSearch uses the book ID as document ID, replacing the document on update. TaskManagers host tasks; this diagram shows logical tasks rather than a one-to-one mapping to worker machines. JobManager coordination, checkpoints, retries, deletes, and the initial snapshot are omitted. Indexing is asynchronous; this animation makes no exactly-once claim.</figcaption></figure><div class="details"><article><h2>Latest source change</h2><pre id="event"></pre></article><article><h2>OpenSearch documents</h2><pre id="document"></pre></article></div><footer>References: <a href="https://debezium.io/documentation/reference/stable/connectors/mysql.html">Debezium MySQL connector</a> · <a href="https://nightlies.apache.org/flink/flink-docs-master/docs/internals/sources/">Flink source partitions and readers</a> · <a href="https://docs.opensearch.org/latest/api-reference/document-apis/index-document/">OpenSearch document indexing</a><br>Offline · autoplay · continuous production · five-slot tape windows · reduced motion starts paused.</footer></main><script>(()=>{
+const ns='http://www.w3.org/2000/svg',world=document.querySelector('#world'),svg=document.querySelector('#scene'),reduced=matchMedia('(prefers-reduced-motion: reduce)');
+const colors=['#69c9f4','#c6a0f6','#73dbac'];
+function eventAt(i){return{id:41+i%3,partition:i%3,offset:Math.floor(i/3),sequence:i+1,price:40-(Math.floor(i/3)%10)*3,start:i*1.8,color:colors[i%3]};}
+let elapsed=0,last=null,playing=!reduced.matches,angle=.12,drag=null;
+function p(x,y,z){const X=x*Math.cos(angle)-z*Math.sin(angle),Z=x*Math.sin(angle)+z*Math.cos(angle);return{x:700+X*.94,y:345+Z*.58-y*.9,depth:Z+y*.645};}
+function el(tag,a){const e=document.createElementNS(ns,tag);for(const[k,v]of Object.entries(a))e.setAttribute(k,v);world.append(e);return e;}
+function text(value,x,y,z,color='var(--text)',size=16){const q=p(x,y,z);const e=el('text',{x:q.x,y:q.y,fill:color,'font-size':size,'text-anchor':'middle','dominant-baseline':'central'});e.textContent=value;}
+function route(e){
+ const z=(e.partition-1)*180;
+ // Left/right face centers, including the shallow tape trays.
+ return [
+  [[-504,45,0],[-475,45,0],[-475,4,0],[-440,4,0]],
+  [[-260,4,0],[-230,4,0],[-230,37.5,0],[-195,37.5,0]],
+  [[-65,37.5,0],[-30,37.5,0],[-30,4,z],[10,4,z]],
+  [[190,4,z],[235,4,z],[235,37.5,z],[280,37.5,z]],
+  [[400,37.5,z],[455,37.5,z],[455,45,0],[514,45,0]]
+ ];
+}
+
+
+// Fixed world ports; shaft and filled tip share the same projected final segment.
+function connection(path,color,project,add){
+ for(let i=1;i<path.length;i++){
+  const a=path[i-1],b=path[i],pa=project(...a),pb=project(...b),length=Math.hypot(pb.x-pa.x,pb.y-pa.y);
+  const end=i===path.length-1,trim=end?Math.min(.45,11/length):0;
+  for(let k=0;k<20;k++){
+   const t=(1-trim)*k/20,u=(1-trim)*(k+1)/20;
+   const v=project(...a.map((n,j)=>n+(b[j]-n)*t)),w=project(...a.map((n,j)=>n+(b[j]-n)*u));
+   add((v.depth+w.depth)/2,()=>el('line',{x1:v.x,y1:v.y,x2:w.x,y2:w.y,stroke:color,'stroke-width':1.8}));
+  }
+  if(end){const ux=(pb.x-pa.x)/length,uy=(pb.y-pa.y)/length,tip={x:pb.x-ux*1.5,y:pb.y-uy*1.5};
+   add(pb.depth+.01,()=>el('path',{d:`M${tip.x} ${tip.y} L${tip.x-ux*10-uy*4} ${tip.y-uy*10+ux*4} L${tip.x-ux*10+uy*4} ${tip.y-uy*10-ux*4} Z`,fill:color}));
+  }
+ }
+}
+function along(path,t){const lengths=path.slice(1).map((b,i)=>Math.hypot(...b.map((n,j)=>n-path[i][j])));let distance=t*lengths.reduce((a,b)=>a+b,0);for(let i=0;i<lengths.length;i++){if(distance<=lengths[i]||i===lengths.length-1)return path[i].map((n,j)=>n+(path[i+1][j]-n)*Math.min(1,distance/lengths[i]));distance-=lengths[i];}}
+function render(){world.replaceChildren();const faces=[],labels=[];
+function face(v,fill,stroke,layer=1){faces.push({v,fill,stroke,layer,depth:v.reduce((s,a)=>s+p(...a).depth,0)/v.length});}
+function box(x,z,w,d,h,fill,stroke,base=0,layer=1){const a=x-w/2,b=x+w/2,c=z-d/2,e=z+d/2;face([[a,base,e],[b,base,e],[b,h,e],[a,h,e]],fill,stroke,layer);const side=angle<0?a:b;face([[side,base,c],[side,base,e],[side,h,e],[side,h,c]],fill,stroke,layer);face([[a,h,c],[b,h,c],[b,h,e],[a,h,e]],fill,stroke,layer);}
+function cylinder(x,z,color){
+ const top=p(x,90,z),base=p(x,0,z),r=56,ry=33;
+ faces.push({layer:1,depth:p(x,45,z).depth,draw:()=>{
+ el('path',{d:`M${top.x-r} ${top.y} V${base.y} A${r} ${ry} 0 0 0 ${base.x+r} ${base.y} V${top.y} Z`,fill:'var(--panel)',stroke:color,'stroke-width':1.5});
+ for(const height of [30,60]){const q=p(x,height,z);el('path',{d:`M${q.x-r} ${q.y} A${r} ${ry} 0 0 0 ${q.x+r} ${q.y}`,fill:'none',stroke:color,'stroke-width':1});}
+ el('ellipse',{cx:top.x,cy:top.y,rx:r,ry,fill:'var(--panel)',stroke:color,'stroke-width':1.5});
+ }});
+}
+
+function label(value,x,y,z,color,size=16){labels.push({value,x,y,z,color,size});}
+// Low platforms provide separate system boundaries without floating labels.
+box(-350,0,610,230,3,'#202020','#f6a76b',0,0);box(100,0,210,540,3,'#191e22','#69c9f4',0,0);box(340,0,180,540,3,'#15181b','#c6a0f6',0,0);box(570,0,170,230,3,'#18211c','#73dbac',0,0);
+const total=Math.floor(elapsed/1.8)+1,active=Array.from({length:Math.min(total,30)},(_,i)=>eventAt(Math.max(0,total-30)+i)),latest=active.at(-1);
+for(let lane=0;lane<3;lane++){
+ const r=route({partition:lane});
+ for(let i=0;i<5;i++){
+  if(lane!==0&&i<2)continue;
+  connection(r[i],'var(--info)',p,(depth,draw)=>faces.push({layer:1,depth,draw}));
+ }
+}
+
+cylinder(-560,0,'#f6a76b');label('MySQL',-560,115,0,'#f6a76b');
+box(-350,0,180,80,8,'#242424','#f0c96a',0,0);label('BINLOG',-350,70,0,'#f0c96a');
+const captured=active.filter(e=>elapsed-e.start>=2),capturedCount=Math.max(0,Math.floor((elapsed-2)/1.8)+1),windowStart=Math.floor(Math.max(0,capturedCount-1)/4)*4;for(let i=0;i<5;i++){const e=windowStart+i<capturedCount?eventAt(windowStart+i):null;box(-420+i*35,0,28,50,e?35:12,e?e.color:'var(--panel)','var(--border-node)',8);if(e)label(String(windowStart+i+1),-420+i*35,36,0,'var(--canvas)',12);}
+box(-130,0,130,100,75,'var(--panel)','#c6a0f6');label('Debezium',-130,95,0,'#c6a0f6');label('Kafka Connect',-130,120,0,'var(--text-muted)',12);
+const docs={};for(const e of active)if(elapsed-e.start>=10)docs[e.id]={id:e.id,price:e.price};
+for(let lane=0;lane<3;lane++){const z=(lane-1)*180,color=colors[lane];box(100,z,180,80,8,'#242424',color,0,0);label('P'+lane,100,75,z,color);const records=active.filter(e=>e.partition===lane&&elapsed-e.start>=6);
+const tail=records.at(-1),startOffset=tail?Math.floor(tail.offset/4)*4:0;
+for(let slot=0;slot<5;slot++){const e=records.find(e=>e.offset===startOffset+slot);box(30+slot*35,z,28,50,e?35:12,e?color:'var(--panel)','var(--border-node)',8);if(e)label('#'+e.offset,30+slot*35,36,z,'var(--canvas)',11);}
+const processed=active.filter(e=>e.partition===lane&&elapsed-e.start>=8).at(-1);box(340,z,120,95,75,'var(--panel)',processed?processed.color:'#c6a0f6');label('Reader '+lane,340,98,z,color);label('→ index sink',340,123,z,'var(--text-muted)',12);
+}
+cylinder(570,0,'#73dbac');label('OpenSearch',570,115,0,'#73dbac');label(Object.keys(docs).length+' documents',570,140,0,'var(--text-muted)',12);
+for(const e of active){const age=elapsed-e.start,leg=Math.floor(age/2);if(leg>=5)continue;const r=route(e),[x,y,z]=along(r[leg],age/2-leg);box(x,z,15,15,y+8,e.color,e.color,y-8);}
+faces.sort((a,b)=>a.layer-b.layer||a.depth-b.depth).forEach(f=>f.draw?f.draw():el('polygon',{points:f.v.map(v=>{const q=p(...v);return q.x+','+q.y;}).join(' '),fill:f.fill,stroke:f.stroke,'stroke-width':1.2}));
+labels.forEach(l=>text(l.value,l.x,l.y,l.z,l.color,l.size));
+text('MYSQL + BINLOG',-350,0,150,'#f6a76b',14);text('KAFKA TOPIC',100,0,300,'#69c9f4',14);text('FLINK JOB',340,0,300,'#c6a0f6',14);
+document.querySelector('#status').textContent=`${active.filter(e=>elapsed-e.start<10).length} changes in flight · ${capturedCount} binlog records · ${Object.keys(docs).length} indexed documents. Colors identify key/partition lanes.`;
+document.querySelector('#event').textContent=latest?JSON.stringify({key:{id:latest.id},op:latest.offset===0?'c':'u',after:{id:latest.id,price:latest.price},partition:latest.partition,offset:latest.offset},null,2):'Waiting';document.querySelector('#document').textContent=JSON.stringify(Object.values(docs),null,2);document.querySelector('#pause').textContent=playing?'Pause demo':'Play demo';}
+document.querySelector('#pause').addEventListener('click',()=>{playing=!playing;render();});document.querySelector('#step').addEventListener('click',()=>{playing=false;elapsed=elapsed+1;render();});document.querySelector('#reset').addEventListener('click',()=>{elapsed=0;playing=!reduced.matches;render();});document.querySelector('#view').addEventListener('click',()=>{angle=.12;render();});
+svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointerId,x:e.clientX};svg.setPointerCapture(e.pointerId);});svg.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;angle=Math.max(-.5,Math.min(.5,angle+(e.clientX-drag.x)*.004));drag.x=e.clientX;render();});for(const name of ['pointerup','pointercancel','lostpointercapture'])svg.addEventListener(name,()=>drag=null);svg.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();angle=Math.max(-.5,Math.min(.5,angle+(e.key==='ArrowRight'?.08:-.08)));render();});
+function frame(now){if(last!==null&&playing&&!document.hidden){elapsed=elapsed+Math.min((now-last)/1000,.05);render();}last=now;requestAnimationFrame(frame);}render();requestAnimationFrame(frame);
+})();</script><script>
+// Kept inline so each reference remains a standalone, offline demo.
+(() => {
+  const minZoom = .25, maxZoom = 4, zoomStep = 1.2;
+  for (const svg of document.querySelectorAll('svg[viewBox]')) {
+    const world = svg.querySelector(':scope > g');
+    if (!world) continue;
+    const original = svg.getAttribute('viewBox').trim().split(/[\s,]+/).map(Number);
+    const aspect = original[2] / original[3];
+    let fitted = [...original], zoom = 1;
+    svg.id ||= `${world.id}-scene`;
+    svg.classList.add('scene-viewport');
+    svg.style.aspectRatio = `${original[2]} / ${original[3]}`;
+
+    const controls = document.createElement('div');
+    controls.className = 'controls scene-camera';
+    controls.setAttribute('role', 'group');
+    controls.setAttribute('aria-label', `${svg.querySelector('title').textContent} view controls`);
+    function button(label, action, handler) {
+      const control = document.createElement('button');
+      control.type = 'button';
+      control.textContent = label;
+      control.dataset.zoom = action;
+      control.setAttribute('aria-controls', svg.id);
+      control.addEventListener('click', handler);
+      controls.append(control);
+      return control;
+    }
+    const zoomOut = button('Zoom out', 'out', () => changeZoom(1 / zoomStep));
+    const zoomIn = button('Zoom in', 'in', () => changeZoom(zoomStep));
+    button('Fit scene', 'fit', fitScene);
+    const level = document.createElement('output');
+    level.className = 'zoom-level';
+    level.setAttribute('aria-label', 'Scene zoom');
+    level.setAttribute('aria-live', 'off');
+    const hint = document.createElement('span');
+    hint.id = `${svg.id}-zoom-help`;
+    hint.className = 'zoom-hint';
+    hint.textContent = 'Scroll to zoom · drag to orbit · + / − zoom · 0 fit';
+    controls.append(level, hint);
+    svg.before(controls);
+    svg.setAttribute('aria-describedby', [svg.getAttribute('aria-describedby'), hint.id].filter(Boolean).join(' '));
+
+    function updateView() {
+      const width = fitted[2] / zoom, height = fitted[3] / zoom;
+      const x = fitted[0] + (fitted[2] - width) / 2;
+      const y = fitted[1] + (fitted[3] - height) / 2;
+      svg.setAttribute('viewBox', `${x} ${y} ${width} ${height}`);
+      level.textContent = `${Math.round(zoom * 100)}%`;
+      zoomOut.disabled = zoom <= minZoom;
+      zoomIn.disabled = zoom >= maxZoom;
+    }
+    function changeZoom(factor) {
+      zoom = Math.max(minZoom, Math.min(maxZoom, zoom * factor));
+      updateView();
+    }
+    function fitScene() {
+      // Measure the current projection, including labels after orbiting or scaling.
+      fitted = [...original];
+      let bounds;
+      try { bounds = world.getBBox(); } catch { /* Use the original frame if hidden. */ }
+      if (bounds && [bounds.x, bounds.y, bounds.width, bounds.height].every(Number.isFinite) && bounds.width > 0 && bounds.height > 0) {
+        const padding = Math.max(24, Math.max(bounds.width, bounds.height) * .04);
+        const width = Math.max(bounds.width + padding * 2, (bounds.height + padding * 2) * aspect);
+        const height = width / aspect;
+        fitted = [bounds.x + (bounds.width - width) / 2, bounds.y + (bounds.height - height) / 2, width, height];
+      }
+      zoom = 1;
+      updateView();
+    }
+    svg.addEventListener('keydown', event => {
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if (['+', '='].includes(event.key)) changeZoom(zoomStep);
+      else if (['-', '−', '_'].includes(event.key)) changeZoom(1 / zoomStep);
+      else if (event.key === '0') fitScene();
+      else return;
+      event.preventDefault();
+    });
+    svg.addEventListener('pointerdown', event => {
+      if (event.button !== 0 || event.pointerType === 'touch') return;
+      // Suppress native text selection while retaining focus on clickable records.
+      event.preventDefault();
+      (event.target.closest('[tabindex]') || svg).focus({preventScroll: true});
+    });
+    svg.addEventListener('wheel', event => {
+      // Wheel and trackpad gestures zoom only while the pointer is over the scene.
+      event.preventDefault();
+      const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? svg.clientHeight : 1;
+      changeZoom(Math.exp(-Math.max(-100, Math.min(100, event.deltaY * unit)) * .002));
+    }, {passive: false});
+    document.getElementById(svg.dataset.resetView)?.addEventListener('click', fitScene);
+    fitScene();
+  }
+})();
+</script>
+</body></html>

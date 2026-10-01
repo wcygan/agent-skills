@@ -97,9 +97,9 @@ def exclude_provider_manifests(_directory: str, names: list[str]) -> set[str]:
 def sync_source(source: dict, update_lock: bool) -> tuple[str, str]:
     with tempfile.TemporaryDirectory(prefix="agent-skills-") as scratch:
         checkout = Path(scratch) / "source"
-        revision = clone_source(source, checkout, source.get("branch", "main"))
+        revision = clone_source(source, checkout, source.get("branch", "main") if update_lock else source["ref"])
         for upstream_name, local_name in source["skills"].items():
-            upstream = checkout / "skills" / upstream_name
+            upstream = checkout / source.get("skills_root", "skills") / upstream_name
             target = SKILLS_DIR / local_name
             if not (upstream / "SKILL.md").is_file():
                 raise RuntimeError(f"missing skill file: {upstream}")
@@ -107,10 +107,27 @@ def sync_source(source: dict, update_lock: bool) -> tuple[str, str]:
                 raise RuntimeError(f"refusing to overwrite non-vendored skill: {target}")
             if target.exists():
                 shutil.rmtree(target)
-            shutil.copytree(upstream, target, ignore=exclude_provider_manifests)
+            if "include" in source:
+                target.mkdir()
+                for name in source["include"]:
+                    item = upstream / name
+                    if item.is_dir():
+                        shutil.copytree(item, target / name, ignore=exclude_provider_manifests)
+                    else:
+                        shutil.copy2(item, target / name)
+            else:
+                shutil.copytree(upstream, target, ignore=exclude_provider_manifests)
+            for original, destination in source.get("license_files", {}).items():
+                license_target = target / destination
+                license_target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(checkout / original, license_target)
+            for original, destination in source.get("supplemental_files", {}).items():
+                supplemental_target = target / destination
+                supplemental_target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(ROOT / original, supplemental_target)
             skill_file = target / "SKILL.md"
             skill_text = skill_file.read_text()
-            upstream_skill_name = Path(upstream_name).name
+            upstream_skill_name = local_name if upstream_name == "." else Path(upstream_name).name
             skill_text = skill_text.replace("\nname: " + upstream_skill_name + "\n", "\nname: " + local_name + "\n", 1)
             skill_file.write_text(normalize_frontmatter(skill_text, source))
             (target / ".vendored").write_text(
@@ -126,7 +143,8 @@ def write_attributions(lock: dict) -> None:
     for source in lock["sources"]:
         lines.extend([f"## {source['repository']}", "", f"- License: {source['license']}", f"- Revision: `{source['ref']}`", ""])
         for upstream, local in source["skills"].items():
-            lines.append(f"- `{local}` from `skills/{upstream}`")
+            path = str(Path(source.get("skills_root", "skills")) / upstream)
+            lines.append(f"- `{local}` from `{path}`")
         lines.append("")
     ATTRIBUTIONS_PATH.write_text("\n".join(lines))
 

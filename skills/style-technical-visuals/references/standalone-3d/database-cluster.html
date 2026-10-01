@@ -53,6 +53,16 @@ svg.dragging { cursor: grabbing; }
 button { font: inherit; background: var(--panel); color: var(--text); border: 1px solid var(--border-node); padding: 8px 12px; cursor: pointer; }
 button:focus-visible, svg:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 .hint { color: var(--text-muted); }
+
+/* The viewport keeps its height while the camera zooms. */
+.scene-viewport{max-width:100%;min-width:0;overflow:hidden}
+.scene-viewport,.scene-viewport *{user-select:none;-webkit-user-select:none}
+.scene-viewport:focus-visible{outline:2px solid var(--info);outline-offset:3px}
+.controls.scene-camera{gap:8px;align-items:center;margin:12px 0}
+.scene-camera button{min-height:40px}
+.scene-camera button:disabled{opacity:.45;cursor:default}
+.scene-camera .zoom-level{min-width:5ch;text-align:right;font-variant-numeric:tabular-nums;color:var(--text-muted)}
+.scene-camera .zoom-hint{color:var(--text-muted);font-size:11px}
 </style>
 </head>
 <body>
@@ -63,7 +73,7 @@ button:focus-visible, svg:focus-visible { outline: 2px solid var(--accent); outl
 <p>The primary handles all application reads and writes. Two followers maintain replicated copies for redundancy and recovery.</p>
 </header>
 <figure>
-<svg id="scene" viewBox="0 0 800 570" tabindex="0" role="img" aria-labelledby="iso-title iso-description">
+<svg id="scene" viewBox="0 0 800 570" tabindex="0" role="img" aria-labelledby="iso-title iso-description" data-reset-view="reset">
 <title id="iso-title">Interactive three-dimensional database cluster</title>
 <desc id="iso-description">Drag horizontally or use the left and right arrow keys to orbit three database cylinders. Animated blue packets flow from the orange primary to two redundant followers. Labels remain upright.</desc>
 <defs><marker id="packet-arrow" viewBox="0 -4 8 8" refX="8" refY="0" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 -3 L8 0 L0 3" fill="none" stroke="var(--info)" stroke-width="1.3"/></marker></defs>
@@ -101,7 +111,24 @@ button:focus-visible, svg:focus-visible { outline: 2px solid var(--accent); outl
   function points(list) {return list.map(p=>`${p.x},${p.y}`).join(' ');}
   function line(list,attrs) { return element('polyline',{points:points(list),fill:'none',...attrs}); }
   function text(value,x,y,cls) {const e=element('text',{x,y,'text-anchor':'middle',class:cls});e.textContent=value;}
-  function render() {
+
+// Fixed world ports; shaft and filled tip share the same projected final segment.
+function connection(path,color,project,add){
+ for(let i=1;i<path.length;i++){
+  const a=path[i-1],b=path[i],pa=project(...a),pb=project(...b),length=Math.hypot(pb.x-pa.x,pb.y-pa.y);
+  const end=i===path.length-1,trim=end?Math.min(.45,11/length):0;
+  for(let k=0;k<20;k++){
+   const t=(1-trim)*k/20,u=(1-trim)*(k+1)/20;
+   const v=project(...a.map((n,j)=>n+(b[j]-n)*t)),w=project(...a.map((n,j)=>n+(b[j]-n)*u));
+   add((v.depth+w.depth)/2,()=>element('line',{x1:v.x,y1:v.y,x2:w.x,y2:w.y,stroke:color,'stroke-width':1.8}));
+  }
+  if(end){const ux=(pb.x-pa.x)/length,uy=(pb.y-pa.y)/length,tip={x:pb.x-ux*1.5,y:pb.y-uy*1.5};
+   add(pb.depth+.01,()=>element('path',{d:`M${tip.x} ${tip.y} L${tip.x-ux*10-uy*4} ${tip.y-uy*10+ux*4} L${tip.x-ux*10+uy*4} ${tip.y-uy*10-ux*4} Z`,fill:color}));
+  }
+ }
+}
+function along(path,t){const lengths=path.slice(1).map((b,i)=>Math.hypot(...b.map((n,j)=>n-path[i][j])));let distance=t*lengths.reduce((a,b)=>a+b,0);for(let i=0;i<lengths.length;i++){if(distance<=lengths[i]||i===lengths.length-1)return path[i].map((n,j)=>n+(path[i+1][j]-n)*Math.min(1,distance/lengths[i]));distance-=lengths[i];}}
+function render() {
     world.replaceChildren();
     element('polygon',{points:points([[-270,-230],[270,-230],[270,230],[-270,230]].map(([x,z])=>project(x,0,z))),class:'platform'});
     for(let v=-200;v<=200;v+=100) {
@@ -114,10 +141,10 @@ button:focus-visible, svg:focus-visible { outline: 2px solid var(--accent); outl
       // Attach wires at cylinder walls, halfway up their height.
       const a={x:source.x+dx/length*52,z:source.z+dz/length*52};
       const b={x:follower.x-dx/length*52,z:follower.z-dz/length*52};
-      line([project(a.x,55,a.z),project(b.x,55,b.z)],{class:'wire','marker-end':'url(#packet-arrow)'});
+      connection([[a.x,60,a.z],[b.x,60,b.z]],'var(--info)',project,(depth,draw)=>objects.push({depth,draw}));
       for(let k=0;k<3;k++) {
         const t=(elapsed/2.4+k/3)%1, x=a.x+(b.x-a.x)*t,z=a.z+(b.z-a.z)*t;
-        const p=project(x,55,z);
+        const p=project(x,60,z);
         objects.push({depth:p.depth,draw:()=>element('circle',{cx:p.x,cy:p.y,r:4,fill:'var(--info)'})});
       }
     }
@@ -156,6 +183,101 @@ button:focus-visible, svg:focus-visible { outline: 2px solid var(--accent); outl
     previous=now;requestAnimationFrame(frame);
   }
   updateControl();render();requestAnimationFrame(frame);
+})();
+</script>
+<script>
+// Kept inline so each reference remains a standalone, offline demo.
+(() => {
+  const minZoom = .25, maxZoom = 4, zoomStep = 1.2;
+  for (const svg of document.querySelectorAll('svg[viewBox]')) {
+    const world = svg.querySelector(':scope > g');
+    if (!world) continue;
+    const original = svg.getAttribute('viewBox').trim().split(/[\s,]+/).map(Number);
+    const aspect = original[2] / original[3];
+    let fitted = [...original], zoom = 1;
+    svg.id ||= `${world.id}-scene`;
+    svg.classList.add('scene-viewport');
+    svg.style.aspectRatio = `${original[2]} / ${original[3]}`;
+
+    const controls = document.createElement('div');
+    controls.className = 'controls scene-camera';
+    controls.setAttribute('role', 'group');
+    controls.setAttribute('aria-label', `${svg.querySelector('title').textContent} view controls`);
+    function button(label, action, handler) {
+      const control = document.createElement('button');
+      control.type = 'button';
+      control.textContent = label;
+      control.dataset.zoom = action;
+      control.setAttribute('aria-controls', svg.id);
+      control.addEventListener('click', handler);
+      controls.append(control);
+      return control;
+    }
+    const zoomOut = button('Zoom out', 'out', () => changeZoom(1 / zoomStep));
+    const zoomIn = button('Zoom in', 'in', () => changeZoom(zoomStep));
+    button('Fit scene', 'fit', fitScene);
+    const level = document.createElement('output');
+    level.className = 'zoom-level';
+    level.setAttribute('aria-label', 'Scene zoom');
+    level.setAttribute('aria-live', 'off');
+    const hint = document.createElement('span');
+    hint.id = `${svg.id}-zoom-help`;
+    hint.className = 'zoom-hint';
+    hint.textContent = 'Scroll to zoom · drag to orbit · + / − zoom · 0 fit';
+    controls.append(level, hint);
+    svg.before(controls);
+    svg.setAttribute('aria-describedby', [svg.getAttribute('aria-describedby'), hint.id].filter(Boolean).join(' '));
+
+    function updateView() {
+      const width = fitted[2] / zoom, height = fitted[3] / zoom;
+      const x = fitted[0] + (fitted[2] - width) / 2;
+      const y = fitted[1] + (fitted[3] - height) / 2;
+      svg.setAttribute('viewBox', `${x} ${y} ${width} ${height}`);
+      level.textContent = `${Math.round(zoom * 100)}%`;
+      zoomOut.disabled = zoom <= minZoom;
+      zoomIn.disabled = zoom >= maxZoom;
+    }
+    function changeZoom(factor) {
+      zoom = Math.max(minZoom, Math.min(maxZoom, zoom * factor));
+      updateView();
+    }
+    function fitScene() {
+      // Measure the current projection, including labels after orbiting or scaling.
+      fitted = [...original];
+      let bounds;
+      try { bounds = world.getBBox(); } catch { /* Use the original frame if hidden. */ }
+      if (bounds && [bounds.x, bounds.y, bounds.width, bounds.height].every(Number.isFinite) && bounds.width > 0 && bounds.height > 0) {
+        const padding = Math.max(24, Math.max(bounds.width, bounds.height) * .04);
+        const width = Math.max(bounds.width + padding * 2, (bounds.height + padding * 2) * aspect);
+        const height = width / aspect;
+        fitted = [bounds.x + (bounds.width - width) / 2, bounds.y + (bounds.height - height) / 2, width, height];
+      }
+      zoom = 1;
+      updateView();
+    }
+    svg.addEventListener('keydown', event => {
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if (['+', '='].includes(event.key)) changeZoom(zoomStep);
+      else if (['-', '−', '_'].includes(event.key)) changeZoom(1 / zoomStep);
+      else if (event.key === '0') fitScene();
+      else return;
+      event.preventDefault();
+    });
+    svg.addEventListener('pointerdown', event => {
+      if (event.button !== 0 || event.pointerType === 'touch') return;
+      // Suppress native text selection while retaining focus on clickable records.
+      event.preventDefault();
+      (event.target.closest('[tabindex]') || svg).focus({preventScroll: true});
+    });
+    svg.addEventListener('wheel', event => {
+      // Wheel and trackpad gestures zoom only while the pointer is over the scene.
+      event.preventDefault();
+      const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? svg.clientHeight : 1;
+      changeZoom(Math.exp(-Math.max(-100, Math.min(100, event.deltaY * unit)) * .002));
+    }, {passive: false});
+    document.getElementById(svg.dataset.resetView)?.addEventListener('click', fitScene);
+    fitScene();
+  }
 })();
 </script>
 </body>

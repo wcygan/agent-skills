@@ -76,7 +76,17 @@ button:disabled { opacity:.4; cursor:default; }
 
 input,select { font:inherit; background:var(--panel); color:var(--text); border:1px solid var(--border-node); padding:8px; max-width:180px; }
 .controls label { color:var(--text-muted); } .status { color:var(--text); min-height:3em; }
-</style></head><body><main><header><div class="eyebrow">APACHE KAFKA / INTERACTIVE 3D</div><h1>One topic. Three partition logs.</h1><p>Ticket events are produced automatically. Pause producer stops new automatic events; in-flight delivery finishes. The producer's partitioner chooses a partition. Its leader broker appends the record and assigns an offset within that partition.</p></header><div class="controls"><label>Partition <select id="partition"><option value="auto">Hash key</option><option value="0">Explicit P0</option><option value="1">Explicit P1</option><option value="2">Explicit P2</option></select></label><button id="produce" type="button">Produce</button><button id="reset" type="button">Reset</button><button id="pause" type="button" aria-pressed="false">Pause producer</button></div><p id="status" class="status" aria-live="polite">Ready. Produce a record into topic ticket-events.</p><figure><svg id="scene" viewBox="0 0 800 490" tabindex="0" role="group" aria-labelledby="scene-title"><title id="scene-title">Drag to orbit the producer and three partition tapes</title><g id="world"></g></svg><p id="detail" class="hint">Select a record to inspect its key, value, partition, and offset.</p><figcaption><strong>Offsets start at zero independently in each partition.</strong> The same serialized key maps to the same partition while the partition count and partitioner stay unchanged. Each tape advances its visible six-record window without deleting older records.</figcaption></figure><footer>Topic: ticket-events · 3 partitions · one leader broker per partition shown · replication, batching, and retries omitted.<br>Keyless sticky batching is a separate Kafka behavior, not simulated here.<br>Sources: <a href="https://kafka.apache.org/43/configuration/producer-configs/">Apache Kafka producer configuration</a> · <a href="https://raw.githubusercontent.com/apache/kafka/4.0/clients/src/main/java/org/apache/kafka/clients/producer/internals/BuiltInPartitioner.java">Java key hashing</a><br>Drag horizontally or use ← / → to orbit.</footer></main><script>
+
+/* The viewport keeps its height while the camera zooms. */
+.scene-viewport{max-width:100%;min-width:0;overflow:hidden}
+.scene-viewport,.scene-viewport *{user-select:none;-webkit-user-select:none}
+.scene-viewport:focus-visible{outline:2px solid var(--info);outline-offset:3px}
+.controls.scene-camera{gap:8px;align-items:center;margin:12px 0}
+.scene-camera button{min-height:40px}
+.scene-camera button:disabled{opacity:.45;cursor:default}
+.scene-camera .zoom-level{min-width:5ch;text-align:right;font-variant-numeric:tabular-nums;color:var(--text-muted)}
+.scene-camera .zoom-hint{color:var(--text-muted);font-size:11px}
+</style></head><body><main><header><div class="eyebrow">APACHE KAFKA / INTERACTIVE 3D</div><h1>One topic. Three partition logs.</h1><p>Ticket events are produced automatically. Pause producer stops new automatic events; in-flight delivery finishes. The producer's partitioner chooses a partition. Its leader broker appends the record and assigns an offset within that partition.</p></header><div class="controls"><label>Partition <select id="partition"><option value="auto">Hash key</option><option value="0">Explicit P0</option><option value="1">Explicit P1</option><option value="2">Explicit P2</option></select></label><button id="produce" type="button">Produce</button><button id="reset" type="button">Reset</button><button id="pause" type="button" aria-pressed="false">Pause producer</button></div><p id="status" class="status" aria-live="polite">Ready. Produce a record into topic ticket-events.</p><figure><svg id="scene" viewBox="0 0 800 490" tabindex="0" role="group" aria-labelledby="scene-title" data-reset-view="reset"><title id="scene-title">Drag to orbit the producer and three partition tapes</title><g id="world"></g></svg><p id="detail" class="hint">Select a record to inspect its key, value, partition, and offset.</p><figcaption><strong>Offsets start at zero independently in each partition.</strong> The same serialized key maps to the same partition while the partition count and partitioner stay unchanged. Each tape advances its visible six-record window without deleting older records.</figcaption></figure><footer>Topic: ticket-events · 3 partitions · one leader broker per partition shown · replication, batching, and retries omitted.<br>Keyless sticky batching is a separate Kafka behavior, not simulated here.<br>Sources: <a href="https://kafka.apache.org/43/configuration/producer-configs/">Apache Kafka producer configuration</a> · <a href="https://raw.githubusercontent.com/apache/kafka/4.0/clients/src/main/java/org/apache/kafka/clients/producer/internals/BuiltInPartitioner.java">Java key hashing</a><br>Drag horizontally or use ← / → to orbit.</footer></main><script>
 (() => {
 const is3D=true, svg=document.querySelector('#scene'),world=document.querySelector('#world'),status=document.querySelector('#status'),detail=document.querySelector('#detail');
 const logs=[[],[],[]], encoder=new TextEncoder(),reduced=matchMedia('(prefers-reduced-motion: reduce)');
@@ -101,6 +111,24 @@ function cube(x,z,w,d,h,color,parent=world){const v=(dx,y,dz)=>project(x+dx,y,z+
  faces.sort((a,b)=>a.depth-b.depth).forEach(f=>poly(f.p,{fill:'var(--panel)',stroke:color},parent));poly([v(-w/2,h,-d/2),v(w/2,h,-d/2),v(w/2,h,d/2),v(-w/2,h,d/2)],{fill:'var(--canvas)',stroke:color},parent);}
 function inspect(r){selected=r;detail.textContent=`P${r.partition} · offset ${r.offset} · key: ${r.key} · value: ${r.value}`;render();}
 function recordGroup(r){const g=el('g',{tabindex:0,role:'button','aria-label':`Partition ${r.partition}, offset ${r.offset}, key ${r.key}`});g.addEventListener('click',()=>{if(!moved)inspect(r);});g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();inspect(r);}});return g;}
+
+// Fixed world ports; shaft and filled tip share the same projected final segment.
+function connection(path,color,project,add){
+ for(let i=1;i<path.length;i++){
+  const a=path[i-1],b=path[i],pa=project(...a),pb=project(...b),length=Math.hypot(pb.x-pa.x,pb.y-pa.y);
+  const end=i===path.length-1,trim=end?Math.min(.45,11/length):0;
+  for(let k=0;k<20;k++){
+   const t=(1-trim)*k/20,u=(1-trim)*(k+1)/20;
+   const v=project(...a.map((n,j)=>n+(b[j]-n)*t)),w=project(...a.map((n,j)=>n+(b[j]-n)*u));
+   add((v.depth+w.depth)/2,()=>el('line',{x1:v.x,y1:v.y,x2:w.x,y2:w.y,stroke:color,'stroke-width':1.8}));
+  }
+  if(end){const ux=(pb.x-pa.x)/length,uy=(pb.y-pa.y)/length,tip={x:pb.x-ux*1.5,y:pb.y-uy*1.5};
+   add(pb.depth+.01,()=>el('path',{d:`M${tip.x} ${tip.y} L${tip.x-ux*10-uy*4} ${tip.y-uy*10+ux*4} L${tip.x-ux*10+uy*4} ${tip.y-uy*10-ux*4} Z`,fill:color}));
+  }
+ }
+}
+function along(path,t){const lengths=path.slice(1).map((b,i)=>Math.hypot(...b.map((n,j)=>n-path[i][j])));let distance=t*lengths.reduce((a,b)=>a+b,0);for(let i=0;i<lengths.length;i++){if(distance<=lengths[i]||i===lengths.length-1)return path[i].map((n,j)=>n+(path[i+1][j]-n)*Math.min(1,distance/lengths[i]));distance-=lengths[i];}}
+function kafkaRoute(i){const z=(i-1)*145;return [[-205,52.5,0],[-120,-3,z]];}
 function render(){world.replaceChildren();
  if(is3D){poly([project(-370,0,-240),project(360,0,-240),project(360,0,240),project(-370,0,240)],{fill:'var(--panel)',stroke:'var(--border)'});}
  const objects=[];
@@ -119,7 +147,7 @@ function render(){world.replaceChildren();
    sides.sort((a,b)=>a.depth-b.depth).forEach(f=>poly(f.p,{fill:'var(--panel)',stroke:'var(--border-node)'}));
    poly([v(-120,0,-40),v(320,0,-40),v(320,0,40),v(-120,0,40)],{fill:'var(--panel)',stroke:color});
    const label=project(-125,0,z);text(`P${i}`,label.x-25,label.y,{'text-anchor':'end',fill:'var(--info)'});
-   const a=project(-205,20,0),b=project(-120,0,z);el('polyline',{points:points([a,b]),fill:'none',stroke:color});
+   connection(kafkaRoute(i),color,project,(depth,draw)=>objects.push({depth,draw}));
   }else{
    el('rect',{x:300,y:y-15,width:470,height:90,rx:3,fill:'var(--panel)',stroke:color});text(`P${i} · leader broker ${i+1}`,300,y-25,{fill:'var(--info)'});
    el('path',{d:`M235 225 H265 V${y+30} H300`,fill:'none',stroke:color});
@@ -135,8 +163,8 @@ function render(){world.replaceChildren();
  else {el('rect',{x:20,y:160,width:215,height:130,rx:4,fill:'var(--panel)',stroke:'var(--accent)'});text('PRODUCER CLIENT',35,185,{fill:'var(--accent)'});text('UTF-8 key serialization',35,215,{'font-size':12});el('rect',{x:35,y:232,width:185,height:38,fill:'var(--canvas)',stroke:'var(--border-node)'});text('partitioner',55,256);}
  if(flight){const i=flight.partition,t=flight.progress;
  // Repaint the active path above all baseline wires.
- if(is3D){const a=project(-205,20,0),b=project(-120,0,(i-1)*145);el('polyline',{points:points([a,b]),fill:'none',stroke:'var(--accent)','stroke-width':2});}
-  if(is3D){const x=-205+85*t,z=(i-1)*145*t,height=20-20*t;
+ if(is3D){connection(kafkaRoute(i),'var(--accent)',project,(depth,draw)=>objects.push({depth:depth+.02,draw}));}
+  if(is3D){const [x,height,z]=along(kafkaRoute(i),t);
  // Payload follows the exact visible route and arrives on the tape surface.
  const packet=project(x,height,z);
  objects.push({depth:packet.depth,draw:()=>el('rect',{x:packet.x-6,y:packet.y-6,width:12,height:12,fill:'var(--accent)'})});}
@@ -162,4 +190,99 @@ function frame(now){
 }
 render();document.querySelector('#produce').click();requestAnimationFrame(frame);
 })();
-</script></body></html>
+</script><script>
+// Kept inline so each reference remains a standalone, offline demo.
+(() => {
+  const minZoom = .25, maxZoom = 4, zoomStep = 1.2;
+  for (const svg of document.querySelectorAll('svg[viewBox]')) {
+    const world = svg.querySelector(':scope > g');
+    if (!world) continue;
+    const original = svg.getAttribute('viewBox').trim().split(/[\s,]+/).map(Number);
+    const aspect = original[2] / original[3];
+    let fitted = [...original], zoom = 1;
+    svg.id ||= `${world.id}-scene`;
+    svg.classList.add('scene-viewport');
+    svg.style.aspectRatio = `${original[2]} / ${original[3]}`;
+
+    const controls = document.createElement('div');
+    controls.className = 'controls scene-camera';
+    controls.setAttribute('role', 'group');
+    controls.setAttribute('aria-label', `${svg.querySelector('title').textContent} view controls`);
+    function button(label, action, handler) {
+      const control = document.createElement('button');
+      control.type = 'button';
+      control.textContent = label;
+      control.dataset.zoom = action;
+      control.setAttribute('aria-controls', svg.id);
+      control.addEventListener('click', handler);
+      controls.append(control);
+      return control;
+    }
+    const zoomOut = button('Zoom out', 'out', () => changeZoom(1 / zoomStep));
+    const zoomIn = button('Zoom in', 'in', () => changeZoom(zoomStep));
+    button('Fit scene', 'fit', fitScene);
+    const level = document.createElement('output');
+    level.className = 'zoom-level';
+    level.setAttribute('aria-label', 'Scene zoom');
+    level.setAttribute('aria-live', 'off');
+    const hint = document.createElement('span');
+    hint.id = `${svg.id}-zoom-help`;
+    hint.className = 'zoom-hint';
+    hint.textContent = 'Scroll to zoom · drag to orbit · + / − zoom · 0 fit';
+    controls.append(level, hint);
+    svg.before(controls);
+    svg.setAttribute('aria-describedby', [svg.getAttribute('aria-describedby'), hint.id].filter(Boolean).join(' '));
+
+    function updateView() {
+      const width = fitted[2] / zoom, height = fitted[3] / zoom;
+      const x = fitted[0] + (fitted[2] - width) / 2;
+      const y = fitted[1] + (fitted[3] - height) / 2;
+      svg.setAttribute('viewBox', `${x} ${y} ${width} ${height}`);
+      level.textContent = `${Math.round(zoom * 100)}%`;
+      zoomOut.disabled = zoom <= minZoom;
+      zoomIn.disabled = zoom >= maxZoom;
+    }
+    function changeZoom(factor) {
+      zoom = Math.max(minZoom, Math.min(maxZoom, zoom * factor));
+      updateView();
+    }
+    function fitScene() {
+      // Measure the current projection, including labels after orbiting or scaling.
+      fitted = [...original];
+      let bounds;
+      try { bounds = world.getBBox(); } catch { /* Use the original frame if hidden. */ }
+      if (bounds && [bounds.x, bounds.y, bounds.width, bounds.height].every(Number.isFinite) && bounds.width > 0 && bounds.height > 0) {
+        const padding = Math.max(24, Math.max(bounds.width, bounds.height) * .04);
+        const width = Math.max(bounds.width + padding * 2, (bounds.height + padding * 2) * aspect);
+        const height = width / aspect;
+        fitted = [bounds.x + (bounds.width - width) / 2, bounds.y + (bounds.height - height) / 2, width, height];
+      }
+      zoom = 1;
+      updateView();
+    }
+    svg.addEventListener('keydown', event => {
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if (['+', '='].includes(event.key)) changeZoom(zoomStep);
+      else if (['-', '−', '_'].includes(event.key)) changeZoom(1 / zoomStep);
+      else if (event.key === '0') fitScene();
+      else return;
+      event.preventDefault();
+    });
+    svg.addEventListener('pointerdown', event => {
+      if (event.button !== 0 || event.pointerType === 'touch') return;
+      // Suppress native text selection while retaining focus on clickable records.
+      event.preventDefault();
+      (event.target.closest('[tabindex]') || svg).focus({preventScroll: true});
+    });
+    svg.addEventListener('wheel', event => {
+      // Wheel and trackpad gestures zoom only while the pointer is over the scene.
+      event.preventDefault();
+      const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? svg.clientHeight : 1;
+      changeZoom(Math.exp(-Math.max(-100, Math.min(100, event.deltaY * unit)) * .002));
+    }, {passive: false});
+    document.getElementById(svg.dataset.resetView)?.addEventListener('click', fitScene);
+    fitScene();
+  }
+})();
+</script>
+</body></html>

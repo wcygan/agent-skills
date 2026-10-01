@@ -48,7 +48,17 @@ button:focus-visible, svg:focus-visible { outline: 2px solid var(--accent); outl
 
 main { max-width:1100px; } .status { min-height:4em; } .metrics { display:grid; grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0; } .metrics div { padding:12px;background:var(--panel);border:1px solid var(--border); } .metrics span { display:block;color:var(--text-muted);font-size:11px; } .metrics strong { font-size:22px;font-weight:500; } .references {margin-top:24px;border-top:1px solid var(--border);padding-top:16px;} .references h2 {font-size:18px;} .references h3 {font-size:14px;} pre {overflow:auto;padding:16px;background:var(--panel);font-size:12px;} @media(max-width:540px){.metrics {grid-template-columns:repeat(2,1fr);}}
 .component-key { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0 0; } .component-key article { padding:12px 14px;border:1px solid var(--border-node);border-top:3px solid var(--key-color);background:var(--panel); } .component-key strong {font-weight:500;display:block;margin-bottom:6px;} .component-key p {margin:0;color:var(--text-muted);font-size:11px;line-height:1.6;} @media(max-width:700px){.component-key {grid-template-columns:repeat(2,minmax(0,1fr));}}
-</style></head><body><main><header><div class="eyebrow">APACHE FLINK / INTERACTIVE 3D</div><h1>Replay the work. Keep the effect once.</h1><p>The Flink source reads an external Kafka partition. Checkpoint markers travel through the source, counter, and JDBC sink. PostgreSQL receives writes, retains committed rows, and ignores repeated event IDs.</p></header><p id="status" class="status"></p><figure><div class="component-key" aria-label="Scene component key"><article style="--key-color:var(--accent)"><strong>External Kafka</strong><p>Retained partition log. The source fetches records from it.</p></article><article style="--key-color:var(--info)"><strong>Flink cluster</strong><p>Light blue: JobManager coordination.<br>Blue: TaskManager workers.<br>TM1: source · TM2: count · TM3: JDBC sink.<br>TM = TaskManager worker.</p></article><article style="--key-color:var(--warn)"><strong>Apache Hadoop HDFS</strong><p>Yellow: durable checkpoint files and metadata. RocksDB holds working counter state locally in TM2; snapshots are copied here.</p></article><article style="--key-color:var(--good)"><strong>External PostgreSQL</strong><p>Committed event rows. Replayed IDs are ignored; rows survive recovery.</p></article></div><svg id="scene" viewBox="0 0 1100 600" tabindex="0" role="img" aria-labelledby="title desc"><title id="title">Orbitable Flink checkpoint and recovery demo</title><desc id="desc">Source, counter, and JDBC sink operators process events before writing to PostgreSQL. Saved checkpoint blocks restore source position and counter state after failure. Five database rows survive, and duplicate writes are ignored. Drag horizontally or use arrow keys to orbit.</desc><g id="world"></g></svg><p class="hint">Flink cluster = JobManager + TaskManagers. Operators run inside the workers. Kafka, PostgreSQL, and durable checkpoint storage are external.</p><div class="metrics"><div><span>Next Kafka offset</span><strong id="position">0</strong></div><div><span>Operator count</span><strong id="count">0</strong></div><div><span>Write attempts</span><strong id="attempts">0</strong></div><div><span>Committed rows</span><strong id="rows">0</strong></div></div><div class="controls"><button id="pause">Pause demo</button><button id="step">Step phase</button><button id="reset">Reset demo</button><button id="view">Reset view</button><span class="hint">Drag to orbit · ← / →</span></div><p id="checkpoint-status" class="hint"></p><p id="snapshot" class="hint"></p><figcaption><strong>Checkpoint state rewinds; committed database rows stay.</strong> Blue input disappears inside the counter, which glows yellow while processing. Green output reaches the database. Replayed event IDs flash orange and create no extra row. Yellow checkpoint blocks save source position and count; markers stop at the JDBC sink, which acknowledges the checkpoint. Only database writes cross the final green connection. Red marks the crash. This is an idempotent sink, not an XA transaction simulation. Illustrative placement: one operator task per TaskManager, parallelism 1. Real operators may share a worker; the external Kafka tape holds replayable events. The Flink source task reads Kafka and checkpoints its next read offset; the checkpoint barrier starts inside Flink.</figcaption></figure><p class="hint">Experimental shapes: source tape, processing module, database cylinder. Inspired by <a href="https://nightlies.apache.org/flink/flink-docs-stable/docs/concepts/flink-architecture/">Flink’s dataflow architecture</a> and its <a href="https://flink.apache.org/2020/10/15/from-aligned-to-unaligned-checkpoints-part-1-checkpoints-alignment-and-backpressure/">checkpoint illustrations</a>; this 3D treatment is our own design.</p><section class="references" aria-labelledby="reference-title">
+
+/* The viewport keeps its height while the camera zooms. */
+.scene-viewport{max-width:100%;min-width:0;overflow:hidden}
+.scene-viewport,.scene-viewport *{user-select:none;-webkit-user-select:none}
+.scene-viewport:focus-visible{outline:2px solid var(--info);outline-offset:3px}
+.controls.scene-camera{gap:8px;align-items:center;margin:12px 0}
+.scene-camera button{min-height:40px}
+.scene-camera button:disabled{opacity:.45;cursor:default}
+.scene-camera .zoom-level{min-width:5ch;text-align:right;font-variant-numeric:tabular-nums;color:var(--text-muted)}
+.scene-camera .zoom-hint{color:var(--text-muted);font-size:11px}
+</style></head><body><main><header><div class="eyebrow">APACHE FLINK / INTERACTIVE 3D</div><h1>Replay the work. Keep the effect once.</h1><p>The Flink source reads an external Kafka partition. Checkpoint markers travel through the source, counter, and JDBC sink. PostgreSQL receives writes, retains committed rows, and ignores repeated event IDs.</p></header><p id="status" class="status"></p><figure><div class="component-key" aria-label="Scene component key"><article style="--key-color:var(--accent)"><strong>External Kafka</strong><p>Retained partition log. The source fetches records from it.</p></article><article style="--key-color:var(--info)"><strong>Flink cluster</strong><p>Light blue: JobManager coordination.<br>Blue: TaskManager workers.<br>TM1: source · TM2: count · TM3: JDBC sink.<br>TM = TaskManager worker.</p></article><article style="--key-color:var(--warn)"><strong>Apache Hadoop HDFS</strong><p>Yellow: durable checkpoint files and metadata. RocksDB holds working counter state locally in TM2; snapshots are copied here.</p></article><article style="--key-color:var(--good)"><strong>External PostgreSQL</strong><p>Committed event rows. Replayed IDs are ignored; rows survive recovery.</p></article></div><svg id="scene" viewBox="0 0 1100 600" tabindex="0" role="img" aria-labelledby="title desc" data-reset-view="view"><title id="title">Orbitable Flink checkpoint and recovery demo</title><desc id="desc">Source, counter, and JDBC sink operators process events before writing to PostgreSQL. Saved checkpoint blocks restore source position and counter state after failure. Five database rows survive, and duplicate writes are ignored. Drag horizontally or use arrow keys to orbit.</desc><g id="world"></g></svg><p class="hint">Flink cluster = JobManager + TaskManagers. Operators run inside the workers. Kafka, PostgreSQL, and durable checkpoint storage are external.</p><div class="metrics"><div><span>Next Kafka offset</span><strong id="position">0</strong></div><div><span>Operator count</span><strong id="count">0</strong></div><div><span>Write attempts</span><strong id="attempts">0</strong></div><div><span>Committed rows</span><strong id="rows">0</strong></div></div><div class="controls"><button id="pause">Pause demo</button><button id="step">Step phase</button><button id="reset">Reset demo</button><button id="view">Reset view</button><span class="hint">Drag to orbit · ← / →</span></div><p id="checkpoint-status" class="hint"></p><p id="snapshot" class="hint"></p><figcaption><strong>Checkpoint state rewinds; committed database rows stay.</strong> Blue input disappears inside the counter, which glows yellow while processing. Green output reaches the database. Replayed event IDs flash orange and create no extra row. Yellow checkpoint blocks save source position and count; markers stop at the JDBC sink, which acknowledges the checkpoint. Only database writes cross the final green connection. Red marks the crash. This is an idempotent sink, not an XA transaction simulation. Illustrative placement: one operator task per TaskManager, parallelism 1. Real operators may share a worker; the external Kafka tape holds replayable events. The Flink source task reads Kafka and checkpoints its next read offset; the checkpoint barrier starts inside Flink.</figcaption></figure><p class="hint">Experimental shapes: source tape, processing module, database cylinder. Inspired by <a href="https://nightlies.apache.org/flink/flink-docs-stable/docs/concepts/flink-architecture/">Flink’s dataflow architecture</a> and its <a href="https://flink.apache.org/2020/10/15/from-aligned-to-unaligned-checkpoints-part-1-checkpoints-alignment-and-backpressure/">checkpoint illustrations</a>; this 3D treatment is our own design.</p><section class="references" aria-labelledby="reference-title">
 <h2 id="reference-title">State and checkpoint storage</h2><p>This illustrative deployment uses EmbeddedRocksDBStateBackend for the counter’s local keyed state inside TaskManager 2. Durable checkpoint snapshots and recovery metadata are stored externally in Apache Hadoop HDFS through FileSystemCheckpointStorage. RocksDB is not the external checkpoint destination. <a href="https://flink.apache.org/2021/01/18/using-rocksdb-state-backend-in-apache-flink-when-and-how/">Flink’s RocksDB explanation</a> · <a href="https://nightlies.apache.org/flink/flink-docs-stable/docs/ops/state/checkpoints/">Checkpoint storage documentation</a>.</p><h2>Real database sink patterns</h2>
 <h3>PostgreSQL: ignore an event that was already written</h3>
 <p>This minimal SQL example matches the animation. A custom Flink JDBC sink can bind the stable event ID and payload into the parameterized INSERT. The primary key is enforced by PostgreSQL; the same ID arriving again creates no additional row. This is an example statement, not a running database connection.</p>
@@ -108,6 +118,23 @@ function cylinder(objects,x,z,r,h,color){
   el('ellipse',{cx:top.x,cy:top.y,rx,ry,fill:'var(--panel)',stroke:color,'stroke-width':1.6});
  }});
 }
+
+// Fixed world ports; shaft and filled tip share the same projected final segment.
+function connection(path,color,project,add){
+ for(let i=1;i<path.length;i++){
+  const a=path[i-1],b=path[i],pa=project(...a),pb=project(...b),length=Math.hypot(pb.x-pa.x,pb.y-pa.y);
+  const end=i===path.length-1,trim=end?Math.min(.45,11/length):0;
+  for(let k=0;k<20;k++){
+   const t=(1-trim)*k/20,u=(1-trim)*(k+1)/20;
+   const v=project(...a.map((n,j)=>n+(b[j]-n)*t)),w=project(...a.map((n,j)=>n+(b[j]-n)*u));
+   add((v.depth+w.depth)/2,()=>el('line',{x1:v.x,y1:v.y,x2:w.x,y2:w.y,stroke:color,'stroke-width':1.8}));
+  }
+  if(end){const ux=(pb.x-pa.x)/length,uy=(pb.y-pa.y)/length,tip={x:pb.x-ux*1.5,y:pb.y-uy*1.5};
+   add(pb.depth+.01,()=>el('path',{d:`M${tip.x} ${tip.y} L${tip.x-ux*10-uy*4} ${tip.y-uy*10+ux*4} L${tip.x-ux*10+uy*4} ${tip.y-uy*10-ux*4} Z`,fill:color}));
+  }
+ }
+}
+function along(path,t){const lengths=path.slice(1).map((b,i)=>Math.hypot(...b.map((n,j)=>n-path[i][j])));let distance=t*lengths.reduce((a,b)=>a+b,0);for(let i=0;i<lengths.length;i++){if(distance<=lengths[i]||i===lengths.length-1)return path[i].map((n,j)=>n+(path[i+1][j]-n)*Math.min(1,distance/lengths[i]));distance-=lengths[i];}}
 function render(){
  const found=phases.findIndex(p=>elapsed<p.until),index=found<0?6:found,p=phases[index],start=index?phases[index-1].until:0,progress=Math.min(1,(elapsed-start)/(p.until-start));
  const moving=[0,2,5].includes(index),n=index===0?3:2,delivered=moving?Math.min(n,Math.floor(progress*n)):0,cycle=Math.min(n-1,Math.floor(progress*n)),local=(progress*n)%1;
@@ -135,12 +162,13 @@ function render(){
   {a:[70,35,0],b:[130,35,0],color:'var(--info)'},
   {a:[230,35,0],b:[330,35,0],color:'var(--good)'}
  ];
- for(const route of routes)line([route.a,route.b],route.color);
+ const objects=[];
+ for(const route of routes)connection([route.a,route.b],route.color,project,(depth,draw)=>objects.push({depth,draw}));
  function packet(routeIndex,t,color,w=18,h=18,d=18){
-  const {a,b}=routes[routeIndex],v=a.map((n,i)=>n+(b[i]-n)*t);
+  const {a,b}=routes[routeIndex],v=along([a,b],t);
   box(objects,v[0],v[1]-h/2,v[2],w,h,d,color);
  }
- const objects=[],processing=moving&&local>=.28&&local<.65;
+ const processing=moving&&local>=.28&&local<.65;
  box(objects,-165,0,-210,170,55,80,complete?'var(--good)':'var(--jobmanager)','JOBMANAGER');
  // The tape and its mounted records form one assembly. Its broad top face
  // must render before the records above it, regardless of camera azimuth.
@@ -204,4 +232,99 @@ function stop(){drag=null;svg.classList.remove('dragging');}for(const event of [
 svg.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();angle+=e.key==='ArrowRight'?.12:-.12;render();});
 function frame(now){if(last!==null&&playing&&!document.hidden){elapsed+=Math.min((now-last)/1000,.05);if(elapsed>=42){elapsed-=42;batch++;}render();}last=now;requestAnimationFrame(frame);}
 render();requestAnimationFrame(frame);
-})();</script></body></html>
+})();</script><script>
+// Kept inline so each reference remains a standalone, offline demo.
+(() => {
+  const minZoom = .25, maxZoom = 4, zoomStep = 1.2;
+  for (const svg of document.querySelectorAll('svg[viewBox]')) {
+    const world = svg.querySelector(':scope > g');
+    if (!world) continue;
+    const original = svg.getAttribute('viewBox').trim().split(/[\s,]+/).map(Number);
+    const aspect = original[2] / original[3];
+    let fitted = [...original], zoom = 1;
+    svg.id ||= `${world.id}-scene`;
+    svg.classList.add('scene-viewport');
+    svg.style.aspectRatio = `${original[2]} / ${original[3]}`;
+
+    const controls = document.createElement('div');
+    controls.className = 'controls scene-camera';
+    controls.setAttribute('role', 'group');
+    controls.setAttribute('aria-label', `${svg.querySelector('title').textContent} view controls`);
+    function button(label, action, handler) {
+      const control = document.createElement('button');
+      control.type = 'button';
+      control.textContent = label;
+      control.dataset.zoom = action;
+      control.setAttribute('aria-controls', svg.id);
+      control.addEventListener('click', handler);
+      controls.append(control);
+      return control;
+    }
+    const zoomOut = button('Zoom out', 'out', () => changeZoom(1 / zoomStep));
+    const zoomIn = button('Zoom in', 'in', () => changeZoom(zoomStep));
+    button('Fit scene', 'fit', fitScene);
+    const level = document.createElement('output');
+    level.className = 'zoom-level';
+    level.setAttribute('aria-label', 'Scene zoom');
+    level.setAttribute('aria-live', 'off');
+    const hint = document.createElement('span');
+    hint.id = `${svg.id}-zoom-help`;
+    hint.className = 'zoom-hint';
+    hint.textContent = 'Scroll to zoom · drag to orbit · + / − zoom · 0 fit';
+    controls.append(level, hint);
+    svg.before(controls);
+    svg.setAttribute('aria-describedby', [svg.getAttribute('aria-describedby'), hint.id].filter(Boolean).join(' '));
+
+    function updateView() {
+      const width = fitted[2] / zoom, height = fitted[3] / zoom;
+      const x = fitted[0] + (fitted[2] - width) / 2;
+      const y = fitted[1] + (fitted[3] - height) / 2;
+      svg.setAttribute('viewBox', `${x} ${y} ${width} ${height}`);
+      level.textContent = `${Math.round(zoom * 100)}%`;
+      zoomOut.disabled = zoom <= minZoom;
+      zoomIn.disabled = zoom >= maxZoom;
+    }
+    function changeZoom(factor) {
+      zoom = Math.max(minZoom, Math.min(maxZoom, zoom * factor));
+      updateView();
+    }
+    function fitScene() {
+      // Measure the current projection, including labels after orbiting or scaling.
+      fitted = [...original];
+      let bounds;
+      try { bounds = world.getBBox(); } catch { /* Use the original frame if hidden. */ }
+      if (bounds && [bounds.x, bounds.y, bounds.width, bounds.height].every(Number.isFinite) && bounds.width > 0 && bounds.height > 0) {
+        const padding = Math.max(24, Math.max(bounds.width, bounds.height) * .04);
+        const width = Math.max(bounds.width + padding * 2, (bounds.height + padding * 2) * aspect);
+        const height = width / aspect;
+        fitted = [bounds.x + (bounds.width - width) / 2, bounds.y + (bounds.height - height) / 2, width, height];
+      }
+      zoom = 1;
+      updateView();
+    }
+    svg.addEventListener('keydown', event => {
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if (['+', '='].includes(event.key)) changeZoom(zoomStep);
+      else if (['-', '−', '_'].includes(event.key)) changeZoom(1 / zoomStep);
+      else if (event.key === '0') fitScene();
+      else return;
+      event.preventDefault();
+    });
+    svg.addEventListener('pointerdown', event => {
+      if (event.button !== 0 || event.pointerType === 'touch') return;
+      // Suppress native text selection while retaining focus on clickable records.
+      event.preventDefault();
+      (event.target.closest('[tabindex]') || svg).focus({preventScroll: true});
+    });
+    svg.addEventListener('wheel', event => {
+      // Wheel and trackpad gestures zoom only while the pointer is over the scene.
+      event.preventDefault();
+      const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? svg.clientHeight : 1;
+      changeZoom(Math.exp(-Math.max(-100, Math.min(100, event.deltaY * unit)) * .002));
+    }, {passive: false});
+    document.getElementById(svg.dataset.resetView)?.addEventListener('click', fitScene);
+    fitScene();
+  }
+})();
+</script>
+</body></html>
