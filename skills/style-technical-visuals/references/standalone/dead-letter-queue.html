@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dead-letter queue · Failed job isolation</title>
+<!-- Original standalone reference. Separate processing, retry, and exhausted
+     routes. Generic illustrative policy: three total attempts, then a DLQ.
+     Redrive follows investigation and a fix; no automatic infinite retry loop.
+     Offline; all styles and SVG are inline. -->
+<style>
+:root {
+  color-scheme: dark;
+  --canvas: #111111; --panel: #1c1c1c;
+  --border: rgba(255,255,255,.14); --border-node: rgba(255,255,255,.22);
+  --track: rgba(255,255,255,.10);
+  --text: #fafafa; --text-muted: rgba(250,250,250,.60);
+  --text-dim: rgba(250,250,250,.40);
+  --accent: #f35815; --good: #27b648; --warn: #d19f03;
+  --bad: #ff455d; --info: #1e9de7;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--canvas); color: var(--text);
+  font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+main { max-width: 860px; margin: auto; padding: 56px 28px 32px; }
+.eyebrow { color: var(--text-muted); font-size: 11px; letter-spacing: .12em; }
+h1 { margin: 12px 0; font-size: clamp(22px, 4vw, 30px); font-weight: 500; letter-spacing: -.04em; }
+header p { color: var(--text-muted); max-width: 62ch; margin: 0; }
+figure { margin: 32px 0 0; }
+svg { display: block; width: 100%; height: auto; font: inherit; }
+.node { fill: var(--panel); stroke: var(--border-node); stroke-width: 1.5; }
+.source { stroke: var(--accent); }
+.wire { fill: none; stroke: var(--info); stroke-width: 1.5; }
+.label { fill: var(--text); font-size: 19px; }
+.meta { fill: var(--text-muted); font-size: 13px; }
+.role { fill: var(--accent); font-size: 12px; letter-spacing: 1px; }
+.caption { fill: var(--info); font-size: 12px; }
+figcaption { border-top: 1px solid var(--border); padding-top: 18px;
+  color: var(--text-muted); max-width: 100%; }
+figcaption strong { color: var(--text); font-weight: 500; }
+footer { margin-top: 24px; color: var(--text-muted); font-size: 11px; }
+@media (max-width: 540px) { main { padding: 28px 16px; } }
+
+.retry { fill: none; stroke: var(--warn); stroke-width: 1.5; }
+.failed { fill: none; stroke: var(--bad); stroke-width: 1.5; }
+.done { fill: none; stroke: var(--good); stroke-width: 1.5; }
+.retry-label { fill: var(--warn); font-size: 12px; }
+.failed-label { fill: var(--bad); font-size: 12px; }
+.done-label { fill: var(--good); font-size: 12px; }
+.dead-letter { stroke: var(--bad); }
+</style>
+</head>
+<body>
+<main>
+<header>
+<div class="eyebrow">FAILURE HANDLING / 06</div>
+<h1>Retry briefly. Isolate persistent failures.</h1>
+<p>A worker processes queued jobs. Failed jobs can be retried; jobs that exhaust the configured attempt limit move to a dead-letter queue for investigation.</p>
+</header>
+<figure>
+<svg viewBox="0 0 800 530" role="img" aria-labelledby="dlq-title dlq-description">
+<title id="dlq-title">Job processing with a dead-letter queue</title>
+<desc id="dlq-description">A work queue sends jobs to a worker. Successful jobs are acknowledged. Failed jobs below the limit return for retry. In this example, a job still failing after three total attempts moves to a dead-letter queue. Operators inspect and fix the cause before choosing whether to redrive the job.</desc>
+<defs>
+<marker id="process-arrow" viewBox="0 -4 8 8" refX="8" refY="0" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+<path d="M0 -3 L8 0 L0 3" fill="none" stroke="var(--info)" stroke-width="1.3"/>
+</marker>
+<marker id="retry-arrow" viewBox="0 -4 8 8" refX="8" refY="0" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+<path d="M0 -3 L8 0 L0 3" fill="none" stroke="var(--warn)" stroke-width="1.3"/>
+</marker>
+<marker id="failed-arrow" viewBox="0 -4 8 8" refX="8" refY="0" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+<path d="M0 -3 L8 0 L0 3" fill="none" stroke="var(--bad)" stroke-width="1.3"/>
+</marker>
+<marker id="done-arrow" viewBox="0 -4 8 8" refX="8" refY="0" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+<path d="M0 -3 L8 0 L0 3" fill="none" stroke="var(--good)" stroke-width="1.3"/>
+</marker>
+</defs>
+<!-- Bounds: queue (40,120,260,140), worker (500,120,220,140),
+     DLQ (480,370,260,130), success (500,25,220,50). -->
+<path class="wire" d="M300 190 H500" marker-end="url(#process-arrow)"/>
+<text class="caption" x="400" y="178" text-anchor="middle">take a job</text>
+<path class="retry" d="M500 190 H460 V305 H170 V260" marker-end="url(#retry-arrow)"/>
+<text class="retry-label" x="280" y="294" text-anchor="middle">failed · attempts remain</text>
+<path class="failed" d="M610 260 V370" marker-end="url(#failed-arrow)"/>
+<text class="failed-label" x="628" y="305">still failing</text>
+<text class="failed-label" x="628" y="324">limit reached</text>
+<path class="done" d="M610 120 V75" marker-end="url(#done-arrow)"/>
+<rect class="node" x="500" y="25" width="220" height="50" rx="4"/>
+<text class="done-label" x="610" y="56" text-anchor="middle">success · acknowledge</text>
+<rect class="node source" x="40" y="120" width="260" height="140" rx="4"/>
+<text class="role" x="170" y="153" text-anchor="middle">WORK QUEUE</text>
+<text class="meta" x="170" y="177" text-anchor="middle">pending jobs</text>
+<rect x="60" y="196" width="60" height="40" rx="2" fill="var(--track)" stroke="var(--border-node)"/>
+<text class="meta" x="90" y="221" text-anchor="middle">job 1</text>
+<rect x="140" y="196" width="60" height="40" rx="2" fill="var(--track)" stroke="var(--border-node)"/>
+<text class="meta" x="170" y="221" text-anchor="middle">job 2</text>
+<rect x="220" y="196" width="60" height="40" rx="2" fill="var(--track)" stroke="var(--border-node)"/>
+<text class="meta" x="250" y="221" text-anchor="middle">job 3</text>
+<rect class="node" x="500" y="120" width="220" height="140" rx="4"/>
+<path d="M500 148 H720 M516 134 H536 M544 134 H564" fill="none" stroke="var(--border-node)" stroke-width="1.5"/>
+<text class="label" x="610" y="186" text-anchor="middle">worker</text>
+<text class="meta" x="610" y="217" text-anchor="middle">process → outcome</text>
+<rect class="node dead-letter" x="480" y="370" width="260" height="130" rx="4"/>
+<text class="failed-label" x="610" y="402" text-anchor="middle">DEAD-LETTER QUEUE</text>
+<rect x="500" y="419" width="220" height="32" rx="2" fill="var(--track)" stroke="var(--bad)"/>
+<text class="meta" x="610" y="440" text-anchor="middle">failed job + context</text>
+<text class="meta" x="610" y="480" text-anchor="middle">inspect before redrive</text>
+<text class="meta" x="40" y="394">EXAMPLE RETRY POLICY</text>
+<text class="label" x="40" y="425">3 total attempts</text>
+<text class="meta" x="40" y="452">Initial attempt + 2 retries.</text>
+<text class="meta" x="40" y="477">Retry delays are omitted.</text>
+</svg>
+<figcaption><strong>Keep failed jobs available for recovery.</strong> A dead-letter queue isolates exhausted jobs from normal processing. Inspect the failure, fix its cause, then choose whether to redrive (return the job for processing). Routing, delivery guarantees, and retention depend on the queue system.</figcaption>
+</figure>
+<footer>Blue: processing · yellow: retry · red: exhausted · green: success</footer>
+</main>
+</body>
+</html>

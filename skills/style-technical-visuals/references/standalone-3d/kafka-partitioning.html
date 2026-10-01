@@ -1,0 +1,165 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Kafka · Producer partitioning</title><style>
+:root {
+  color-scheme: dark;
+  --canvas: #111111; --panel: #1c1c1c;
+  --border: rgba(255,255,255,.14); --border-node: rgba(255,255,255,.22);
+  --track: rgba(255,255,255,.10);
+  --text: #fafafa; --text-muted: rgba(250,250,250,.60);
+  --text-dim: rgba(250,250,250,.40);
+  --accent: #f35815; --good: #27b648; --warn: #d19f03;
+  --bad: #ff455d; --info: #1e9de7;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--canvas); color: var(--text);
+  font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+main { max-width: 860px; margin: auto; padding: 56px 28px 32px; }
+.eyebrow { color: var(--text-muted); font-size: 11px; letter-spacing: .12em; }
+h1 { margin: 12px 0; font-size: clamp(22px, 4vw, 30px); font-weight: 500; letter-spacing: -.04em; }
+header p { color: var(--text-muted); max-width: 62ch; margin: 0; }
+figure { margin: 32px 0 0; }
+svg { display: block; width: 100%; height: auto; font: inherit; }
+.node { fill: var(--panel); stroke: var(--border-node); stroke-width: 1.5; }
+.primary { stroke: var(--accent); }
+.wire { fill: none; stroke: var(--info); stroke-width: 1.5; }
+.label { fill: var(--text); font-size: 19px; }
+.meta { fill: var(--text-muted); font-size: 13px; }
+.role { fill: var(--accent); font-size: 12px; letter-spacing: 1px; }
+.caption { fill: var(--info); font-size: 12px; }
+figcaption { border-top: 1px solid var(--border); padding-top: 18px;
+  color: var(--text-muted); max-width: 100%; }
+figcaption strong { color: var(--text); font-weight: 500; }
+footer { margin-top: 24px; color: var(--text-muted); font-size: 11px; }
+@media (max-width: 540px) { main { padding: 28px 16px; } }
+
+.platform { fill: var(--panel); stroke: var(--border); stroke-width: 1; }
+.grid { fill: none; stroke: var(--track); stroke-width: 1; }
+.database-body { fill: var(--panel); stroke: var(--border-node); stroke-width: 1.5; }
+.database-top { fill: var(--canvas); stroke: var(--border-node); stroke-width: 1.5; }
+.database-ring { fill: none; stroke: var(--border-node); stroke-width: 1; }
+.primary-model .database-body, .primary-model .database-top, .primary-model .database-ring { stroke: var(--accent); }
+
+svg { touch-action: pan-y; cursor: grab; user-select: none; }
+svg.dragging { cursor: grabbing; }
+.controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 16px 0; }
+button { font: inherit; background: var(--panel); color: var(--text); border: 1px solid var(--border-node); padding: 8px 12px; cursor: pointer; }
+button:focus-visible, svg:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.hint { color: var(--text-muted); }
+
+main { max-width: 1040px; padding-top: 32px; }
+figure { margin-top: 16px; }
+.meta { fill: var(--text); font-size: 13px; }
+.grid { stroke: var(--border); opacity: .45; }
+.status-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; margin: 16px 0; }
+.worker-card { background: var(--panel); border: 1px solid var(--border-node); padding: 12px; }
+.worker-card strong { display: block; font-weight: 500; }
+.worker-card span { display: block; color: var(--text-muted); margin-top: 4px; font-variant-numeric: tabular-nums; }
+.worker-card.busy { border-color: var(--warn); }
+.worker-card.completed { border-color: var(--good); }
+.legend { display: flex; flex-wrap: wrap; gap: 18px; color: var(--text-muted); margin: 12px 0; }
+.legend i { display: inline-block; width: 8px; height: 8px; margin-right: 7px; background: var(--info); }
+.legend .producer { background: var(--accent); }
+.legend .busy { background: var(--warn); }
+.legend .complete { background: var(--good); }
+@media(max-width:540px) { .status-grid { grid-template-columns: 1fr; } }
+
+.remaining-track { height: 5px; background: var(--track); margin-top: 12px; overflow: hidden; }
+.remaining-fill { height: 100%; background: var(--warn); transform: scaleX(0); transform-origin: left center; }
+
+.details { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:16px 0; }
+.details div { background:var(--panel); border:1px solid var(--border); padding:12px; }
+.details small { display:block; color:var(--text-muted); margin-bottom:6px; font-size:11px; }
+.details strong { font-weight:500; overflow-wrap:anywhere; }
+.details div:nth-child(n+4) { grid-column:span 3; }
+svg g[role="button"] { cursor:pointer; }
+svg g[role="button"]:focus-visible { outline:2px solid var(--accent); }
+button:disabled { opacity:.4; cursor:default; }
+
+input,select { font:inherit; background:var(--panel); color:var(--text); border:1px solid var(--border-node); padding:8px; max-width:180px; }
+.controls label { color:var(--text-muted); } .status { color:var(--text); min-height:3em; }
+</style></head><body><main><header><div class="eyebrow">APACHE KAFKA / INTERACTIVE 3D</div><h1>One topic. Three partition logs.</h1><p>Ticket events are produced automatically. Pause producer stops new automatic events; in-flight delivery finishes. The producer's partitioner chooses a partition. Its leader broker appends the record and assigns an offset within that partition.</p></header><div class="controls"><label>Partition <select id="partition"><option value="auto">Hash key</option><option value="0">Explicit P0</option><option value="1">Explicit P1</option><option value="2">Explicit P2</option></select></label><button id="produce" type="button">Produce</button><button id="reset" type="button">Reset</button><button id="pause" type="button" aria-pressed="false">Pause producer</button></div><p id="status" class="status" aria-live="polite">Ready. Produce a record into topic ticket-events.</p><figure><svg id="scene" viewBox="0 0 800 490" tabindex="0" role="group" aria-labelledby="scene-title"><title id="scene-title">Drag to orbit the producer and three partition tapes</title><g id="world"></g></svg><p id="detail" class="hint">Select a record to inspect its key, value, partition, and offset.</p><figcaption><strong>Offsets start at zero independently in each partition.</strong> The same serialized key maps to the same partition while the partition count and partitioner stay unchanged. Each tape advances its visible six-record window without deleting older records.</figcaption></figure><footer>Topic: ticket-events · 3 partitions · one leader broker per partition shown · replication, batching, and retries omitted.<br>Keyless sticky batching is a separate Kafka behavior, not simulated here.<br>Sources: <a href="https://kafka.apache.org/43/configuration/producer-configs/">Apache Kafka producer configuration</a> · <a href="https://raw.githubusercontent.com/apache/kafka/4.0/clients/src/main/java/org/apache/kafka/clients/producer/internals/BuiltInPartitioner.java">Java key hashing</a><br>Drag horizontally or use ← / → to orbit.</footer></main><script>
+(() => {
+const is3D=true, svg=document.querySelector('#scene'),world=document.querySelector('#world'),status=document.querySelector('#status'),detail=document.querySelector('#detail');
+const logs=[[],[],[]], encoder=new TextEncoder(),reduced=matchMedia('(prefers-reduced-motion: reduce)');
+let eventNumber=0;
+let angle=.25,flight=null,last=null,autoProducing=true,autoElapsed=0,selected=null,drag=null,moved=false;
+const ns='http://www.w3.org/2000/svg';
+// Java-compatible Kafka Murmur2 on serialized UTF-8 keys. No borrowed library.
+function murmur2(bytes){let h=(0x9747b28c^bytes.length)|0,i=0,n=bytes.length;const m=0x5bd1e995;
+ while(n>=4){let k=bytes[i]|bytes[i+1]<<8|bytes[i+2]<<16|bytes[i+3]<<24;k=Math.imul(k,m);k^=k>>>24;k=Math.imul(k,m);h=Math.imul(h,m)^k;i+=4;n-=4;}
+ if(n===3)h^=bytes[i+2]<<16;if(n>=2)h^=bytes[i+1]<<8;if(n>=1){h^=bytes[i];h=Math.imul(h,m);}h^=h>>>13;h=Math.imul(h,m);h^=h>>>15;return h>>>0;}
+function partition(key){return (murmur2(encoder.encode(key))&0x7fffffff)%3;}
+function el(tag,a,parent=world){const e=document.createElementNS(ns,tag);for(const[k,v]of Object.entries(a))e.setAttribute(k,v);parent.append(e);return e;}
+function text(t,x,y,a={},parent=world){const e=el('text',{x,y,fill:'var(--text)','font-size':13,...a},parent);e.textContent=t;return e;}
+function project(x,y,z){const d=x*Math.sin(angle)+z*Math.cos(angle);return{x:430+(x*Math.cos(angle)-z*Math.sin(angle))*.86,y:260+d*.45-y*.85,depth:d};}
+function points(a){return a.map(p=>`${p.x},${p.y}`).join(' ');}
+function poly(a,attrs,parent=world){el('polygon',{points:points(a),...attrs},parent);}
+function cube(x,z,w,d,h,color,parent=world){const v=(dx,y,dz)=>project(x+dx,y,z+dz);
+ const faces=[{p:[v(-w/2,0,-d/2),v(w/2,0,-d/2),v(w/2,h,-d/2),v(-w/2,h,-d/2)],depth:-d/2*Math.cos(angle)},
+ {p:[v(-w/2,0,d/2),v(w/2,0,d/2),v(w/2,h,d/2),v(-w/2,h,d/2)],depth:d/2*Math.cos(angle)},
+ {p:[v(-w/2,0,-d/2),v(-w/2,0,d/2),v(-w/2,h,d/2),v(-w/2,h,-d/2)],depth:-w/2*Math.sin(angle)},
+ {p:[v(w/2,0,-d/2),v(w/2,0,d/2),v(w/2,h,d/2),v(w/2,h,-d/2)],depth:w/2*Math.sin(angle)}];
+ faces.sort((a,b)=>a.depth-b.depth).forEach(f=>poly(f.p,{fill:'var(--panel)',stroke:color},parent));poly([v(-w/2,h,-d/2),v(w/2,h,-d/2),v(w/2,h,d/2),v(-w/2,h,d/2)],{fill:'var(--canvas)',stroke:color},parent);}
+function inspect(r){selected=r;detail.textContent=`P${r.partition} · offset ${r.offset} · key: ${r.key} · value: ${r.value}`;render();}
+function recordGroup(r){const g=el('g',{tabindex:0,role:'button','aria-label':`Partition ${r.partition}, offset ${r.offset}, key ${r.key}`});g.addEventListener('click',()=>{if(!moved)inspect(r);});g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();inspect(r);}});return g;}
+function render(){world.replaceChildren();
+ if(is3D){poly([project(-370,0,-240),project(360,0,-240),project(360,0,240),project(-370,0,240)],{fill:'var(--panel)',stroke:'var(--border)'});}
+ const objects=[];
+ for(let i=0;i<3;i++){
+  const z=(i-1)*145,y=70+i*125,active=flight&&flight.partition===i;
+  const color=active?'var(--accent)':'var(--info)',start=Math.floor(Math.max(0,logs[i].length-1)/6)*6;
+  if(is3D){
+   // A shallow solid deck: top at y=0, base at y=-6, matching record bases.
+   const v=(x,y,dz)=>project(x,y,z+dz);
+   const sides=[
+    {p:[v(-120,-6,-40),v(320,-6,-40),v(320,0,-40),v(-120,0,-40)],depth:-40*Math.cos(angle)},
+    {p:[v(-120,-6,40),v(320,-6,40),v(320,0,40),v(-120,0,40)],depth:40*Math.cos(angle)},
+    {p:[v(-120,-6,-40),v(-120,-6,40),v(-120,0,40),v(-120,0,-40)],depth:-220*Math.sin(angle)},
+    {p:[v(320,-6,-40),v(320,-6,40),v(320,0,40),v(320,0,-40)],depth:220*Math.sin(angle)}
+   ];
+   sides.sort((a,b)=>a.depth-b.depth).forEach(f=>poly(f.p,{fill:'var(--panel)',stroke:'var(--border-node)'}));
+   poly([v(-120,0,-40),v(320,0,-40),v(320,0,40),v(-120,0,40)],{fill:'var(--panel)',stroke:color});
+   const label=project(-125,0,z);text(`P${i}`,label.x-25,label.y,{'text-anchor':'end',fill:'var(--info)'});
+   const a=project(-205,20,0),b=project(-120,0,z);el('polyline',{points:points([a,b]),fill:'none',stroke:color});
+  }else{
+   el('rect',{x:300,y:y-15,width:470,height:90,rx:3,fill:'var(--panel)',stroke:color});text(`P${i} · leader broker ${i+1}`,300,y-25,{fill:'var(--info)'});
+   el('path',{d:`M235 225 H265 V${y+30} H300`,fill:'none',stroke:color});
+  }
+  logs[i].slice(start).forEach((r,j)=>{
+   if(is3D){const x=-80+j*65;objects.push({depth:project(x,0,z).depth,draw:()=>{const g=recordGroup(r);cube(x,z,52,52,48,selected===r?'var(--accent)':'var(--info)',g);const top=project(x,48,z);text(String(r.offset),top.x,top.y,{'text-anchor':'middle','font-size':15},g);}});}
+   else{const g=recordGroup(r),x=312+j*74;el('rect',{x,y,width:66,height:60,rx:2,fill:'var(--canvas)',stroke:selected===r?'var(--accent)':'var(--info)'},g);text(`#${r.offset}`,x+7,y+20,{},g);text(r.key.length>7?r.key.slice(0,6)+'…':r.key,x+7,y+43,{'font-size':10},g);}
+  });
+  if(is3D){const l=project(335,0,z);text(`${logs[i].length} records`,l.x,l.y,{'font-size':11});}
+  else text(`offsets ${start}–${Math.max(0,logs[i].length-1)} · ${logs[i].length} records`,300,y+94,{'font-size':11,fill:'var(--text-muted)'});
+ }
+ if(is3D)objects.push({depth:project(-255,0,0).depth,draw:()=>{cube(-255,0,100,80,105,'var(--accent)');const t=project(-255,120,0);text('Producer',t.x,t.y,{'text-anchor':'middle'});const b=project(-255,0,0);text('partitioner inside',b.x,b.y+35,{'text-anchor':'middle','font-size':11});}});
+ else {el('rect',{x:20,y:160,width:215,height:130,rx:4,fill:'var(--panel)',stroke:'var(--accent)'});text('PRODUCER CLIENT',35,185,{fill:'var(--accent)'});text('UTF-8 key serialization',35,215,{'font-size':12});el('rect',{x:35,y:232,width:185,height:38,fill:'var(--canvas)',stroke:'var(--border-node)'});text('partitioner',55,256);}
+ if(flight){const i=flight.partition,t=flight.progress;
+ // Repaint the active path above all baseline wires.
+ if(is3D){const a=project(-205,20,0),b=project(-120,0,(i-1)*145);el('polyline',{points:points([a,b]),fill:'none',stroke:'var(--accent)','stroke-width':2});}
+  if(is3D){const x=-205+85*t,z=(i-1)*145*t,height=20-20*t;
+ // Payload follows the exact visible route and arrives on the tape surface.
+ const packet=project(x,height,z);
+ objects.push({depth:packet.depth,draw:()=>el('rect',{x:packet.x-6,y:packet.y-6,width:12,height:12,fill:'var(--accent)'})});}
+  else{const route=[{x:235,y:225},{x:265,y:225},{x:265,y:100+i*125},{x:300,y:100+i*125}];const lengths=route.slice(1).map((b,j)=>Math.hypot(b.x-route[j].x,b.y-route[j].y));let distance=t*lengths.reduce((a,b)=>a+b,0),pos=route[0];for(let j=0;j<lengths.length;j++){if(distance<=lengths[j]){const ratio=lengths[j]?distance/lengths[j]:0;pos={x:route[j].x+(route[j+1].x-route[j].x)*ratio,y:route[j].y+(route[j+1].y-route[j].y)*ratio};break;}distance-=lengths[j];}el('rect',{x:pos.x-6,y:pos.y-6,width:12,height:12,fill:'var(--accent)'});}
+ }
+ objects.sort((a,b)=>a.depth-b.depth).forEach(o=>o.draw());
+}
+function finish(){const r={...flight,offset:logs[flight.partition].length};delete r.progress;logs[r.partition].push(r);flight=null;selected=r;detail.textContent=`P${r.partition} · offset ${r.offset} · key: ${r.key} · value: ${r.value}`;status.textContent=`Acknowledged: partition ${r.partition}, offset ${r.offset}.`;document.querySelector('#produce').disabled=false;render();}
+document.querySelector('#produce').addEventListener('click',()=>{if(flight)return;const ticket=42+(eventNumber%6),stage=Math.floor(eventNumber/6)%3;
+const key=`ticket:${ticket}`,value=['available','held','sold'][stage],override=document.querySelector('#partition').value;eventNumber++;if(override==='auto'&&!key){status.textContent='Enter a key for hash routing, or choose an explicit partition.';return;}const target=override==='auto'?partition(key):Number(override);flight={key,value,partition:target,progress:0};status.textContent=override==='auto'?`${key} → ${value} · key hash % 3 = ${target}. Sending to P${target}'s leader.`:`${key} → ${value} · explicit partition ${target}; key hashing bypassed.`;document.querySelector('#produce').disabled=true;if(reduced.matches)finish();else render();});
+document.querySelector('#reset').addEventListener('click',()=>{logs.forEach(l=>l.length=0);eventNumber=0;autoElapsed=0;flight=null;selected=null;angle=.25;status.textContent='Ready. Produce a record into topic ticket-events.';detail.textContent='Select a record to inspect its key, value, partition, and offset.';document.querySelector('#produce').disabled=false;render();});
+document.querySelector('#pause').addEventListener('click',e=>{autoProducing=!autoProducing;autoElapsed=0;e.target.textContent=autoProducing?'Pause producer':'Resume producer';e.target.setAttribute('aria-pressed',String(!autoProducing));});
+svg.addEventListener('pointerdown',e=>{if(!is3D||e.button!==0)return;drag={id:e.pointerId,x:e.clientX,start:e.clientX};moved=false;});svg.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;if(Math.abs(e.clientX-drag.start)>4){moved=true;angle+=(e.clientX-drag.x)*.008;render();}drag.x=e.clientX;});window.addEventListener('pointerup',()=>drag=null);svg.addEventListener('pointercancel',()=>drag=null);
+svg.addEventListener('keydown',e=>{if(is3D&&['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();angle+=e.key==='ArrowRight'?.12:-.12;render();}});
+function frame(now){
+ if(last!==null&&!document.hidden){
+  const dt=Math.min((now-last)/1000,.05);
+  // Pausing production never interrupts a record already traveling to its leader.
+  if(flight){flight.progress+=dt/1.2;if(flight.progress>=1)finish();else render();}
+  if(autoProducing){autoElapsed+=dt;if(autoElapsed>=2&&!flight){autoElapsed=0;document.querySelector('#produce').click();}}
+ }
+ last=now;requestAnimationFrame(frame);
+}
+render();document.querySelector('#produce').click();requestAnimationFrame(frame);
+})();
+</script></body></html>

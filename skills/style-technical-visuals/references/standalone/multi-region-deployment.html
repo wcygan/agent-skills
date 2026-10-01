@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Multi-region deployment · Regional database clusters</title>
+<!-- Original standalone reference. Repeat a bounded region containing an app
+     and a primary with two replicas. A bidirectional full mesh carries
+     Virginia writes through Frankfurt to Singapore; downstream app reads are local.
+     Offline; inline styles and SVG, no scripts or external assets. -->
+<style>
+:root {
+  color-scheme: dark;
+  --canvas: #111111; --panel: #1c1c1c;
+  --border: rgba(255,255,255,.14); --border-node: rgba(255,255,255,.22);
+  --track: rgba(255,255,255,.10);
+  --text: #fafafa; --text-muted: rgba(250,250,250,.60);
+  --text-dim: rgba(250,250,250,.40);
+  --accent: #f35815; --good: #27b648; --warn: #d19f03;
+  --bad: #ff455d; --info: #1e9de7;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--canvas); color: var(--text);
+  font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+main { max-width: 1080px; margin: auto; padding: 56px 28px 32px; }
+.eyebrow { color: var(--text-muted); font-size: 11px; letter-spacing: .12em; }
+h1 { margin: 12px 0; font-size: clamp(22px, 4vw, 30px); font-weight: 500; letter-spacing: -.04em; }
+header p { color: var(--text-muted); max-width: 62ch; margin: 0; }
+figure { margin: 32px 0 0; }
+svg { display: block; width: 100%; height: auto; font: inherit; }
+.node { fill: var(--panel); stroke: var(--border-node); stroke-width: 1.5; }
+.primary { stroke: var(--accent); }
+.wire { fill: none; stroke: var(--info); stroke-width: 1.5; }
+.label { fill: var(--text); font-size: 19px; }
+.meta { fill: var(--text-muted); font-size: 13px; }
+.role { fill: var(--accent); font-size: 12px; letter-spacing: 1px; }
+.caption { fill: var(--info); font-size: 12px; }
+figcaption { border-top: 1px solid var(--border); padding-top: 18px;
+  color: var(--text-muted); max-width: 100%; }
+figcaption strong { color: var(--text); font-weight: 500; }
+footer { margin-top: 24px; color: var(--text-muted); font-size: 11px; }
+@media (max-width: 540px) { main { padding: 28px 16px; } }
+
+.region { fill: none; stroke: var(--border); }
+.region-title { fill: var(--text); font-size: 17px; }
+.region-meta { fill: var(--text-muted); font-size: 12px; }
+.label { font-size: 16px; }
+.meta { font-size: 12px; }
+@media (max-width: 640px) {
+  .region-scene { display: block; }
+  .desktop-scene { display: none; }
+}
+@media (min-width: 641px) { .region-scene { display: none; } }
+ .cross-region { fill: none; stroke: var(--good); stroke-width: 1.8; stroke-dasharray: 6 4; }
+.cross-label { fill: var(--good); font-size: 12px; }
+</style>
+</head>
+<body>
+<main>
+<header>
+<div class="eyebrow">REGIONAL ARCHITECTURE / 08</div>
+<h1>Local applications. Local database clusters.</h1>
+<p>Each region runs an application server backed by a regional primary database. Each primary feeds two local replicas. Every pair of regional primaries exchanges changes asynchronously, including a direct Americas–Asia Pacific link.</p>
+</header>
+<figure>
+<svg class="desktop-scene" viewBox="0 0 1000 655" role="img" aria-labelledby="multi-region-title multi-region-description">
+<title id="multi-region-title">Three regions with local database clusters</title>
+<desc id="multi-region-description">Each region contains one application server connected to its primary database. Two replicas receive changes from that primary. All three regional primaries exchange changes bidirectionally with both other regions and feed their local replicas.</desc>
+<defs>
+<marker id="multi-region-arrow" viewBox="0 -4 8 8" refX="8" refY="0" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+<path d="M0 -3 L8 0 L0 3" fill="none" stroke="var(--info)" stroke-width="1.3"/>
+</marker>
+<marker id="cross-region-arrow" viewBox="0 -4 8 8" refX="8" refY="0" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 -3 L8 0 L0 3" fill="none" stroke="var(--good)" stroke-width="1.3"/></marker>
+</defs>
+<path class="cross-region" d="M90 330 H15 V610 H985 V330 H910" marker-start="url(#cross-region-arrow)" marker-end="url(#cross-region-arrow)"/>
+<text class="cross-label" x="500" y="638" text-anchor="middle">Virginia ↔ Singapore · direct bidirectional replication</text>
+<!-- Cross-region routes use the primary cylinder side ports at y=330. -->
+<path class="cross-region" d="M230 330 H430" marker-start="url(#cross-region-arrow)" marker-end="url(#cross-region-arrow)"/>
+<text class="cross-label" x="330" y="306" text-anchor="middle">bidirectional stream</text>
+<path class="cross-region" d="M570 330 H770" marker-start="url(#cross-region-arrow)" marker-end="url(#cross-region-arrow)"/>
+<text class="cross-label" x="670" y="306" text-anchor="middle">bidirectional stream</text>
+<g transform="translate(0 0)">
+<rect class="region" x="5" y="10" width="310" height="580" rx="4"/>
+<text class="region-title" x="25" y="44">Americas</text>
+<text class="region-meta" x="25" y="67">Virginia</text>
+<!-- App bounds (70,105,180,90); primary (90,275,140,110);
+     replica bounds (25/175,465,120,95). Ports use outline extrema. -->
+<path class="wire" d="M160 195 V275" marker-end="url(#multi-region-arrow)"/>
+<text class="caption" x="178" y="238">queries</text>
+<path class="wire" d="M160 385 V425"/>
+<path class="wire" d="M160 425 H85 V465" marker-end="url(#multi-region-arrow)"/>
+<path class="wire" d="M160 425 H235 V465" marker-end="url(#multi-region-arrow)"/>
+<circle cx="160" cy="425" r="3" fill="var(--info)"/>
+<text class="caption" x="160" y="408" text-anchor="middle">replication</text>
+<rect class="node" x="70" y="105" width="180" height="90" rx="4"/>
+<path d="M70 130 H250 M86 118 H106 M114 118 H134" fill="none" stroke="var(--border-node)"/>
+<text class="label" x="160" y="158" text-anchor="middle">app server</text>
+<text class="meta" x="160" y="180" text-anchor="middle">regional traffic</text>
+<g transform="translate(90 275)">
+<path class="node primary" d="M0 15 V95 A70 15 0 0 0 140 95 V15 Z"/>
+<ellipse class="node primary" cx="70" cy="15" rx="70" ry="15"/>
+<text class="role" x="70" y="59" text-anchor="middle">PRIMARY</text>
+<text class="meta" x="70" y="84" text-anchor="middle">reads + writes</text>
+</g>
+<g transform="translate(25 465)">
+<path class="node" d="M0 13 V82 A60 13 0 0 0 120 82 V13 Z"/>
+<ellipse class="node" cx="60" cy="13" rx="60" ry="13"/>
+<text class="label" x="60" y="52" text-anchor="middle">replica 1</text>
+<text class="meta" x="60" y="74" text-anchor="middle">local copy</text>
+</g>
+<g transform="translate(175 465)">
+<path class="node" d="M0 13 V82 A60 13 0 0 0 120 82 V13 Z"/>
+<ellipse class="node" cx="60" cy="13" rx="60" ry="13"/>
+<text class="label" x="60" y="52" text-anchor="middle">replica 2</text>
+<text class="meta" x="60" y="74" text-anchor="middle">local copy</text>
+</g>
+</g>
+<g transform="translate(340 0)">
+<rect class="region" x="5" y="10" width="310" height="580" rx="4"/>
+<text class="region-title" x="25" y="44">Europe</text>
+<text class="region-meta" x="25" y="67">Frankfurt</text>
+<!-- App bounds (70,105,180,90); primary (90,275,140,110);
+     replica bounds (25/175,465,120,95). Ports use outline extrema. -->
+<path class="wire" d="M160 195 V275" marker-end="url(#multi-region-arrow)"/>
+<text class="caption" x="178" y="238">queries</text>
+<path class="wire" d="M160 385 V425"/>
+<path class="wire" d="M160 425 H85 V465" marker-end="url(#multi-region-arrow)"/>
+<path class="wire" d="M160 425 H235 V465" marker-end="url(#multi-region-arrow)"/>
+<circle cx="160" cy="425" r="3" fill="var(--info)"/>
+<text class="caption" x="160" y="408" text-anchor="middle">replication</text>
+<rect class="node" x="70" y="105" width="180" height="90" rx="4"/>
+<path d="M70 130 H250 M86 118 H106 M114 118 H134" fill="none" stroke="var(--border-node)"/>
+<text class="label" x="160" y="158" text-anchor="middle">app server</text>
+<text class="meta" x="160" y="180" text-anchor="middle">regional traffic</text>
+<g transform="translate(90 275)">
+<path class="node primary" d="M0 15 V95 A70 15 0 0 0 140 95 V15 Z"/>
+<ellipse class="node primary" cx="70" cy="15" rx="70" ry="15"/>
+<text class="role" x="70" y="59" text-anchor="middle">PRIMARY</text>
+<text class="meta" x="70" y="84" text-anchor="middle">reads + writes</text>
+</g>
+<g transform="translate(25 465)">
+<path class="node" d="M0 13 V82 A60 13 0 0 0 120 82 V13 Z"/>
+<ellipse class="node" cx="60" cy="13" rx="60" ry="13"/>
+<text class="label" x="60" y="52" text-anchor="middle">replica 1</text>
+<text class="meta" x="60" y="74" text-anchor="middle">local copy</text>
+</g>
+<g transform="translate(175 465)">
+<path class="node" d="M0 13 V82 A60 13 0 0 0 120 82 V13 Z"/>
+<ellipse class="node" cx="60" cy="13" rx="60" ry="13"/>
+<text class="label" x="60" y="52" text-anchor="middle">replica 2</text>
+<text class="meta" x="60" y="74" text-anchor="middle">local copy</text>
+</g>
+</g>
+<g transform="translate(680 0)">
+<rect class="region" x="5" y="10" width="310" height="580" rx="4"/>
+<text class="region-title" x="25" y="44">Asia Pacific</text>
+<text class="region-meta" x="25" y="67">Singapore</text>
+<!-- App bounds (70,105,180,90); primary (90,275,140,110);
+     replica bounds (25/175,465,120,95). Ports use outline extrema. -->
+<path class="wire" d="M160 195 V275" marker-end="url(#multi-region-arrow)"/>
+<text class="caption" x="178" y="238">queries</text>
+<path class="wire" d="M160 385 V425"/>
+<path class="wire" d="M160 425 H85 V465" marker-end="url(#multi-region-arrow)"/>
+<path class="wire" d="M160 425 H235 V465" marker-end="url(#multi-region-arrow)"/>
+<circle cx="160" cy="425" r="3" fill="var(--info)"/>
+<text class="caption" x="160" y="408" text-anchor="middle">replication</text>
+<rect class="node" x="70" y="105" width="180" height="90" rx="4"/>
+<path d="M70 130 H250 M86 118 H106 M114 118 H134" fill="none" stroke="var(--border-node)"/>
+<text class="label" x="160" y="158" text-anchor="middle">app server</text>
+<text class="meta" x="160" y="180" text-anchor="middle">regional traffic</text>
+<g transform="translate(90 275)">
+<path class="node primary" d="M0 15 V95 A70 15 0 0 0 140 95 V15 Z"/>
+<ellipse class="node primary" cx="70" cy="15" rx="70" ry="15"/>
+<text class="role" x="70" y="59" text-anchor="middle">PRIMARY</text>
+<text class="meta" x="70" y="84" text-anchor="middle">reads + writes</text>
+</g>
+<g transform="translate(25 465)">
+<path class="node" d="M0 13 V82 A60 13 0 0 0 120 82 V13 Z"/>
+<ellipse class="node" cx="60" cy="13" rx="60" ry="13"/>
+<text class="label" x="60" y="52" text-anchor="middle">replica 1</text>
+<text class="meta" x="60" y="74" text-anchor="middle">local copy</text>
+</g>
+<g transform="translate(175 465)">
+<path class="node" d="M0 13 V82 A60 13 0 0 0 120 82 V13 Z"/>
+<ellipse class="node" cx="60" cy="13" rx="60" ry="13"/>
+<text class="label" x="60" y="52" text-anchor="middle">replica 2</text>
+<text class="meta" x="60" y="74" text-anchor="middle">local copy</text>
+</g>
+</g>
+</svg>
+<svg class="region-scene" viewBox="0 0 320 665" role="img" aria-labelledby="region-americas-title region-americas-description">
+<title id="region-americas-title">Regional deployment: Americas</title>
+<desc id="region-americas-description">Each region contains one application server connected to its primary database. Two replicas receive changes from that primary. All three regional primaries exchange changes bidirectionally with both other regions and feed their local replicas.</desc>
+<defs>
+<marker id="region-americas-arrow" viewBox="0 -4 8 8" refX="8" refY="0" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+<path d="M0 -3 L8 0 L0 3" fill="none" stroke="var(--info)" stroke-width="1.3"/>
+</marker>
+</defs>
+<g transform="translate(0 0)">
+<rect class="region" x="5" y="10" width="310" height="580" rx="4"/>
+<text class="region-title" x="25" y="44">Americas</text>
+<text class="region-meta" x="25" y="67">Virginia</text>
+<!-- App bounds (70,105,180,90); primary (90,275,140,110);
+     replica bounds (25/175,465,120,95). Ports use outline extrema. -->
+<path class="wire" d="M160 195 V275" marker-end="url(#region-americas-arrow)"/>
+<text class="caption" x="178" y="238">queries</text>
+<path class="wire" d="M160 385 V425"/>
+<path class="wire" d="M160 425 H85 V465" marker-end="url(#region-americas-arrow)"/>
+<path class="wire" d="M160 425 H235 V465" marker-end="url(#region-americas-arrow)"/>
+<circle cx="160" cy="425" r="3" fill="var(--info)"/>
+<text class="caption" x="160" y="408" text-anchor="middle">replication</text>
+<rect class="node" x="70" y="105" width="180" height="90" rx="4"/>
+<path d="M70 130 H250 M86 118 H106 M114 118 H134" fill="none" stroke="var(--border-node)"/>
+<text class="label" x="160" y="158" text-anchor="middle">app server</text>
+<text class="meta" x="160" y="180" text-anchor="middle">regional traffic</text>
+<g transform="translate(90 275)">
+<path class="node primary" d="M0 15 V95 A70 15 0 0 0 140 95 V15 Z"/>
+<ellipse class="node primary" cx="70" cy="15" rx="70" ry="15"/>
+<text class="role" x="70" y="59" text-anchor="middle">PRIMARY</text>
+<text class="meta" x="70" y="84" text-anchor="middle">reads + writes</text>
+</g>
+<g transform="translate(25 465)">
+<path class="node" d="M0 13 V82 A60 13 0 0 0 120 82 V13 Z"/>
+<ellipse class="node" cx="60" cy="13" rx="60" ry="13"/>
+<text class="label" x="60" y="52" text-anchor="middle">replica 1</text>
+<text class="meta" x="60" y="74" text-anchor="middle">local copy</text>
+</g>
+<g transform="translate(175 465)">
+<path class="node" d="M0 13 V82 A60 13 0 0 0 120 82 V13 Z"/>
+<ellipse class="node" cx="60" cy="13" rx="60" ry="13"/>
+<text class="label" x="60" y="52" text-anchor="middle">replica 2</text>
+<text class="meta" x="60" y="74" text-anchor="middle">local copy</text>
+</g>
+</g>
+<text class="cross-label" x="160" y="620" text-anchor="middle">Virginia ↔ Frankfurt + Singapore</text><text class="meta" x="160" y="643" text-anchor="middle">sends + receives changes</text></svg>
+<svg class="region-scene" viewBox="0 0 320 665" role="img" aria-labelledby="region-europe-title region-europe-description">
+<title id="region-europe-title">Regional deployment: Europe</title>
+<desc id="region-europe-description">Each region contains one application server connected to its primary database. Two replicas receive changes from that primary. All three regional primaries exchange changes bidirectionally with both other regions and feed their local replicas.</desc>
+<defs>
+<marker id="region-europe-arrow" viewBox="0 -4 8 8" refX="8" refY="0" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+<path d="M0 -3 L8 0 L0 3" fill="none" stroke="var(--info)" stroke-width="1.3"/>
+</marker>
+</defs>
+<g transform="translate(0 0)">
+<rect class="region" x="5" y="10" width="310" height="580" rx="4"/>
+<text class="region-title" x="25" y="44">Europe</text>
+<text class="region-meta" x="25" y="67">Frankfurt</text>
+<!-- App bounds (70,105,180,90); primary (90,275,140,110);
+     replica bounds (25/175,465,120,95). Ports use outline extrema. -->
+<path class="wire" d="M160 195 V275" marker-end="url(#region-europe-arrow)"/>
+<text class="caption" x="178" y="238">queries</text>
+<path class="wire" d="M160 385 V425"/>
+<path class="wire" d="M160 425 H85 V465" marker-end="url(#region-europe-arrow)"/>
+<path class="wire" d="M160 425 H235 V465" marker-end="url(#region-europe-arrow)"/>
+<circle cx="160" cy="425" r="3" fill="var(--info)"/>
+<text class="caption" x="160" y="408" text-anchor="middle">replication</text>
+<rect class="node" x="70" y="105" width="180" height="90" rx="4"/>
+<path d="M70 130 H250 M86 118 H106 M114 118 H134" fill="none" stroke="var(--border-node)"/>
+<text class="label" x="160" y="158" text-anchor="middle">app server</text>
+<text class="meta" x="160" y="180" text-anchor="middle">regional traffic</text>
+<g transform="translate(90 275)">
+<path class="node primary" d="M0 15 V95 A70 15 0 0 0 140 95 V15 Z"/>
+<ellipse class="node primary" cx="70" cy="15" rx="70" ry="15"/>
+<text class="role" x="70" y="59" text-anchor="middle">PRIMARY</text>
+<text class="meta" x="70" y="84" text-anchor="middle">reads + writes</text>
+</g>
+<g transform="translate(25 465)">
+<path class="node" d="M0 13 V82 A60 13 0 0 0 120 82 V13 Z"/>
+<ellipse class="node" cx="60" cy="13" rx="60" ry="13"/>
+<text class="label" x="60" y="52" text-anchor="middle">replica 1</text>
+<text class="meta" x="60" y="74" text-anchor="middle">local copy</text>
+</g>
+<g transform="translate(175 465)">
+<path class="node" d="M0 13 V82 A60 13 0 0 0 120 82 V13 Z"/>
+<ellipse class="node" cx="60" cy="13" rx="60" ry="13"/>
+<text class="label" x="60" y="52" text-anchor="middle">replica 2</text>
+<text class="meta" x="60" y="74" text-anchor="middle">local copy</text>
+</g>
+</g>
+<text class="cross-label" x="160" y="620" text-anchor="middle">Virginia ↔ Frankfurt ↔ Singapore</text><text class="meta" x="160" y="643" text-anchor="middle">sends + receives changes</text></svg>
+<svg class="region-scene" viewBox="0 0 320 665" role="img" aria-labelledby="region-asia-pacific-title region-asia-pacific-description">
+<title id="region-asia-pacific-title">Regional deployment: Asia Pacific</title>
+<desc id="region-asia-pacific-description">Each region contains one application server connected to its primary database. Two replicas receive changes from that primary. All three regional primaries exchange changes bidirectionally with both other regions and feed their local replicas.</desc>
+<defs>
+<marker id="region-asia-pacific-arrow" viewBox="0 -4 8 8" refX="8" refY="0" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+<path d="M0 -3 L8 0 L0 3" fill="none" stroke="var(--info)" stroke-width="1.3"/>
+</marker>
+</defs>
+<g transform="translate(0 0)">
+<rect class="region" x="5" y="10" width="310" height="580" rx="4"/>
+<text class="region-title" x="25" y="44">Asia Pacific</text>
+<text class="region-meta" x="25" y="67">Singapore</text>
+<!-- App bounds (70,105,180,90); primary (90,275,140,110);
+     replica bounds (25/175,465,120,95). Ports use outline extrema. -->
+<path class="wire" d="M160 195 V275" marker-end="url(#region-asia-pacific-arrow)"/>
+<text class="caption" x="178" y="238">queries</text>
+<path class="wire" d="M160 385 V425"/>
+<path class="wire" d="M160 425 H85 V465" marker-end="url(#region-asia-pacific-arrow)"/>
+<path class="wire" d="M160 425 H235 V465" marker-end="url(#region-asia-pacific-arrow)"/>
+<circle cx="160" cy="425" r="3" fill="var(--info)"/>
+<text class="caption" x="160" y="408" text-anchor="middle">replication</text>
+<rect class="node" x="70" y="105" width="180" height="90" rx="4"/>
+<path d="M70 130 H250 M86 118 H106 M114 118 H134" fill="none" stroke="var(--border-node)"/>
+<text class="label" x="160" y="158" text-anchor="middle">app server</text>
+<text class="meta" x="160" y="180" text-anchor="middle">regional traffic</text>
+<g transform="translate(90 275)">
+<path class="node primary" d="M0 15 V95 A70 15 0 0 0 140 95 V15 Z"/>
+<ellipse class="node primary" cx="70" cy="15" rx="70" ry="15"/>
+<text class="role" x="70" y="59" text-anchor="middle">PRIMARY</text>
+<text class="meta" x="70" y="84" text-anchor="middle">reads + writes</text>
+</g>
+<g transform="translate(25 465)">
+<path class="node" d="M0 13 V82 A60 13 0 0 0 120 82 V13 Z"/>
+<ellipse class="node" cx="60" cy="13" rx="60" ry="13"/>
+<text class="label" x="60" y="52" text-anchor="middle">replica 1</text>
+<text class="meta" x="60" y="74" text-anchor="middle">local copy</text>
+</g>
+<g transform="translate(175 465)">
+<path class="node" d="M0 13 V82 A60 13 0 0 0 120 82 V13 Z"/>
+<ellipse class="node" cx="60" cy="13" rx="60" ry="13"/>
+<text class="label" x="60" y="52" text-anchor="middle">replica 2</text>
+<text class="meta" x="60" y="74" text-anchor="middle">local copy</text>
+</g>
+</g>
+<text class="cross-label" x="160" y="620" text-anchor="middle">Singapore ↔ Virginia + Frankfurt</text><text class="meta" x="160" y="643" text-anchor="middle">sends + receives changes</text></svg>
+<figcaption><strong>Three writable regions, a full replication mesh.</strong> Dashed green links exchange changes in both directions between every region pair. Blue links feed the two local replicas. This is an illustrative active-active architecture: concurrent writes require conflict handling, and replication must suppress loops and duplicate changes. Asynchronous replication allows lag; ordinary primary/replica replication alone does not implement this policy.</figcaption>
+</figure>
+<footer>3 regions · 3 app servers · 3 primaries · 6 replicas</footer>
+</main>
+</body>
+</html>

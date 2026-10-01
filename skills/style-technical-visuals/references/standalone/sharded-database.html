@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sharded database · Key-based routing</title>
+<!-- Original standalone reference. A numeric partition key maps to exactly
+     one shard using key modulo 3. Example only: changing the shard count
+     remaps keys and requires a data migration strategy.
+     Offline; inline CSS and SVG, no external assets or scripts. -->
+<style>
+:root {
+  color-scheme: dark;
+  --canvas: #111111; --panel: #1c1c1c;
+  --border: rgba(255,255,255,.14); --border-node: rgba(255,255,255,.22);
+  --track: rgba(255,255,255,.10);
+  --text: #fafafa; --text-muted: rgba(250,250,250,.60);
+  --text-dim: rgba(250,250,250,.40);
+  --accent: #f35815; --good: #27b648; --warn: #d19f03;
+  --bad: #ff455d; --info: #1e9de7;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--canvas); color: var(--text);
+  font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+main { max-width: 860px; margin: auto; padding: 56px 28px 32px; }
+.eyebrow { color: var(--text-muted); font-size: 11px; letter-spacing: .12em; }
+h1 { margin: 12px 0; font-size: clamp(22px, 4vw, 30px); font-weight: 500; letter-spacing: -.04em; }
+header p { color: var(--text-muted); max-width: 62ch; margin: 0; }
+figure { margin: 32px 0 0; }
+svg { display: block; width: 100%; height: auto; font: inherit; }
+.node { fill: var(--panel); stroke: var(--border-node); stroke-width: 1.5; }
+.router { stroke: var(--accent); }
+.wire { fill: none; stroke: var(--info); stroke-width: 1.5; }
+.label { fill: var(--text); font-size: 19px; }
+.meta { fill: var(--text-muted); font-size: 13px; }
+.role { fill: var(--accent); font-size: 12px; letter-spacing: 1px; }
+.caption { fill: var(--info); font-size: 12px; }
+figcaption { border-top: 1px solid var(--border); padding-top: 18px;
+  color: var(--text-muted); max-width: 100%; }
+figcaption strong { color: var(--text); font-weight: 500; }
+footer { margin-top: 24px; color: var(--text-muted); font-size: 11px; }
+@media (max-width: 540px) { main { padding: 28px 16px; } }
+
+.key { fill: var(--track); stroke: var(--border-node); }
+</style>
+</head>
+<body>
+<main>
+<header>
+<div class="eyebrow">DATA PARTITIONING / 09</div>
+<h1>One routing layer. A shard for each key.</h1>
+<p>The application supplies a partition key. The router uses the same mapping for reads and writes so requests reach the shard that owns that key.</p>
+</header>
+<figure>
+<svg viewBox="0 0 800 570" role="img" aria-labelledby="shard-title shard-description">
+<title id="shard-title">Routing numeric keys to three database shards</title>
+<desc id="shard-description">An application submits keys 42, 43, and 44. An illustrative router computes key modulo 3: key 42 maps to shard 0, key 43 to shard 1, and key 44 to shard 2. Each shard stores a different subset of the data; these are partitions, not replicas.</desc>
+<defs>
+<marker id="shard-arrow" viewBox="0 -4 8 8" refX="8" refY="0" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+<path d="M0 -3 L8 0 L0 3" fill="none" stroke="var(--info)" stroke-width="1.3"/>
+</marker>
+</defs>
+<!-- App (270,20,260,90), router (260,185,280,105),
+     shards (40/300/560,410,200,140). Exact face-center ports. -->
+<path class="wire" d="M400 110 V185" marker-end="url(#shard-arrow)"/>
+<text class="caption" x="418" y="153">read / write + key</text>
+<path class="wire" d="M400 290 V350"/>
+<path class="wire" d="M400 350 H140 V410" marker-end="url(#shard-arrow)"/>
+<path class="wire" d="M400 350 V410" marker-end="url(#shard-arrow)"/>
+<path class="wire" d="M400 350 H660 V410" marker-end="url(#shard-arrow)"/>
+<circle cx="400" cy="350" r="3" fill="var(--info)"/>
+<text class="caption" x="140" y="338" text-anchor="middle">42 → shard 0</text>
+<text class="caption" x="418" y="385">43 → shard 1</text>
+<text class="caption" x="660" y="338" text-anchor="middle">44 → shard 2</text>
+<rect class="node" x="270" y="20" width="260" height="90" rx="4"/>
+<path d="M270 45 H530 M286 33 H306 M314 33 H334" fill="none" stroke="var(--border-node)"/>
+<text class="label" x="400" y="73" text-anchor="middle">application</text>
+<text class="meta" x="400" y="96" text-anchor="middle">keys: 42, 43, 44</text>
+<rect class="node router" x="260" y="185" width="280" height="105" rx="4"/>
+<text class="role" x="400" y="216" text-anchor="middle">ROUTING LAYER</text>
+<text class="label" x="400" y="247" text-anchor="middle">shard = key % 3</text>
+<text class="meta" x="400" y="273" text-anchor="middle">illustrative partition rule</text>
+<g transform="translate(40 410)">
+<path class="node" d="M0 20 V120 A100 20 0 0 0 200 120 V20 Z"/>
+<ellipse class="node" cx="100" cy="20" rx="100" ry="20"/>
+<text class="label" x="100" y="61" text-anchor="middle">shard 0</text>
+<text class="meta" x="100" y="84" text-anchor="middle">key % 3 = 0</text>
+<rect class="key" x="30" y="95" width="140" height="26" rx="2"/>
+<text class="meta" x="100" y="113" text-anchor="middle">key 42</text>
+</g>
+<g transform="translate(300 410)">
+<path class="node" d="M0 20 V120 A100 20 0 0 0 200 120 V20 Z"/>
+<ellipse class="node" cx="100" cy="20" rx="100" ry="20"/>
+<text class="label" x="100" y="61" text-anchor="middle">shard 1</text>
+<text class="meta" x="100" y="84" text-anchor="middle">key % 3 = 1</text>
+<rect class="key" x="30" y="95" width="140" height="26" rx="2"/>
+<text class="meta" x="100" y="113" text-anchor="middle">key 43</text>
+</g>
+<g transform="translate(560 410)">
+<path class="node" d="M0 20 V120 A100 20 0 0 0 200 120 V20 Z"/>
+<ellipse class="node" cx="100" cy="20" rx="100" ry="20"/>
+<text class="label" x="100" y="61" text-anchor="middle">shard 2</text>
+<text class="meta" x="100" y="84" text-anchor="middle">key % 3 = 2</text>
+<rect class="key" x="30" y="95" width="140" height="26" rx="2"/>
+<text class="meta" x="100" y="113" text-anchor="middle">key 44</text>
+</g>
+</svg>
+<figcaption><strong>Each shard owns a different slice of the data.</strong> The branches are possible routes; a single-key request goes to one shard. Here, <code>%</code> means the remainder after division. Cross-shard queries and changing the shard count require additional coordination and a data migration strategy.</figcaption>
+</figure>
+<footer>3 shards · deterministic key routing · partitions, not replicas</footer>
+</main>
+</body>
+</html>

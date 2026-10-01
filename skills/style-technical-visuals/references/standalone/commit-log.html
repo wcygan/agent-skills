@@ -1,0 +1,113 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Commit log · Append-only records</title>
+<!-- Original standalone conceptual key-value log. LSN is a monotonic record
+sequence in this example, not a byte offset or a database-specific WAL format.
+UTF-8 sizes are computed from actual payloads. Offline; no dependencies. -->
+<style>
+:root {
+  color-scheme: dark;
+  --canvas: #111111; --panel: #1c1c1c;
+  --border: rgba(255,255,255,.14); --border-node: rgba(255,255,255,.22);
+  --track: rgba(255,255,255,.10);
+  --text: #fafafa; --text-muted: rgba(250,250,250,.60);
+  --text-dim: rgba(250,250,250,.40);
+  --accent: #f35815; --good: #27b648; --warn: #d19f03;
+  --bad: #ff455d; --info: #1e9de7;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--canvas); color: var(--text);
+  font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+main { max-width: 860px; margin: auto; padding: 56px 28px 32px; }
+.eyebrow { color: var(--text-muted); font-size: 11px; letter-spacing: .12em; }
+h1 { margin: 12px 0; font-size: clamp(22px, 4vw, 30px); font-weight: 500; letter-spacing: -.04em; }
+header p { color: var(--text-muted); max-width: 62ch; margin: 0; }
+figure { margin: 32px 0 0; }
+svg { display: block; width: 100%; height: auto; font: inherit; }
+.node { fill: var(--panel); stroke: var(--border-node); stroke-width: 1.5; }
+.primary { stroke: var(--accent); }
+.wire { fill: none; stroke: var(--info); stroke-width: 1.5; }
+.label { fill: var(--text); font-size: 19px; }
+.meta { fill: var(--text-muted); font-size: 13px; }
+.role { fill: var(--accent); font-size: 12px; letter-spacing: 1px; }
+.caption { fill: var(--info); font-size: 12px; }
+figcaption { border-top: 1px solid var(--border); padding-top: 18px;
+  color: var(--text-muted); max-width: 100%; }
+figcaption strong { color: var(--text); font-weight: 500; }
+footer { margin-top: 24px; color: var(--text-muted); font-size: 11px; }
+@media (max-width: 540px) { main { padding: 28px 16px; } }
+
+main { max-width: 1080px; }
+.controls { display:flex; gap:10px; flex-wrap:wrap; margin:24px 0; align-items:center; }
+button { font:inherit; color:var(--text); background:var(--panel); border:1px solid var(--border-node); padding:9px 13px; cursor:pointer; }
+button:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+.log { border:1px solid var(--border-node); background:var(--panel); overflow-x:auto; }
+table { width:100%; border-collapse:collapse; white-space:nowrap; font-variant-numeric:tabular-nums; }
+th,td { text-align:left; padding:13px 16px; border-bottom:1px solid var(--border); }
+th { color:var(--text-muted); font-weight:500; font-size:11px; }
+tbody tr:last-child td { border-bottom:0; }
+.lsn { color:var(--accent); }
+.bytes { color:var(--text-muted); }
+.direction { display:flex; justify-content:space-between; color:var(--text-muted); margin:12px 0; }
+.direction strong { color:var(--accent); font-weight:500; }
+.note { color:var(--text-muted); }
+.record { display:flex; flex-wrap:wrap; gap:1px; background:var(--border); border:1px solid var(--border); margin:16px 0; }
+.record span { background:var(--panel); padding:12px; flex:1; }
+.record small { display:block; color:var(--text-muted); margin-bottom:5px; }
+
+.tape-window { overflow-x: auto; padding: 20px 0; }
+.tape-window:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.tape { display: flex; gap: 8px; width: max-content; padding: 24px 16px;
+ background: repeating-linear-gradient(to right,var(--track) 0 10px,transparent 10px 24px) top / 100% 8px no-repeat,
+ repeating-linear-gradient(to right,var(--track) 0 10px,transparent 10px 24px) bottom / 100% 8px no-repeat;
+ border-top: 1px solid var(--border-node); border-bottom: 1px solid var(--border-node); }
+.entry { width: 210px; flex: 0 0 210px; border: 1px solid var(--border-node); background: var(--panel); position: relative; }
+.entry::after { content: '→'; position: absolute; right: -9px; top: 50%; color: var(--text-muted); z-index: 1; }
+.entry:last-child { border-color: var(--accent); }
+.entry:last-child::after { content: ''; }
+.entry-head { padding: 10px 12px; color: var(--accent); border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; }
+.entry-sizes { display: flex; border-bottom: 1px solid var(--border); }
+.entry-sizes div { flex: 1; padding: 9px 12px; font-variant-numeric: tabular-nums; }
+.entry-sizes div + div { border-left: 1px solid var(--border); }
+.entry small { display: block; color: var(--text-muted); font-size: 10px; margin-bottom: 4px; }
+.payload { padding: 12px; overflow-wrap: anywhere; }
+.payload + .payload { border-top: 1px solid var(--border); }
+.tail { align-self: center; color: var(--accent); padding: 16px; }
+</style></head><body><main><header><div class="eyebrow">STORAGE STRUCTURES / 11</div><h1>A log remembers every change.</h1><p>Records append at the tail with increasing log sequence numbers (LSNs). Updating a key adds a record; earlier records remain in the log.</p></header>
+<div class="controls"><button id="append" type="button">Append next change</button><button id="reset" type="button">Reset log</button><span class="note" id="count" aria-live="polite"></span></div>
+<figure><div class="direction"><span>older records →</span><strong>append at the tail →</strong></div>
+<div class="tape-window" tabindex="0" aria-label="Scrollable commit-log tape">
+<div class="tape" id="rows" role="list" aria-label="Append-only log records"></div>
+</div>
+<figcaption><strong>Every change becomes a new block on the tape.</strong> Follow the sequence from left to right. A later value for the same key changes the state recovered by replay; earlier blocks remain intact. Scroll horizontally to inspect the full log.</figcaption></figure>
+<div class="record" aria-label="Conceptual record layout"><span><small>ORDER</small>LSN</span><span><small>FRAMING</small>key byte length</span><span><small>FRAMING</small>value byte length</span><span><small>PAYLOAD</small>key bytes</span><span><small>PAYLOAD</small>value bytes</span></div>
+<p class="note">Lengths tell a binary reader how many bytes to consume for each payload. These are UTF-8 byte counts, not character counts. The layout is illustrative: real logs may add record types, checksums, transaction markers, and version headers; their LSN may identify a byte position rather than a record number.</p>
+<footer>Append-only key-value example · no persistence or durability simulated</footer></main>
+<script>
+(() => {
+ const initial=[['ticket:42','available'],['ticket:43','available'],['ticket:42','held'],['user:7','Zoë']];
+ const changes=[['ticket:42','sold'],['ticket:44','available'],['user:7','Zoë 🎟'],['ticket:43','held'],['ticket:43','available']];
+ let records=[],next=0;
+ const encoder=new TextEncoder(),rows=document.querySelector('#rows');
+ function render(){
+  rows.replaceChildren();
+  records.forEach(([key,value],i)=>{
+   const entry=document.createElement('div');entry.className='entry';entry.setAttribute('role','listitem');
+   const head=document.createElement('div');head.className='entry-head';head.textContent=`LSN ${String(i+1).padStart(6,'0')}`;entry.append(head);
+   const sizes=document.createElement('div');sizes.className='entry-sizes';
+   for(const [name,bytes] of [['KEY BYTES',encoder.encode(key).length],['VALUE BYTES',encoder.encode(value).length]]){
+    const field=document.createElement('div'),title=document.createElement('small');title.textContent=name;field.append(title,document.createTextNode(String(bytes)));sizes.append(field);
+   }
+   entry.append(sizes);
+   for(const [name,valueText] of [['KEY',key],['VALUE',value]]){
+    const field=document.createElement('div');field.className='payload';const title=document.createElement('small');title.textContent=name;field.append(title,document.createTextNode(valueText));entry.append(field);
+   }
+   rows.append(entry);
+  });
+  const tail=document.createElement('div');tail.className='tail';tail.textContent='TAIL →';rows.append(tail);
+  document.querySelector('#count').textContent=`${records.length} records · tail LSN ${String(records.length).padStart(6,'0')}`;
+  document.querySelector('#append').disabled=next===changes.length;
+ }
+ document.querySelector('#append').addEventListener('click',()=>{if(next<changes.length){records.push(changes[next++]);render();rows.lastElementChild.scrollIntoView({block:'nearest',inline:'end',behavior:'instant'});}});
+ document.querySelector('#reset').addEventListener('click',()=>{records=initial.map(r=>[...r]);next=0;render();});
+ records=initial.map(r=>[...r]);render();
+})();
+</script></body></html>

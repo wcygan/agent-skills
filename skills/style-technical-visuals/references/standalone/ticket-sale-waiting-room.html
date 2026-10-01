@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ticket drop · Virtual waiting room</title>
+<!-- Original standalone reference. A waiting room buffers a user surge;
+     admission control issues short-lived access to checkout at a bounded rate.
+     Illustrative FIFO after sale opening; pre-sale ordering may differ.
+     Queue membership does not reserve tickets. Offline, static inline SVG. -->
+<style>
+:root {
+  color-scheme: dark;
+  --canvas: #111111; --panel: #1c1c1c;
+  --border: rgba(255,255,255,.14); --border-node: rgba(255,255,255,.22);
+  --track: rgba(255,255,255,.10);
+  --text: #fafafa; --text-muted: rgba(250,250,250,.60);
+  --text-dim: rgba(250,250,250,.40);
+  --accent: #f35815; --good: #27b648; --warn: #d19f03;
+  --bad: #ff455d; --info: #1e9de7;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--canvas); color: var(--text);
+  font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+main { max-width: 860px; margin: auto; padding: 56px 28px 32px; }
+.eyebrow { color: var(--text-muted); font-size: 11px; letter-spacing: .12em; }
+h1 { margin: 12px 0; font-size: clamp(22px, 4vw, 30px); font-weight: 500; letter-spacing: -.04em; }
+header p { color: var(--text-muted); max-width: 62ch; margin: 0; }
+figure { margin: 32px 0 0; }
+svg { display: block; width: 100%; height: auto; font: inherit; }
+.node { fill: var(--panel); stroke: var(--border-node); stroke-width: 1.5; }
+.gate { stroke: var(--accent); }
+.wire { fill: none; stroke: var(--info); stroke-width: 1.5; }
+.label { fill: var(--text); font-size: 19px; }
+.meta { fill: var(--text-muted); font-size: 13px; }
+.role { fill: var(--accent); font-size: 12px; letter-spacing: 1px; }
+.caption { fill: var(--info); font-size: 12px; }
+figcaption { border-top: 1px solid var(--border); padding-top: 18px;
+  color: var(--text-muted); max-width: 100%; }
+figcaption strong { color: var(--text); font-weight: 500; }
+footer { margin-top: 24px; color: var(--text-muted); font-size: 11px; }
+@media (max-width: 540px) { main { padding: 28px 16px; } }
+
+.admit { fill: none; stroke: var(--good); stroke-width: 1.5; }
+.admit-label { fill: var(--good); font-size: 12px; }
+.slot { fill: var(--track); stroke: var(--border-node); }
+h2 { font-size: 21px; font-weight: 500; margin: 44px 0 12px; }
+.technical p { color: var(--text-muted); }
+table { width: 100%; border-collapse: collapse; margin: 24px 0; }
+th, td { padding: 12px 8px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+th { color: var(--text); font-weight: 500; }
+td { color: var(--text-muted); }
+a { color: var(--text); text-underline-offset: 3px; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.control { fill: none; stroke: var(--warn); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.control-label { fill: var(--warn); font-size: 12px; }
+</style>
+</head>
+<body>
+<main>
+<header>
+<div class="eyebrow">TRAFFIC MANAGEMENT / 10</div>
+<h1>A ticket drop. A controlled front door.</h1>
+<p>When demand exceeds checkout capacity, a virtual waiting room holds users in a queue. Admission control lets a limited number proceed as capacity becomes available.</p>
+</header>
+<figure>
+<svg viewBox="0 0 800 600" role="img" aria-labelledby="tickets-title tickets-description">
+<title id="tickets-title">Ticket sale with a virtual waiting room</title>
+<desc id="tickets-description">A surge of fans enters a virtual waiting room. Users receive queue tokens and wait for admission. An admission gate issues short-lived passes to a limited number of users who can access checkout. Checkout reserves and sells tickets from inventory. Being in the waiting room does not guarantee a ticket.</desc>
+<defs>
+<marker id="queue-arrow" viewBox="0 -4 8 8" refX="8" refY="0" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+<path d="M0 -3 L8 0 L0 3" fill="none" stroke="var(--info)" stroke-width="1.3"/>
+</marker>
+<marker id="admit-arrow" viewBox="0 -4 8 8" refX="8" refY="0" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+<path d="M0 -3 L8 0 L0 3" fill="none" stroke="var(--good)" stroke-width="1.3"/>
+</marker>
+</defs>
+<!-- Exact bounds: fans (20,40,200,110), room (340,30,440,140),
+     gate (440,250,240,100), checkout (440,430,240,110),
+     inventory cylinder (40,430,240,110). -->
+<path class="wire" d="M220 95 H280 V100 H340" marker-end="url(#queue-arrow)"/>
+<text class="caption" x="280" y="80" text-anchor="middle">join</text>
+<path class="wire" d="M560 170 V250" marker-end="url(#queue-arrow)"/>
+<text class="caption" x="578" y="211">wait for a turn</text>
+<path class="admit" d="M560 350 V430" marker-end="url(#admit-arrow)"/>
+<text class="admit-label" x="578" y="392">admission pass</text>
+<path class="admit" d="M440 485 H280" marker-end="url(#admit-arrow)"/>
+<text class="admit-label" x="360" y="472" text-anchor="middle">reserve / buy</text>
+<rect class="node" x="20" y="40" width="200" height="110" rx="4"/>
+<text class="label" x="120" y="84" text-anchor="middle">fans arrive</text>
+<text class="meta" x="120" y="113" text-anchor="middle">high traffic surge</text>
+<rect class="node" x="340" y="30" width="440" height="140" rx="4"/>
+<text class="label" x="560" y="63" text-anchor="middle">virtual waiting room</text>
+<text class="meta" x="560" y="88" text-anchor="middle">queue token + waiting page</text>
+<rect class="slot" x="360" y="107" width="70" height="40" rx="2"/>
+<text class="meta" x="395" y="132" text-anchor="middle">fan 1</text>
+<rect class="slot" x="440" y="107" width="70" height="40" rx="2"/>
+<text class="meta" x="475" y="132" text-anchor="middle">fan 2</text>
+<rect class="slot" x="520" y="107" width="70" height="40" rx="2"/>
+<text class="meta" x="555" y="132" text-anchor="middle">fan 3</text>
+<rect class="slot" x="600" y="107" width="70" height="40" rx="2"/>
+<text class="meta" x="635" y="132" text-anchor="middle">fan 4</text>
+<rect class="slot" x="680" y="107" width="70" height="40" rx="2"/>
+<text class="meta" x="715" y="132" text-anchor="middle">fan 5</text>
+<rect class="node gate" x="440" y="250" width="240" height="100" rx="4"/>
+<text class="role" x="560" y="280" text-anchor="middle">ADMISSION CONTROL</text>
+<text class="label" x="560" y="309" text-anchor="middle">limit entry rate</text>
+<text class="meta" x="560" y="332" text-anchor="middle">follow checkout capacity</text>
+<rect class="node" x="440" y="430" width="240" height="110" rx="4"/>
+<path d="M440 455 H680 M456 442 H476 M484 442 H504" fill="none" stroke="var(--border-node)"/>
+<text class="label" x="560" y="484" text-anchor="middle">checkout</text>
+<text class="meta" x="560" y="510" text-anchor="middle">validate admission pass</text>
+<g transform="translate(40 430)">
+<path class="node" d="M0 15 V95 A120 15 0 0 0 240 95 V15 Z"/>
+<ellipse class="node" cx="120" cy="15" rx="120" ry="15"/>
+<text class="label" x="120" y="62" text-anchor="middle">ticket inventory</text>
+<text class="meta" x="120" y="86" text-anchor="middle">limited availability</text>
+</g>
+<text class="meta" x="20" y="251">ILLUSTRATIVE POLICY</text>
+<text class="label" x="20" y="282">Wait → admit → shop</text>
+<text class="meta" x="20" y="313">FIFO after the sale opens.</text>
+<text class="meta" x="20" y="337">Pre-sale ordering may differ.</text>
+<text class="meta" x="20" y="361">Admission passes expire.</text>
+<text class="meta" x="20" y="576">Queue membership does not reserve a ticket or guarantee purchase.</text>
+</svg>
+<figcaption><strong>The waiting room protects checkout from the surge.</strong> Users wait before reaching the purchase flow, rather than holding open checkout requests. Admission passes must be enforced on purchase endpoints to prevent bypass. Ticket reservations and oversell prevention belong to checkout and inventory.</figcaption>
+</figure>
+<section class="technical" aria-labelledby="technical-heading">
+<h2 id="technical-heading">Inside the waiting room</h2>
+<p>A self-hosted reference design built from NGINX Open Source, custom admission services, Valkey, and PostgreSQL. Queueing and admission are application logic implemented using shared data structures and transactions.</p>
+<figure>
+<svg viewBox="0 0 800 650" role="img" aria-labelledby="technical-title technical-description">
+<title id="technical-title">Distributed waiting room implementation</title>
+<desc id="technical-description">Browsers check in through NGINX and a custom admission API. A scheduler uses atomic scripts in Valkey to assign available admission leases to the oldest waiting users. The API reads shared queue state and returns a waiting page or allows checkout. Checkout reserves seats with PostgreSQL transactions and unique order keys.</desc>
+<defs>
+<marker id="tech-blue" viewBox="0 -4 8 8" refX="8" refY="0" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 -3 L8 0 L0 3" fill="none" stroke="var(--info)" stroke-width="1.3"/></marker>
+<marker id="tech-green" viewBox="0 -4 8 8" refX="8" refY="0" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 -3 L8 0 L0 3" fill="none" stroke="var(--good)" stroke-width="1.3"/></marker>
+<marker id="tech-control" viewBox="0 -4 8 8" refX="8" refY="0" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 -3 L8 0 L0 3" fill="none" stroke="var(--warn)" stroke-width="1.3"/></marker>
+</defs>
+<path class="wire" d="M220 95 H340" marker-end="url(#tech-blue)"/>
+<text class="caption" x="280" y="82" text-anchor="middle">HTTPS</text>
+<path class="wire" d="M450 150 V195 H120 V150" marker-end="url(#tech-blue)"/>
+<text class="caption" x="280" y="182" text-anchor="middle">wait page + cookie</text>
+<path class="control" d="M560 95 H610 V285 H560" marker-start="url(#tech-control)" marker-end="url(#tech-control)"/>
+<text class="control-label" x="625" y="198">queue state</text>
+<path class="control" d="M340 285 H220" marker-start="url(#tech-control)" marker-end="url(#tech-control)"/>
+<text class="control-label" x="280" y="270" text-anchor="middle">atomic Lua</text>
+<text class="control-label" x="280" y="313" text-anchor="middle">admit oldest</text>
+<!-- Origin route stays right of the coordination plane. -->
+<path class="admit" d="M450 150 V210 H590 V450 H450 V480" marker-end="url(#tech-green)"/>
+<text class="admit-label" x="615" y="402">admitted</text>
+<text class="admit-label" x="615" y="421">requests</text>
+<path class="admit" d="M340 535 H220" marker-end="url(#tech-green)"/>
+<text class="admit-label" x="280" y="521" text-anchor="middle">transaction</text>
+<rect class="node" x="20" y="40" width="200" height="110" rx="4"/>
+<text class="label" x="120" y="83" text-anchor="middle">browser</text>
+<text class="meta" x="120" y="111" text-anchor="middle">waiting-room cookie</text>
+<text class="meta" x="120" y="134" text-anchor="middle">periodic check-in</text>
+<rect class="node gate" x="340" y="40" width="220" height="110" rx="4"/>
+<text class="role" x="450" y="68" text-anchor="middle">SELF-HOSTED FRONT DOOR</text>
+<text class="label" x="450" y="98" text-anchor="middle">admission API</text>
+<text class="meta" x="450" y="127" text-anchor="middle">NGINX reverse proxy</text>
+<rect class="node" x="340" y="230" width="220" height="110" rx="4"/>
+<text class="label" x="450" y="269" text-anchor="middle">Valkey</text>
+<text class="meta" x="450" y="297" text-anchor="middle">sorted set + lease records</text>
+<text class="meta" x="450" y="321" text-anchor="middle">one writer per sale</text>
+<rect class="node" x="20" y="230" width="200" height="110" rx="4"/>
+<text class="label" x="120" y="269" text-anchor="middle">scheduler</text>
+<text class="meta" x="120" y="297" text-anchor="middle">atomic Lua traffic</text>
+<text class="meta" x="120" y="321" text-anchor="middle">atomic lease allocation</text>
+<text class="control-label" x="20" y="380">CUSTOM ADMISSION LOGIC</text>
+<text class="meta" x="20" y="404">Queue order + active leases</text>
+<text class="meta" x="20" y="427">are shared across API instances.</text>
+<rect class="node" x="340" y="480" width="220" height="110" rx="4"/>
+<text class="label" x="450" y="521" text-anchor="middle">checkout API</text>
+<text class="meta" x="450" y="550" text-anchor="middle">protected origin</text>
+<text class="meta" x="450" y="575" text-anchor="middle">idempotent order writes</text>
+<g transform="translate(20 480)">
+<path class="node" d="M0 15 V95 A100 15 0 0 0 200 95 V15 Z"/>
+<ellipse class="node" cx="100" cy="15" rx="100" ry="15"/>
+<text class="label" x="100" y="62" text-anchor="middle">PostgreSQL</text>
+<text class="meta" x="100" y="86" text-anchor="middle">atomic seat reservation</text>
+</g>
+<text class="meta" x="20" y="628">Blue: waiting traffic · dashed yellow: coordination · green: admitted traffic</text>
+</svg>
+<figcaption><strong>Share queue state; allocate admission atomically.</strong> Admission API instances share one authoritative Valkey writer per sale. A short atomic script removes expired leases, checks capacity, and grants leases to the oldest queued users. Checkout enforces the lease before purchasing; this is a proposed architecture rather than an existing ticket platform.</figcaption>
+</figure>
+<table>
+<thead><tr><th>Mechanism</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td>NGINX Open Source + custom API</td><td>Serve the waiting page and route check-ins. Use <code>auth_request</code> with the admission API for protected checkout routes; deny direct origin access. Poll with jitter to spread check-ins.</td></tr>
+<tr><td>Valkey sorted set</td><td>A short join script assigns a monotonic sequence with <code>INCR</code> and inserts the session with <code>ZADD</code>. Repeated joins reuse the session's existing position. Partition keys by sale; script keys must share a cluster hash slot.</td></tr>
+<tr><td>Scheduler + atomic Lua</td><td>Enforce both an admission rate budget and an active-session cap. Atomically claim the oldest waiting sessions and create expiring leases. Multiple schedulers use the same script so they cannot spend the same capacity twice.</td></tr>
+<tr><td>Session cookie + lease</td><td>Use a signed opaque session ID in a Secure, HttpOnly cookie. Validate the server-side lease on protected requests; refreshing does not extend it indefinitely. The lease admits a user, not a seat reservation.</td></tr>
+<tr><td>PostgreSQL transactions</td><td>Lock a seat row with <code>SELECT FOR UPDATE</code>, check availability, and create a timed hold in one transaction. Unique idempotency keys deduplicate order retries. An expiry job releases abandoned holds; do not hold a database transaction open during payment.</td></tr>
+<tr><td>Failure and recovery</td><td>Configure Valkey persistence and replication; asynchronous failover can lose recent state. Pause admissions on uncertain state and reconcile leases before resuming. Atomic scripts alone do not provide durability or globally synchronized ordering across independent writers.</td></tr>
+</tbody>
+</table>
+
+<p>Building-block references: <a href="https://nginx.org/en/docs/http/ngx_http_auth_request_module.html">NGINX authorization subrequests</a> · <a href="https://valkey.io/topics/sorted-sets/">Valkey sorted sets</a> · <a href="https://valkey.io/topics/programmability/">Atomic Lua scripts</a> · <a href="https://www.postgresql.org/docs/17/explicit-locking.html">PostgreSQL row locking</a>.</p>
+</section>
+<footer>Blue: waiting · green: admitted purchase flow · example policy</footer>
+</main>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Service-to-service request chain</title>
+<!-- Original standalone reference. Three synchronous services use exact
+     face-center ports and a separate response corridor. Offline, static SVG.
+     This is one illustrative call path, not a universal service decomposition. -->
+<style>
+:root {
+  color-scheme: dark;
+  --canvas: #111111; --panel: #1c1c1c;
+  --border: rgba(255,255,255,.14); --border-node: rgba(255,255,255,.22);
+  --track: rgba(255,255,255,.10);
+  --text: #fafafa; --text-muted: rgba(250,250,250,.60);
+  --text-dim: rgba(250,250,250,.40);
+  --accent: #f35815; --good: #27b648; --warn: #d19f03;
+  --bad: #ff455d; --info: #1e9de7;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--canvas); color: var(--text);
+  font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+main { max-width: 860px; margin: auto; padding: 56px 28px 32px; }
+.eyebrow { color: var(--text-muted); font-size: 11px; letter-spacing: .12em; }
+h1 { margin: 12px 0; font-size: clamp(22px, 4vw, 30px); font-weight: 500; letter-spacing: -.04em; }
+header p { color: var(--text-muted); max-width: 62ch; margin: 0; }
+figure { margin: 32px 0 0; }
+svg { display: block; width: 100%; height: auto; font: inherit; }
+.node { fill: var(--panel); stroke: var(--border-node); stroke-width: 1.5; }
+.entry { stroke: var(--accent); }
+.wire { fill: none; stroke: var(--info); stroke-width: 1.5; }
+.label { fill: var(--text); font-size: 19px; }
+.meta { fill: var(--text-muted); font-size: 13px; }
+.role { fill: var(--accent); font-size: 12px; letter-spacing: 1px; }
+.caption { fill: var(--info); font-size: 12px; }
+figcaption { border-top: 1px solid var(--border); padding-top: 18px;
+  color: var(--text-muted); max-width: 100%; }
+figcaption strong { color: var(--text); font-weight: 500; }
+footer { margin-top: 24px; color: var(--text-muted); font-size: 11px; }
+@media (max-width: 540px) { main { padding: 28px 16px; } }
+
+.response { fill: none; stroke: var(--good); stroke-width: 1.5; }
+.response-label { fill: var(--good); font-size: 12px; }
+.note { fill: var(--text-muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+<header>
+<div class="eyebrow">SYNCHRONOUS SERVICES / 07</div>
+<h1>One request. A chain of calls.</h1>
+<p>An API calls the order service, which calls the inventory service. Each caller waits for its downstream response before completing its own response.</p>
+</header>
+<figure>
+<svg viewBox="0 0 800 500" role="img" aria-labelledby="chain-title chain-description">
+<title id="chain-title">Synchronous service-to-service request chain</title>
+<desc id="chain-description">A client request enters an API service. The API calls the order service, which calls the inventory service. Responses return from inventory to orders and then to the API. The API responds to the client. Waiting and downstream failures can affect the original request.</desc>
+<defs>
+<marker id="call-arrow" viewBox="0 -4 8 8" refX="8" refY="0" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+<path d="M0 -3 L8 0 L0 3" fill="none" stroke="var(--info)" stroke-width="1.3"/>
+</marker>
+<marker id="response-arrow" viewBox="0 -4 8 8" refX="8" refY="0" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+<path d="M0 -3 L8 0 L0 3" fill="none" stroke="var(--good)" stroke-width="1.3"/>
+</marker>
+<g id="service-panel">
+<rect width="200" height="140" rx="4"/>
+<path d="M0 28 H200 M16 14 H36 M44 14 H64" fill="none"/>
+</g>
+</defs>
+<!-- Service bounds: (30/300/570,170,200,140). Requests enter side
+     ports; responses use bottom ports and the open corridor below nodes. -->
+<path class="wire" d="M130 80 V170" marker-end="url(#call-arrow)"/>
+<text class="caption" x="148" y="126">request</text>
+<path class="wire" d="M230 240 H300" marker-end="url(#call-arrow)"/>
+<path class="wire" d="M500 240 H570" marker-end="url(#call-arrow)"/>
+<text class="caption" x="265" y="224" text-anchor="middle">call</text>
+<text class="caption" x="535" y="224" text-anchor="middle">call</text>
+<path class="response" d="M670 310 V365 H400 V310" marker-end="url(#response-arrow)"/>
+<text class="response-label" x="535" y="351" text-anchor="middle">return result</text>
+<path class="response" d="M400 310 V385 H130 V310" marker-end="url(#response-arrow)"/>
+<text class="response-label" x="265" y="373" text-anchor="middle">return result</text>
+<path class="response" d="M30 240 H8 V55 H30" marker-end="url(#response-arrow)"/>
+<rect class="node" x="30" y="30" width="200" height="50" rx="4"/>
+<text class="label" x="130" y="62" text-anchor="middle">client</text>
+<g transform="translate(30 170)">
+<use href="#service-panel" class="node entry"/>
+<text class="role" x="100" y="61" text-anchor="middle">ENTRY POINT</text>
+<text class="label" x="100" y="89" text-anchor="middle">API service</text>
+<text class="meta" x="100" y="117" text-anchor="middle">waits for orders</text>
+</g>
+<g transform="translate(300 170)">
+<use href="#service-panel" class="node"/>
+<text class="meta" x="100" y="61" text-anchor="middle">DOWNSTREAM</text>
+<text class="label" x="100" y="89" text-anchor="middle">order service</text>
+<text class="meta" x="100" y="117" text-anchor="middle">waits for inventory</text>
+</g>
+<g transform="translate(570 170)">
+<use href="#service-panel" class="node"/>
+<text class="meta" x="100" y="61" text-anchor="middle">DOWNSTREAM</text>
+<text class="label" x="100" y="89" text-anchor="middle">inventory</text>
+<text class="meta" x="100" y="117" text-anchor="middle">checks availability</text>
+</g>
+<path d="M30 422 H770" stroke="var(--border)"/>
+<text class="note" x="30" y="453">Downstream waiting adds to the original request's latency.</text>
+<text class="note" x="30" y="478">A timeout or error can propagate through the callers.</text>
+</svg>
+<figcaption><strong>The original request depends on the whole chain.</strong> Blue shows calls; green shows responses. Bound downstream calls with timeouts and pass a trace identifier across services so the full request can be followed. This diagram shows the successful path; error handling depends on each caller.</figcaption>
+</figure>
+<footer>3 services · synchronous calls · responses return through callers</footer>
+</main>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Load balancer · Three app servers</title>
+<!-- Original standalone reference. Copy the semantic server panels and exact
+     face-center ports for service topologies. No external assets or scripts.
+     Branches are possible request routes: each request goes to one server. -->
+<style>
+:root {
+  color-scheme: dark;
+  --canvas: #111111; --panel: #1c1c1c;
+  --border: rgba(255,255,255,.14); --border-node: rgba(255,255,255,.22);
+  --track: rgba(255,255,255,.10);
+  --text: #fafafa; --text-muted: rgba(250,250,250,.60);
+  --text-dim: rgba(250,250,250,.40);
+  --accent: #f35815; --good: #27b648; --warn: #d19f03;
+  --bad: #ff455d; --info: #1e9de7;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--canvas); color: var(--text);
+  font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+main { max-width: 860px; margin: auto; padding: 56px 28px 32px; }
+.eyebrow { color: var(--text-muted); font-size: 11px; letter-spacing: .12em; }
+h1 { margin: 12px 0; font-size: clamp(22px, 4vw, 30px); font-weight: 500; letter-spacing: -.04em; }
+header p { color: var(--text-muted); max-width: 62ch; margin: 0; }
+figure { margin: 32px 0 0; }
+svg { display: block; width: 100%; height: auto; font: inherit; }
+.node { fill: var(--panel); stroke: var(--border-node); stroke-width: 1.5; }
+.balancer { stroke: var(--accent); }
+.wire { fill: none; stroke: var(--info); stroke-width: 1.5; }
+.label { fill: var(--text); font-size: 19px; }
+.meta { fill: var(--text-muted); font-size: 13px; }
+.role { fill: var(--accent); font-size: 12px; letter-spacing: 1px; }
+.caption { fill: var(--info); font-size: 12px; }
+figcaption { border-top: 1px solid var(--border); padding-top: 18px;
+  color: var(--text-muted); max-width: 100%; }
+figcaption strong { color: var(--text); font-weight: 500; }
+footer { margin-top: 24px; color: var(--text-muted); font-size: 11px; }
+@media (max-width: 540px) { main { padding: 28px 16px; } }
+</style>
+</head>
+<body>
+<main>
+<header>
+<div class="eyebrow">SERVICE TOPOLOGY / 02</div>
+<h1>One entry point. Three app servers.</h1>
+<p>The load balancer receives incoming requests and routes each one to an app server. All three instances run the same application.</p>
+</header>
+<figure>
+<svg viewBox="0 0 800 530" role="img" aria-labelledby="lb-title lb-description">
+<title id="lb-title">Load balancer with three app servers</title>
+<desc id="lb-description">Clients send requests to a load balancer. Three blue routes connect the balancer to app 01, app 02, and app 03. Each request is routed to one instance, rather than broadcast to all three.</desc>
+<defs>
+<marker id="request-arrow" viewBox="0 -4 8 8" refX="8" refY="0" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+<path d="M0 -3 L8 0 L0 3" fill="none" stroke="var(--info)" stroke-width="1.3"/>
+</marker>
+<!-- Service bounds: (0,0,200,140); indicator strip identifies a server. -->
+<g id="server-panel">
+<rect width="200" height="140" rx="4"/>
+<path d="M0 28 H200" fill="none"/>
+<path d="M16 14 H36 M44 14 H64" fill="none"/>
+</g>
+</defs>
+<!-- Clients bottom (400,70) to balancer top (400,140). -->
+<path class="wire" d="M400 70 V140" marker-end="url(#request-arrow)"/>
+<text class="caption" x="418" y="110">requests</text>
+<!-- Balancer bottom (400,240); app top centers (140/400/660,360). -->
+<path class="wire" d="M400 240 V300"/>
+<path class="wire" d="M400 300 H140 V360" marker-end="url(#request-arrow)"/>
+<path class="wire" d="M400 300 V360" marker-end="url(#request-arrow)"/>
+<path class="wire" d="M400 300 H660 V360" marker-end="url(#request-arrow)"/>
+<circle cx="400" cy="300" r="3" fill="var(--info)"/>
+<text class="caption" x="418" y="276">route to one instance</text>
+<g>
+<rect class="node" x="320" y="20" width="160" height="50" rx="4"/>
+<text class="label" x="400" y="51" text-anchor="middle">clients</text>
+</g>
+<g>
+<rect class="node balancer" x="270" y="140" width="260" height="100" rx="4"/>
+<text class="role" x="400" y="170" text-anchor="middle">ENTRY POINT</text>
+<text class="label" x="400" y="200" text-anchor="middle">load balancer</text>
+<text class="meta" x="400" y="224" text-anchor="middle">selects an instance</text>
+</g>
+<g transform="translate(40 360)">
+<use href="#server-panel" class="node"/>
+<text class="meta" x="100" y="62" text-anchor="middle">APP SERVER</text>
+<text class="label" x="100" y="91" text-anchor="middle">app 01</text>
+<text class="meta" x="100" y="119" text-anchor="middle">same application</text>
+</g>
+<g transform="translate(300 360)">
+<use href="#server-panel" class="node"/>
+<text class="meta" x="100" y="62" text-anchor="middle">APP SERVER</text>
+<text class="label" x="100" y="91" text-anchor="middle">app 02</text>
+<text class="meta" x="100" y="119" text-anchor="middle">same application</text>
+</g>
+<g transform="translate(560 360)">
+<use href="#server-panel" class="node"/>
+<text class="meta" x="100" y="62" text-anchor="middle">APP SERVER</text>
+<text class="label" x="100" y="91" text-anchor="middle">app 03</text>
+<text class="meta" x="100" y="119" text-anchor="middle">same application</text>
+</g>
+</svg>
+<figcaption><strong>Each request goes to one server.</strong> Blue arrows show possible request routes; responses are omitted. The balancing policy determines which instance handles a request.</figcaption>
+</figure>
+<figure>
+<svg viewBox="0 0 800 310" role="img" aria-labelledby="strategy-title strategy-description">
+<title id="strategy-title">Load balancer routing strategies</title>
+<desc id="strategy-description">A routing strategy selects among healthy app servers. Options include round robin, least connections, and key hashing. These are configuration choices, not a chain of request processing stages.</desc>
+<defs><marker id="strategy-arrow" viewBox="0 -4 8 8" refX="8" refY="0" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 -3 L8 0 L0 3" fill="none" stroke="var(--info)" stroke-width="1.3"/></marker></defs>
+<path class="wire" d="M400 90 V130"/>
+<path class="wire" d="M400 130 H140 V180" marker-end="url(#strategy-arrow)"/>
+<path class="wire" d="M400 130 V180" marker-end="url(#strategy-arrow)"/>
+<path class="wire" d="M400 130 H660 V180" marker-end="url(#strategy-arrow)"/>
+<rect class="node balancer" x="270" y="20" width="260" height="70" rx="4"/>
+<text class="label" x="400" y="62" text-anchor="middle">routing strategy</text>
+<rect class="node" x="30" y="180" width="220" height="110" rx="4"/><text class="label" x="140" y="213" text-anchor="middle">round robin</text><text class="meta" x="140" y="242" text-anchor="middle">rotate across servers</text><text class="meta" x="140" y="267" text-anchor="middle">weighted variants exist</text>
+<rect class="node" x="290" y="180" width="220" height="110" rx="4"/><text class="label" x="400" y="213" text-anchor="middle">least connections</text><text class="meta" x="400" y="242" text-anchor="middle">fewest active connections</text><text class="meta" x="400" y="267" text-anchor="middle">connection count ≠ load</text>
+<rect class="node" x="550" y="180" width="220" height="110" rx="4"/><text class="label" x="660" y="213" text-anchor="middle">key hashing</text><text class="meta" x="660" y="242" text-anchor="middle">same key → same server</text><text class="meta" x="660" y="267" text-anchor="middle">membership can change it</text>
+</svg><figcaption><strong>Choose a policy for healthy instances.</strong> Round robin spreads turns; least connections favors fewer active connections; key hashing provides affinity. Health checks remove unavailable instances from the eligible pool. These nodes show alternative policies rather than request fanout.</figcaption></figure>
+<footer>1 load balancer · 3 app servers</footer>
+</main>
+</body>
+</html>

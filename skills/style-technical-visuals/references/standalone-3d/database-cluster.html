@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Database cluster · Isometric 3D</title>
+<!-- Original standalone interactive 3D reference. World coordinates are projected into SVG; depth-sorted cylinders and
+     moving replication packets share the projection. No external dependencies.
+     Primary serves all reads/writes; followers exist for redundancy. -->
+<style>
+:root {
+  color-scheme: dark;
+  --canvas: #111111; --panel: #1c1c1c;
+  --border: rgba(255,255,255,.14); --border-node: rgba(255,255,255,.22);
+  --track: rgba(255,255,255,.10);
+  --text: #fafafa; --text-muted: rgba(250,250,250,.60);
+  --text-dim: rgba(250,250,250,.40);
+  --accent: #f35815; --good: #27b648; --warn: #d19f03;
+  --bad: #ff455d; --info: #1e9de7;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--canvas); color: var(--text);
+  font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+main { max-width: 860px; margin: auto; padding: 56px 28px 32px; }
+.eyebrow { color: var(--text-muted); font-size: 11px; letter-spacing: .12em; }
+h1 { margin: 12px 0; font-size: clamp(22px, 4vw, 30px); font-weight: 500; letter-spacing: -.04em; }
+header p { color: var(--text-muted); max-width: 62ch; margin: 0; }
+figure { margin: 32px 0 0; }
+svg { display: block; width: 100%; height: auto; font: inherit; }
+.node { fill: var(--panel); stroke: var(--border-node); stroke-width: 1.5; }
+.primary { stroke: var(--accent); }
+.wire { fill: none; stroke: var(--info); stroke-width: 1.5; }
+.label { fill: var(--text); font-size: 19px; }
+.meta { fill: var(--text-muted); font-size: 13px; }
+.role { fill: var(--accent); font-size: 12px; letter-spacing: 1px; }
+.caption { fill: var(--info); font-size: 12px; }
+figcaption { border-top: 1px solid var(--border); padding-top: 18px;
+  color: var(--text-muted); max-width: 100%; }
+figcaption strong { color: var(--text); font-weight: 500; }
+footer { margin-top: 24px; color: var(--text-muted); font-size: 11px; }
+@media (max-width: 540px) { main { padding: 28px 16px; } }
+
+.platform { fill: var(--panel); stroke: var(--border); stroke-width: 1; }
+.grid { fill: none; stroke: var(--track); stroke-width: 1; }
+.database-body { fill: var(--panel); stroke: var(--border-node); stroke-width: 1.5; }
+.database-top { fill: var(--canvas); stroke: var(--border-node); stroke-width: 1.5; }
+.database-ring { fill: none; stroke: var(--border-node); stroke-width: 1; }
+.primary-model .database-body, .primary-model .database-top, .primary-model .database-ring { stroke: var(--accent); }
+
+svg { touch-action: pan-y; cursor: grab; user-select: none; }
+svg.dragging { cursor: grabbing; }
+.controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 16px 0; }
+button { font: inherit; background: var(--panel); color: var(--text); border: 1px solid var(--border-node); padding: 8px 12px; cursor: pointer; }
+button:focus-visible, svg:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.hint { color: var(--text-muted); }
+</style>
+</head>
+<body>
+<main>
+<header>
+<div class="eyebrow">DATABASE TOPOLOGY / ISOMETRIC 3D</div>
+<h1>One primary. Two followers.</h1>
+<p>The primary handles all application reads and writes. Two followers maintain replicated copies for redundancy and recovery.</p>
+</header>
+<figure>
+<svg id="scene" viewBox="0 0 800 570" tabindex="0" role="img" aria-labelledby="iso-title iso-description">
+<title id="iso-title">Interactive three-dimensional database cluster</title>
+<desc id="iso-description">Drag horizontally or use the left and right arrow keys to orbit three database cylinders. Animated blue packets flow from the orange primary to two redundant followers. Labels remain upright.</desc>
+<defs><marker id="packet-arrow" viewBox="0 -4 8 8" refX="8" refY="0" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 -3 L8 0 L0 3" fill="none" stroke="var(--info)" stroke-width="1.3"/></marker></defs>
+<g id="world"></g>
+</svg>
+<div class="controls"><button id="pause" type="button" aria-pressed="false">Pause replication</button><button id="reset" type="button">Reset view</button><span class="hint">Drag horizontally to orbit · ← / → keys</span></div>
+<figcaption><strong>Depth changes the view, not the topology.</strong> Orange identifies the primary; blue arrows show replication to the followers. Followers do not serve application reads in this example. Promotion after a failure requires a failover policy.</figcaption>
+</figure>
+<footer>Interactive 3D projection · offline · same shared dark palette</footer>
+</main>
+<script>
+(() => {
+  const svg = document.querySelector('#scene'), world = document.querySelector('#world');
+  const pause = document.querySelector('#pause');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const initialAngle = Math.PI / 4;
+  let angle = initialAngle, playing = !reduced.matches, elapsed = 0, previous = null, drag = null;
+  const nodes = [
+    {name:'node 01',role:'PRIMARY',note:'reads + writes',x:0,z:-130,primary:true},
+    {name:'node 02',role:'FOLLOWER',note:'redundant copy',x:-150,z:100},
+    {name:'node 03',role:'FOLLOWER',note:'redundant copy',x:150,z:100}
+  ];
+  const ns = 'http://www.w3.org/2000/svg';
+  function element(tag, attrs, parent=world) {
+    const e=document.createElementNS(ns,tag);
+    for (const [k,v] of Object.entries(attrs)) e.setAttribute(k,v);
+    parent.append(e); return e;
+  }
+  // Orthographic camera at fixed elevation; azimuth rotates about the vertical axis.
+  function project(x,y,z) {
+    const horizontal=x*Math.cos(angle)-z*Math.sin(angle);
+    const depth=x*Math.sin(angle)+z*Math.cos(angle);
+    return {x:400+horizontal,y:325+depth*.48-y*.88,depth};
+  }
+  function points(list) {return list.map(p=>`${p.x},${p.y}`).join(' ');}
+  function line(list,attrs) { return element('polyline',{points:points(list),fill:'none',...attrs}); }
+  function text(value,x,y,cls) {const e=element('text',{x,y,'text-anchor':'middle',class:cls});e.textContent=value;}
+  function render() {
+    world.replaceChildren();
+    element('polygon',{points:points([[-270,-230],[270,-230],[270,230],[-270,230]].map(([x,z])=>project(x,0,z))),class:'platform'});
+    for(let v=-200;v<=200;v+=100) {
+      line([project(v,0,-230),project(v,0,230)],{class:'grid'});
+      line([project(-270,0,v),project(270,0,v)],{class:'grid'});
+    }
+    const objects=[];
+    for(const follower of nodes.slice(1)) {
+      const source=nodes[0], dx=follower.x-source.x,dz=follower.z-source.z,length=Math.hypot(dx,dz);
+      // Attach wires at cylinder walls, halfway up their height.
+      const a={x:source.x+dx/length*52,z:source.z+dz/length*52};
+      const b={x:follower.x-dx/length*52,z:follower.z-dz/length*52};
+      line([project(a.x,55,a.z),project(b.x,55,b.z)],{class:'wire','marker-end':'url(#packet-arrow)'});
+      for(let k=0;k<3;k++) {
+        const t=(elapsed/2.4+k/3)%1, x=a.x+(b.x-a.x)*t,z=a.z+(b.z-a.z)*t;
+        const p=project(x,55,z);
+        objects.push({depth:p.depth,draw:()=>element('circle',{cx:p.x,cy:p.y,r:4,fill:'var(--info)'})});
+      }
+    }
+    for(const n of nodes) {
+      const base=project(n.x,0,n.z),top=project(n.x,120,n.z),r=52,ry=25;
+      objects.push({depth:base.depth,draw:()=>{
+        const stroke=n.primary?'var(--accent)':'var(--border-node)';
+        element('path',{d:`M${top.x-r} ${top.y} V${base.y} A${r} ${ry} 0 0 0 ${base.x+r} ${base.y} V${top.y} Z`,fill:'var(--panel)',stroke,'stroke-width':1.5});
+        for(const h of [40,80]) {
+          const p=project(n.x,h,n.z);
+          element('path',{d:`M${p.x-r} ${p.y} A${r} ${ry} 0 0 0 ${p.x+r} ${p.y}`,fill:'none',stroke,'stroke-width':1});
+        }
+        element('ellipse',{cx:top.x,cy:top.y,rx:r,ry,fill:'var(--canvas)',stroke,'stroke-width':1.5});
+      }});
+    }
+    objects.sort((a,b)=>a.depth-b.depth).forEach(o=>o.draw());
+    // Billboard labels stay legible as the camera moves.
+    for(const n of nodes) {
+      const p=project(n.x,0,n.z);
+      text(n.role,p.x,p.y+48,n.primary?'role':'meta');
+      text(n.name,p.x,p.y+73,'label');
+      text(n.note,p.x,p.y+97,'meta');
+    }
+  }
+  function updateControl() {pause.textContent=playing?'Pause replication':'Play replication';pause.setAttribute('aria-pressed',String(!playing));}
+  pause.addEventListener('click',()=>{playing=!playing;updateControl();});
+  reduced.addEventListener('change',()=>{playing=!reduced.matches;updateControl();render();});
+  document.querySelector('#reset').addEventListener('click',()=>{angle=initialAngle;render();});
+  svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointerId,x:e.clientX};svg.setPointerCapture(e.pointerId);svg.classList.add('dragging');});
+  svg.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;angle+=(e.clientX-drag.x)*.008;drag.x=e.clientX;render();});
+  function stop(){drag=null;svg.classList.remove('dragging');}
+  svg.addEventListener('pointerup',stop);svg.addEventListener('pointercancel',stop);svg.addEventListener('lostpointercapture',stop);
+  svg.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();angle+=e.key==='ArrowRight'?.12:-.12;render();});
+  function frame(now) {
+    if(previous!==null&&playing&&!document.hidden){elapsed+=Math.min((now-previous)/1000,.05);render();}
+    previous=now;requestAnimationFrame(frame);
+  }
+  updateControl();render();requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Application · Cache · Database</title>
+<!-- Original standalone cache-aside reference. Copy the service panel,
+     key/value slots, database cylinder, and separate request/return corridors.
+     Offline, static read path; the application owns cache lookup and fill. -->
+<style>
+:root {
+  color-scheme: dark;
+  --canvas: #111111; --panel: #1c1c1c;
+  --border: rgba(255,255,255,.14); --border-node: rgba(255,255,255,.22);
+  --track: rgba(255,255,255,.10);
+  --text: #fafafa; --text-muted: rgba(250,250,250,.60);
+  --text-dim: rgba(250,250,250,.40);
+  --accent: #f35815; --good: #27b648; --warn: #d19f03;
+  --bad: #ff455d; --info: #1e9de7;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--canvas); color: var(--text);
+  font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+main { max-width: 860px; margin: auto; padding: 56px 28px 32px; }
+.eyebrow { color: var(--text-muted); font-size: 11px; letter-spacing: .12em; }
+h1 { margin: 12px 0; font-size: clamp(22px, 4vw, 30px); font-weight: 500; letter-spacing: -.04em; }
+header p { color: var(--text-muted); max-width: 62ch; margin: 0; }
+figure { margin: 32px 0 0; }
+svg { display: block; width: 100%; height: auto; font: inherit; }
+.node { fill: var(--panel); stroke: var(--border-node); stroke-width: 1.5; }
+.application { stroke: var(--accent); }
+.wire { fill: none; stroke: var(--info); stroke-width: 1.5; }
+.label { fill: var(--text); font-size: 19px; }
+.meta { fill: var(--text-muted); font-size: 13px; }
+.role { fill: var(--accent); font-size: 12px; letter-spacing: 1px; }
+.caption { fill: var(--info); font-size: 12px; }
+figcaption { border-top: 1px solid var(--border); padding-top: 18px;
+  color: var(--text-muted); max-width: 100%; }
+figcaption strong { color: var(--text); font-weight: 500; }
+footer { margin-top: 24px; color: var(--text-muted); font-size: 11px; }
+@media (max-width: 540px) { main { padding: 28px 16px; } }
+
+.hit { fill: none; stroke: var(--good); stroke-width: 1.5; }
+.miss { fill: none; stroke: var(--info); stroke-width: 1.5; }
+.hit-label { fill: var(--good); font-size: 12px; }
+</style>
+</head>
+<body>
+<main>
+<header>
+<div class="eyebrow">CACHE-ASIDE / 04</div>
+<h1>Check the cache. Fetch on a miss.</h1>
+<p>The application looks up a value in the cache first. On a miss, it reads the database and stores the result in the cache for future requests.</p>
+</header>
+<figure>
+<svg viewBox="0 0 800 550" role="img" aria-labelledby="cache-title cache-description">
+<title id="cache-title">Application with cache-aside reads</title>
+<desc id="cache-description">Step 1: the application looks up a key in the cache. A hit returns the cached value to the application. Step 2, on a miss: the application reads the database. Step 3: the database returns a value. Step 4: the application fills the cache. The cache does not query the database itself.</desc>
+<defs>
+<marker id="read-arrow" viewBox="0 -4 8 8" refX="8" refY="0" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+<path d="M0 -3 L8 0 L0 3" fill="none" stroke="var(--info)" stroke-width="1.3"/>
+</marker>
+<marker id="hit-arrow" viewBox="0 -4 8 8" refX="8" refY="0" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+<path d="M0 -3 L8 0 L0 3" fill="none" stroke="var(--good)" stroke-width="1.3"/>
+</marker>
+</defs>
+<!-- Bounds: application (40,205,200,140), cache (540,55,220,140),
+     database (540,355,220,140). All routes end at exact face centers.
+     Top/bottom corridors separate returns from outgoing requests. -->
+<path class="miss" d="M240 275 H390 V125 H540" marker-end="url(#read-arrow)"/>
+<text class="caption" x="404" y="111">1 · lookup</text>
+<path class="hit" d="M650 55 V25 H140 V205" marker-end="url(#hit-arrow)"/>
+<text class="hit-label" x="290" y="47">hit · return cached value</text>
+<path class="miss" d="M240 275 H390 V425 H540" marker-end="url(#read-arrow)"/>
+<text class="caption" x="404" y="411">2 · miss: read</text>
+<path class="miss" d="M650 495 V525 H140 V345" marker-end="url(#read-arrow)"/>
+<text class="caption" x="290" y="513">3 · return database value</text>
+<path class="miss" d="M140 205 V85 H500 V45 H650 V55" marker-end="url(#read-arrow)"/>
+<text class="caption" x="260" y="75">4 · fill cache after miss</text>
+<rect class="node application" x="40" y="205" width="200" height="140" rx="4"/>
+<path d="M40 233 H240 M56 219 H76 M84 219 H104" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+<text class="role" x="140" y="267" text-anchor="middle">APPLICATION</text>
+<text class="label" x="140" y="297" text-anchor="middle">app server</text>
+<text class="meta" x="140" y="325" text-anchor="middle">owns lookup + fill</text>
+<rect class="node" x="540" y="55" width="220" height="140" rx="4"/>
+<text class="label" x="650" y="94" text-anchor="middle">cache</text>
+<text class="meta" x="650" y="117" text-anchor="middle">key → value</text>
+<rect x="560" y="133" width="180" height="40" rx="2" fill="var(--track)" stroke="var(--border-node)"/>
+<text class="meta" x="650" y="158" text-anchor="middle">user:42 → {...}</text>
+<g transform="translate(540 355)">
+<path class="node" d="M0 20 V120 A110 20 0 0 0 220 120 V20 Z"/>
+<ellipse class="node" cx="110" cy="20" rx="110" ry="20"/>
+<text class="label" x="110" y="80" text-anchor="middle">database</text>
+<text class="meta" x="110" y="108" text-anchor="middle">source of truth</text>
+</g>
+</svg>
+<figcaption><strong>A hit skips the database read.</strong> Green shows the hit return; blue shows lookups and the miss sequence. This example covers reads. Writes need a cache expiration or invalidation policy to limit stale values.</figcaption>
+</figure>
+<footer>1 application · 1 cache · 1 database</footer>
+</main>
+</body>
+</html>

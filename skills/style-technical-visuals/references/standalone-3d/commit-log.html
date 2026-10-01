@@ -1,0 +1,143 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Commit log · Interactive 3D tape</title>
+<!-- Original offline 3D tape. Raised record cuboids share a projected world;
+LSNs are illustrative record sequences. UTF-8 lengths computed from payloads. -->
+<style>
+:root {
+  color-scheme: dark;
+  --canvas: #111111; --panel: #1c1c1c;
+  --border: rgba(255,255,255,.14); --border-node: rgba(255,255,255,.22);
+  --track: rgba(255,255,255,.10);
+  --text: #fafafa; --text-muted: rgba(250,250,250,.60);
+  --text-dim: rgba(250,250,250,.40);
+  --accent: #f35815; --good: #27b648; --warn: #d19f03;
+  --bad: #ff455d; --info: #1e9de7;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--canvas); color: var(--text);
+  font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+main { max-width: 860px; margin: auto; padding: 56px 28px 32px; }
+.eyebrow { color: var(--text-muted); font-size: 11px; letter-spacing: .12em; }
+h1 { margin: 12px 0; font-size: clamp(22px, 4vw, 30px); font-weight: 500; letter-spacing: -.04em; }
+header p { color: var(--text-muted); max-width: 62ch; margin: 0; }
+figure { margin: 32px 0 0; }
+svg { display: block; width: 100%; height: auto; font: inherit; }
+.node { fill: var(--panel); stroke: var(--border-node); stroke-width: 1.5; }
+.primary { stroke: var(--accent); }
+.wire { fill: none; stroke: var(--info); stroke-width: 1.5; }
+.label { fill: var(--text); font-size: 19px; }
+.meta { fill: var(--text-muted); font-size: 13px; }
+.role { fill: var(--accent); font-size: 12px; letter-spacing: 1px; }
+.caption { fill: var(--info); font-size: 12px; }
+figcaption { border-top: 1px solid var(--border); padding-top: 18px;
+  color: var(--text-muted); max-width: 100%; }
+figcaption strong { color: var(--text); font-weight: 500; }
+footer { margin-top: 24px; color: var(--text-muted); font-size: 11px; }
+@media (max-width: 540px) { main { padding: 28px 16px; } }
+
+.platform { fill: var(--panel); stroke: var(--border); stroke-width: 1; }
+.grid { fill: none; stroke: var(--track); stroke-width: 1; }
+.database-body { fill: var(--panel); stroke: var(--border-node); stroke-width: 1.5; }
+.database-top { fill: var(--canvas); stroke: var(--border-node); stroke-width: 1.5; }
+.database-ring { fill: none; stroke: var(--border-node); stroke-width: 1; }
+.primary-model .database-body, .primary-model .database-top, .primary-model .database-ring { stroke: var(--accent); }
+
+svg { touch-action: pan-y; cursor: grab; user-select: none; }
+svg.dragging { cursor: grabbing; }
+.controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 16px 0; }
+button { font: inherit; background: var(--panel); color: var(--text); border: 1px solid var(--border-node); padding: 8px 12px; cursor: pointer; }
+button:focus-visible, svg:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.hint { color: var(--text-muted); }
+
+main { max-width: 1040px; padding-top: 32px; }
+figure { margin-top: 16px; }
+.meta { fill: var(--text); font-size: 13px; }
+.grid { stroke: var(--border); opacity: .45; }
+.status-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; margin: 16px 0; }
+.worker-card { background: var(--panel); border: 1px solid var(--border-node); padding: 12px; }
+.worker-card strong { display: block; font-weight: 500; }
+.worker-card span { display: block; color: var(--text-muted); margin-top: 4px; font-variant-numeric: tabular-nums; }
+.worker-card.busy { border-color: var(--warn); }
+.worker-card.completed { border-color: var(--good); }
+.legend { display: flex; flex-wrap: wrap; gap: 18px; color: var(--text-muted); margin: 12px 0; }
+.legend i { display: inline-block; width: 8px; height: 8px; margin-right: 7px; background: var(--info); }
+.legend .producer { background: var(--accent); }
+.legend .busy { background: var(--warn); }
+.legend .complete { background: var(--good); }
+@media(max-width:540px) { .status-grid { grid-template-columns: 1fr; } }
+
+.remaining-track { height: 5px; background: var(--track); margin-top: 12px; overflow: hidden; }
+.remaining-fill { height: 100%; background: var(--warn); transform: scaleX(0); transform-origin: left center; }
+
+.details { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:16px 0; }
+.details div { background:var(--panel); border:1px solid var(--border); padding:12px; }
+.details small { display:block; color:var(--text-muted); margin-bottom:6px; font-size:11px; }
+.details strong { font-weight:500; overflow-wrap:anywhere; }
+.details div:nth-child(n+4) { grid-column:span 3; }
+svg g[role="button"] { cursor:pointer; }
+svg g[role="button"]:focus-visible { outline:2px solid var(--accent); }
+button:disabled { opacity:.4; cursor:default; }
+</style></head><body><main><header><div class="eyebrow">STORAGE STRUCTURES / INTERACTIVE 3D</div><h1>A tape of immutable changes.</h1><p>Append at the tail; every ninth position advances to a fresh tape window. Rotate the tape and select any block to inspect its sequence number, payload, and UTF-8 byte lengths.</p></header>
+<div class="controls"><button id="append" type="button">Append change</button><button id="reset" type="button">Reset log</button><span id="count" class="hint" aria-live="polite"></span></div>
+<figure><svg id="scene" viewBox="0 0 800 440" tabindex="0" role="group" aria-labelledby="scene-title scene-description"><title id="scene-title">Orbitable 3D commit log tape</title><desc id="scene-description">Drag horizontally or use arrow keys to orbit. Each raised block is a record, numbered in append order. Select a block with a click or keyboard to inspect its fields below. Orange marks the selected record.</desc><g id="world"></g></svg>
+<div id="detail" class="details" aria-label="Selected log record"></div>
+<figcaption><strong>Updates append; earlier records remain in the log.</strong> Blue outlines identify records; orange identifies your selection. Replay in LSN order reconstructs the latest value for each key. Only the current eight-record window is shown: LSN 9 starts the next window, then 17, 25, and so on. This example uses record sequence numbers, not byte-offset LSNs or a database-specific WAL format.</figcaption></figure><footer>Drag to orbit · click a record to inspect · offline · no durability simulated</footer></main><script>
+(() => {
+const svg=document.querySelector('#scene'),world=document.querySelector('#world'),detail=document.querySelector('#detail');
+const initial=[['ticket:42','available'],['ticket:43','available'],['ticket:42','held'],['user:7','Zoë']];
+const changes=[['ticket:42','sold'],['ticket:44','available'],['user:7','Zoë 🎟'],['ticket:43','held'],['ticket:43','available']];
+let records=initial.map(r=>[...r]),next=0,selected=3,angle=.35,drag=null;
+const windowSize=8; // The ninth record starts the next tape window.
+const ns='http://www.w3.org/2000/svg',encoder=new TextEncoder();
+function el(tag,a,parent=world){const e=document.createElementNS(ns,tag);for(const[k,v]of Object.entries(a))e.setAttribute(k,v);parent.append(e);return e;}
+function project(x,y,z){const d=x*Math.sin(angle)+z*Math.cos(angle);return{x:400+(x*Math.cos(angle)-z*Math.sin(angle))*.93,y:245+d*.44-y*.86,depth:d};}
+function pts(a){return a.map(v=>`${v.x},${v.y}`).join(' ');}
+function poly(a,attrs,parent=world){return el('polygon',{points:pts(a),...attrs},parent);}
+function text(t,x,y,attrs={},parent=world){const e=el('text',{x,y,'text-anchor':'middle',fill:'var(--text)',...attrs},parent);e.textContent=t;return e;}
+function render(){
+world.replaceChildren();
+poly([project(-340,0,-130),project(340,0,-130),project(340,0,130),project(-340,0,130)],{class:'platform'});
+const step=68,start=-272; // Fixed origin: appending never moves existing records.
+// A continuous low tape slab; records form raised blocks on the strip.
+poly([project(-330,2,-42),project(330,2,-42),project(330,2,42),project(-330,2,42)],{fill:'var(--track)',stroke:'var(--border-node)'});
+const windowStart=Math.floor((records.length-1)/windowSize)*windowSize;
+const nodes=records.slice(windowStart,windowStart+windowSize).map((r,j)=>{
+ const i=windowStart+j,x=start+j*step;return {r,i,x,depth:project(x,0,0).depth};
+});
+nodes.sort((a,b)=>a.depth-b.depth).forEach(({r,i,x})=>{
+ const g=el('g',{role:'button',tabindex:0,'aria-label':`Select LSN ${i+1}: ${r[0]} = ${r[1]}`});
+ const stroke=i===selected?'var(--accent)':'var(--info)',v=(dx,y,dz)=>project(x+dx,y,dz),w=29,d=32,h=74;
+ const faces=[{a:[v(-w,5,-d),v(w,5,-d),v(w,h,-d),v(-w,h,-d)],depth:-d*Math.cos(angle)},
+ {a:[v(-w,5,d),v(w,5,d),v(w,h,d),v(-w,h,d)],depth:d*Math.cos(angle)},
+ {a:[v(-w,5,-d),v(-w,5,d),v(-w,h,d),v(-w,h,-d)],depth:-w*Math.sin(angle)},
+ {a:[v(w,5,-d),v(w,5,d),v(w,h,d),v(w,h,-d)],depth:w*Math.sin(angle)}];
+ faces.sort((a,b)=>a.depth-b.depth).forEach(f=>poly(f.a,{fill:'var(--panel)',stroke,'stroke-width':1.5},g));
+ poly([v(-w,h,-d),v(w,h,-d),v(w,h,d),v(-w,h,d)],{fill:'var(--canvas)',stroke,'stroke-width':1.5},g);
+ const top=project(x,h,0);
+ text(String(i+1).padStart(2,'0'),0,0,{'dominant-baseline':'central','font-size':18,transform:`matrix(${Math.cos(angle)*.93} ${Math.sin(angle)*.44} ${-Math.sin(angle)*.93} ${Math.cos(angle)*.44} ${top.x} ${top.y})`},g);
+ const choose=()=>{selected=i;render();};g.addEventListener('click',()=>{if(!moved)choose();});
+ g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();choose();}});
+ });
+text(`LSN ${windowStart+1}–${records.length} · ${windowStart} earlier records offscreen`,400,378,{class:'meta'});
+text('Select a block to inspect its record',400,405,{class:'meta'});
+const[key,value]=records[selected];
+detail.replaceChildren();
+for(const[label,valueText]of [['LSN',String(selected+1).padStart(6,'0')],['KEY BYTES',encoder.encode(key).length],['VALUE BYTES',encoder.encode(value).length],['KEY',key],['VALUE',value]]){
+ const field=document.createElement('div'),title=document.createElement('small'),content=document.createElement('strong');title.textContent=label;content.textContent=valueText;field.append(title,content);detail.append(field);
+}
+document.querySelector('#count').textContent=`${records.length} records · tail LSN ${String(records.length).padStart(6,'0')}`;
+
+}
+let moved=false;
+svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;moved=false;drag={id:e.pointerId,x:e.clientX,start:e.clientX};});
+svg.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;if(Math.abs(e.clientX-drag.start)>4){moved=true;angle+=(e.clientX-drag.x)*.008;svg.classList.add('dragging');render();}drag.x=e.clientX;});
+function stop(){drag=null;svg.classList.remove('dragging');}window.addEventListener('pointerup',stop);svg.addEventListener('pointercancel',stop);
+svg.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();angle+=e.key==='ArrowRight'?.12:-.12;render();});
+document.querySelector('#append').addEventListener('click',()=>{
+ const template=changes[next%changes.length];
+ records.push(next<changes.length?[...template]:[`ticket:${45+next-changes.length}`,['available','held','sold'][next%3]]);
+ next++;selected=records.length-1;render();
+});
+document.querySelector('#reset').addEventListener('click',()=>{records=initial.map(r=>[...r]);next=0;selected=3;angle=.35;render();});
+render();
+})();
+</script></body></html>

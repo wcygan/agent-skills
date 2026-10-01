@@ -1,0 +1,166 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Shared queue · Interactive 3D worker pool</title>
+<!-- Original offline 3D reference. World-space cuboids and depth sorting project into SVG.
+FIFO jobs move through produced, inbound, queued, outbound, processing, completed states.
+Workers reserve a job at dispatch. Bounded backlog applies producer backpressure. -->
+<style>
+:root {
+  color-scheme: dark;
+  --canvas: #111111; --panel: #1c1c1c;
+  --border: rgba(255,255,255,.14); --border-node: rgba(255,255,255,.22);
+  --track: rgba(255,255,255,.10);
+  --text: #fafafa; --text-muted: rgba(250,250,250,.60);
+  --text-dim: rgba(250,250,250,.40);
+  --accent: #f35815; --good: #27b648; --warn: #d19f03;
+  --bad: #ff455d; --info: #1e9de7;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--canvas); color: var(--text);
+  font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+main { max-width: 860px; margin: auto; padding: 56px 28px 32px; }
+.eyebrow { color: var(--text-muted); font-size: 11px; letter-spacing: .12em; }
+h1 { margin: 12px 0; font-size: clamp(22px, 4vw, 30px); font-weight: 500; letter-spacing: -.04em; }
+header p { color: var(--text-muted); max-width: 62ch; margin: 0; }
+figure { margin: 32px 0 0; }
+svg { display: block; width: 100%; height: auto; font: inherit; }
+.node { fill: var(--panel); stroke: var(--border-node); stroke-width: 1.5; }
+.primary { stroke: var(--accent); }
+.wire { fill: none; stroke: var(--info); stroke-width: 1.5; }
+.label { fill: var(--text); font-size: 19px; }
+.meta { fill: var(--text-muted); font-size: 13px; }
+.role { fill: var(--accent); font-size: 12px; letter-spacing: 1px; }
+.caption { fill: var(--info); font-size: 12px; }
+figcaption { border-top: 1px solid var(--border); padding-top: 18px;
+  color: var(--text-muted); max-width: 100%; }
+figcaption strong { color: var(--text); font-weight: 500; }
+footer { margin-top: 24px; color: var(--text-muted); font-size: 11px; }
+@media (max-width: 540px) { main { padding: 28px 16px; } }
+
+.platform { fill: var(--panel); stroke: var(--border); stroke-width: 1; }
+.grid { fill: none; stroke: var(--track); stroke-width: 1; }
+.database-body { fill: var(--panel); stroke: var(--border-node); stroke-width: 1.5; }
+.database-top { fill: var(--canvas); stroke: var(--border-node); stroke-width: 1.5; }
+.database-ring { fill: none; stroke: var(--border-node); stroke-width: 1; }
+.primary-model .database-body, .primary-model .database-top, .primary-model .database-ring { stroke: var(--accent); }
+
+svg { touch-action: pan-y; cursor: grab; user-select: none; }
+svg.dragging { cursor: grabbing; }
+.controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 16px 0; }
+button { font: inherit; background: var(--panel); color: var(--text); border: 1px solid var(--border-node); padding: 8px 12px; cursor: pointer; }
+button:focus-visible, svg:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.hint { color: var(--text-muted); }
+
+main { max-width: 1040px; padding-top: 32px; }
+figure { margin-top: 16px; }
+.meta { fill: var(--text); font-size: 13px; }
+.grid { stroke: var(--border); opacity: .45; }
+.status-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; margin: 16px 0; }
+.worker-card { background: var(--panel); border: 1px solid var(--border-node); padding: 12px; }
+.worker-card strong { display: block; font-weight: 500; }
+.worker-card span { display: block; color: var(--text-muted); margin-top: 4px; font-variant-numeric: tabular-nums; }
+.worker-card.busy { border-color: var(--warn); }
+.worker-card.completed { border-color: var(--good); }
+.legend { display: flex; flex-wrap: wrap; gap: 18px; color: var(--text-muted); margin: 12px 0; }
+.legend i { display: inline-block; width: 8px; height: 8px; margin-right: 7px; background: var(--info); }
+.legend .producer { background: var(--accent); }
+.legend .busy { background: var(--warn); }
+.legend .complete { background: var(--good); }
+@media(max-width:540px) { .status-grid { grid-template-columns: 1fr; } }
+
+.remaining-track { height: 5px; background: var(--track); margin-top: 12px; overflow: hidden; }
+.remaining-fill { height: 100%; background: var(--warn); transform: scaleX(0); transform-origin: left center; }
+</style></head><body><main><header><div class="eyebrow">ASYNC PROCESSING / INTERACTIVE 3D</div><h1>One shared queue. Three busy workers.</h1><p>A producer adds a job every 0.8 seconds. Each available worker takes the oldest queued job, processes it, then returns for another.</p></header><figure>
+<svg id="scene" viewBox="0 0 800 440" tabindex="0" role="img" aria-labelledby="scene-title scene-description"><title id="scene-title">Orbitable producer, queue, and three-worker simulation</title><desc id="scene-description">Drag horizontally or use arrow keys to orbit. Blue jobs travel from the producer to the shared queue, then to available workers. Yellow workers are processing jobs; green marks completion for half a second.</desc><g id="world"></g></svg>
+<div class="legend"><span><i class="producer"></i>Producer</span><span><i></i>Queued / moving jobs</span><span><i class="busy"></i>Processing</span><span><i class="complete"></i>Completed</span></div>
+<div class="status-grid" aria-label="Worker processing status"><div id="worker-0" class="worker-card"><strong>worker 01</strong><span>Available</span><div class="remaining-track" aria-hidden="true"><div class="remaining-fill"></div></div></div><div id="worker-1" class="worker-card"><strong>worker 02</strong><span>Available</span><div class="remaining-track" aria-hidden="true"><div class="remaining-fill"></div></div></div><div id="worker-2" class="worker-card"><strong>worker 03</strong><span>Available</span><div class="remaining-track" aria-hidden="true"><div class="remaining-fill"></div></div></div></div><div class="controls"><button id="pause" type="button" aria-pressed="false">Pause simulation</button><button id="reset" type="button">Reset simulation</button><span class="hint">Drag to orbit · ← / → keys</span></div><p id="stats" class="hint" aria-live="off"></p>
+<figcaption><strong>Jobs keep moving; each worker handles one at a time.</strong> Blue marks queued and in-flight jobs; yellow marks processing, and green marks completion for 0.5 seconds. The queue holds at most 12 pending/inbound jobs, then slows the producer. This simplified simulation covers successful processing; real queues also need acknowledgments, retries, and duplicate handling.</figcaption></figure><footer>Offline · shared dark palette · reduced motion starts paused</footer></main><script>
+(() => {
+const svg=document.querySelector('#scene'),world=document.querySelector('#world'),pause=document.querySelector('#pause'),stats=document.querySelector('#stats');
+const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+let angle=0,playing=!reduced.matches,last=null,time=0,spawn=0,nextId=1,done=0,drag=null;
+const queue=[],incoming=[],outgoing=[];
+const producer={x:-235,z:-90},hub={x:0,z:0};
+const workers=[{x:190,z:-150},{x:225,z:0},{x:190,z:150}].map((p,i)=>({...p,name:`worker 0${i+1}`,job:null,remaining:0,completed:0}));
+const ns='http://www.w3.org/2000/svg';
+function el(tag,a,parent=world){const e=document.createElementNS(ns,tag);for(const[k,v]of Object.entries(a))e.setAttribute(k,v);parent.append(e);return e;}
+function p(x,y,z){const d=x*Math.sin(angle)+z*Math.cos(angle);return{x:400+(x*Math.cos(angle)-z*Math.sin(angle))*.94,y:215+d*.46-y*.85,depth:d};}
+function pts(a){return a.map(v=>`${v.x},${v.y}`).join(' ');}
+function poly(a,attrs){el('polygon',{points:pts(a),...attrs});}
+function line(a,attrs){el('polyline',{points:pts(a),fill:'none',...attrs});}
+function label(t,x,y,cls='meta'){const e=el('text',{x,y,class:cls,'text-anchor':'middle'});e.textContent=t;}
+// Cuboids have real world-space faces; rotate the camera, not flat screen shapes.
+function box(x,z,w,d,h,color='var(--border-node)',base=0){
+ const v=(dx,y,dz)=>p(x+dx,base+y,z+dz);
+ const faces=[{a:[v(-w/2,0,-d/2),v(w/2,0,-d/2),v(w/2,h,-d/2),v(-w/2,h,-d/2)],depth:-d/2*Math.cos(angle)},
+ {a:[v(-w/2,0,d/2),v(w/2,0,d/2),v(w/2,h,d/2),v(-w/2,h,d/2)],depth:d/2*Math.cos(angle)},
+ {a:[v(-w/2,0,-d/2),v(-w/2,0,d/2),v(-w/2,h,d/2),v(-w/2,h,-d/2)],depth:-w/2*Math.sin(angle)},
+ {a:[v(w/2,0,-d/2),v(w/2,0,d/2),v(w/2,h,d/2),v(w/2,h,-d/2)],depth:w/2*Math.sin(angle)}];
+ faces.sort((a,b)=>a.depth-b.depth).forEach(f=>poly(f.a,{fill:'var(--panel)',stroke:color,'stroke-width':1.6}));
+ poly([v(-w/2,h,-d/2),v(w/2,h,-d/2),v(w/2,h,d/2),v(-w/2,h,d/2)],{fill:'var(--canvas)',stroke:color,'stroke-width':1.6});
+}
+function reset(){time=0;spawn=0;nextId=1;done=0;queue.length=0;incoming.length=0;outgoing.length=0;workers.forEach(w=>{w.job=null;w.remaining=0;w.completed=0;});for(let i=0;i<5;i++)queue.push(nextId++);angle=0;render();}
+function advance(dt){
+ time+=dt;spawn+=dt;
+ if(spawn>=.8&&queue.length+incoming.length<12){spawn-=.8;incoming.push({id:nextId++,t:0});}
+ else if(spawn>.8)spawn=.8;
+ for(let i=incoming.length-1;i>=0;i--){incoming[i].t+=dt/1.1;if(incoming[i].t>=1){queue.push(incoming[i].id);incoming.splice(i,1);}}
+ for(const w of workers){
+ if(w.completed>0){w.completed=Math.max(0,w.completed-dt);if(w.completed===0)w.job=null;}
+ else if(w.job!==null&&w.remaining>0){w.remaining-=dt;if(w.remaining<=0){w.remaining=0;w.completed=.5;done++;}}
+ }
+ for(let i=outgoing.length-1;i>=0;i--){const j=outgoing[i];j.t+=dt/1.2;if(j.t>=1){workers[j.worker].remaining=2.2+j.worker*.35;outgoing.splice(i,1);}}
+ for(let i=0;i<workers.length;i++){const w=workers[i];if(w.job===null&&queue.length){w.job=queue.shift();outgoing.push({id:w.job,worker:i,t:0});}}
+}
+function render(){
+ world.replaceChildren();poly([p(-320,0,-240),p(320,0,-240),p(320,0,240),p(-320,0,240)],{class:'platform'});
+ for(let a=-200;a<=200;a+=100){line([p(a,0,-240),p(a,0,240)],{class:'grid'});line([p(-320,0,a),p(320,0,a)],{class:'grid'});}
+ line([p(producer.x,35,producer.z),p(-90,35,0)],{class:'wire'});
+ for(const w of workers)line([p(90,35,0),p(w.x,35,w.z)],{class:'wire'});
+ const objects=[];
+ function add(x,z,f){objects.push({depth:p(x,0,z).depth,draw:f});}
+ add(producer.x,producer.z,()=>box(producer.x,producer.z,75,65,90,'var(--accent)'));
+ // The tray lies below every job. Paint it first, then depth-sort each job
+ // independently with workers and traveling jobs (not by queue insertion order).
+ box(0,0,180,65,20);
+ for(let i=0;i<queue.length;i++) {
+   const x=-72+(i%6)*28,z=-15+Math.floor(i/6)*30;
+   add(x,z,()=>box(x,z,20,20,24,'var(--info)',20));
+ }
+ for(let i=0;i<workers.length;i++) {
+ const w=workers[i];
+ add(w.x,w.z,()=>{
+   box(w.x,w.z,70,65,95,w.completed>0?'var(--good)':w.remaining>0?'var(--warn)':'var(--border-node)');
+   // Affine projection attaches the etching to the actual horizontal top face.
+   const top=p(w.x,95,w.z);
+   const id=el('text',{'text-anchor':'middle','dominant-baseline':'central',fill:'var(--text)','font-size':24,'font-weight':500,
+     transform:`matrix(${Math.cos(angle)*.94} ${Math.sin(angle)*.46} ${-Math.sin(angle)*.94} ${Math.cos(angle)*.46} ${top.x} ${top.y})`});
+   id.textContent=String(i+1).padStart(2,'0');
+ });
+}
+ for(const j of incoming){const x=producer.x+(-90-producer.x)*j.t,z=producer.z*(1-j.t);add(x,z,()=>box(x,z,15,15,15,'var(--info)',35));}
+ for(const j of outgoing){const w=workers[j.worker],x=90+(w.x-90)*j.t,z=w.z*j.t;add(x,z,()=>box(x,z,15,15,15,'var(--info)',35));}
+ objects.sort((a,b)=>a.depth-b.depth).forEach(o=>o.draw());
+ const a=p(producer.x,0,producer.z);label('PRODUCER',a.x,a.y+40,'role');
+ const q=p(0,0,0);label('SHARED QUEUE',q.x,q.y+62,'role');label(`${queue.length} waiting · FIFO`,q.x,q.y+84);
+ for(let i=0;i<workers.length;i++) {
+ const w=workers[i];
+ const card=document.querySelector(`#worker-${i}`);
+ card.classList.toggle('busy',w.remaining>0);
+ card.classList.toggle('completed',w.completed>0);
+ const fraction=Math.max(0,Math.min(1,w.remaining/(2.2+i*.35)));
+ card.querySelector('.remaining-fill').style.transform=`scaleX(${fraction})`;
+ card.querySelector('span').textContent=w.completed>0?`Job ${w.job} · completed`:w.remaining>0?`Job ${w.job} · ${Math.max(0,w.remaining).toFixed(1)}s remaining`:w.job!==null?`Receiving job ${w.job}`:'Available';
+}
+ stats.textContent=`${queue.length} queued · ${incoming.length+outgoing.length} in flight · ${done} completed`;
+}
+function control(){pause.textContent=playing?'Pause simulation':'Play simulation';pause.setAttribute('aria-pressed',String(!playing));}
+pause.addEventListener('click',()=>{playing=!playing;control();});
+document.querySelector('#reset').addEventListener('click',reset);
+reduced.addEventListener('change',()=>{playing=!reduced.matches;control();});
+svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointerId,x:e.clientX};svg.setPointerCapture(e.pointerId);svg.classList.add('dragging');});
+svg.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;angle+=(e.clientX-drag.x)*.008;drag.x=e.clientX;render();});
+function stop(){drag=null;svg.classList.remove('dragging');}for(const event of ['pointerup','pointercancel','lostpointercapture'])svg.addEventListener(event,stop);
+svg.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();angle+=e.key==='ArrowRight'?.12:-.12;render();});
+function frame(now){if(last!==null&&playing&&!document.hidden){advance(Math.min((now-last)/1000,.05));render();}last=now;requestAnimationFrame(frame);}
+reset();control();requestAnimationFrame(frame);
+})();
+</script></body></html>

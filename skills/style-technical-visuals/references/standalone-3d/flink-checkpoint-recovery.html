@@ -1,0 +1,142 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Flink · 3D checkpoint recovery</title><style>
+:root {
+  color-scheme: dark;
+  --canvas: #111111; --panel: #1c1c1c;
+  --border: rgba(255,255,255,.14); --border-node: rgba(255,255,255,.22);
+  --track: rgba(255,255,255,.10);
+  --text: #fafafa; --text-muted: rgba(250,250,250,.60);
+  --text-dim: rgba(250,250,250,.40);
+  --accent: #f35815; --good: #27b648; --warn: #d19f03;
+  --bad: #ff455d; --info: #1e9de7;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--canvas); color: var(--text);
+  font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+main { max-width: 860px; margin: auto; padding: 56px 28px 32px; }
+.eyebrow { color: var(--text-muted); font-size: 11px; letter-spacing: .12em; }
+h1 { margin: 12px 0; font-size: clamp(22px, 4vw, 30px); font-weight: 500; letter-spacing: -.04em; }
+header p { color: var(--text-muted); max-width: 62ch; margin: 0; }
+figure { margin: 32px 0 0; }
+svg { display: block; width: 100%; height: auto; font: inherit; }
+.node { fill: var(--panel); stroke: var(--border-node); stroke-width: 1.5; }
+.primary { stroke: var(--accent); }
+.wire { fill: none; stroke: var(--info); stroke-width: 1.5; }
+.label { fill: var(--text); font-size: 19px; }
+.meta { fill: var(--text-muted); font-size: 13px; }
+.role { fill: var(--accent); font-size: 12px; letter-spacing: 1px; }
+.caption { fill: var(--info); font-size: 12px; }
+figcaption { border-top: 1px solid var(--border); padding-top: 18px;
+  color: var(--text-muted); max-width: 100%; }
+figcaption strong { color: var(--text); font-weight: 500; }
+footer { margin-top: 24px; color: var(--text-muted); font-size: 11px; }
+@media (max-width: 540px) { main { padding: 28px 16px; } }
+
+.platform { fill: var(--panel); stroke: var(--border); stroke-width: 1; }
+.grid { fill: none; stroke: var(--track); stroke-width: 1; }
+.database-body { fill: var(--panel); stroke: var(--border-node); stroke-width: 1.5; }
+.database-top { fill: var(--canvas); stroke: var(--border-node); stroke-width: 1.5; }
+.database-ring { fill: none; stroke: var(--border-node); stroke-width: 1; }
+.primary-model .database-body, .primary-model .database-top, .primary-model .database-ring { stroke: var(--accent); }
+
+svg { touch-action: pan-y; cursor: grab; user-select: none; }
+svg.dragging { cursor: grabbing; }
+.controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 16px 0; }
+button { font: inherit; background: var(--panel); color: var(--text); border: 1px solid var(--border-node); padding: 8px 12px; cursor: pointer; }
+button:focus-visible, svg:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.hint { color: var(--text-muted); }
+
+main { max-width:1100px; } .status { min-height:4em; } .metrics { display:grid; grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0; } .metrics div { padding:12px;background:var(--panel);border:1px solid var(--border); } .metrics span { display:block;color:var(--text-muted);font-size:11px; } .metrics strong { font-size:22px;font-weight:500; } .references {margin-top:24px;border-top:1px solid var(--border);padding-top:16px;} .references h2 {font-size:18px;} .references h3 {font-size:14px;} pre {overflow:auto;padding:16px;background:var(--panel);font-size:12px;} @media(max-width:540px){.metrics {grid-template-columns:repeat(2,1fr);}}
+</style></head><body><main><header><div class="eyebrow">APACHE FLINK / INTERACTIVE 3D</div><h1>Replay the work. Keep the effect once.</h1><p>Checkpoints restore the source and counter. The database retains committed rows and ignores repeated event IDs.</p></header><p id="status" class="status"></p><figure><svg id="scene" viewBox="0 0 1000 580" tabindex="0" role="img" aria-labelledby="title desc"><title id="title">Orbitable Flink checkpoint and recovery demo</title><desc id="desc">Three machines process events. Saved checkpoint blocks restore source position and counter state after failure. Five database rows survive, and duplicate writes are ignored. Drag horizontally or use arrow keys to orbit.</desc><g id="world"></g></svg><div class="metrics"><div><span>Source position</span><strong id="position">0</strong></div><div><span>Operator count</span><strong id="count">0</strong></div><div><span>Write attempts</span><strong id="attempts">0</strong></div><div><span>Committed rows</span><strong id="rows">0</strong></div></div><div class="controls"><button id="pause">Pause demo</button><button id="step">Step phase</button><button id="reset">Reset demo</button><button id="view">Reset view</button><span class="hint">Drag to orbit · ← / →</span></div><p id="snapshot" class="hint"></p><figcaption><strong>Checkpoint state rewinds; committed database rows stay.</strong> Blue input disappears inside the counter, which glows yellow while processing. Green output reaches the database. Replayed event IDs flash orange and create no extra row. Yellow checkpoint blocks save source position and count; red marks the crash. This is an idempotent sink, not an XA transaction simulation.</figcaption></figure><section class="references" aria-labelledby="reference-title">
+<h2 id="reference-title">Real database sink patterns</h2>
+<h3>PostgreSQL: ignore an event that was already written</h3>
+<p>This minimal SQL example matches the animation. A custom Flink JDBC sink can bind the stable event ID and payload into the parameterized INSERT. The primary key is enforced by PostgreSQL; the same ID arriving again creates no additional row. This is an example statement, not a running database connection.</p>
+<pre><code>CREATE TABLE processed_events (
+  event_id BIGINT PRIMARY KEY,
+  payload TEXT NOT NULL
+);
+
+-- SQL supplied to a JDBC prepared statement:
+INSERT INTO processed_events (event_id, payload)
+VALUES (?, ?)
+ON CONFLICT (event_id) DO NOTHING;</code></pre>
+<p>Use a globally stable ID for each logical event. This pattern suits immutable events: reusing an ID with a different payload keeps the original row. If a separate business update is needed, commit its effect and the deduplication record in the same database transaction. <a href="https://www.postgresql.org/docs/current/sql-insert.html#SQL-ON-CONFLICT">PostgreSQL: ON CONFLICT reference and examples</a>.</p>
+<h3>Flink SQL JDBC: idempotent upserts for PostgreSQL or MySQL</h3>
+<p>Flink’s JDBC table sink uses primary-key upserts. PostgreSQL uses ON CONFLICT DO UPDATE; MySQL uses ON DUPLICATE KEY UPDATE. Reapplying the same row values preserves the same result. This differs from the demo’s insert-and-ignore policy. Declare the key in Flink and enforce it in the actual database; version checks are needed if older updates can overwrite newer values. <a href="https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/connectors/table/jdbc/#idempotent-writes">Official JDBC idempotent-write explanation</a> and <a href="https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/connectors/table/jdbc/#how-to-create-a-jdbc-table">MySQL table configuration example</a>. Check connector compatibility for the Flink release you use.</p>
+<h3>Alternative: checkpoint-coordinated XA transactions</h3>
+<p>Flink’s DataStream JDBC exactly-once sink uses XA transactions instead of duplicate suppression. Its documentation includes PostgreSQL and MySQL data-source examples, per-transaction connections, and database configuration requirements. It also requires disabling JDBC execution retries for the documented guarantee. This is a separate approach from the sink animated above. <a href="https://nightlies.apache.org/flink/flink-docs-master/docs/connectors/datastream/jdbc/#jdbcsinkexactlyoncesink">Exactly-once JDBC sink</a> · <a href="https://nightlies.apache.org/flink/flink-docs-master/docs/connectors/datastream/jdbc/#xadatasource-examples">PostgreSQL and MySQL XA examples</a> (development documentation; match your installed connector version).</p>
+</section><footer>Offline 3D projection · deterministic 42-second story · reduced motion starts paused.<br>Real jobs schedule periodic checkpoints; this story shows two. Database deduplication and any separate business effect must commit atomically.</footer></main><script>
+(() => {
+const svg=document.querySelector('#scene'),world=document.querySelector('#world'),button=document.querySelector('#pause'),status=document.querySelector('#status'),snap=document.querySelector('#snapshot');
+const reduced=matchMedia('(prefers-reduced-motion: reduce)'),ns='http://www.w3.org/2000/svg';
+let elapsed=0,last=null,playing=!reduced.matches,angle=.18,drag=null;
+const phases=[
+ {until:6,name:'Process events 1–3',message:'Each stable event ID creates one committed database row.'},
+ {until:12,name:'Checkpoint 1',message:'The yellow control marker follows event 3. Source position and operator state are saved; completion establishes the recovery point.'},
+ {until:18,name:'Process events 4–5',message:'These writes commit immediately. They are after checkpoint 1 and will be replayed if the job fails.'},
+ {until:22,name:'Middle stage crashes',message:'The database already has all five rows. A checkpoint does not roll back these external writes.'},
+ {until:28,name:'Restore checkpoint 1',message:'Source position and count return to 3. Database rows remain at 5. Replay starts with event 4.'},
+ {until:36,name:'Replay events 4–5',message:'The count advances again. The database sees the same event IDs and ignores duplicate inserts.'},
+ {until:42,name:'Checkpoint 2 completes',message:'Recovery is complete: count 5, seven write attempts, five committed rows, two duplicates ignored.'}
+];
+
+function el(tag,a){const e=document.createElementNS(ns,tag);for(const[k,v]of Object.entries(a))e.setAttribute(k,v);world.append(e);return e;}
+function project(x,y,z){const depth=x*Math.sin(angle)+z*Math.cos(angle);return {x:500+x*Math.cos(angle)-z*Math.sin(angle),y:285+depth*.48-y*.85,depth};}
+function pts(v){return v.map(p=>`${p.x},${p.y}`).join(' ');}
+function line(v,color){el('polyline',{points:pts(v.map(p=>project(...p))),fill:'none',stroke:color,'stroke-width':2});}
+function label(value,x,y,z,color='var(--text)',size=13){const p=project(x,y,z),e=el('text',{x:p.x,y:p.y,'text-anchor':'middle',fill:color,'font-size':size});e.textContent=value;}
+function box(objects,x,y,z,w,h,d,color,tag){
+ const v=[[x-w/2,y,z-d/2],[x+w/2,y,z-d/2],[x+w/2,y,z+d/2],[x-w/2,y,z+d/2],[x-w/2,y+h,z-d/2],[x+w/2,y+h,z-d/2],[x+w/2,y+h,z+d/2],[x-w/2,y+h,z+d/2]].map(p=>project(...p));
+ for(const f of [[0,1,5,4],[1,2,6,5],[2,3,7,6],[3,0,4,7],[4,5,6,7]]){
+  // Back faces are culled; every visible face shares the global depth sort.
+  const a=v[f[0]],b=v[f[1]],c=v[f[2]];
+  if((b.x-a.x)*(c.y-a.y)-(b.y-a.y)*(c.x-a.x)<=0)continue;
+  objects.push({depth:f.reduce((n,i)=>n+v[i].depth,0)/4,draw:()=>el('polygon',{points:pts(f.map(i=>v[i])),fill:f[0]===4?'var(--canvas)':'var(--panel)',stroke:color,'stroke-width':1.6})});
+ }
+ if(tag)objects.push({depth:project(x,y+h,z).depth+.01,draw:()=>label(tag,x,y+h+6,z,'var(--text)',14)});
+}
+function render(){
+ const found=phases.findIndex(p=>elapsed<p.until),index=found<0?6:found,p=phases[index],start=index?phases[index-1].until:0,progress=Math.min(1,(elapsed-start)/(p.until-start));
+ const moving=[0,2,5].includes(index),n=index===0?3:2,delivered=moving?Math.min(n,Math.floor(progress*n)):0,cycle=Math.min(n-1,Math.floor(progress*n)),local=(progress*n)%1;
+ const count=index===0?delivered:index===1?3:index===2?3+delivered:index===3?5:index===4?3:index===5?3+delivered:5,rows=index===0?delivered:index===1?3:index===2?3+delivered:5,duplicates=index===5?delivered:index===6?2:0;
+ world.replaceChildren();
+ el('polygon',{points:pts([[-440,0,-150],[440,0,-150],[440,0,280],[-440,0,280]].map(p=>project(...p))),fill:'var(--panel)',stroke:'var(--border)'});
+ for(let x=-400;x<=400;x+=100)line([[x,0,-150],[x,0,280]],'var(--track)');
+ for(let z=-100;z<=250;z+=70)line([[-440,0,z],[440,0,z]],'var(--track)');
+ line([[-250,60,0],[-70,60,0]],'var(--info)');line([[70,60,0],[250,60,0]],'var(--info)');
+ const objects=[],processing=moving&&local>=.28&&local<.65;
+ box(objects,-320,0,0,140,120,90,'var(--accent)','SOURCE');
+ box(objects,0,0,0,140,120,90,index===3?'var(--bad)':processing?'var(--warn)':index===4?'var(--warn)':'var(--border-node)','COUNT');
+ box(objects,320,0,0,140,120,90,index===5?'var(--accent)':'var(--good)','DATABASE');
+ if(moving&&local<.28)box(objects,-250+(local/.28)*180,51,0,18,18,18,'var(--info)');
+ if(moving&&local>=.65)box(objects,70+((local-.65)/.35)*180,51,0,18,18,18,'var(--good)');
+ for(const x of [-320,0]){
+  line([[x,0,48],[x,0,125]],'var(--warn)');
+  box(objects,x,0,165,140,18,75,index>=1?'var(--warn)':'var(--border-node)',index>=1?`CP ${index===6&&progress>.7?2:1}: ${index===6&&progress>.7?5:3}`:'NO CHECKPOINT');
+ }
+ if(index===1||index===6){const segment=Math.min(1,Math.floor(progress*2)),t=(progress*2)%1;box(objects,(segment===0?-250:70)+t*180,47,0,7,26,26,'var(--warn)');}
+ for(let id=1;id<=5;id++){
+  const exists=id<=rows,duplicate=index===5&&id>=4&&id<4+duplicates||index===6&&id>=4;
+  box(objects,155+(id-1)*53,0,190,42,exists?35:5,60,duplicate?'var(--accent)':exists?'var(--good)':'var(--border-node)',`#${id}`);
+ }
+ objects.sort((a,b)=>a.depth-b.depth).forEach(o=>o.draw());
+ label(index===3?'CRASHED':`count ${count}`,0,45,-48,index===3?'var(--bad)':'var(--text)',15);
+ if(processing){const a=project(-45,30,-48),b=project(-45+90*((local-.28)/.37),30,-48);el('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,stroke:'var(--warn)','stroke-width':5});}
+ label('SAVED RECOVERY STATE',-160,0,250,'var(--warn)',12);
+ label(index===5?'DUPLICATES IGNORED':'COMMITTED ROWS SURVIVE',260,0,270,index===5?'var(--accent)':'var(--good)',12);
+ status.textContent=`${index+1} / 7 · ${p.name}. ${p.message}`;
+ for(const [id,value] of [['position',count],['count',count],['attempts',rows+duplicates],['rows',rows]])document.querySelector('#'+id).textContent=value;
+ snap.textContent=index===0?'No completed checkpoint.':index===1?'Checkpoint 1 is in progress; completion establishes the recovery point.':index===6?`Five rows · seven attempts · two duplicates ignored. ${elapsed>=42?'Checkpoint 2 completed.':'Checkpoint 2 in progress.'}`:'Recover from checkpoint 1: position 3 and count 3. Replay begins at event 4; the database keeps its committed rows.';
+ if(elapsed>=42)playing=false;
+ button.textContent=elapsed>=42?'Replay demo':playing?'Pause demo':'Resume demo';button.setAttribute('aria-pressed',String(!playing));
+}
+button.addEventListener('click',()=>{if(elapsed>=42)elapsed=0;playing=!playing;render();});
+document.querySelector('#step').addEventListener('click',()=>{playing=false;elapsed=phases.find(p=>p.until>elapsed+.01)?.until??42;render();});
+document.querySelector('#reset').addEventListener('click',()=>{elapsed=0;playing=!reduced.matches;render();});
+document.querySelector('#view').addEventListener('click',()=>{angle=.18;render();});
+svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointerId,x:e.clientX};svg.setPointerCapture(e.pointerId);svg.classList.add('dragging');});
+svg.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;angle+=(e.clientX-drag.x)*.008;drag.x=e.clientX;render();});
+function stop(){drag=null;svg.classList.remove('dragging');}for(const event of ['pointerup','pointercancel','lostpointercapture'])svg.addEventListener(event,stop);
+svg.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();angle+=e.key==='ArrowRight'?.12:-.12;render();});
+function frame(now){if(last!==null&&playing&&!document.hidden){elapsed=Math.min(42,elapsed+Math.min((now-last)/1000,.05));render();}last=now;requestAnimationFrame(frame);}
+render();requestAnimationFrame(frame);
+})();</script></body></html>

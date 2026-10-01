@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GeoDNS · Regional data center selection</title>
+<!-- Original standalone reference. DNS lookup and application traffic use
+     separate routes. This illustrative policy maps a European location to
+     Frankfurt; geographic proximity does not guarantee minimum latency.
+     Sources: https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-edns0.html
+     https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-geo.html -->
+<style>
+:root {
+  color-scheme: dark;
+  --canvas: #111111; --panel: #1c1c1c;
+  --border: rgba(255,255,255,.14); --border-node: rgba(255,255,255,.22);
+  --track: rgba(255,255,255,.10);
+  --text: #fafafa; --text-muted: rgba(250,250,250,.60);
+  --text-dim: rgba(250,250,250,.40);
+  --accent: #f35815; --good: #27b648; --warn: #d19f03;
+  --bad: #ff455d; --info: #1e9de7;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--canvas); color: var(--text);
+  font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+main { max-width: 860px; margin: auto; padding: 56px 28px 32px; }
+.eyebrow { color: var(--text-muted); font-size: 11px; letter-spacing: .12em; }
+h1 { margin: 12px 0; font-size: clamp(22px, 4vw, 30px); font-weight: 500; letter-spacing: -.04em; }
+header p { color: var(--text-muted); max-width: 62ch; margin: 0; }
+figure { margin: 32px 0 0; }
+svg { display: block; width: 100%; height: auto; font: inherit; }
+.node { fill: var(--panel); stroke: var(--border-node); stroke-width: 1.5; }
+.geodns { stroke: var(--accent); }
+.wire { fill: none; stroke: var(--info); stroke-width: 1.5; }
+.label { fill: var(--text); font-size: 19px; }
+.meta { fill: var(--text-muted); font-size: 13px; }
+.role { fill: var(--accent); font-size: 12px; letter-spacing: 1px; }
+.caption { fill: var(--info); font-size: 12px; }
+figcaption { border-top: 1px solid var(--border); padding-top: 18px;
+  color: var(--text-muted); max-width: 100%; }
+figcaption strong { color: var(--text); font-weight: 500; }
+footer { margin-top: 24px; color: var(--text-muted); font-size: 11px; }
+@media (max-width: 540px) { main { padding: 28px 16px; } }
+
+.connection { fill: none; stroke: var(--good); stroke-width: 1.5; }
+.selected { stroke: var(--good); }
+.connection-label { fill: var(--good); font-size: 12px; }
+a { color: var(--text-muted); text-underline-offset: 3px; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+</style>
+</head>
+<body>
+<main>
+<header>
+<div class="eyebrow">GEO DNS / 05</div>
+<h1>One hostname. Regional answers.</h1>
+<p>A geographic DNS policy returns an address for a nearby data center. The user then connects directly to that address.</p>
+</header>
+<figure>
+<svg viewBox="0 0 800 550" role="img" aria-labelledby="geo-title geo-description">
+<title id="geo-title">GeoDNS selects a nearby data center</title>
+<desc id="geo-description">A user in Europe queries a recursive resolver for app.example. On a cache miss, the resolver queries authoritative GeoDNS. An illustrative geographic policy selects Frankfurt and returns its address through the resolver to the user. The user connects directly to Frankfurt, rather than sending application traffic through DNS. Virginia and Singapore are alternative data centers.</desc>
+<defs>
+<marker id="dns-arrow" viewBox="0 -4 8 8" refX="8" refY="0" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+<path d="M0 -3 L8 0 L0 3" fill="none" stroke="var(--info)" stroke-width="1.3"/>
+</marker>
+<marker id="connection-arrow" viewBox="0 -4 8 8" refX="8" refY="0" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+<path d="M0 -3 L8 0 L0 3" fill="none" stroke="var(--good)" stroke-width="1.3"/>
+</marker>
+<g id="data-center">
+<rect width="200" height="130" rx="4"/>
+<path d="M0 28 H200 M16 14 H36 M44 14 H64" fill="none"/>
+</g>
+</defs>
+<!-- Top row bounds: (20/300/580,60,200,110). Ports are face centers.
+     DNS answer returns via resolver; HTTPS uses an independent left corridor. -->
+<path class="wire" d="M220 115 H300" marker-end="url(#dns-arrow)"/>
+<path class="wire" d="M500 115 H580" marker-end="url(#dns-arrow)"/>
+<text class="caption" x="260" y="98" text-anchor="middle">1 · query</text>
+<text class="caption" x="540" y="98" text-anchor="middle">2 · query</text>
+<path class="wire" d="M680 170 V230 H400 V170" marker-end="url(#dns-arrow)"/>
+<text class="caption" x="540" y="218" text-anchor="middle">3 · Frankfurt IP</text>
+<path class="wire" d="M400 170 V250 H120 V170" marker-end="url(#dns-arrow)"/>
+<text class="caption" x="260" y="238" text-anchor="middle">4 · DNS answer</text>
+<path class="connection" d="M20 115 H8 V330 H400 V380" marker-end="url(#connection-arrow)"/>
+<text class="connection-label" x="35" y="318">5 · HTTPS directly to selected data center</text>
+<rect class="node" x="20" y="60" width="200" height="110" rx="4"/>
+<text class="label" x="120" y="100" text-anchor="middle">user in Europe</text>
+<text class="meta" x="120" y="130" text-anchor="middle">app.example</text>
+<rect class="node" x="300" y="60" width="200" height="110" rx="4"/>
+<text class="label" x="400" y="100" text-anchor="middle">DNS resolver</text>
+<text class="meta" x="400" y="130" text-anchor="middle">cache miss shown</text>
+<rect class="node geodns" x="580" y="60" width="200" height="110" rx="4"/>
+<text class="role" x="680" y="88" text-anchor="middle">AUTHORITATIVE</text>
+<text class="label" x="680" y="119" text-anchor="middle">GeoDNS</text>
+<text class="meta" x="680" y="147" text-anchor="middle">Europe → Frankfurt</text>
+<g transform="translate(30 380)">
+<use href="#data-center" class="node"/>
+<text class="meta" x="100" y="60" text-anchor="middle">DATA CENTER</text>
+<text class="label" x="100" y="88" text-anchor="middle">Virginia</text>
+<text class="meta" x="100" y="113" text-anchor="middle">North America</text>
+</g>
+<g transform="translate(300 380)">
+<use href="#data-center" class="node selected"/>
+<text class="meta" x="100" y="60" text-anchor="middle">DATA CENTER</text>
+<text class="label" x="100" y="88" text-anchor="middle">Frankfurt</text>
+<text class="meta" x="100" y="113" text-anchor="middle">Europe · selected</text>
+</g>
+<g transform="translate(570 380)">
+<use href="#data-center" class="node"/>
+<text class="meta" x="100" y="60" text-anchor="middle">DATA CENTER</text>
+<text class="label" x="100" y="88" text-anchor="middle">Singapore</text>
+<text class="meta" x="100" y="113" text-anchor="middle">Asia</text>
+</g>
+</svg>
+<figcaption><strong>DNS selects an address; it does not proxy application traffic.</strong> Location is estimated from the resolver IP or a client subnet when supported. Geographic policies can favor nearby regions, but the lowest-latency choice may differ. Cached DNS answers can delay routing changes.</figcaption>
+</figure>
+<footer>Illustrative regional policy · blue: DNS · green: application traffic<br>
+References: <a href="https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-edns0.html">DNS location estimation</a> · <a href="https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-geo.html">Geographic routing</a></footer>
+</main>
+</body>
+</html>

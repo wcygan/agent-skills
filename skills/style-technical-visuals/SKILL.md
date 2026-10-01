@@ -19,6 +19,73 @@ rules when they exist. Use this skill as the fallback system.
 
 ## Start from the gallery
 
+For a standalone primary/follower database topology, start from
+`references/standalone/database-cluster.html`. It is an original, offline HTML
+reference with inline SVG, semantic database cylinders, and a shared replication
+trunk. Standalone references remain independent of gallery registration and
+embedding code.
+
+For an isometric database cluster, use
+`references/standalone-3d/database-cluster.html`. It projects three-dimensional
+cylinders onto a ground plane while preserving the standalone dark palette.
+
+For an orbitable job-flow simulation, use
+`references/standalone-3d/queue-worker-pool.html`. A producer fills a bounded FIFO
+queue while three workers receive and process jobs; motion and orbit are independent.
+
+For an orbitable append-only tape, use `references/standalone-3d/commit-log.html`.
+Raised record blocks support selection, payload inspection, append, and reset.
+
+For Kafka producer-side key routing and partition-local offsets, use
+`references/standalone/kafka-partitioning.html` or the orbitable
+`references/standalone-3d/kafka-partitioning.html`. Both implement Java-compatible
+key hashing and explicit partition selection, with animated appends to three logs.
+
+For deterministic checkpoint recovery, use
+`references/standalone/flink-checkpoint-recovery.html` or the orbitable
+`references/standalone-3d/flink-checkpoint-recovery.html`. Three stages snapshot,
+crash at the middle worker, restore state, and replay post-checkpoint records.
+The idempotent database sink keeps committed rows and ignores repeated event IDs.
+
+For a load balancer routing to three application instances, use
+`references/standalone/load-balancer.html`. Copy its service panels, face-center
+ports, and request-routing branches for service topologies.
+
+For asynchronous jobs buffered before parallel processing, use
+`references/standalone/queue-worker-pool.html`. Copy its slotted queue and
+worker panels; the arrows represent job flow to competing workers.
+
+For cache-aside reads, use `references/standalone/application-cache-database.html`.
+It separates cache hits from the database read and cache fill on a miss; the
+application owns both paths.
+
+For geographic DNS selection, use `references/standalone/geodns.html`.
+It distinguishes resolver queries and regional answers from the user's direct
+application connection, with location estimation and DNS caching caveats.
+
+For bounded retries and failed-job isolation, use
+`references/standalone/dead-letter-queue.html`. It separates successful
+acknowledgment, retry, and dead-letter paths with an explicit attempt limit.
+
+For synchronous service dependencies, use
+`references/standalone/service-request-chain.html`. It separates downstream
+calls from returning responses and explains waiting and failure propagation.
+
+For regional application and database groups, use
+`references/standalone/multi-region-deployment.html`. Each of three regions
+contains an app, a primary, and two replicas; compact layouts stack the regions.
+
+For key-based database partitioning, use
+`references/standalone/sharded-database.html`. It routes three example keys to
+distinct shards using an explicit modulo rule and distinguishes shards from replicas.
+
+For ticket drops and user admission queues, use
+`references/standalone/ticket-sale-waiting-room.html`. It separates waiting-room
+tokens, bounded admission, checkout, and ticket inventory.
+
+For append-only key-value records, use `references/standalone/commit-log.html`.
+It shows increasing LSNs, UTF-8 payload lengths, repeated keys, and manual append.
+
 Before building any new artifact, do this:
 
 1. Read `references/gallery/GALLERY.html` to see the quality bar and the

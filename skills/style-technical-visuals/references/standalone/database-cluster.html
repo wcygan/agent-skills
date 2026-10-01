@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Database cluster · One primary, two followers</title>
+<!-- Original standalone reference. Copy the tokens, cylinder geometry, and
+     shared replication trunk for other cluster diagrams. No external assets.
+     Static topology: arrows show replication direction, not commit timing. -->
+<style>
+:root {
+  color-scheme: dark;
+  --canvas: #111111; --panel: #1c1c1c;
+  --border: rgba(255,255,255,.14); --border-node: rgba(255,255,255,.22);
+  --track: rgba(255,255,255,.10);
+  --text: #fafafa; --text-muted: rgba(250,250,250,.60);
+  --text-dim: rgba(250,250,250,.40);
+  --accent: #f35815; --good: #27b648; --warn: #d19f03;
+  --bad: #ff455d; --info: #1e9de7;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--canvas); color: var(--text);
+  font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+main { max-width: 860px; margin: auto; padding: 56px 28px 32px; }
+.eyebrow { color: var(--text-muted); font-size: 11px; letter-spacing: .12em; }
+h1 { margin: 12px 0; font-size: clamp(22px, 4vw, 30px); font-weight: 500; letter-spacing: -.04em; }
+header p { color: var(--text-muted); max-width: 62ch; margin: 0; }
+figure { margin: 32px 0 0; }
+svg { display: block; width: 100%; height: auto; font: inherit; }
+.node { fill: var(--panel); stroke: var(--border-node); stroke-width: 1.5; }
+.primary { stroke: var(--accent); }
+.wire { fill: none; stroke: var(--info); stroke-width: 1.5; }
+.label { fill: var(--text); font-size: 19px; }
+.meta { fill: var(--text-muted); font-size: 13px; }
+.role { fill: var(--accent); font-size: 12px; letter-spacing: 1px; }
+.caption { fill: var(--info); font-size: 12px; }
+figcaption { border-top: 1px solid var(--border); padding-top: 18px;
+  color: var(--text-muted); max-width: 100%; }
+figcaption strong { color: var(--text); font-weight: 500; }
+footer { margin-top: 24px; color: var(--text-muted); font-size: 11px; }
+@media (max-width: 540px) { main { padding: 28px 16px; } }
+</style>
+</head>
+<body>
+<main>
+<header>
+<div class="eyebrow">DATABASE TOPOLOGY / 01</div>
+<h1>One primary. Two followers.</h1>
+<p>The primary handles all application reads and writes. Two followers receive replicated changes for redundancy and recovery.</p>
+</header>
+<figure>
+<svg viewBox="0 0 800 480" role="img" aria-labelledby="cluster-title cluster-description">
+<title id="cluster-title">Three-node database cluster</title>
+<desc id="cluster-description">Node 01 is the primary and handles all application reads and writes. Followers provide redundancy, not application read capacity. Replication flows from its bottom port through a shared trunk to the top ports of node 02 and node 03, the two followers.</desc>
+<defs>
+<marker id="replication-arrow" viewBox="0 -4 8 8" refX="8" refY="0" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+<path d="M0 -3 L8 0 L0 3" fill="none" stroke="var(--info)" stroke-width="1.3"/>
+</marker>
+<!-- Cylinder bounds: primary (300,30,200,140); followers
+     (70,310,200,140), (530,310,200,140). Ports use outline extrema. -->
+<g id="database-shape">
+<path d="M0 20 V120 A100 20 0 0 0 200 120 V20 Z"/>
+<ellipse cx="100" cy="20" rx="100" ry="20"/>
+</g>
+</defs>
+<!-- Shared trunk: primary bottom (400,170); follower tops (170/630,310). -->
+<path class="wire" d="M400 170 V250"/>
+<path class="wire" d="M400 250 H170 V310" marker-end="url(#replication-arrow)"/>
+<path class="wire" d="M400 250 H630 V310" marker-end="url(#replication-arrow)"/>
+<circle cx="400" cy="250" r="3" fill="var(--info)"/>
+<text class="caption" x="418" y="220">replication</text>
+<g transform="translate(300 30)">
+<use href="#database-shape" class="node primary"/>
+<text class="role" x="100" y="60" text-anchor="middle">PRIMARY</text>
+<text class="label" x="100" y="88" text-anchor="middle">node 01</text>
+<text class="meta" x="100" y="112" text-anchor="middle">reads + writes</text>
+</g>
+<g transform="translate(70 310)">
+<use href="#database-shape" class="node"/>
+<text class="meta" x="100" y="60" text-anchor="middle">FOLLOWER</text>
+<text class="label" x="100" y="88" text-anchor="middle">node 02</text>
+<text class="meta" x="100" y="112" text-anchor="middle">redundant copy</text>
+</g>
+<g transform="translate(530 310)">
+<use href="#database-shape" class="node"/>
+<text class="meta" x="100" y="60" text-anchor="middle">FOLLOWER</text>
+<text class="label" x="100" y="88" text-anchor="middle">node 03</text>
+<text class="meta" x="100" y="112" text-anchor="middle">redundant copy</text>
+</g>
+</svg>
+<figcaption><strong>One read/write destination, two redundant copies.</strong> In this topology, followers do not serve application reads. They maintain copies for recovery and potential promotion if the primary fails. Blue arrows show replication; promotion requires a failover policy.</figcaption>
+</figure>
+<footer>3 nodes · 1 primary · 2 followers</footer>
+</main>
+</body>
+</html>
