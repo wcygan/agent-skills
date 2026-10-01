@@ -90,6 +90,35 @@ gh skill install wcygan/agent-skills --agent codex --scope user --all --pin v1.0
 gh skill install . --from-local --all --dir /tmp/skill-check
 ```
 
+### Reinstall the global catalog from this checkout
+
+In a Codex chat opened in this repository, run `$reinstall-agent-skills`.
+The project-local skill at
+[.agents/skills/reinstall-agent-skills/SKILL.md](.agents/skills/reinstall-agent-skills/SKILL.md)
+runs this dependency-free Python script with uv:
+
+```bash
+uv run --script tools/reinstall_agent_skills.py
+# Optional alternate dotfiles checkout:
+uv run --script tools/reinstall_agent_skills.py --dotfiles /path/to/dotfiles
+```
+
+The script validates, commits **all non-ignored provider changes**, and pushes
+this repository. It then fast-forwards the sibling `dotfiles` checkout,
+updates its `agent-skills.lock.toml` to the exact published commit, installs
+through `./bootstrap.sh agent-skills`, verifies, and commits and pushes the
+consumer lock. Dotfiles owns collision checks, installation, and recovery.
+
+Unchanged reruns skip new commits and an already verified installation.
+Failures retain completed steps; rerun after resolving the reported issue.
+Dotfiles must be clean, except for a lock-only interrupted update whose HEAD
+matches the remote. Provider divergence requires reconciliation first.
+The script serializes invocations within this checkout and uses normal Git
+pushes, never force pushes. Removed upstream skills need separate cleanup.
+
+The workflow skill stays outside the distributable `skills/` catalog. Normal
+CLI discovery excludes hidden directories; keep `--allow-hidden-dirs` omitted.
+
 ### Create a derived catalog
 
 Fork, copy, or create a repository from this template.

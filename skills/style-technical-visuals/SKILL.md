@@ -41,6 +41,15 @@ For Kafka producer-side key routing and partition-local offsets, use
 `references/standalone-3d/kafka-partitioning.html`. Both implement Java-compatible
 key hashing and explicit partition selection, with animated appends to three logs.
 
+For total order broadcast, use
+`references/standalone/total-order-broadcast.html`. Compare three unordered
+delivery logs against three matching ordered prefixes using colored message blocks.
+
+For Raft-style heartbeat failure detection, use
+`references/standalone-3d/heartbeat-failure-detector.html`. Five orbitable nodes
+show per-follower election timers, leader failure, majority election, and rejoin.
+Timeouts express suspicion rather than proof of failure.
+
 For deterministic checkpoint recovery, use
 `references/standalone/flink-checkpoint-recovery.html` or the orbitable
 `references/standalone-3d/flink-checkpoint-recovery.html`. Three stages snapshot,

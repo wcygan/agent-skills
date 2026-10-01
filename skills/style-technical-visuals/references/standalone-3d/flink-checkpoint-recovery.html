@@ -8,6 +8,7 @@
   --text-dim: rgba(250,250,250,.40);
   --accent: #f35815; --good: #27b648; --warn: #d19f03;
   --bad: #ff455d; --info: #1e9de7;
+  --worker-platform: #15181b; --jobmanager: #7cc9f5; --taskmanager: #1e9de7;
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--canvas); color: var(--text);
@@ -46,8 +47,9 @@ button:focus-visible, svg:focus-visible { outline: 2px solid var(--accent); outl
 .hint { color: var(--text-muted); }
 
 main { max-width:1100px; } .status { min-height:4em; } .metrics { display:grid; grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0; } .metrics div { padding:12px;background:var(--panel);border:1px solid var(--border); } .metrics span { display:block;color:var(--text-muted);font-size:11px; } .metrics strong { font-size:22px;font-weight:500; } .references {margin-top:24px;border-top:1px solid var(--border);padding-top:16px;} .references h2 {font-size:18px;} .references h3 {font-size:14px;} pre {overflow:auto;padding:16px;background:var(--panel);font-size:12px;} @media(max-width:540px){.metrics {grid-template-columns:repeat(2,1fr);}}
-</style></head><body><main><header><div class="eyebrow">APACHE FLINK / INTERACTIVE 3D</div><h1>Replay the work. Keep the effect once.</h1><p>Checkpoints restore the source and counter. The database retains committed rows and ignores repeated event IDs.</p></header><p id="status" class="status"></p><figure><svg id="scene" viewBox="0 0 1000 580" tabindex="0" role="img" aria-labelledby="title desc"><title id="title">Orbitable Flink checkpoint and recovery demo</title><desc id="desc">Three machines process events. Saved checkpoint blocks restore source position and counter state after failure. Five database rows survive, and duplicate writes are ignored. Drag horizontally or use arrow keys to orbit.</desc><g id="world"></g></svg><div class="metrics"><div><span>Source position</span><strong id="position">0</strong></div><div><span>Operator count</span><strong id="count">0</strong></div><div><span>Write attempts</span><strong id="attempts">0</strong></div><div><span>Committed rows</span><strong id="rows">0</strong></div></div><div class="controls"><button id="pause">Pause demo</button><button id="step">Step phase</button><button id="reset">Reset demo</button><button id="view">Reset view</button><span class="hint">Drag to orbit · ← / →</span></div><p id="snapshot" class="hint"></p><figcaption><strong>Checkpoint state rewinds; committed database rows stay.</strong> Blue input disappears inside the counter, which glows yellow while processing. Green output reaches the database. Replayed event IDs flash orange and create no extra row. Yellow checkpoint blocks save source position and count; red marks the crash. This is an idempotent sink, not an XA transaction simulation.</figcaption></figure><section class="references" aria-labelledby="reference-title">
-<h2 id="reference-title">Real database sink patterns</h2>
+.component-key { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0 0; } .component-key article { padding:12px 14px;border:1px solid var(--border-node);border-top:3px solid var(--key-color);background:var(--panel); } .component-key strong {font-weight:500;display:block;margin-bottom:6px;} .component-key p {margin:0;color:var(--text-muted);font-size:11px;line-height:1.6;} @media(max-width:700px){.component-key {grid-template-columns:repeat(2,minmax(0,1fr));}}
+</style></head><body><main><header><div class="eyebrow">APACHE FLINK / INTERACTIVE 3D</div><h1>Replay the work. Keep the effect once.</h1><p>The Flink source reads an external Kafka partition. Checkpoint markers travel through the source, counter, and JDBC sink. PostgreSQL receives writes, retains committed rows, and ignores repeated event IDs.</p></header><p id="status" class="status"></p><figure><div class="component-key" aria-label="Scene component key"><article style="--key-color:var(--accent)"><strong>External Kafka</strong><p>Retained partition log. The source fetches records from it.</p></article><article style="--key-color:var(--info)"><strong>Flink cluster</strong><p>Light blue: JobManager coordination.<br>Blue: TaskManager workers.<br>TM1: source · TM2: count · TM3: JDBC sink.<br>TM = TaskManager worker.</p></article><article style="--key-color:var(--warn)"><strong>Apache Hadoop HDFS</strong><p>Yellow: durable checkpoint files and metadata. RocksDB holds working counter state locally in TM2; snapshots are copied here.</p></article><article style="--key-color:var(--good)"><strong>External PostgreSQL</strong><p>Committed event rows. Replayed IDs are ignored; rows survive recovery.</p></article></div><svg id="scene" viewBox="0 0 1100 600" tabindex="0" role="img" aria-labelledby="title desc"><title id="title">Orbitable Flink checkpoint and recovery demo</title><desc id="desc">Source, counter, and JDBC sink operators process events before writing to PostgreSQL. Saved checkpoint blocks restore source position and counter state after failure. Five database rows survive, and duplicate writes are ignored. Drag horizontally or use arrow keys to orbit.</desc><g id="world"></g></svg><p class="hint">Flink cluster = JobManager + TaskManagers. Operators run inside the workers. Kafka, PostgreSQL, and durable checkpoint storage are external.</p><div class="metrics"><div><span>Next Kafka offset</span><strong id="position">0</strong></div><div><span>Operator count</span><strong id="count">0</strong></div><div><span>Write attempts</span><strong id="attempts">0</strong></div><div><span>Committed rows</span><strong id="rows">0</strong></div></div><div class="controls"><button id="pause">Pause demo</button><button id="step">Step phase</button><button id="reset">Reset demo</button><button id="view">Reset view</button><span class="hint">Drag to orbit · ← / →</span></div><p id="checkpoint-status" class="hint"></p><p id="snapshot" class="hint"></p><figcaption><strong>Checkpoint state rewinds; committed database rows stay.</strong> Blue input disappears inside the counter, which glows yellow while processing. Green output reaches the database. Replayed event IDs flash orange and create no extra row. Yellow checkpoint blocks save source position and count; markers stop at the JDBC sink, which acknowledges the checkpoint. Only database writes cross the final green connection. Red marks the crash. This is an idempotent sink, not an XA transaction simulation. Illustrative placement: one operator task per TaskManager, parallelism 1. Real operators may share a worker; the external Kafka tape holds replayable events. The Flink source task reads Kafka and checkpoints its next read offset; the checkpoint barrier starts inside Flink.</figcaption></figure><p class="hint">Experimental shapes: source tape, processing module, database cylinder. Inspired by <a href="https://nightlies.apache.org/flink/flink-docs-stable/docs/concepts/flink-architecture/">Flink’s dataflow architecture</a> and its <a href="https://flink.apache.org/2020/10/15/from-aligned-to-unaligned-checkpoints-part-1-checkpoints-alignment-and-backpressure/">checkpoint illustrations</a>; this 3D treatment is our own design.</p><section class="references" aria-labelledby="reference-title">
+<h2 id="reference-title">State and checkpoint storage</h2><p>This illustrative deployment uses EmbeddedRocksDBStateBackend for the counter’s local keyed state inside TaskManager 2. Durable checkpoint snapshots and recovery metadata are stored externally in Apache Hadoop HDFS through FileSystemCheckpointStorage. RocksDB is not the external checkpoint destination. <a href="https://flink.apache.org/2021/01/18/using-rocksdb-state-backend-in-apache-flink-when-and-how/">Flink’s RocksDB explanation</a> · <a href="https://nightlies.apache.org/flink/flink-docs-stable/docs/ops/state/checkpoints/">Checkpoint storage documentation</a>.</p><h2>Real database sink patterns</h2>
 <h3>PostgreSQL: ignore an event that was already written</h3>
 <p>This minimal SQL example matches the animation. A custom Flink JDBC sink can bind the stable event ID and payload into the parameterized INSERT. The primary key is enforced by PostgreSQL; the same ID arriving again creates no additional row. This is an example statement, not a running database connection.</p>
 <pre><code>CREATE TABLE processed_events (
@@ -64,11 +66,11 @@ ON CONFLICT (event_id) DO NOTHING;</code></pre>
 <p>Flink’s JDBC table sink uses primary-key upserts. PostgreSQL uses ON CONFLICT DO UPDATE; MySQL uses ON DUPLICATE KEY UPDATE. Reapplying the same row values preserves the same result. This differs from the demo’s insert-and-ignore policy. Declare the key in Flink and enforce it in the actual database; version checks are needed if older updates can overwrite newer values. <a href="https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/connectors/table/jdbc/#idempotent-writes">Official JDBC idempotent-write explanation</a> and <a href="https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/connectors/table/jdbc/#how-to-create-a-jdbc-table">MySQL table configuration example</a>. Check connector compatibility for the Flink release you use.</p>
 <h3>Alternative: checkpoint-coordinated XA transactions</h3>
 <p>Flink’s DataStream JDBC exactly-once sink uses XA transactions instead of duplicate suppression. Its documentation includes PostgreSQL and MySQL data-source examples, per-transaction connections, and database configuration requirements. It also requires disabling JDBC execution retries for the documented guarantee. This is a separate approach from the sink animated above. <a href="https://nightlies.apache.org/flink/flink-docs-master/docs/connectors/datastream/jdbc/#jdbcsinkexactlyoncesink">Exactly-once JDBC sink</a> · <a href="https://nightlies.apache.org/flink/flink-docs-master/docs/connectors/datastream/jdbc/#xadatasource-examples">PostgreSQL and MySQL XA examples</a> (development documentation; match your installed connector version).</p>
-</section><footer>Offline 3D projection · deterministic 42-second story · reduced motion starts paused.<br>Real jobs schedule periodic checkpoints; this story shows two. Database deduplication and any separate business effect must commit atomically.</footer></main><script>
+</section><footer>Offline 3D projection · continuous five-event batches · repeating 42-second recovery sequence · reduced motion starts paused.<br>Real jobs schedule periodic checkpoints; this story shows two. Database deduplication and any separate business effect must commit atomically.</footer></main><script>
 (() => {
 const svg=document.querySelector('#scene'),world=document.querySelector('#world'),button=document.querySelector('#pause'),status=document.querySelector('#status'),snap=document.querySelector('#snapshot');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)'),ns='http://www.w3.org/2000/svg';
-let elapsed=0,last=null,playing=!reduced.matches,angle=.18,drag=null;
+let elapsed=0,batch=0,last=null,playing=!reduced.matches,angle=.25,drag=null;
 const phases=[
  {until:6,name:'Process events 1–3',message:'Each stable event ID creates one committed database row.'},
  {until:12,name:'Checkpoint 1',message:'The yellow control marker follows event 3. Source position and operator state are saved; completion establishes the recovery point.'},
@@ -80,7 +82,7 @@ const phases=[
 ];
 
 function el(tag,a){const e=document.createElementNS(ns,tag);for(const[k,v]of Object.entries(a))e.setAttribute(k,v);world.append(e);return e;}
-function project(x,y,z){const depth=x*Math.sin(angle)+z*Math.cos(angle);return {x:500+x*Math.cos(angle)-z*Math.sin(angle),y:285+depth*.48-y*.85,depth};}
+function project(x,y,z){const depth=x*Math.sin(angle)+z*Math.cos(angle);return {x:550+.72*(x*Math.cos(angle)-z*Math.sin(angle)),y:315+.72*(depth*.48-y*.85),depth:depth+y*(.48/.85)};}
 function pts(v){return v.map(p=>`${p.x},${p.y}`).join(' ');}
 function line(v,color){el('polyline',{points:pts(v.map(p=>project(...p))),fill:'none',stroke:color,'stroke-width':2});}
 function label(value,x,y,z,color='var(--text)',size=13){const p=project(x,y,z),e=el('text',{x:p.x,y:p.y,'text-anchor':'middle',fill:color,'font-size':size});e.textContent=value;}
@@ -90,53 +92,116 @@ function box(objects,x,y,z,w,h,d,color,tag){
   // Back faces are culled; every visible face shares the global depth sort.
   const a=v[f[0]],b=v[f[1]],c=v[f[2]];
   if((b.x-a.x)*(c.y-a.y)-(b.y-a.y)*(c.x-a.x)<=0)continue;
-  objects.push({depth:f.reduce((n,i)=>n+v[i].depth,0)/4,draw:()=>el('polygon',{points:pts(f.map(i=>v[i])),fill:f[0]===4?'var(--canvas)':'var(--panel)',stroke:color,'stroke-width':1.6})});
+  objects.push({depth:f.reduce((n,i)=>n+v[i].depth,0)/4,draw:()=>el('polygon',{points:pts(f.map(i=>v[i])),fill:'var(--panel)',stroke:color,'stroke-width':1.6})});
  }
  if(tag)objects.push({depth:project(x,y+h,z).depth+.01,draw:()=>label(tag,x,y+h+6,z,'var(--text)',14)});
+}
+// Match the standalone database cluster's continuous cylinder silhouette.
+function cylinder(objects,x,z,r,h,color){
+ const base=project(x,0,z),top=project(x,h,z),rx=r*.72,ry=rx*.48;
+ objects.push({depth:project(x,h/2,z).depth,draw:()=>{
+  el('path',{d:`M${top.x-rx} ${top.y} V${base.y} A${rx} ${ry} 0 0 0 ${base.x+rx} ${base.y} V${top.y} Z`,fill:'var(--panel)',stroke:color,'stroke-width':1.6});
+  for(const height of [h/3,2*h/3]){
+   const p=project(x,height,z);
+   el('path',{d:`M${p.x-rx} ${p.y} A${rx} ${ry} 0 0 0 ${p.x+rx} ${p.y}`,fill:'none',stroke:color,'stroke-width':1});
+  }
+  el('ellipse',{cx:top.x,cy:top.y,rx,ry,fill:'var(--panel)',stroke:color,'stroke-width':1.6});
+ }});
 }
 function render(){
  const found=phases.findIndex(p=>elapsed<p.until),index=found<0?6:found,p=phases[index],start=index?phases[index-1].until:0,progress=Math.min(1,(elapsed-start)/(p.until-start));
  const moving=[0,2,5].includes(index),n=index===0?3:2,delivered=moving?Math.min(n,Math.floor(progress*n)):0,cycle=Math.min(n-1,Math.floor(progress*n)),local=(progress*n)%1;
- const count=index===0?delivered:index===1?3:index===2?3+delivered:index===3?5:index===4?3:index===5?3+delivered:5,rows=index===0?delivered:index===1?3:index===2?3+delivered:5,duplicates=index===5?delivered:index===6?2:0;
+ const base=batch*5,checkpointing=index===1||index===6,checkpointId=batch*2+(index===6?2:1),complete=checkpointing&&progress>=.9;
+ const count=base+(index===0?delivered:index===1?3:index===2?3+delivered:index===3?5:index===4?3:index===5?3+delivered:5),rows=base+(index===0?delivered:index===1?3:index===2?3+delivered:5),duplicates=index===5?delivered:index===6?2:0;
  world.replaceChildren();
- el('polygon',{points:pts([[-440,0,-150],[440,0,-150],[440,0,280],[-440,0,280]].map(p=>project(...p))),fill:'var(--panel)',stroke:'var(--border)'});
- for(let x=-400;x<=400;x+=100)line([[x,0,-150],[x,0,280]],'var(--track)');
- for(let z=-100;z<=250;z+=70)line([[-440,0,z],[440,0,z]],'var(--track)');
- line([[-250,60,0],[-70,60,0]],'var(--info)');line([[70,60,0],[250,60,0]],'var(--info)');
- const objects=[],processing=moving&&local>=.28&&local<.65;
- box(objects,-320,0,0,140,120,90,'var(--accent)','SOURCE');
- box(objects,0,0,0,140,120,90,index===3?'var(--bad)':processing?'var(--warn)':index===4?'var(--warn)':'var(--border-node)','COUNT');
- box(objects,320,0,0,140,120,90,index===5?'var(--accent)':'var(--good)','DATABASE');
- if(moving&&local<.28)box(objects,-250+(local/.28)*180,51,0,18,18,18,'var(--info)');
- if(moving&&local>=.65)box(objects,70+((local-.65)/.35)*180,51,0,18,18,18,'var(--good)');
- for(const x of [-320,0]){
-  line([[x,0,48],[x,0,125]],'var(--warn)');
-  box(objects,x,0,165,140,18,75,index>=1?'var(--warn)':'var(--border-node)',index>=1?`CP ${index===6&&progress>.7?2:1}: ${index===6&&progress>.7?5:3}`:'NO CHECKPOINT');
+ el('polygon',{points:pts([[-680,0,-300],[450,0,-300],[450,0,300],[-680,0,300]].map(p=>project(...p))),fill:'var(--panel)',stroke:'var(--border)'});
+ for(let x=-600;x<=400;x+=100)line([[x,0,-300],[x,0,300]],'rgba(250,250,250,.045)');
+ for(let z=-280;z<=280;z+=70)line([[-680,0,z],[440,0,z]],'rgba(250,250,250,.045)');
+ // Flat bounded zones communicate ownership without hiding the operators.
+ function zone(x1,z1,x2,z2,color,dashed=false,fill='none'){el('polygon',{points:pts([[x1,1,z1],[x2,1,z1],[x2,1,z2],[x1,1,z2]].map(p=>project(...p))),fill,stroke:color,'stroke-width':3,'stroke-dasharray':dashed?'7 5':'none'});}
+ zone(-435,-285,250,105,'var(--info)');
+ zone(-660,-90,-470,100,'var(--accent)');
+ for(const [left,right] of [[-415,-225],[-100,95],[110,245]])zone(left,-75,right,80,'var(--taskmanager)',false,'var(--worker-platform)');
+ zone(-420,120,85,220,'var(--warn)',true);
+ zone(275,-90,440,240,'var(--good)');
+ for(const x of [-320,0,180]){
+  const a=project(-165,20,-165),b=project(x,20,-75);
+  el('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,stroke:'var(--text-dim)','stroke-dasharray':'4 5','stroke-width':1});
  }
- if(index===1||index===6){const segment=Math.min(1,Math.floor(progress*2)),t=(progress*2)%1;box(objects,(segment===0?-250:70)+t*180,47,0,7,26,26,'var(--warn)');}
+ // Fixed face-center ports. Both wires and moving shapes use these same routes.
+ const routes=[
+  {a:[-500,22,0],b:[-390,35,0],color:'var(--info)'},
+  {a:[-250,35,0],b:[-70,35,0],color:'var(--info)'},
+  {a:[70,35,0],b:[130,35,0],color:'var(--info)'},
+  {a:[230,35,0],b:[330,35,0],color:'var(--good)'}
+ ];
+ for(const route of routes)line([route.a,route.b],route.color);
+ function packet(routeIndex,t,color,w=18,h=18,d=18){
+  const {a,b}=routes[routeIndex],v=a.map((n,i)=>n+(b[i]-n)*t);
+  box(objects,v[0],v[1]-h/2,v[2],w,h,d,color);
+ }
+ const objects=[],processing=moving&&local>=.28&&local<.65;
+ box(objects,-165,0,-210,170,55,80,complete?'var(--good)':'var(--jobmanager)','JOBMANAGER');
+ // The tape and its mounted records form one assembly. Its broad top face
+ // must render before the records above it, regardless of camera azimuth.
+ const tape=[],records=[];
+ box(tape,-570,0,0,140,12,100,'var(--accent)');
+ for(let id=1;id<=5;id++)box(records,-622+(id-1)*26,12,0,20,20,65,base+id<=count?'var(--info)':'var(--border-node)',String(base+id-1));
+ objects.push({depth:project(-570,16,0).depth,draw:()=>{
+  tape.sort((a,b)=>a.depth-b.depth).forEach(o=>o.draw());
+  records.sort((a,b)=>a.depth-b.depth).forEach(o=>o.draw());
+ }});
+ box(objects,-320,0,0,140,70,100,'var(--taskmanager)','TM1 · SOURCE');
+ box(objects,0,0,0,140,70,100,index===3?'var(--bad)':processing?'var(--warn)':index===4?'var(--warn)':'var(--taskmanager)','TM2 · COUNT');
+ box(objects,180,0,0,100,70,100,'var(--taskmanager)','TM3 · SINK');
+ cylinder(objects,380,0,50,100,index===5?'var(--accent)':'var(--good)');
+ if(moving&&local<.1)packet(0,local/.1,'var(--info)');
+ if(moving&&local>=.13&&local<.28)packet(1,(local-.13)/.15,'var(--info)');
+ if(moving&&local>=.65&&local<.8)packet(2,(local-.65)/.15,'var(--good)');
+ if(moving&&local>=.86)packet(3,(local-.86)/.14,'var(--good)');
+ for(const [slot,x] of [-320,0].entries()){
+  line([[x,0,48],[x,0,125]],'var(--warn)');
+  const captured=checkpointing&&(slot===0||progress>=.4);
+  const savedId=checkpointing?(captured?checkpointId:checkpointId-1):index>=2?batch*2+1:batch*2;
+  const color=complete?'var(--good)':captured?'var(--warn)':savedId?'var(--warn)':'var(--border-node)';
+  box(objects,x,0,165,140,18,75,color,savedId?`CP ${savedId}${captured&&!complete?' *':''}`:'WAITING');
+ }
+ if(checkpointing&&progress<.8){
+  const segment=progress<.4?0:1,t=segment===0?progress/.4:(progress-.4)/.4;
+  packet(segment+1,t,'var(--warn)',7,26,26);
+ }
+ // Acknowledgments return to the coordinator only after the barrier reaches the sink.
+ if(checkpointing&&progress>=.8&&progress<.9){
+  const t=(progress-.8)/.1;box(objects,180+(-165-180)*t,35,-210*t,10,10,10,'var(--warn)');
+ }
  for(let id=1;id<=5;id++){
-  const exists=id<=rows,duplicate=index===5&&id>=4&&id<4+duplicates||index===6&&id>=4;
-  box(objects,155+(id-1)*53,0,190,42,exists?35:5,60,duplicate?'var(--accent)':exists?'var(--good)':'var(--border-node)',`#${id}`);
+  const exists=base+id<=rows,duplicate=index===5&&id>=4&&id<4+duplicates||index===6&&id>=4;
+  box(objects,292+(id-1)*31,0,185,25,exists?35:5,55,duplicate?'var(--accent)':exists?'var(--good)':'var(--border-node)',`#${base+id}`);
  }
  objects.sort((a,b)=>a.depth-b.depth).forEach(o=>o.draw());
- label(index===3?'CRASHED':`count ${count}`,0,45,-48,index===3?'var(--bad)':'var(--text)',15);
- if(processing){const a=project(-45,30,-48),b=project(-45+90*((local-.28)/.37),30,-48);el('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,stroke:'var(--warn)','stroke-width':5});}
- label('SAVED RECOVERY STATE',-160,0,250,'var(--warn)',12);
- label(index===5?'DUPLICATES IGNORED':'COMMITTED ROWS SURVIVE',260,0,270,index===5?'var(--accent)':'var(--good)',12);
- status.textContent=`${index+1} / 7 · ${p.name}. ${p.message}`;
- for(const [id,value] of [['position',count],['count',count],['attempts',rows+duplicates],['rows',rows]])document.querySelector('#'+id).textContent=value;
- snap.textContent=index===0?'No completed checkpoint.':index===1?'Checkpoint 1 is in progress; completion establishes the recovery point.':index===6?`Five rows · seven attempts · two duplicates ignored. ${elapsed>=42?'Checkpoint 2 completed.':'Checkpoint 2 in progress.'}`:'Recover from checkpoint 1: position 3 and count 3. Replay begins at event 4; the database keeps its committed rows.';
- if(elapsed>=42)playing=false;
- button.textContent=elapsed>=42?'Replay demo':playing?'Pause demo':'Resume demo';button.setAttribute('aria-pressed',String(!playing));
+ if(index===3)label('CRASHED',0,30,55,'var(--bad)',13);
+ if(processing){const a=project(-45,15,55),b=project(-45+90*((local-.28)/.37),15,55);el('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,stroke:'var(--warn)','stroke-width':5});}
+ label('KAFKA',-570,75,0,'var(--accent)',14);
+ label('POSTGRESQL',380,115,0,'var(--good)',14);
+ const phaseNames=[`Process events ${base+1}–${base+3}`,`Checkpoint ${batch*2+1}`,`Process events ${base+4}–${base+5}`,'Middle stage crashes',`Restore checkpoint ${batch*2+1}`,`Replay events ${base+4}–${base+5}`,`Checkpoint ${batch*2+2}`];
+ const messages=['New event IDs create committed rows.','The source captures its offset; the barrier triggers downstream snapshots.','Writes after the checkpoint will replay after failure.','Committed database rows survive the worker failure.',`Restore next offset and count to ${base+3}; replay from event ${base+4}.`,'Replay repeats processing; duplicate event IDs produce no additional rows.','Collect acknowledgments, complete the checkpoint, then advance to the next five Kafka events.'];
+ status.textContent=`Batch ${batch+1} · ${index+1} / 7 · ${phaseNames[index]}. ${messages[index]}`;
+ for(const [id,value] of [['position',count],['count',count],['attempts',rows+batch*2+duplicates],['rows',rows]])document.querySelector('#'+id).textContent=value;
+ const latestOffset=complete?(index===6?base+5:base+3):index>=2?base+3:base;
+ const latest=complete?checkpointId:index>=2?batch*2+1:batch*2;
+ document.querySelector('#checkpoint-status').textContent=checkpointing?`Checkpoint ${checkpointId}: source captured · count ${progress>=.4?'captured':'waiting for barrier'} · sink ${progress>=.8?'acknowledged':'waiting for barrier'} · JobManager ${complete?'COMPLETED — recovery point updated':progress>=.8?'collecting acknowledgments':'pending'}. * = captured, not yet globally complete.`:latest?`Checkpoint status: completed checkpoint ${latest} remains the recovery point.`:'Checkpoint status: none completed.';
+ snap.textContent=latest?`Latest completed recovery point: CP ${latest}, next Kafka offset ${latestOffset}, count ${latestOffset}. Database rows are independent of checkpoint completion.`:'No completed recovery point yet. Capturing one task’s state is not enough.';
+
+ button.textContent=playing?'Pause demo':'Resume demo';button.setAttribute('aria-pressed',String(!playing));
 }
-button.addEventListener('click',()=>{if(elapsed>=42)elapsed=0;playing=!playing;render();});
-document.querySelector('#step').addEventListener('click',()=>{playing=false;elapsed=phases.find(p=>p.until>elapsed+.01)?.until??42;render();});
-document.querySelector('#reset').addEventListener('click',()=>{elapsed=0;playing=!reduced.matches;render();});
-document.querySelector('#view').addEventListener('click',()=>{angle=.18;render();});
+button.addEventListener('click',()=>{playing=!playing;render();});
+document.querySelector('#step').addEventListener('click',()=>{playing=false;const next=phases.find(p=>p.until>elapsed+.01);if(next)elapsed=next.until;else{batch++;elapsed=0;}render();});
+document.querySelector('#reset').addEventListener('click',()=>{elapsed=0;batch=0;playing=!reduced.matches;render();});
+document.querySelector('#view').addEventListener('click',()=>{angle=.25;render();});
 svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointerId,x:e.clientX};svg.setPointerCapture(e.pointerId);svg.classList.add('dragging');});
 svg.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;angle+=(e.clientX-drag.x)*.008;drag.x=e.clientX;render();});
 function stop(){drag=null;svg.classList.remove('dragging');}for(const event of ['pointerup','pointercancel','lostpointercapture'])svg.addEventListener(event,stop);
 svg.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();angle+=e.key==='ArrowRight'?.12:-.12;render();});
-function frame(now){if(last!==null&&playing&&!document.hidden){elapsed=Math.min(42,elapsed+Math.min((now-last)/1000,.05));render();}last=now;requestAnimationFrame(frame);}
+function frame(now){if(last!==null&&playing&&!document.hidden){elapsed+=Math.min((now-last)/1000,.05);if(elapsed>=42){elapsed-=42;batch++;}render();}last=now;requestAnimationFrame(frame);}
 render();requestAnimationFrame(frame);
 })();</script></body></html>

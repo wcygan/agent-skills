@@ -1,0 +1,129 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Heartbeat failure detector · Five-node cluster</title><style>
+:root {
+  color-scheme: dark;
+  --canvas: #111111; --panel: #1c1c1c;
+  --border: rgba(255,255,255,.14); --border-node: rgba(255,255,255,.22);
+  --track: rgba(255,255,255,.10);
+  --text: #fafafa; --text-muted: rgba(250,250,250,.60);
+  --text-dim: rgba(250,250,250,.40);
+  --accent: #f35815; --good: #27b648; --warn: #d19f03;
+  --bad: #ff455d; --info: #1e9de7;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--canvas); color: var(--text);
+  font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+main { max-width: 860px; margin: auto; padding: 56px 28px 32px; }
+.eyebrow { color: var(--text-muted); font-size: 11px; letter-spacing: .12em; }
+h1 { margin: 12px 0; font-size: clamp(22px, 4vw, 30px); font-weight: 500; letter-spacing: -.04em; }
+header p { color: var(--text-muted); max-width: 62ch; margin: 0; }
+figure { margin: 32px 0 0; }
+svg { display: block; width: 100%; height: auto; font: inherit; }
+.node { fill: var(--panel); stroke: var(--border-node); stroke-width: 1.5; }
+.primary { stroke: var(--accent); }
+.wire { fill: none; stroke: var(--info); stroke-width: 1.5; }
+.label { fill: var(--text); font-size: 19px; }
+.meta { fill: var(--text-muted); font-size: 13px; }
+.role { fill: var(--accent); font-size: 12px; letter-spacing: 1px; }
+.caption { fill: var(--info); font-size: 12px; }
+figcaption { border-top: 1px solid var(--border); padding-top: 18px;
+  color: var(--text-muted); max-width: 100%; }
+figcaption strong { color: var(--text); font-weight: 500; }
+footer { margin-top: 24px; color: var(--text-muted); font-size: 11px; }
+@media (max-width: 540px) { main { padding: 28px 16px; } }
+
+.platform { fill: var(--panel); stroke: var(--border); stroke-width: 1; }
+.grid { fill: none; stroke: var(--track); stroke-width: 1; }
+.database-body { fill: var(--panel); stroke: var(--border-node); stroke-width: 1.5; }
+.database-top { fill: var(--canvas); stroke: var(--border-node); stroke-width: 1.5; }
+.database-ring { fill: none; stroke: var(--border-node); stroke-width: 1; }
+.primary-model .database-body, .primary-model .database-top, .primary-model .database-ring { stroke: var(--accent); }
+
+svg { touch-action: pan-y; cursor: grab; user-select: none; }
+svg.dragging { cursor: grabbing; }
+.controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 16px 0; }
+button { font: inherit; background: var(--panel); color: var(--text); border: 1px solid var(--border-node); padding: 8px 12px; cursor: pointer; }
+button:focus-visible, svg:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.hint { color: var(--text-muted); }
+main{max-width:1100px}.cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:20px 0}.cards article{padding:12px;background:var(--panel);border:1px solid var(--border-node)}.cards h2{font-size:13px;margin:0 0 8px;font-weight:500}.cards p{font-size:11px;color:var(--text-muted);margin:6px 0}.track{height:5px;background:var(--track)}.fill{height:100%;background:var(--warn)}#status{min-height:4em}@media(max-width:700px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}a{color:var(--text)}</style></head><body><main><header><div class="eyebrow">DISTRIBUTED SYSTEMS / INTERACTIVE 3D</div><h1>No heartbeat. Suspect the leader.</h1><p>Five Raft-style nodes use leader heartbeats and independent election timers. Missing messages trigger an election; they cannot distinguish a crash from a slow or disconnected peer.</p></header><p id="status"></p><figure><svg id="scene" viewBox="0 0 900 530" tabindex="0" role="img" aria-labelledby="title desc"><title id="title">Five-node heartbeat failure detector</title><desc id="desc">Drag horizontally or use arrow keys to orbit. Blue heartbeats reset follower timers. The leader crashes, a different follower times out and requests votes, and three votes elect it leader. The old leader returns as a follower.</desc><g id="world"></g></svg><div class="cards"><article><h2 style="color:#f6a76b">node 01</h2><p id="role0"></p><p>Current Leader: <span id="leader0"></span></p><p>Current Term: <span id="term0"></span></p><p id="timer0"></p><div class="track"><div id="bar0" class="fill"></div></div></article><article><h2 style="color:#69c9f4">node 02</h2><p id="role1"></p><p>Current Leader: <span id="leader1"></span></p><p>Current Term: <span id="term1"></span></p><p id="timer1"></p><div class="track"><div id="bar1" class="fill"></div></div></article><article><h2 style="color:#c6a0f6">node 03</h2><p id="role2"></p><p>Current Leader: <span id="leader2"></span></p><p>Current Term: <span id="term2"></span></p><p id="timer2"></p><div class="track"><div id="bar2" class="fill"></div></div></article><article><h2 style="color:#73dbac">node 04</h2><p id="role3"></p><p>Current Leader: <span id="leader3"></span></p><p>Current Term: <span id="term3"></span></p><p id="timer3"></p><div class="track"><div id="bar3" class="fill"></div></div></article><article><h2 style="color:#f0c96a">node 05</h2><p id="role4"></p><p>Current Leader: <span id="leader4"></span></p><p>Current Term: <span id="term4"></span></p><p id="timer4"></p><div class="track"><div id="bar4" class="fill"></div></div></article></div><div class="controls"><button id="pause">Pause demo</button><button id="fail">Fail leader now</button><button id="reset">Reset demo</button><button id="view">Reset view</button><span class="hint">Drag to orbit · ← / →</span></div><figcaption>Node badges: <strong>L1 = known leader 1 · T1 = current term 1</strong>. Leader cells match node colors; term cells change color with the term.<br><strong>Timeout means suspicion, not proof.</strong> Blue: heartbeat · yellow: candidate / vote request · green: vote granted · orange: leader · red: crashed. A five-node cluster needs three votes, including the candidate’s own vote. Followers monitor their leader locally; there is no separate detector server. Heartbeats are empty AppendEntries messages. This slow teaching sequence shuffles timeout samples each round, ensuring every node gets a turn as leader. It uses separated timeout samples to illustrate Raft’s randomized election timers. Logs are assumed equally up to date; log replication, split votes, and network partitions are omitted.</figcaption></figure><footer>Automatic 26-second story: heartbeats → crash → timeout → majority election → old leader rejoins.<br><a href="https://raft.github.io/raft.pdf">Original Raft paper: leader election, heartbeats, and randomized timeouts</a> · <a href="https://github.com/etcd-io/raft">Open-source etcd Raft implementation</a><br>Offline · reduced motion starts paused; use Play to run the sequence.</footer></main><script>
+(() => {
+const svg=document.querySelector('#scene'),world=document.querySelector('#world'),pause=document.querySelector('#pause'),status=document.querySelector('#status');
+const reduced=matchMedia('(prefers-reduced-motion: reduce)'),ns='http://www.w3.org/2000/svg';
+let elapsed=0,last=null,playing=!reduced.matches,angle=.3,drag=null;
+const nodes=Array.from({length:5},(_,i)=>({x:Math.cos(-Math.PI/2+i*2*Math.PI/5)*235,z:Math.sin(-Math.PI/2+i*2*Math.PI/5)*185}));
+const nodeColors=['#f6a76b','#69c9f4','#c6a0f6','#73dbac','#f0c96a'];
+let previousLeader=0,nextLeader=1,roundTerm=1,bag=[],timeout=[];
+const lastBeforeCrash=7.55,election=lastBeforeCrash+3,won=11.2;
+function shuffle(values){for(let i=values.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[values[i],values[j]]=[values[j],values[i]];}return values;}
+function prepareElection(){
+ if(!bag.length)bag=shuffle([0,1,2,3,4].filter(i=>i!==previousLeader));
+ nextLeader=bag.pop();
+ const others=shuffle([0,1,2,3,4].filter(i=>i!==previousLeader&&i!==nextLeader));
+ timeout=Array(5).fill(3);others.forEach((id,k)=>timeout[id]=3.7+k*.8);
+}
+prepareElection();
+function el(tag,a){const e=document.createElementNS(ns,tag);for(const[k,v]of Object.entries(a))e.setAttribute(k,v);world.append(e);return e;}
+function project(x,y,z){const depth=x*Math.sin(angle)+z*Math.cos(angle);return{x:450+x*Math.cos(angle)-z*Math.sin(angle),y:290+depth*.48-y*.85,depth:depth+y*.565};}
+function pts(v){return v.map(p=>`${p.x},${p.y}`).join(' ');}
+function text(value,x,y,z,color,size=14){const p=project(x,y,z),e=el('text',{x:p.x,y:p.y,'text-anchor':'middle',fill:color,'font-size':size});e.textContent=value;}
+function route(a,b){const dx=b.x-a.x,dz=b.z-a.z,l=Math.hypot(dx,dz);return[{x:a.x+dx/l*52,z:a.z+dz/l*52},{x:b.x-dx/l*52,z:b.z-dz/l*52}];}
+function render(){
+ const crashed=elapsed>=8&&elapsed<20,candidate=elapsed>=election&&elapsed<won,leader=elapsed<8?previousLeader:elapsed>=won?nextLeader:null,term=roundTerm+(elapsed<election?0:1);
+ const votes=candidate?1+(elapsed>=10.9?1:0)+(elapsed>=11.15?1:0):elapsed>=won?3:0;
+ world.replaceChildren();el('polygon',{points:pts([[-320,0,-250],[320,0,-250],[320,0,250],[-320,0,250]].map(p=>project(...p))),fill:'var(--panel)',stroke:'var(--border)'});
+ const objects=[];
+ function link(from,to,color,t){const [a,b]=route(nodes[from],nodes[to]),pa=project(a.x,40,a.z),pb=project(b.x,40,b.z);el('line',{x1:pa.x,y1:pa.y,x2:pb.x,y2:pb.y,stroke:color,'stroke-width':1.3,opacity:.5});if(t>=0&&t<=1){const p=project(a.x+(b.x-a.x)*t,40,a.z+(b.z-a.z)*t);objects.push({depth:p.depth,draw:()=>el('circle',{cx:p.x,cy:p.y,r:4,fill:color})});}}
+ if(leader!==null){for(let i=0;i<5;i++)if(i!==leader&&!(i===previousLeader&&crashed))link(leader,i,'var(--info)',((elapsed-(leader===nextLeader?won:0))%.9)/.35);}
+ if(candidate){const voters=[0,1,2,3,4].filter(i=>i!==previousLeader&&i!==nextLeader);voters.forEach((id,k)=>{link(nextLeader,id,'var(--warn)',(elapsed-election)/.25);if(k<2)link(id,nextLeader,'var(--good)',(elapsed-(k===0?10.65:10.9))/.25);});}
+ for(let i=0;i<5;i++){
+  const n=nodes[i],failed=i===previousLeader&&crashed,role=failed?'CRASHED':i===leader?'LEADER':candidate&&i===nextLeader?'CANDIDATE':'FOLLOWER',color=failed?'var(--bad)':i===leader?'var(--accent)':candidate&&i===nextLeader?'var(--warn)':'var(--border-node)';
+  const base=project(n.x,0,n.z),top=project(n.x,120,n.z),r=52,ry=25;
+  objects.push({depth:project(n.x,60,n.z).depth,draw:()=>{el('path',{d:`M${top.x-r} ${top.y} V${base.y} A${r} ${ry} 0 0 0 ${base.x+r} ${base.y} V${top.y} Z`,fill:'var(--panel)',stroke:color,'stroke-width':1.8});for(const height of [40,80]){const ring=project(n.x,height,n.z);el('path',{d:`M${ring.x-r} ${ring.y} A${r} ${ry} 0 0 0 ${ring.x+r} ${ring.y}`,fill:'none',stroke:color,'stroke-width':1});}el('ellipse',{cx:top.x,cy:top.y,rx:r,ry,fill:'var(--panel)',stroke:color,'stroke-width':1.8});text(`0${i+1}`,n.x,126,n.z,nodeColors[i],17);}});
+  let age=0;
+  if(leader===previousLeader&&i!==previousLeader)age=Math.max(0,elapsed-.35-Math.floor(Math.max(0,elapsed-.35)/.9)*.9);
+  else if(leader===null)age=Math.max(0,elapsed-lastBeforeCrash);
+  else if(leader===nextLeader&&i!==nextLeader)age=Math.max(0,(elapsed-won-.35)% .9);
+  const remaining=Math.max(0,(timeout[i]||3)-age);
+  if(!failed&&i!==leader){
+   // World-space ground ring shares the follower's exact election timer.
+   const fraction=Math.min(1,remaining/(timeout[i]||3)),segments=64;
+   // Match the rendered base ellipse exactly. Anchor the disappearing end
+   // to its camera-facing midpoint, independently of orbit azimuth.
+   const center=project(n.x,0,n.z);
+   const ring=t=>({x:center.x+Math.cos(Math.PI/2-t)*52,y:center.y+Math.sin(Math.PI/2-t)*25});
+   const track=Array.from({length:segments+1},(_,k)=>ring(k/segments*Math.PI*2));
+   const count=Math.ceil(segments*fraction);
+   const arc=Array.from({length:count+1},(_,k)=>ring((fraction-Math.min(k/segments,fraction))*Math.PI*2));
+   el('polyline',{points:pts(track),fill:'none',stroke:'var(--track)','stroke-width':3});
+   if(fraction>0)el('polyline',{points:pts(arc),fill:'none',stroke:'var(--warn)','stroke-width':4,'stroke-linecap':'round'});
+  }
+  document.querySelector('#role'+i).textContent=role;
+  // Crashed nodes retain their last local view until they rejoin.
+  const knownLeader=failed?previousLeader:elapsed<election?previousLeader:elapsed<won?null:nextLeader;
+  const leaderLabel=document.querySelector('#leader'+i);
+  leaderLabel.textContent=knownLeader===null?'Unknown':`0${knownLeader+1}`;
+  leaderLabel.style.color=knownLeader===null?'var(--text-muted)':nodeColors[knownLeader];
+  document.querySelector('#term'+i).textContent=String(failed?roundTerm:term);
+  const localTerm=failed?roundTerm:term;
+  objects.push({depth:project(n.x,60,n.z).depth+.01,draw:()=>{
+   const face=project(n.x,60,n.z),size=Math.max(28,String(localTerm).length*8+12),gap=4,pad=4,width=size*2+gap+pad*2;
+   el('rect',{x:face.x-width/2,y:face.y-size/2-pad,width,height:size+pad*2,rx:3,fill:'var(--panel)',stroke:'var(--border-node)'});
+   // Golden-angle hue spacing makes adjacent term colors clearly distinct.
+   const termColor=`hsl(${(210+(localTerm-1)*137.508)%360} 65% 72%)`;
+   const cells=[{value:knownLeader===null?'L?':`L${knownLeader+1}`,color:knownLeader===null?'#a5abb3':nodeColors[knownLeader]},{value:`T${localTerm}`,color:termColor}];
+   cells.forEach((cell,j)=>{
+    const x=face.x-width/2+pad+j*(size+gap);
+    el('rect',{x,y:face.y-size/2,width:size,height:size,rx:2,fill:cell.color});
+    const label=el('text',{x:x+size/2,y:face.y,'text-anchor':'middle','dominant-baseline':'central',fill:'var(--canvas)','font-size':11,'font-weight':600});label.textContent=cell.value;
+   });
+  }});
+  document.querySelector('#timer'+i).textContent=failed?'No messages sent':i===leader?'Heartbeat every 0.9s':candidate&&i===nextLeader?`${votes} / 3 votes`:remaining===0?'Election timeout':`${remaining.toFixed(1)}s until timeout`;
+  document.querySelector('#bar'+i).style.width=failed||i===leader?'0%':`${Math.min(100,remaining/(timeout[i]||3)*100)}%`;
+ }
+ objects.sort((a,b)=>a.depth-b.depth).forEach(o=>o.draw());
+ status.textContent=elapsed<8?`Term ${roundTerm} · node 0${previousLeader+1} sends heartbeats. Each follower resets its own election timer.`:elapsed<election?'Leader crash · heartbeats stop. Followers cannot distinguish failure from delay; their timers continue.':elapsed<won?`Node 0${nextLeader+1} timed out first · term ${roundTerm+1} · candidate requests votes (${votes} of 3 needed).`:elapsed<20?`Three votes elect node 0${nextLeader+1} · term ${roundTerm+1}. New heartbeats prevent other elections.`:`Node 0${previousLeader+1} rejoins as a follower of node 0${nextLeader+1}. The next round will use a different timeout winner.`;
+ pause.textContent=playing?'Pause demo':'Play demo';pause.setAttribute('aria-pressed',String(!playing));
+}
+pause.addEventListener('click',()=>{playing=!playing;render();});document.querySelector('#fail').addEventListener('click',()=>{elapsed=8;render();});document.querySelector('#reset').addEventListener('click',()=>{elapsed=0;previousLeader=0;roundTerm=1;bag=[];prepareElection();playing=!reduced.matches;render();});document.querySelector('#view').addEventListener('click',()=>{angle=.3;render();});
+svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointerId,x:e.clientX};svg.setPointerCapture(e.pointerId);svg.classList.add('dragging');});svg.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;angle+=(e.clientX-drag.x)*.008;drag.x=e.clientX;render();});function stop(){drag=null;svg.classList.remove('dragging');}for(const e of ['pointerup','pointercancel','lostpointercapture'])svg.addEventListener(e,stop);svg.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();angle+=e.key==='ArrowRight'?.12:-.12;render();});
+function frame(now){if(last!==null&&playing&&!document.hidden){elapsed+=Math.min((now-last)/1000,.05);if(elapsed>=26){elapsed-=26;previousLeader=nextLeader;roundTerm++;prepareElection();}render();}last=now;requestAnimationFrame(frame);}render();requestAnimationFrame(frame);
+})();</script></body></html>
