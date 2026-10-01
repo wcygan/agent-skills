@@ -26,7 +26,11 @@ TRANSACTION_PREFIX = ".catalog-transaction-"
 SHA_PATTERN = re.compile(r"[0-9a-f]{40}")
 HASH_PATTERN = re.compile(r"[0-9a-f]{64}")
 SKILL_PATTERN = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
-IGNORED_DIRECTORIES = {"__pycache__", ".mypy_cache", ".pytest_cache", ".ruff_cache", "node_modules"}
+# Local runtime data, build output, and test reports are never catalog content.
+IGNORED_DIRECTORIES = {
+    "__pycache__", ".mypy_cache", ".pytest_cache", ".ruff_cache", "node_modules",
+    ".data", ".output", "test-results",
+}
 IGNORED_FILES = {".DS_Store"}
 
 

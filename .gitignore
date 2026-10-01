@@ -12,3 +12,8 @@ venv/
 *.log
 
 .playwright-cli/
+
+# Generated example application state (also excluded from catalog hashing)
+.data/
+.output/
+test-results/

@@ -380,6 +380,27 @@ class CatalogTests(unittest.TestCase):
         with self.assertRaisesRegex(catalog.CatalogError, "symbolic links"):
             catalog.generate_snapshot(self.parent.root)
 
+    def test_snapshot_ignores_generated_application_state(self) -> None:
+        expected = catalog.load_snapshot(self.parent.root)
+        examples = self.parent.root / "skills" / "base" / "examples"
+        for directory, filename in (
+            (".data", "app.sqlite"),
+            (".output", "server/index.mjs"),
+            ("test-results", ".last-run.json"),
+        ):
+            with self.subTest(directory=directory):
+                generated = examples / directory / filename
+                generated.parent.mkdir(parents=True, exist_ok=True)
+                generated.write_text("local generated state")
+                generated.chmod(0o755)
+                self.assertEqual(catalog.generate_snapshot(self.parent.root), expected)
+                catalog.verify_snapshot(self.parent.root, require_fresh=True)
+
+        # Real source edits must still invalidate the snapshot.
+        (examples / "source.ts").write_text("export const version = 1;\n")
+        with self.assertRaisesRegex(catalog.CatalogError, "snapshot content drift"):
+            catalog.verify_snapshot(self.parent.root, require_fresh=True)
+
     def test_snapshot_ignores_generated_python_cache_files(self) -> None:
         cache = self.parent.root / "skills" / "base" / "__pycache__"
         cache.mkdir()
