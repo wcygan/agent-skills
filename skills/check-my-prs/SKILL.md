@@ -21,7 +21,6 @@ Use these specialist skills when available:
 - `code-review` only when the user asks for a deep Standards and Spec review or passes equivalent intent such as `--deep`.
 - `gh-address-comments` after the user asks to inspect or implement selected review feedback.
 - `gh-fix-ci` when the user asks to diagnose or fix failing GitHub Actions checks; a fix request authorizes the corresponding local repair.
-- `monitor-until` only when the user explicitly asks to watch a state until a terminal condition.
 
 If a specialist is unavailable, continue the requested inspection or authorized repair directly when tools and evidence suffice. Identify an essential missing capability rather than treating skill availability alone as a blocker.
 
@@ -30,7 +29,7 @@ smallest useful next action and name the specialist that owns it:
 
 - Active review threads route to `gh-address-comments`.
 - Failed GitHub Actions checks route to `gh-fix-ci`.
-- Pending checks route to `monitor-until` only when the user asks to watch.
+- Watch pending checks only when the user asks, with an explicit terminal condition and time budget.
 - Stack propagation or merge-order issues route to `gh-stack-companion`.
 - Missing or weak visual proof routes to `github-pr-media-proof`.
 

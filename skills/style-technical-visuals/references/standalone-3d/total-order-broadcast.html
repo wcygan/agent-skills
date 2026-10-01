@@ -59,9 +59,9 @@ function render(){
   function box(x,z,w,d,h,fill,stroke,base=0){
    const a=x-w/2,b=x+w/2,c=z-d/2,e=z+d/2;
    const edges=base?{'stroke-dasharray':'3 2'}:{};
-   face([[a,base,e],[b,base,e],[b,h,e],[a,h,e]],fill,stroke,edges);
-   if(angle<0)face([[a,base,c],[a,base,e],[a,h,e],[a,h,c]],fill,stroke,edges);
-   else face([[b,base,c],[b,base,e],[b,h,e],[b,h,c]],fill,stroke,edges);
+   const front=Math.cos(angle)>=0?e:c,side=Math.sin(angle)>=0?b:a;
+   face([[a,base,front],[b,base,front],[b,h,front],[a,h,front]],fill,stroke,edges);
+   face([[side,base,c],[side,base,e],[side,h,e],[side,h,c]],fill,stroke,edges);
    face([[a,h,c],[b,h,c],[b,h,e],[a,h,e]],fill,stroke,edges);
   }
   for(let node=0;node<2;node++){
@@ -96,9 +96,9 @@ function render(){
 document.querySelector('#view').addEventListener('click',()=>{angle=.18;render();});
 for(const svg of document.querySelectorAll('svg')){
  svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointerId,x:e.clientX};svg.setPointerCapture(e.pointerId);});
- svg.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;angle=Math.max(-.65,Math.min(.65,angle+(e.clientX-drag.x)*.005));drag.x=e.clientX;render();});
- for(const event of ['pointerup','pointercancel'])svg.addEventListener(event,()=>{drag=null;});
- svg.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();angle=Math.max(-.65,Math.min(.65,angle+(e.key==='ArrowRight'?.08:-.08)));render();});
+ svg.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;angle+=(e.clientX-drag.x)*.005;drag.x=e.clientX;render();});
+ for(const event of ['pointerup','pointercancel','lostpointercapture'])svg.addEventListener(event,()=>{drag=null;});
+ svg.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();angle+=e.key==='ArrowRight'?.08:-.08;render();});
 }
 document.querySelector('#pause').addEventListener('click',()=>{playing=!playing;render();});document.querySelector('#step').addEventListener('click',()=>{playing=false;elapsed=elapsed>=7.3?0:Math.min(7.3,elapsed+1.1);render();});document.querySelector('#reset').addEventListener('click',()=>{elapsed=0;playing=!reduced.matches;render();});
 function frame(now){if(last!==null&&playing&&!document.hidden){elapsed=(elapsed+Math.min((now-last)/1000,.05))%12;render();}last=now;requestAnimationFrame(frame);}render();requestAnimationFrame(frame);
@@ -140,7 +140,7 @@ function frame(now){if(last!==null&&playing&&!document.hidden){elapsed=(elapsed+
     const hint = document.createElement('span');
     hint.id = `${svg.id}-zoom-help`;
     hint.className = 'zoom-hint';
-    hint.textContent = 'Scroll to zoom · drag to orbit · + / − zoom · 0 fit';
+    hint.textContent = 'Scroll to zoom · drag for 360° orbit · + / − zoom · 0 fit';
     controls.append(level, hint);
     svg.before(controls);
     svg.setAttribute('aria-describedby', [svg.getAttribute('aria-describedby'), hint.id].filter(Boolean).join(' '));

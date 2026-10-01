@@ -46,7 +46,6 @@ upstream repository, not an opt-out from parent-catalog inheritance.
 | Local skill | Original skill path |
 | --- | --- |
 | [animate](../skills/animate/SKILL.md) | [`skills/animate`](https://github.com/emilkowalski/skills/tree/9075d1724a831411ab5cf138dd9b5cd406ffc2e2/skills/animate) |
-| [animation-vocabulary](../skills/animation-vocabulary/SKILL.md) | [`skills/animation-vocabulary`](https://github.com/emilkowalski/skills/tree/9075d1724a831411ab5cf138dd9b5cd406ffc2e2/skills/animation-vocabulary) |
 | [emil-design-eng](../skills/emil-design-eng/SKILL.md) | [`skills/emil-design-eng`](https://github.com/emilkowalski/skills/tree/9075d1724a831411ab5cf138dd9b5cd406ffc2e2/skills/emil-design-eng) |
 | [find-animation-opportunities](../skills/find-animation-opportunities/SKILL.md) | [`skills/find-animation-opportunities`](https://github.com/emilkowalski/skills/tree/9075d1724a831411ab5cf138dd9b5cd406ffc2e2/skills/find-animation-opportunities) |
 | [improve-animations](../skills/improve-animations/SKILL.md) | [`skills/improve-animations`](https://github.com/emilkowalski/skills/tree/9075d1724a831411ab5cf138dd9b5cd406ffc2e2/skills/improve-animations) |

@@ -181,7 +181,7 @@ function frame(now){if(last!==null&&playing&&!document.hidden){elapsed+=Math.min
     const hint = document.createElement('span');
     hint.id = `${svg.id}-zoom-help`;
     hint.className = 'zoom-hint';
-    hint.textContent = 'Scroll to zoom · drag to orbit · + / − zoom · 0 fit';
+    hint.textContent = 'Scroll to zoom · drag for 360° orbit · + / − zoom · 0 fit';
     controls.append(level, hint);
     svg.before(controls);
     svg.setAttribute('aria-describedby', [svg.getAttribute('aria-describedby'), hint.id].filter(Boolean).join(' '));

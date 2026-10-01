@@ -82,7 +82,7 @@ function connection(path,color,project,add){
 function along(path,t){const lengths=path.slice(1).map((b,i)=>Math.hypot(...b.map((n,j)=>n-path[i][j])));let distance=t*lengths.reduce((a,b)=>a+b,0);for(let i=0;i<lengths.length;i++){if(distance<=lengths[i]||i===lengths.length-1)return path[i].map((n,j)=>n+(path[i+1][j]-n)*Math.min(1,distance/lengths[i]));distance-=lengths[i];}}
 function render(){world.replaceChildren();const faces=[],labels=[];
 function face(v,fill,stroke,layer=1){faces.push({v,fill,stroke,layer,depth:v.reduce((s,a)=>s+p(...a).depth,0)/v.length});}
-function box(x,z,w,d,h,fill,stroke,base=0,layer=1){const a=x-w/2,b=x+w/2,c=z-d/2,e=z+d/2;face([[a,base,e],[b,base,e],[b,h,e],[a,h,e]],fill,stroke,layer);const side=angle<0?a:b;face([[side,base,c],[side,base,e],[side,h,e],[side,h,c]],fill,stroke,layer);face([[a,h,c],[b,h,c],[b,h,e],[a,h,e]],fill,stroke,layer);}
+function box(x,z,w,d,h,fill,stroke,base=0,layer=1){const a=x-w/2,b=x+w/2,c=z-d/2,e=z+d/2,front=Math.cos(angle)>=0?e:c,side=Math.sin(angle)>=0?b:a;face([[a,base,front],[b,base,front],[b,h,front],[a,h,front]],fill,stroke,layer);face([[side,base,c],[side,base,e],[side,h,e],[side,h,c]],fill,stroke,layer);face([[a,h,c],[b,h,c],[b,h,e],[a,h,e]],fill,stroke,layer);}
 function cylinder(x,z,color){
  const top=p(x,90,z),base=p(x,0,z),r=56,ry=33;
  faces.push({layer:1,depth:p(x,45,z).depth,draw:()=>{
@@ -122,7 +122,7 @@ text('MYSQL + BINLOG',-350,0,150,'#f6a76b',14);text('KAFKA TOPIC',100,0,300,'#69
 document.querySelector('#status').textContent=`${active.filter(e=>elapsed-e.start<10).length} changes in flight · ${capturedCount} binlog records · ${Object.keys(docs).length} indexed documents. Colors identify key/partition lanes.`;
 document.querySelector('#event').textContent=latest?JSON.stringify({key:{id:latest.id},op:latest.offset===0?'c':'u',after:{id:latest.id,price:latest.price},partition:latest.partition,offset:latest.offset},null,2):'Waiting';document.querySelector('#document').textContent=JSON.stringify(Object.values(docs),null,2);document.querySelector('#pause').textContent=playing?'Pause demo':'Play demo';}
 document.querySelector('#pause').addEventListener('click',()=>{playing=!playing;render();});document.querySelector('#step').addEventListener('click',()=>{playing=false;elapsed=elapsed+1;render();});document.querySelector('#reset').addEventListener('click',()=>{elapsed=0;playing=!reduced.matches;render();});document.querySelector('#view').addEventListener('click',()=>{angle=.12;render();});
-svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointerId,x:e.clientX};svg.setPointerCapture(e.pointerId);});svg.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;angle=Math.max(-.5,Math.min(.5,angle+(e.clientX-drag.x)*.004));drag.x=e.clientX;render();});for(const name of ['pointerup','pointercancel','lostpointercapture'])svg.addEventListener(name,()=>drag=null);svg.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();angle=Math.max(-.5,Math.min(.5,angle+(e.key==='ArrowRight'?.08:-.08)));render();});
+svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointerId,x:e.clientX};svg.setPointerCapture(e.pointerId);});svg.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;angle+=(e.clientX-drag.x)*.004;drag.x=e.clientX;render();});for(const name of ['pointerup','pointercancel','lostpointercapture'])svg.addEventListener(name,()=>drag=null);svg.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();angle+=e.key==='ArrowRight'?.08:-.08;render();});
 function frame(now){if(last!==null&&playing&&!document.hidden){elapsed=elapsed+Math.min((now-last)/1000,.05);render();}last=now;requestAnimationFrame(frame);}render();requestAnimationFrame(frame);
 })();</script><script>
 // Kept inline so each reference remains a standalone, offline demo.
@@ -162,7 +162,7 @@ function frame(now){if(last!==null&&playing&&!document.hidden){elapsed=elapsed+M
     const hint = document.createElement('span');
     hint.id = `${svg.id}-zoom-help`;
     hint.className = 'zoom-hint';
-    hint.textContent = 'Scroll to zoom · drag to orbit · + / − zoom · 0 fit';
+    hint.textContent = 'Scroll to zoom · drag for 360° orbit · + / − zoom · 0 fit';
     controls.append(level, hint);
     svg.before(controls);
     svg.setAttribute('aria-describedby', [svg.getAttribute('aria-describedby'), hint.id].filter(Boolean).join(' '));

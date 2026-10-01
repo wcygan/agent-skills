@@ -9,6 +9,7 @@
   --accent: #f35815; --good: #27b648; --warn: #d19f03;
   --bad: #ff455d; --info: #1e9de7;
   --scale-app:#73dbac;--scale-storage:#f6a76b;--scale-wire:#747474;--scale-front:#69c9f4;--scale-history:#c6a0f6;--scale-matching:#f0c96a;--scale-worker:#73dbac;--scale-platform:#15181b;
+  --scale-scheduling:#f18eae;--scale-replication:#a7b7c9;
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--canvas); color: var(--text);
@@ -41,6 +42,7 @@ main{max-width:1300px}
 .scale-intro{max-width:85ch}.scale-note{font-size:12px}.scale-section h3{font-size:14px;font-weight:500;margin:0 0 8px}.scale-section .details p{margin:0}
 .scale-counts{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0}.scale-counts div{border:1px solid var(--border);padding:12px}.scale-counts dt{color:var(--text-muted);font-size:11px}.scale-counts dd{margin:6px 0 0;font-size:20px;font-variant-numeric:tabular-nums}
 #scale-status{min-height:3em;color:var(--text-muted)}.scale-stage{overflow-x:auto;overscroll-behavior-x:contain}.scale-stage svg{min-width:0;cursor:grab;touch-action:pan-x pan-y}.scale-stage svg.dragging{cursor:grabbing}.scale-stage:focus-visible,#scale-scene:focus-visible{outline:2px solid var(--info);outline-offset:3px}.scale-view-controls{align-items:center;font-size:12px}.scale-view-controls span{color:var(--text-muted)}button:disabled{opacity:.45;cursor:default}
+.connection-key{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 20px}.connection-key button{display:inline-flex;gap:8px;align-items:center;font-size:12px;min-height:40px}.connection-key button[aria-pressed="true"]{border-color:var(--connection-color,var(--text));background:var(--track)}.connection-swatch{width:22px;border-top:2px solid var(--connection-color);flex:none}.connection-swatch.replication{border-top-style:dashed}.connection-hint{font-size:12px;color:var(--text-muted);margin:0 0 8px}
 @media(max-width:600px){.scale-counts{grid-template-columns:repeat(2,1fr)}}
 
 /* The viewport keeps its height while the camera zooms. */
@@ -69,8 +71,19 @@ main{max-width:1300px}
     <div><dt>Physical write shards</dt><dd id="scale-storage-count">3</dd></div>
   </dl>
   <p id="scale-status" role="status" aria-live="polite"></p>
+  <p class="connection-hint">Select a connection type to highlight its paths. Colored rings mark the starting ports; matching arrowheads mark the receiving components.</p>
+  <div id="scale-connection-key" class="connection-key" role="group" aria-label="Highlight a connection type">
+    <button type="button" data-connection-filter="all" aria-pressed="true" aria-controls="scale-scene">All connections</button>
+    <button type="button" data-connection-filter="application" aria-pressed="false" aria-controls="scale-scene" style="--connection-color:var(--scale-app)"><span class="connection-swatch" aria-hidden="true"></span>Application RPC</button>
+    <button type="button" data-connection-filter="grpc" aria-pressed="false" aria-controls="scale-scene" style="--connection-color:var(--scale-front)"><span class="connection-swatch" aria-hidden="true"></span>LB → Frontend</button>
+    <button type="button" data-connection-filter="history" aria-pressed="false" aria-controls="scale-scene" style="--connection-color:var(--scale-history)"><span class="connection-swatch" aria-hidden="true"></span>Frontend → History</button>
+    <button type="button" data-connection-filter="matching" aria-pressed="false" aria-controls="scale-scene" style="--connection-color:var(--scale-matching)"><span class="connection-swatch" aria-hidden="true"></span>Frontend → Matching</button>
+    <button type="button" data-connection-filter="scheduling" aria-pressed="false" aria-controls="scale-scene" style="--connection-color:var(--scale-scheduling)"><span class="connection-swatch" aria-hidden="true"></span>History → Matching</button>
+    <button type="button" data-connection-filter="sql" aria-pressed="false" aria-controls="scale-scene" style="--connection-color:var(--scale-storage)"><span class="connection-swatch" aria-hidden="true"></span>SQL persistence</button>
+    <button type="button" data-connection-filter="replication" aria-pressed="false" aria-controls="scale-scene" style="--connection-color:var(--scale-replication)"><span class="connection-swatch replication" aria-hidden="true"></span>Replica copies</button>
+  </div>
   <figure>
-    <div class="scale-stage" tabindex="0" role="region" aria-label="Scaled deployment diagram; scroll horizontally on small screens">
+    <div class="scale-stage" tabindex="0" role="region" aria-label="Scaled deployment diagram">
       <svg id="scale-scene" viewBox="0 0 1600 1300" tabindex="0" role="img" aria-labelledby="scale-svg-title scale-description" data-reset-view="scale-view">
         <title id="scale-svg-title">Horizontally scaled Temporal with Vitess and MySQL persistence</title>
         <desc id="scale-description">Drag with a mouse or use the left and right arrow keys to orbit. Clients and application workers enter a gRPC load balancer and three Frontend instances. History instances own twelve logical shards; two Matching instances host task queue partitions. History and Matching use VTGate SQL routing to reach MySQL primaries and replicas, plus an unsharded keyspace.</desc>
@@ -81,7 +94,7 @@ main{max-width:1300px}
       <button id="scale-left" type="button" aria-controls="scale-scene">Rotate left</button>
       <button id="scale-right" type="button" aria-controls="scale-scene">Rotate right</button>
       <button id="scale-view" type="button" aria-controls="scale-scene">Reset view</button>
-      <span>Mouse drag to orbit · ← / → · gray arrows: RPC / SQL / replication</span>
+      <span>Mouse drag for 360° orbit · ← / → · dashed lines: replica copies</span>
     </div>
     <figcaption><strong>Logical History Shards and physical MySQL shards scale separately.</strong> Adding a History instance redistributes H1–H12 among owners. Adding SDK workers increases application execution capacity. Resharding changes example data placement behind VTGate. The storage samples illustrate placement for shard-keyed tables, not actual Vindex output. Real routing uses per-table VSchema/Vindex rules; task queue tables use different keys. Q0–Q3 illustrate four partitions of the orders Workflow Task Queue; their ownership can move among Matching instances.</figcaption>
   </figure>
@@ -94,7 +107,9 @@ main{max-width:1300px}
   <p class="scale-note">Sources: <a href="https://docs.temporal.io/temporal-service/temporal-server">Temporal Server architecture</a> · <a href="https://vitess.io/docs/24.0/overview/architecture/">Vitess architecture</a> · <a href="https://planetscale.com/blog/temporal-workflows-at-scale-sharding-in-production">Temporal sharding in production</a></p>
 </section>
 <footer><a href="https://github.com/temporalio/temporal/blob/main/docs/_assets/matching-context.svg">Temporal Matching context diagram</a> · <a href="https://github.com/temporalio/temporal/blob/main/docs/architecture/workflow-lifecycle.md">Workflow lifecycle</a> · <a href="https://docs.temporal.io/temporal-service/temporal-server">Server architecture</a><br>Offline · autoplay · reduced motion starts paused · simplified Workflow Task lifecycle.</footer></main><script>(()=>{
-const ns='http://www.w3.org/2000/svg',world=document.querySelector('#world'),svg=document.querySelector('#scene'),reduced=matchMedia('(prefers-reduced-motion: reduce)');let elapsed=0,last=null,playing=!reduced.matches,angle=.14,drag=null;
+const ns='http://www.w3.org/2000/svg',world=document.querySelector('#world'),svg=document.querySelector('#scene'),reduced=matchMedia('(prefers-reduced-motion: reduce)');
+const initialAngle=.14,orbitCenter={x:75,z:280};
+let elapsed=0,last=null,playing=!reduced.matches,angle=initialAngle,drag=null;
 const paths={
 client:[[-220,40,695],[-220,40,490],[-230,40,490],[-230,40,255]],
 worker:[[40,40,695],[40,40,490],[-230,40,490],[-230,40,255]],
@@ -119,12 +134,18 @@ const phases=[
 {path:paths.worker,message:'The worker reports commands/results through Frontend.'},
 {path:[...paths.history,...paths.historyDb],message:'History processes the completion and persists resulting state and events in MySQL.'}
 ];
-function p(x,y,z){const X=x*Math.cos(angle)-z*Math.sin(angle),Z=x*Math.sin(angle)+z*Math.cos(angle);return{x:600+X,y:365+Z*.56-y*.9,depth:Z+y*.622};}
+function p(x,y,z){
+ // Orbit around the deployment center while preserving the initial framing.
+ const dx=x-orbitCenter.x,dz=z-orbitCenter.z;
+ const X=dx*Math.cos(angle)-dz*Math.sin(angle)+orbitCenter.x*Math.cos(initialAngle)-orbitCenter.z*Math.sin(initialAngle);
+ const Z=dx*Math.sin(angle)+dz*Math.cos(angle)+orbitCenter.x*Math.sin(initialAngle)+orbitCenter.z*Math.cos(initialAngle);
+ return{x:600+X,y:365+Z*.56-y*.9,depth:Z+y*.622};
+}
 let sceneFragment;
 function el(tag,a){const e=document.createElementNS(ns,tag);for(const[k,v]of Object.entries(a))e.setAttribute(k,v);sceneFragment.append(e);return e;}
 function render(){sceneFragment=document.createDocumentFragment();const faces=[],labels=[],stage=Math.min(11,Math.floor(elapsed/3)),phase=phases[stage];
 function face(v,fill,stroke,layer=1){faces.push({v,fill,stroke,layer,depth:v.reduce((s,a)=>s+p(...a).depth,0)/v.length});}
-function box(x,z,w,d,h,color,base=0,layer=1){const a=x-w/2,b=x+w/2,c=z-d/2,e=z+d/2,fill=layer===0?'var(--scale-platform)':'var(--panel)';face([[a,base,e],[b,base,e],[b,h,e],[a,h,e]],fill,color,layer);const side=angle<0?a:b;face([[side,base,c],[side,base,e],[side,h,e],[side,h,c]],fill,color,layer);face([[a,h,c],[b,h,c],[b,h,e],[a,h,e]],fill,color,layer);}
+function box(x,z,w,d,h,color,base=0,layer=1){const a=x-w/2,b=x+w/2,c=z-d/2,e=z+d/2,fill=layer===0?'var(--scale-platform)':'var(--panel)',front=Math.cos(angle)>=0?e:c,side=Math.sin(angle)>=0?b:a;face([[a,base,front],[b,base,front],[b,h,front],[a,h,front]],fill,color,layer);face([[side,base,c],[side,base,e],[side,h,e],[side,h,c]],fill,color,layer);face([[a,h,c],[b,h,c],[b,h,e],[a,h,e]],fill,color,layer);}
 function label(value,x,y,z,color,size=14){labels.push({value,x,y,z,color,size});}
 box(-90,750,470,190,4,'var(--border-node)',0,0);box(-70,0,520,640,4,'var(--border-node)',0,0);box(380,0,200,240,4,'var(--border-node)',0,0);
 // Ports, shafts, active arrowheads, and packets share exact world coordinates.
@@ -160,58 +181,139 @@ label('YOUR APPLICATION',-90,0,895,'var(--scale-app)',14);label('TEMPORAL SERVER
 for(const l of labels){const q=p(l.x,l.y,l.z),e=el('text',{x:q.x,y:q.y,fill:l.color,'font-size':l.size,'text-anchor':'middle','dominant-baseline':'central'});e.textContent=l.value;}
 world.replaceChildren(sceneFragment);
 document.querySelector('#status').textContent=`${stage+1}/12 · ${phase.message}`;document.querySelector('#history').textContent=stage<3?'Awaiting persisted execution.':stage<11?'Event History + mutable state durable.\nInternal transfer/timer tasks recorded.':'Workflow Task completion and resulting state durable.';document.querySelector('#worker').textContent=stage<9?'Long-polling through Frontend.':stage<10?'Running Workflow code using delivered history.':'Reporting commands/results through Frontend.';document.querySelector('#pause').textContent=playing?'Pause demo':'Play demo';}
-document.querySelector('#pause').addEventListener('click',()=>{playing=!playing;render();});document.querySelector('#step').addEventListener('click',()=>{playing=false;elapsed=(Math.floor(elapsed/3)*3+3)%39;render();});document.querySelector('#reset').addEventListener('click',()=>{elapsed=0;playing=!reduced.matches;render();});document.querySelector('#view').addEventListener('click',()=>{angle=.14;render();});
-svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointerId,x:e.clientX};svg.setPointerCapture(e.pointerId);});svg.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;angle=Math.max(-.35,Math.min(.35,angle+(e.clientX-drag.x)*.004));drag.x=e.clientX;render();});for(const event of ['pointerup','pointercancel','lostpointercapture'])svg.addEventListener(event,()=>drag=null);svg.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();angle=Math.max(-.35,Math.min(.35,angle+(e.key==='ArrowRight'?.08:-.08)));render();});function frame(now){if(last!==null&&playing&&!document.hidden){elapsed=(elapsed+Math.min((now-last)/1000,.05))%39;render();}last=now;requestAnimationFrame(frame);}render();requestAnimationFrame(frame);
+document.querySelector('#pause').addEventListener('click',()=>{playing=!playing;render();});document.querySelector('#step').addEventListener('click',()=>{playing=false;elapsed=(Math.floor(elapsed/3)*3+3)%39;render();});document.querySelector('#reset').addEventListener('click',()=>{elapsed=0;playing=!reduced.matches;render();});document.querySelector('#view').addEventListener('click',()=>{angle=initialAngle;render();});
+svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointerId,x:e.clientX};svg.setPointerCapture(e.pointerId);});svg.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;angle+=(e.clientX-drag.x)*.004;drag.x=e.clientX;render();});for(const event of ['pointerup','pointercancel','lostpointercapture'])svg.addEventListener(event,()=>drag=null);svg.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();angle+=e.key==='ArrowRight'?.08:-.08;render();});function frame(now){if(last!==null&&playing&&!document.hidden){elapsed=(elapsed+Math.min((now-last)/1000,.05))%39;render();}last=now;requestAnimationFrame(frame);}render();requestAnimationFrame(frame);
 })();</script><script>
 (()=>{
   const ns='http://www.w3.org/2000/svg';
   const world=document.querySelector('#scale-world'),svg=document.querySelector('#scale-scene');
-  const initialAngle=.08,minAngle=-.22,maxAngle=.22;
+  const initialAngle=.08,orbitCenter={x:0,z:600};
   let historyCount=2,workerCount=3,dbCount=3,angle=initialAngle,drag=null;
+  let highlightedConnection='all';
   let message='Start: 2 History instances own H1–H12; 3 physical MySQL write shards hold example data. Scale each layer independently.';
   const colors={app:'var(--scale-app)',frontend:'var(--scale-front)',history:'var(--scale-history)',matching:'var(--scale-matching)',worker:'var(--scale-worker)',storage:'var(--scale-storage)'};
+  const connections={application:{color:colors.app},grpc:{color:colors.frontend},history:{color:colors.history},matching:{color:colors.matching},scheduling:{color:'var(--scale-scheduling)'},sql:{color:colors.storage},replication:{color:'var(--scale-replication)',dash:'5 5'}};
   function project(x,y,z){
-    const X=x*Math.cos(angle)-z*Math.sin(angle),Z=x*Math.sin(angle)+z*Math.cos(angle);
-    return{x:800+X*.76,y:355+(Z*.62-y*.95)*.76,depth:Z+y*.653};
+    const dx=x-orbitCenter.x,dz=z-orbitCenter.z;
+    const X=dx*Math.cos(angle)-dz*Math.sin(angle)+orbitCenter.x*Math.cos(initialAngle)-orbitCenter.z*Math.sin(initialAngle);
+    const Z=dx*Math.sin(angle)+dz*Math.cos(angle)+orbitCenter.x*Math.sin(initialAngle)+orbitCenter.z*Math.cos(initialAngle);
+    return{x:800+X*.76,y:355+(Z*.62-y*.95)*.76,depth:Z+y*(.62/.95)};
   }
   let fragment;
   function element(tag,attrs){const e=document.createElementNS(ns,tag);for(const[k,v]of Object.entries(attrs))e.setAttribute(k,v);fragment.append(e);return e;}
   function render(){
     fragment=document.createDocumentFragment();
-    const faces=[],labels=[],segments=new Set(),arrows=new Set();
-    function face(vertices,fill,stroke,layer=1){
+    const faces=[],labels=[],solids=[],occluders=[],wires=[],segments=new Set(),arrows=new Set(),ports=new Set();
+    const definitions=element('defs',{});
+    function occluder(vertices,owner){
+      const points=vertices.map(v=>project(...v));
+      occluders.push({points,owner,left:Math.min(...points.map(p=>p.x)),right:Math.max(...points.map(p=>p.x)),top:Math.min(...points.map(p=>p.y)),bottom:Math.max(...points.map(p=>p.y))});
+    }
+    function face(vertices,fill,stroke,layer=1,owner){
+      if(owner)occluder(vertices,owner);
       faces.push({layer,depth:vertices.reduce((sum,v)=>sum+project(...v).depth,0)/vertices.length,draw:()=>element('polygon',{points:vertices.map(v=>{const q=project(...v);return q.x+','+q.y;}).join(' '),fill,stroke,'stroke-width':1.3})});
     }
     function box(x,z,w,d,h,color,base=0,layer=1){
       const a=x-w/2,b=x+w/2,c=z-d/2,e=z+d/2,fill=layer===0?'var(--scale-platform)':'var(--panel)';
-      face([[a,base,e],[b,base,e],[b,h,e],[a,h,e]],fill,color,layer);
-      const side=angle<0?a:b;
-      face([[side,base,c],[side,base,e],[side,h,e],[side,h,c]],fill,color,layer);
-      face([[a,h,c],[b,h,c],[b,h,e],[a,h,e]],fill,color,layer);
+      const owner=layer>0?{type:'box',a,b,c,e,base,h}:null;
+      if(owner)solids.push(owner);
+      const front=Math.cos(angle)>=0?e:c,side=Math.sin(angle)>=0?b:a;
+      face([[a,base,front],[b,base,front],[b,h,front],[a,h,front]],fill,color,layer,owner);
+      face([[side,base,c],[side,base,e],[side,h,e],[side,h,c]],fill,color,layer,owner);
+      face([[a,h,c],[b,h,c],[b,h,e],[a,h,e]],fill,color,layer,owner);
+    }
+    function frontPortOwner(port){
+      const [x,y,z]=port;
+      const near=(a,b)=>Math.abs(a-b)<1e-6,sin=Math.sin(angle),cos=Math.cos(angle);
+      for(const s of solids){
+        if(y<s.base-1e-6||y>s.h+1e-6)continue;
+        if(s.type==='box'){
+          if(x<s.a-1e-6||x>s.b+1e-6||z<s.c-1e-6||z>s.e+1e-6)continue;
+          if(near(y,s.h)||near(x,s.a)&&sin<0||near(x,s.b)&&sin>0||near(z,s.c)&&cos<0||near(z,s.e)&&cos>0)return s;
+        }else if(near(Math.hypot(x-s.x,z-s.z),s.r)&&((x-s.x)*sin+(z-s.z)*cos)>1e-6)return s;
+      }
+      return null;
+    }
+    // A connector's depth varies along its projected line. Clip each occluder
+    // to the part in front of that line, rather than sorting by face centers.
+    // Masks also cover the stroke, port ring and arrowhead, keeping rear wires
+    // hidden while camera-facing connections meet their actual surface ports.
+    function wireMask(a,b,padding=5){
+      const start=project(...a),end=project(...b),dx=end.x-start.x,dy=end.y-start.y,length2=dx*dx+dy*dy;
+      const depthAt=p=>start.depth+(length2?((p.x-start.x)*dx+(p.y-start.y)*dy)/length2*(end.depth-start.depth):0);
+      const left=Math.min(start.x,end.x)-padding,top=Math.min(start.y,end.y)-padding;
+      const right=Math.max(start.x,end.x)+padding,bottom=Math.max(start.y,end.y)+padding;
+      const owners=new Set([frontPortOwner(a),frontPortOwner(b)]);
+      const hidden=[];
+      for(const surface of occluders){
+        if(owners.has(surface.owner))continue;
+        if(surface.right<left||surface.left>right||surface.bottom<top||surface.top>bottom)continue;
+        const points=surface.points;
+        const clipped=[];
+        for(let i=0;i<points.length;i++){
+          const p=points[i],q=points[(i+1)%points.length],dp=p.depth-depthAt(p)-.01,dq=q.depth-depthAt(q)-.01;
+          if(dp>0)clipped.push(p);
+          if((dp>0)!==(dq>0)){
+            const t=dp/(dp-dq);clipped.push({x:p.x+(q.x-p.x)*t,y:p.y+(q.y-p.y)*t});
+          }
+        }
+        if(clipped.length<3)continue;
+        const area=clipped.reduce((sum,p,i)=>{const q=clipped[(i+1)%clipped.length];return sum+p.x*q.y-q.x*p.y;},0);
+        if(Math.abs(area)<1e-6)continue;
+        if(area<0)clipped.reverse();
+        hidden.push('M'+clipped.map(p=>`${p.x} ${p.y}`).join(' L')+' Z');
+      }
+      if(!hidden.length)return {};
+      const id='scale-depth-'+definitions.children.length;
+      const mask=document.createElementNS(ns,'mask');
+      for(const[k,v]of Object.entries({id,maskUnits:'userSpaceOnUse',maskContentUnits:'userSpaceOnUse',x:left,y:top,width:right-left,height:bottom-top,'mask-type':'luminance'}))mask.setAttribute(k,v);
+      const background=document.createElementNS(ns,'rect');
+      for(const[k,v]of Object.entries({x:left,y:top,width:right-left,height:bottom-top,fill:'white'}))background.setAttribute(k,v);
+      const cutouts=document.createElementNS(ns,'path');cutouts.setAttribute('d',hidden.join(' '));cutouts.setAttribute('fill','black');
+      mask.append(background,cutouts);definitions.append(mask);
+      return {mask:`url(#${id})`};
     }
     function label(value,x,y,z,color='var(--text)',size=15){labels.push({value,x,y,z,color,size});}
-    // Every route and shape shares this projection. Splitting wire segments
-    // preserves painter ordering around raised faces while the scene rotates.
-    function route(path,arrow=false){
+    // Draw complete legs with geometric occlusion; segment midpoints cannot
+    // reliably order a wire against a broad face during a full revolution.
+    function route(path,kind,arrow=false){
+      const style=connections[kind],active=highlightedConnection==='all'||highlightedConnection===kind;
+      const attrs={stroke:style.color,'stroke-width':active?1.9:1.4,opacity:active?1:.12,'data-connection':kind};
+      if(style.dash)attrs['stroke-dasharray']=style.dash;
+      const portKey=kind+':'+path[0].join(',');
+      if(!ports.has(portKey)){
+        ports.add(portKey);const start=project(...path[0]);
+        wires.push(()=>element('circle',{cx:start.x,cy:start.y,r:3,fill:'var(--canvas)',stroke:style.color,'stroke-width':1.6,opacity:attrs.opacity,...wireMask(path[0],path[0]),'data-connection':kind,'data-source-port':path[0].join(',')}));
+      }
       for(let i=1;i<path.length;i++){
-        const a=path[i-1],b=path[i],key=JSON.stringify([a,b].sort());
+        const a=path[i-1],b=path[i],key=kind+':'+JSON.stringify([a,b].sort());
         if(segments.has(key))continue;segments.add(key);
-        const length=Math.hypot(...b.map((v,j)=>v-a[j])),parts=Math.max(1,Math.ceil(length/40));
         const start=project(...a),end=project(...b),screenLength=Math.hypot(end.x-start.x,end.y-start.y);
         const trim=arrow&&i===path.length-1?Math.min(.9,8.5/screenLength):0;
-        for(let k=0;k<parts;k++){
-          const p=project(...a.map((v,j)=>v+(b[j]-v)*(1-trim)*k/parts)),q=project(...a.map((v,j)=>v+(b[j]-v)*(1-trim)*(k+1)/parts));
-          faces.push({layer:1,depth:(p.depth+q.depth)/2,draw:()=>element('line',{x1:p.x,y1:p.y,x2:q.x,y2:q.y,stroke:'var(--scale-wire)','stroke-width':1.4})});
+        const to=a.map((v,j)=>v+(b[j]-v)*(1-trim)),tip=project(...to);
+        wires.push(()=>element('line',{x1:start.x,y1:start.y,x2:tip.x,y2:tip.y,...attrs,...wireMask(a,b),'data-world-start':a.join(','),'data-world-end':to.join(',')}));
+        // A solid final dash overlaps the head even when a dashed route happens
+        // to end inside a gap; its depth uses the same complete leg.
+        if(style.dash&&arrow&&i===path.length-1){
+          const from=a.map((v,j)=>v+(b[j]-v)*Math.max(0,1-trim-5/screenLength)),tail=project(...from);
+          wires.push(()=>element('line',{x1:tail.x,y1:tail.y,x2:tip.x,y2:tip.y,...attrs,'stroke-dasharray':'none',...wireMask(a,b),'data-world-start':from.join(','),'data-world-end':to.join(',')}));
         }
       }
       if(arrow){
-        const a=path.at(-2),b=path.at(-1),key=JSON.stringify([a,b]);
+        const a=path.at(-2),b=path.at(-1),key=kind+':'+JSON.stringify([a,b]);
         if(arrows.has(key))return;arrows.add(key);
         const tip=project(...b),tail=project(...a),length=Math.hypot(tip.x-tail.x,tip.y-tail.y),ux=(tip.x-tail.x)/length,uy=(tip.y-tail.y)/length;
-        faces.push({layer:1,depth:tip.depth+.02,draw:()=>element('path',{d:`M${tip.x} ${tip.y} L${tip.x-ux*9-uy*3.5} ${tip.y-uy*9+ux*3.5} L${tip.x-ux*9+uy*3.5} ${tip.y-uy*9-ux*3.5} Z`,fill:'var(--scale-wire)','data-arrow':'request','data-tip':`${tip.x},${tip.y}`,'data-port':b.join(','),'data-direction':`${ux},${uy}`})});
+        wires.push(()=>element('path',{d:`M${tip.x} ${tip.y} L${tip.x-ux*9-uy*3.5} ${tip.y-uy*9+ux*3.5} L${tip.x-ux*9+uy*3.5} ${tip.y-uy*9-ux*3.5} Z`,fill:style.color,opacity:attrs.opacity,...wireMask(a,b),'data-connection':kind,'data-arrow':'request','data-start-port':path[0].join(','),'data-tip':`${tip.x},${tip.y}`,'data-port':b.join(','),'data-direction':`${ux},${uy}`}));
       }
     }
     function cylinder(x,z,r,h,color,kind){
+      const owner={type:'cylinder',x,z,r,base:4,h};solids.push(owner);
+      const rim=Array.from({length:64},(_,i)=>{const t=i*Math.PI/32;return[x+r*Math.cos(t),h,z+r*Math.sin(t)];});
+      occluder(rim,owner);
+      for(let i=0;i<rim.length;i++){
+        const a=rim[i],b=rim[(i+1)%rim.length];
+        if(((a[0]+b[0])/2-x)*Math.sin(angle)+((a[2]+b[2])/2-z)*Math.cos(angle)>0)occluder([a,b,[b[0],4,b[2]],[a[0],4,a[2]]],owner);
+      }
       const top=project(x,h,z),base=project(x,4,z),radius=r*.76,ry=r*.62*.76;
       faces.push({layer:1,depth:project(x,h/2,z).depth,draw:()=>{
         element('path',{d:`M${top.x-radius} ${top.y} V${base.y} A${radius} ${ry} 0 0 0 ${base.x+radius} ${base.y} V${top.y} Z`,fill:'var(--panel)',stroke:color,'stroke-width':1.4,'data-kind':kind});
@@ -228,29 +330,30 @@ svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointer
     label('VITESS / MYSQL PERSISTENCE',0,0,1630,colors.storage,17);
 
     box(-590,-335,180,90,52,colors.app);label('Client',-590,60,-335,colors.app);
-    route([[-500,26,-335],[-435,26,-335],[-435,26,-285],[-370,26,-285]],true);
+    route([[-500,26,-335],[-435,26,-335],[-435,26,-285],[-370,26,-285]],'application',true);
     for(let i=0;i<workerCount;i++){
       const z=-175+i*160;
       box(-590,z,180,58,36,colors.worker);label('SDK worker '+(i+1),-590,45,z,colors.worker);
-      route([[-500,26,z],[-435,26,z],[-435,26,-285],[-370,26,-285]],true);
+      route([[-500,26,z],[-435,26,z],[-435,26,-285],[-370,26,-285]],'application',true);
     }
     box(-305,-285,130,90,52,colors.frontend);
     label('gRPC load',-305,64,-305,colors.frontend,14);label('balancer',-305,64,-267,colors.frontend,14);
     for(let i=0;i<3;i++){
       const z=-100+i*190;
       box(-305,z,140,70,52,colors.frontend);label('Frontend '+(i+1),-305,64,z,colors.frontend,14);
-      route([[-305,26,-240],[-405,26,-240],[-405,26,z],[-375,26,z]],true);
-      route([[-235,26,z],[-185,26,z],[-185,26,-395]]);
-      route([[-235,26,z],[-185,26,z],[-185,26,450]]);
+      // Leave the load balancer perpendicular to its face before joining the bus.
+      route([[-305,26,-240],[-305,26,-205],[-405,26,-205],[-405,26,z],[-375,26,z]],'grpc',true);
+      route([[-235,38,z-12],[-185,38,z-12],[-185,38,-395]],'history');
+      route([[-235,26,z+12],[-155,26,z+12],[-155,26,450]],'matching');
     }
 
     const hosts=historyCount===2?[-20,400]:[-40,210,460],width=historyCount===2?260:200,per=12/historyCount;
     for(let host=0;host<historyCount;host++){
       const x=hosts[host];
       box(x,-250,width,220,64,colors.history);label('History '+(host+1),x,80,-335,colors.history);
-      route([[-185,26,-395],[x,26,-395],[x,26,-360]],true);
-      route([[x,26,-140],[x,26,80]]);
-      route([[x,26,-140],[x,26,-110],[690,26,-110],[690,26,600],[0,26,600],[0,26,645]],true);
+      route([[-185,38,-395],[x,38,-395],[x,38,-360]],'history',true);
+      route([[x,32,-140],[x,32,80]],'scheduling');
+      route([[x+width*.3,18,-140],[x+width*.3,18,-100],[690,18,-100],[690,18,610],[0,18,610],[0,18,645]],'sql',true);
       for(let k=0;k<per;k++){
         const id=host*per+k+1,columns=historyCount===2?3:2;
         const xx=x+(k%columns-(columns-1)/2)*62,zz=-265+Math.floor(k/columns)*67;
@@ -261,10 +364,10 @@ svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointer
     for(let i=0;i<2;i++){
       const x=i===0?-20:400;
       box(x,260,260,160,64,colors.matching);label('Matching '+(i+1),x,80,200,colors.matching);
-      route([[-185,26,450],[x,26,450],[x,26,340]],true);
-      route([[-40,26,80],[460,26,80]]);
-      route([[x,26,80],[x,26,180]],true);
-      route([[x,26,340],[x,26,390],[670,26,390],[670,26,600],[0,26,600],[0,26,645]],true);
+      route([[-155,26,450],[x,26,450],[x,26,340]],'matching',true);
+      route([[-40,32,80],[460,32,80]],'scheduling');
+      route([[x,32,80],[x,32,180]],'scheduling',true);
+      route([[x+78,18,340],[x+78,18,390],[690,18,390],[690,18,610],[0,18,610],[0,18,645]],'sql',true);
       for(let k=0;k<2;k++){
         const xx=x+(k-.5)*108;
         box(xx,270,88,56,77,colors.matching,64,2);label('Q'+(i*2+k),xx,85,270,colors.matching,13);
@@ -279,10 +382,10 @@ svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointer
       label('MySQL shard '+String.fromCharCode(65+i),x,100,900,colors.storage,15);
       cylinder(x,1060,36,78,colors.storage,'primary');label('primary',x,92,1060,colors.storage,13);
       label('VTTablet + MySQL',x,92,950,'var(--text-muted)',12);
-      route([[0,26,755],[0,26,870],[x,26,870],[x,26,1024]],true);
+      route([[0,18,755],[0,18,870],[x,18,870],[x,18,1024]],'sql',true);
       for(const dx of [-54,54]){
-        cylinder(x+dx,1300,24,48,'var(--border-node)','replica');label('replica',x+dx,65,1300,'var(--text-muted)',12);
-        route([[x,26,1096],[x,26,1200],[x+dx,26,1200],[x+dx,26,1276]],true);
+        cylinder(x+dx,1300,24,48,'var(--scale-replication)','replica');label('replica',x+dx,65,1300,'var(--scale-replication)',12);
+        route([[x,26,1096],[x,26,1200],[x+dx,26,1200],[x+dx,26,1276]],'replication',true);
       }
       // Symbolic placement samples; this is not a Vitess Vindex implementation.
       const sample=Array.from({length:12},(_,k)=>k+1).filter((_,k)=>k%dbCount===i).map(id=>'H'+id).join('·');
@@ -292,9 +395,10 @@ svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointer
     label('Unsharded keyspace',540,100,900,'var(--text)',15);
     cylinder(540,1060,36,78,'var(--border-node)','metadata');label('VTTablet + MySQL',540,0,1245,'var(--text-muted)',12);
     label('selected metadata',540,0,1410,'var(--text-muted)',12);
-    route([[0,26,755],[0,26,870],[540,26,870],[540,26,1024]],true);
+    route([[0,18,755],[0,18,870],[540,18,870],[540,18,1024]],'sql',true);
 
     faces.sort((a,b)=>a.layer-b.layer||a.depth-b.depth).forEach(f=>f.draw());
+    for(const draw of wires)draw();
     for(const l of labels){
       const q=project(l.x,l.y,l.z),e=element('text',{x:q.x,y:q.y,fill:l.color,'font-size':l.size,'text-anchor':'middle','dominant-baseline':'central'});e.textContent=l.value;
     }
@@ -308,6 +412,14 @@ svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointer
     document.querySelector('#scale-storage').disabled=dbCount===4;
     document.querySelector('#scale-description').textContent=`${historyCount} History instances own twelve logical History Shards; ${workerCount} application SDK workers enter three Frontend instances through a gRPC load balancer. Two Matching instances host orders queue partitions. VTGate routes SQL to ${dbCount} physical MySQL write shards, each with one primary and two replicas, plus an unsharded keyspace. Drag with a mouse or use the left and right arrow keys to orbit.`;
   }
+  document.querySelector('#scale-connection-key').addEventListener('click',event=>{
+    const button=event.target.closest('button[data-connection-filter]');
+    if(!button)return;
+    const kind=button.dataset.connectionFilter;
+    highlightedConnection=highlightedConnection===kind?'all':kind;
+    for(const control of document.querySelectorAll('#scale-connection-key button'))control.setAttribute('aria-pressed',String(control.dataset.connectionFilter===highlightedConnection));
+    render();
+  });
   document.querySelector('#scale-history').addEventListener('click',()=>{
     historyCount=3;message='History scaled from 2 to 3 instances. H1–H12 redistribute among owners; logical shard IDs and physical MySQL shard count stay unchanged.';render();
   });
@@ -320,7 +432,7 @@ svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointer
   document.querySelector('#scale-reset').addEventListener('click',()=>{
     historyCount=2;workerCount=3;dbCount=3;message='Reset: 2 History instances own H1–H12; 3 SDK workers and 3 physical MySQL write shards. Scale each layer independently.';render();
   });
-  function rotate(delta){const next=Math.max(minAngle,Math.min(maxAngle,angle+delta));if(next===angle)return;angle=next;render();}
+  function rotate(delta){angle+=delta;render();}
   document.querySelector('#scale-left').addEventListener('click',()=>rotate(-.06));
   document.querySelector('#scale-right').addEventListener('click',()=>rotate(.06));
   document.querySelector('#scale-view').addEventListener('click',()=>{angle=initialAngle;render();});
@@ -378,7 +490,7 @@ svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointer
     const hint = document.createElement('span');
     hint.id = `${svg.id}-zoom-help`;
     hint.className = 'zoom-hint';
-    hint.textContent = 'Scroll to zoom · drag to orbit · + / − zoom · 0 fit';
+    hint.textContent = 'Scroll to zoom · drag for 360° orbit · + / − zoom · 0 fit';
     controls.append(level, hint);
     svg.before(controls);
     svg.setAttribute('aria-describedby', [svg.getAttribute('aria-describedby'), hint.id].filter(Boolean).join(' '));

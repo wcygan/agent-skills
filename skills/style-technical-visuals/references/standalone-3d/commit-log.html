@@ -139,8 +139,8 @@ document.querySelector('#count').textContent=`${records.length} records · tail 
 }
 let moved=false;
 svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;moved=false;drag={id:e.pointerId,x:e.clientX,start:e.clientX};});
-svg.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;if(Math.abs(e.clientX-drag.start)>4){moved=true;angle+=(e.clientX-drag.x)*.008;svg.classList.add('dragging');render();}drag.x=e.clientX;});
-function stop(){drag=null;svg.classList.remove('dragging');}window.addEventListener('pointerup',stop);svg.addEventListener('pointercancel',stop);
+svg.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;if(Math.abs(e.clientX-drag.start)>4){if(!moved)svg.setPointerCapture(e.pointerId);moved=true;angle+=(e.clientX-drag.x)*.008;svg.classList.add('dragging');render();}drag.x=e.clientX;});
+function stop(){drag=null;svg.classList.remove('dragging');}window.addEventListener('pointerup',stop);svg.addEventListener('pointercancel',stop);svg.addEventListener('lostpointercapture',stop);
 svg.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();angle+=e.key==='ArrowRight'?.12:-.12;render();});
 document.querySelector('#append').addEventListener('click',()=>{
  const template=changes[next%changes.length];
@@ -188,7 +188,7 @@ render();
     const hint = document.createElement('span');
     hint.id = `${svg.id}-zoom-help`;
     hint.className = 'zoom-hint';
-    hint.textContent = 'Scroll to zoom · drag to orbit · + / − zoom · 0 fit';
+    hint.textContent = 'Scroll to zoom · drag for 360° orbit · + / − zoom · 0 fit';
     controls.append(level, hint);
     svg.before(controls);
     svg.setAttribute('aria-describedby', [svg.getAttribute('aria-describedby'), hint.id].filter(Boolean).join(' '));

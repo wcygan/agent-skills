@@ -100,7 +100,6 @@ matches, and hand it the bounded fields it needs:
   authorized optimization experiments are already chosen.
 - `verify-and-revise`: one authorized artifact has a fixed acceptance rubric
   or oracle and needs producer/verifier revisions.
-- `monitor-until`: one authoritative source needs a strictly read-only watch.
 - `improve-agent-harness`: a batch of agent traces or evaluations needs
   controlled harness experiments.
 

@@ -177,7 +177,7 @@ document.querySelector('#produce').addEventListener('click',()=>{if(flight)retur
 const key=`ticket:${ticket}`,value=['available','held','sold'][stage],override=document.querySelector('#partition').value;eventNumber++;if(override==='auto'&&!key){status.textContent='Enter a key for hash routing, or choose an explicit partition.';return;}const target=override==='auto'?partition(key):Number(override);flight={key,value,partition:target,progress:0};status.textContent=override==='auto'?`${key} → ${value} · key hash % 3 = ${target}. Sending to P${target}'s leader.`:`${key} → ${value} · explicit partition ${target}; key hashing bypassed.`;document.querySelector('#produce').disabled=true;if(reduced.matches)finish();else render();});
 document.querySelector('#reset').addEventListener('click',()=>{logs.forEach(l=>l.length=0);eventNumber=0;autoElapsed=0;flight=null;selected=null;angle=.25;status.textContent='Ready. Produce a record into topic ticket-events.';detail.textContent='Select a record to inspect its key, value, partition, and offset.';document.querySelector('#produce').disabled=false;render();});
 document.querySelector('#pause').addEventListener('click',e=>{autoProducing=!autoProducing;autoElapsed=0;e.target.textContent=autoProducing?'Pause producer':'Resume producer';e.target.setAttribute('aria-pressed',String(!autoProducing));});
-svg.addEventListener('pointerdown',e=>{if(!is3D||e.button!==0)return;drag={id:e.pointerId,x:e.clientX,start:e.clientX};moved=false;});svg.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;if(Math.abs(e.clientX-drag.start)>4){moved=true;angle+=(e.clientX-drag.x)*.008;render();}drag.x=e.clientX;});window.addEventListener('pointerup',()=>drag=null);svg.addEventListener('pointercancel',()=>drag=null);
+svg.addEventListener('pointerdown',e=>{if(!is3D||e.button!==0)return;drag={id:e.pointerId,x:e.clientX,start:e.clientX};moved=false;});svg.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;if(Math.abs(e.clientX-drag.start)>4){if(!moved)svg.setPointerCapture(e.pointerId);moved=true;angle+=(e.clientX-drag.x)*.008;render();}drag.x=e.clientX;});window.addEventListener('pointerup',()=>drag=null);for(const event of ['pointercancel','lostpointercapture'])svg.addEventListener(event,()=>drag=null);
 svg.addEventListener('keydown',e=>{if(is3D&&['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();angle+=e.key==='ArrowRight'?.12:-.12;render();}});
 function frame(now){
  if(last!==null&&!document.hidden){
@@ -228,7 +228,7 @@ render();document.querySelector('#produce').click();requestAnimationFrame(frame)
     const hint = document.createElement('span');
     hint.id = `${svg.id}-zoom-help`;
     hint.className = 'zoom-hint';
-    hint.textContent = 'Scroll to zoom · drag to orbit · + / − zoom · 0 fit';
+    hint.textContent = 'Scroll to zoom · drag for 360° orbit · + / − zoom · 0 fit';
     controls.append(level, hint);
     svg.before(controls);
     svg.setAttribute('aria-describedby', [svg.getAttribute('aria-describedby'), hint.id].filter(Boolean).join(' '));

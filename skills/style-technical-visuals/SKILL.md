@@ -313,7 +313,6 @@ from `references/gallery/GALLERY.html` live in `references/design-patterns/`:
 ## Respect ownership
 
 - Use `show-me` to select the smallest useful visual format.
-- Use `eli5` to structure a picture-first teaching story.
 - Use `better-colors` for color conversion and palette calculations.
 - Use `better-ui` for application interaction and interface polish.
 
