@@ -6,6 +6,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from skill_catalog import catalog
 
@@ -379,6 +380,12 @@ class CatalogTests(unittest.TestCase):
 
         with self.assertRaisesRegex(catalog.CatalogError, "symbolic links"):
             catalog.generate_snapshot(self.parent.root)
+
+    def test_check_accepts_source_catalog_and_rejects_drift(self) -> None:
+        with patch.object(catalog, "discover_root", return_value=self.parent.root):
+            self.assertEqual(catalog.main(["check"]), 0)
+            (self.parent.root / "skills" / "base" / "SKILL.md").write_text("changed")
+            self.assertEqual(catalog.main(["check"]), 1)
 
     def test_snapshot_ignores_generated_application_state(self) -> None:
         expected = catalog.load_snapshot(self.parent.root)

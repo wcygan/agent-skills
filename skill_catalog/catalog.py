@@ -814,7 +814,7 @@ def build_parser() -> argparse.ArgumentParser:
     adopt_parser.add_argument("--tracking-ref", default=os.environ.get("CATALOG_TRACKING_REF") or None)
 
     subparsers.add_parser("sync", help="reproduce the locked parent catalog")
-    subparsers.add_parser("check", help="check the parent tracking reference")
+    subparsers.add_parser("check", help="check the parent tracking reference or source snapshot")
     subparsers.add_parser("verify", help="verify inherited content or the source snapshot")
     subparsers.add_parser("doctor", help="check catalog configuration and tools")
     subparsers.add_parser("recover", help="restore an interrupted catalog transaction")
@@ -838,11 +838,15 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "sync":
             print(f"synchronized parent catalog at {sync(root)}")
         elif args.command == "check":
-            locked, available = check_parent(root)
-            if locked == available:
-                print(f"[UP TO DATE] parent catalog @ {locked}")
+            if (root / LOCK_NAME).is_file():
+                locked, available = check_parent(root)
+                if locked == available:
+                    print(f"[UP TO DATE] parent catalog @ {locked}")
+                else:
+                    print(f"[UPDATE AVAILABLE] parent catalog: locked {locked}, available {available}")
             else:
-                print(f"[UPDATE AVAILABLE] parent catalog: locked {locked}, available {available}")
+                current = verify_snapshot(root, require_fresh=True)
+                print(f"verified source snapshot with {len(current['skills'])} skills")
         elif args.command == "verify":
             if (root / LOCK_NAME).is_file():
                 lock, manifest = verify_child(root)
