@@ -5,11 +5,16 @@ For node shapes, exact ports, and arrowheads, read [topology-diagrams.md](topolo
 
 ## Bind motion to a route
 
-Create the wire and packet inside the same scene SVG. Use a native `<circle>` with `<animateMotion>`.
+Create the wire and packet inside the same scene SVG. For a flat 2D route, use a native `<circle>` with `<animateMotion>`.
 Use the wire's exact path string for motion, ordered from source to destination. Keep the circle centered at its local origin.
 
 Copy `connect`, `line`, and `animate` from `../gallery/demos/outbox.html` for a working implementation.
-The packet layer sits above nodes. The wire layer sits below nodes and above container backgrounds.
+In that 2D layout, the packet layer sits above nodes. The wire layer sits below nodes and above container backgrounds.
+
+For projected 3D routes or camera orbit, read
+[3D Rendering Performance and Temporal Postmortem](../3d-rendering-performance.md).
+Derive packet positions from the same world-space route as the wire, retain the
+scene between frames, and preserve depth visibility as the camera rotates.
 
 Create packets only for events that occur in the current transition. A static ownership edge does not imply continuous traffic.
 Use the route's semantic color for its packet. Use a dashed route and a waiting label for blocked work.

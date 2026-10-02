@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Backpressure and load shedding · Same load, three outcomes</title>
+<style>
+:root {
+  color-scheme:dark;
+  --canvas:#111111; --panel:#1c1c1c;
+  --border:rgba(255,255,255,.14); --border-node:rgba(255,255,255,.22); --track:rgba(255,255,255,.10);
+  --text:#fafafa; --text-muted:rgba(250,250,250,.60); --text-dim:rgba(250,250,250,.40);
+  --accent:#f35815; --good:#27b648; --warn:#d19f03; --bad:#ff455d; --info:#1e9de7;
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--canvas); color:var(--text); font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace; font-variant-numeric:tabular-nums; }
+main { max-width:900px; margin:auto; padding:40px 24px; }
+.eyebrow { font-size:11px; color:var(--accent); letter-spacing:.1em; text-transform:uppercase; }
+h1 { font-size:clamp(25px,5vw,34px); font-weight:500; letter-spacing:-.04em; margin:8px 0 12px; }
+header p { max-width:77ch; color:var(--text-muted); margin:0; }
+.settings { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:24px 0 14px; }
+.setting { min-width:0; }
+.setting label { display:block; font-size:11px; color:var(--text-muted); }
+.setting output { display:block; color:var(--text); margin-top:4px; }
+.setting small { font-size:10px; color:var(--text-muted); }
+input[type=range] { display:block; width:100%; margin:10px 0; accent-color:var(--accent); }
+button,input[type=number] { font:inherit; color:var(--text); border:1px solid var(--border-node); background:var(--panel); border-radius:3px; min-height:38px; padding:8px 12px; }
+button { cursor:pointer; } button:hover { border-color:var(--text-muted); }
+button:disabled { opacity:.45; cursor:default; }
+button:focus-visible,input:focus-visible,a:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+.controls { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+#play { border-color:var(--accent); min-width:80px; }
+.seed { font-size:11px; color:var(--text-muted); display:flex; gap:6px; align-items:center; }
+#seed { width:82px; }
+.clock { color:var(--text-muted); font-size:11px; margin:12px 0; }
+.clock b { color:var(--text); font-weight:500; }
+.story { padding:12px 14px; margin:14px 0 20px; border-left:2px solid var(--accent); background:var(--panel); }
+.story strong { display:block; font-weight:500; margin-bottom:4px; }
+.story p { margin:0; color:var(--text-muted); font-size:12px; }
+.lane { border:1px solid var(--border); background:var(--panel); margin-top:18px; }
+.lane-header { padding:14px 16px 0; }
+h2 { margin:0; font-size:15px; font-weight:500; }
+.lane-header p { margin:4px 0 0; font-size:11px; color:var(--text-muted); }
+.lane-state { color:var(--text); font-size:11px; padding:9px 16px; min-height:35px; }
+.lane[data-state=full] .lane-state { color:var(--bad); }
+.lane[data-state=waiting] .lane-state { color:var(--warn); }
+.lane[data-state=shedding] .lane-state { color:var(--bad); }
+svg { display:block; width:100%; height:auto; font:inherit; }
+svg text { fill:var(--text); }
+.scene { padding:0 8px; }
+.metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); margin:0; border-top:1px solid var(--border); }
+.metrics div { padding:10px 14px; min-width:0; border-right:1px solid var(--border); border-bottom:1px solid var(--border); }
+.metrics div:nth-child(4n) { border-right:0; }
+.metrics div:nth-last-child(-n+4) { border-bottom:0; }
+dt { font-size:10px; color:var(--text-muted); }
+dd { font-size:18px; margin:3px 0 0; }
+.info { color:var(--info); } .warn { color:var(--warn); } .good { color:var(--good); } .bad { color:var(--bad); }
+.latency { padding:10px 14px; border-top:1px solid var(--border); display:flex; flex-wrap:wrap; gap:7px 20px; color:var(--text-muted); font-size:11px; }
+.latency b { color:var(--text); font-weight:500; }
+.history { border-top:1px solid var(--border); padding:12px 14px 8px; }
+.history-header { display:flex; flex-wrap:wrap; gap:6px 16px; color:var(--text-muted); font-size:10px; }
+.history-header strong { color:var(--text); font-weight:500; margin-right:auto; }
+.history-header .queue-key { color:var(--info); } .history-header .waiting-key { color:var(--warn); } .history-header .discarded-key { color:var(--bad); }
+.history svg { margin-top:6px; }
+.history-note { margin:4px 0 0; color:var(--text-muted); font-size:10px; }
+.ledger { border-top:1px solid var(--border); font-size:10px; color:var(--text-muted); padding:10px 14px; }
+footer { color:var(--text-muted); font-size:11px; margin-top:22px; line-height:1.7; }
+footer p { margin:10px 0; } a { color:var(--text); text-underline-offset:3px; }
+@media(max-width:650px) {
+  main { padding:26px 12px; }
+  .settings { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .metrics div:nth-child(2n) { border-right:0; }
+  .metrics div:nth-last-child(-n+4) { border-bottom:1px solid var(--border); }
+  .metrics div:nth-last-child(-n+2) { border-bottom:0; }
+  .scene { padding:0; }
+  .metrics div { padding:10px; } .latency { gap:6px; flex-direction:column; }
+}
+@media(prefers-reduced-motion:reduce) { * { scroll-behavior:auto; } }
+</style>
+</head>
+<body>
+<main id="demo">
+<header>
+<div class="eyebrow">Overload</div>
+<h1>Where does the excess work go?</h1>
+<p>Offer the same requests to three FIFO services. A buffer absorbs a short burst. Backpressure slows admission and keeps demand upstream. Load shedding gives excess requests an immediate rejection.</p>
+</header>
+<section class="settings" aria-label="Shared comparison parameters">
+<div class="setting"><label for="arrival">Desired arrival rate <output id="arrival-value" for="arrival">8 requests/s</output></label><input id="arrival" type="range" min="0" max="40" step="1" value="8"><small>Same offers in every lane</small></div>
+<div class="setting"><label for="processing">Processing rate <output id="processing-value" for="processing">4 requests/s</output></label><input id="processing" type="range" min="0" max="40" step="1" value="4"><small>One equal-cost worker per lane</small></div>
+<div class="setting"><label for="capacity">Downstream queue capacity <output id="capacity-value" for="capacity">8 waiting requests</output></label><input id="capacity" type="range" min="1" max="32" step="1" value="8"><small>Changing capacity resets the comparison</small></div>
+<div class="setting"><label for="burst-size">Burst size <output id="burst-value" for="burst-size">24 requests</output></label><input id="burst-size" type="range" min="1" max="64" step="1" value="24"><small>All offered together at the current time</small></div>
+</section>
+<div class="controls">
+<button id="play" type="button" aria-pressed="true">Pause</button>
+<button id="step" type="button">Step +0.25s</button>
+<button id="burst" type="button">Send burst</button>
+<button id="reset" type="button">Reset</button>
+<label class="seed" for="seed">Seed <input id="seed" type="number" min="1" max="9999" value="17"></label>
+</div>
+<div class="clock">Logical time <b id="clock">0.00s</b> · <span id="playback">playing</span> · <span id="offered-clock">0 offered to each lane</span></div>
+<div class="story" role="status" aria-live="off" aria-atomic="true"><strong id="status-title">Arrival exceeds processing by 4 requests/s.</strong><p id="status">Let the queues fill, then set arrival to 0 or raise processing to watch recovery. Waiting upstream is retained work; dropped and rejected work is discarded.</p></div>
+<div id="lanes"></div>
+<footer>
+<p>Blue: admitted queue / transfers. Yellow: retained upstream waiting / demand. Green: completed work. Red: discarded work. A queue slot is a waiting request; the worker has one separate in-flight slot. Each packet summarizes actual events in the latest step; counters show their resulting state.</p>
+<p>Model: identical equal-cost requests, one FIFO worker per policy, exact service completion times, evenly spaced arrivals with a seeded initial phase. Queue wait is admission → service start. Upstream wait is offer → admission. Total latency is offer → completion. Latency averages include completed requests only; current oldest upstream age exposes requests still waiting. Throughput counts completions over the last 5 logical seconds, separate from admission.</p>
+<p>The buffer-only lane has no upstream admission control; its finite buffer drops overflow. Backpressure admits against free downstream slots and retains desired requests at the producer. This models a pausable source or upstream application work, not a claim that every source can retain an unlimited backlog. Shedding admits only while fewer than <span id="threshold-note">4</span> requests wait (half the capacity, rounded up), leaving spare buffer slots and rejecting excess early. Rejections consume no worker time; retries, deadlines, transport delay, and overload-induced slowdown are omitted.</p>
+<p>Rates change the current run; changing arrival starts a new seeded arrival interval, and changing processing preserves work already done. Capacity and seed changes restart all lanes fairly. Playback advances by 0.25 logical seconds, suspends when hidden or offscreen, and sleeps when no work can change. Step and burst pause playback. Reduced motion starts paused and disables packets; Play or Step still advances discrete state. Each run ends at 120s or 6,000 offers; queues, request objects, completion samples, and chart history are bounded. Reset repeats the same seed and current settings.</p>
+<p>Sources: <a href="https://github.com/reactive-streams/reactive-streams-jvm/blob/v1.0.4/README.md#1-publisher-code">Reactive Streams 1.0.4: demand bounds delivery</a> · <a href="https://docs.aws.amazon.com/wellarchitected/latest/framework/rel_mitigate_interaction_failure_fail_fast.html">AWS REL05-BP04: Fail fast and limit queues</a>. The admission threshold and finite run limits are explicit teaching choices.</p>
+</footer>
+</main>
+<script>
+(() => {
+  'use strict';
+  const NS='http://www.w3.org/2000/svg', DT=.25, MAX_TIME=120, MAX_OFFERS=6000, HISTORY=81;
+  const $=id=>document.getElementById(id);
+  const compact=matchMedia('(max-width: 650px)'), reduced=matchMedia('(prefers-reduced-motion: reduce)');
+  const definitions=[
+    {id:'buffer',title:'01 / Buffer only',description:'Accept until full; overflow is dropped after the buffer runs out of room.',gate:'No control',discard:'Dropped'},
+    {id:'backpressure',title:'02 / Backpressure',description:'Free slots grant demand; requests without room stay upstream.',gate:'Demand',discard:'No discard'},
+    {id:'shedding',title:'03 / Load shedding',description:'Reject early at half-buffer occupancy; retained requests keep progressing.',gate:'Early gate',discard:'Rejected'}
+  ];
+  const scenes=new Map();
+  let state, timer=null, wantsPlay=!reduced.matches, inView=true, pageActive=true;
+  function parameters() {return {arrival:Number($('arrival').value),processing:Number($('processing').value),capacity:Number($('capacity').value),seed:Number($('seed').value)};}
+  function random() {state.rng=(Math.imul(state.rng,1664525)+1013904223)>>>0; return state.rng/4294967296;}
+  function interval() {state.nextArrival=state.p.arrival ? state.now+(0.1+.9*random())/state.p.arrival : Infinity;}
+  function emptyLane(id) {return {id,offered:0,admitted:0,completed:0,dropped:0,rejected:0,queue:[],waiting:[],active:null,queueWait:0,upstreamWait:0,totalLatency:0,recent:[],history:[],finished:[],last:{admitted:0,started:0,completed:0,discarded:0}};}
+  function reset(message='Reset: identical offers, empty queues.') {
+    const p=parameters();
+    state={now:0,p,rng:p.seed>>>0,nextArrival:Infinity,nextId:1,offered:0,limit:false,lanes:definitions.map(d=>emptyLane(d.id))};
+    interval(); sample(); render(false); syncPlayback();
+    $('status').textContent=message+' Set arrival to 0 to drain retained work.';
+  }
+  function clearEvents() {for (const lane of state.lanes) lane.last={admitted:0,started:0,completed:0,discarded:0};}
+  function admit(lane,request,time) {request.admittedAt=time; lane.queue.push(request); lane.admitted++; lane.last.admitted++;}
+  function dispatch(lane,time) {
+    if (lane.id==='backpressure') while (lane.waiting.length && lane.queue.length<state.p.capacity) admit(lane,lane.waiting.shift(),time);
+    if (!lane.active && lane.queue.length) {
+      lane.active=lane.queue.shift(); lane.active.startedAt=time; lane.active.progress=0; lane.last.started++;
+      if (lane.id==='backpressure') while (lane.waiting.length && lane.queue.length<state.p.capacity) admit(lane,lane.waiting.shift(),time);
+    }
+  }
+  function offer(time) {
+    if (state.offered>=MAX_OFFERS) return;
+    const id=state.nextId++; state.offered++;
+    for (const lane of state.lanes) {
+      lane.offered++;
+      const request={id,offeredAt:time};
+      if (lane.id==='backpressure') lane.waiting.push(request);
+      else if (lane.queue.length<(lane.id==='shedding'?Math.ceil(state.p.capacity/2):state.p.capacity)) admit(lane,request,time);
+      else {lane[lane.id==='shedding'?'rejected':'dropped']++; lane.last.discarded++;}
+      dispatch(lane,time);
+    }
+  }
+  function processUntil(from,to) {
+    for (const lane of state.lanes) {
+      let time=from; dispatch(lane,time);
+      if (state.p.processing===0) continue;
+      while (lane.active && time<to-1e-10) {
+        const remaining=(1-lane.active.progress)/state.p.processing;
+        if (remaining>to-time+1e-10) {lane.active.progress+=(to-time)*state.p.processing; break;}
+        time=Math.min(to,time+remaining);
+        const request=lane.active;
+        lane.completed++; lane.last.completed++;
+        lane.queueWait+=request.startedAt-request.admittedAt;
+        lane.upstreamWait+=request.admittedAt-request.offeredAt;
+        lane.totalLatency+=time-request.offeredAt;
+        lane.recent.push(time);
+        lane.finished.push({id:request.id,offeredAt:request.offeredAt,admittedAt:request.admittedAt,startedAt:request.startedAt,completedAt:time});
+        if (lane.finished.length>24) lane.finished.shift();
+        lane.active=null; dispatch(lane,time);
+      }
+    }
+  }
+  function sample() {
+    for (const lane of state.lanes) {
+      lane.recent=lane.recent.filter(time=>time>state.now-5+1e-10);
+      lane.history.push({time:state.now,queue:lane.queue.length,waiting:lane.waiting.length,discarded:lane.dropped+lane.rejected});
+      while (lane.history.length>HISTORY || (lane.history.length>1 && lane.history[0].time<state.now-20-1e-10)) lane.history.shift();
+    }
+  }
+  function advance() {
+    if (state.limit) return;
+    clearEvents();
+    const end=Math.min(MAX_TIME,state.now+DT);
+    let time=state.now;
+    while (state.nextArrival<=end+1e-10 && state.offered<MAX_OFFERS) {
+      const arrival=Math.max(time,Math.min(end,state.nextArrival));
+      processUntil(time,arrival); offer(arrival); time=arrival;
+      state.nextArrival+=1/state.p.arrival;
+    }
+    processUntil(time,end); state.now=end;
+    state.limit=state.now>=MAX_TIME || state.offered>=MAX_OFFERS;
+    sample(); render(true); syncPlayback();
+  }
+  function burst() {
+    if (state.limit) return;
+    wantsPlay=false; clearEvents();
+    const count=Math.min(Number($('burst-size').value),MAX_OFFERS-state.offered);
+    for (let i=0;i<count;i++) offer(state.now);
+    state.limit=state.offered>=MAX_OFFERS;
+    sample(); render(true); syncPlayback();
+    $('status-title').textContent=`Burst: ${count} identical requests offered now.`;
+    $('status').textContent='Compare downstream buffering, upstream waiting, and immediate discard. Step time to process the retained requests.';
+  }
+  function el(tag,attrs={},text,parent) {
+    const node=document.createElementNS(NS,tag);
+    for (const [key,value] of Object.entries(attrs)) node.setAttribute(key,value);
+    if (text!==undefined) node.textContent=text;
+    if (parent) parent.append(node); return node;
+  }
+  function makeNode(scene,id,kind,title) {
+    const group=el('g',{'data-node':scene.id+'-'+id,'data-kind':kind},undefined,scene.nodes);
+    const box=el('rect',{rx:3,fill:'var(--canvas)',stroke:'var(--border-node)'},undefined,group);
+    const strip=el('path',{fill:'none',stroke:'var(--border)'},undefined,group);
+    const heading=el('text',{'font-size':12},title,group);
+    const sub=el('text',{'font-size':11,style:'fill:var(--text-muted)'},'',group);
+    const result={id:scene.id+'-'+id,group,box,strip,heading,sub};
+    if (kind==='queue') result.cells=Array.from({length:32},()=>el('rect',{width:9,height:10,rx:1,fill:'var(--track)'},undefined,group));
+    if (kind==='service') {
+      result.track=el('rect',{height:5,fill:'var(--track)'},undefined,group);
+      result.fill=el('rect',{height:5,fill:'var(--good)'},undefined,group);
+    }
+    return result;
+  }
+  function route(scene,id,from,fromSide,to,toSide,color) {
+    const markerId=scene.id+'-arrow-'+id;
+    const marker=el('marker',{id:markerId,viewBox:'0 -4 8 8',refX:8,refY:0,markerWidth:8,markerHeight:8,markerUnits:'userSpaceOnUse',orient:'auto'},undefined,scene.defs);
+    el('path',{d:'M 0 -3 L 8 0 L 0 3',fill:'none',stroke:`var(--${color})`,'stroke-width':1.3},undefined,marker);
+    const wire=el('path',{'data-route':scene.id+'-'+id,'data-from':from.id,'data-to':to.id,'data-from-side':fromSide,'data-to-side':toSide,fill:'none',stroke:`var(--${color})`,'stroke-width':1.5,'marker-end':`url(#${markerId})`},undefined,scene.wires);
+    if (id==='credit') wire.setAttribute('stroke-dasharray','4 4');
+    const packet=el('circle',{'data-packet':scene.id+'-'+id,r:3.5,fill:`var(--${color})`,visibility:'hidden'},undefined,scene.packets);
+    const motion=el('animateMotion',{begin:'indefinite',dur:'.4s',fill:'remove'},undefined,packet);
+    const fade=el('animate',{attributeName:'opacity',begin:'indefinite',dur:'.4s',values:'1;1;0',keyTimes:'0;.85;1',fill:'freeze'},undefined,packet);
+    return {wire,packet,motion,fade,from,fromSide,to,toSide};
+  }
+  function build(definition) {
+    const lane=document.createElement('section'); lane.className='lane'; lane.id='lane-'+definition.id;
+    lane.setAttribute('aria-labelledby','title-'+definition.id);
+    lane.innerHTML=`<div class="lane-header"><h2 id="title-${definition.id}">${definition.title}</h2><p>${definition.description}</p></div><div class="lane-state"></div><svg class="scene" role="img" aria-labelledby="scene-title-${definition.id} scene-desc-${definition.id}"><title id="scene-title-${definition.id}">${definition.title}: upstream, admission gate, bounded FIFO, worker</title><desc id="scene-desc-${definition.id}">Exact arrows connect node ports. Blue packets summarize admitted transfers; red packets represent discarded requests. Current state appears in the metrics below.</desc></svg><dl class="metrics" aria-label="${definition.title} request counts">${[['offered','Offered',''],['admitted','Admitted','info'],['completed','Completed','good'],['discarded',definition.id==='shedding'?'Early rejected':'Overflow dropped','bad'],['queue','Downstream waiting','info'],['waiting','Upstream waiting','warn'],['active','In flight',''],['throughput','Completed /s · last 5s','good']].map(([id,label,color])=>`<div><dt>${label}</dt><dd data-metric="${id}" class="${color}">0</dd></div>`).join('')}</dl><div class="latency"><span>Mean queue wait <b data-latency="queue">—</b></span><span>Mean upstream wait <b data-latency="upstream">—</b></span><span>Mean total latency <b data-latency="total">—</b></span><span>Oldest upstream <b data-latency="oldest">—</b></span></div><div class="history"><div class="history-header"><strong>Request counts · last 20s</strong><span class="queue-key">━ downstream</span><span class="waiting-key">┄ upstream</span><span class="discarded-key">┈ ${definition.id==='shedding'?'rejected':'dropped'} total</span></div><svg class="chart" viewBox="0 0 800 112" role="img" aria-label="Downstream and upstream waiting counts, and cumulative ${definition.id==='shedding'?'rejected':'dropped'} requests over the last 20 seconds"><path data-grid="" stroke="var(--border)" fill="none"/><path data-curve="queue" stroke="var(--info)" stroke-width="2" fill="none"/><path data-curve="waiting" stroke="var(--warn)" stroke-width="2" stroke-dasharray="4 3" fill="none"/><path data-curve="discarded" stroke="var(--bad)" stroke-width="2" stroke-dasharray="2 3" stroke-linecap="round" fill="none"/><text data-chart="scale" font-size="11" text-anchor="end"/><text data-chart="zero" font-size="11" text-anchor="end">0</text><text data-chart="left" font-size="11"/><text data-chart="right" font-size="11" text-anchor="end"/></svg><p class="history-note">Waiting counts are current; discarded totals accumulate until Reset.</p></div><div class="ledger"></div>`;
+    $('lanes').append(lane);
+    const svg=lane.querySelector('.scene');
+    const scene={id:definition.id,lane,svg,definition};
+    scene.defs=el('defs',{},undefined,svg); scene.wires=el('g',{'data-layer':'wires'},undefined,svg);
+    scene.nodes=el('g',{'data-layer':'nodes'},undefined,svg); scene.packets=el('g',{'data-layer':'packets'},undefined,svg);
+    scene.source=makeNode(scene,'source','source','Upstream'); scene.gate=makeNode(scene,'gate','gate',definition.gate);
+    scene.queue=makeNode(scene,'queue','queue','Bounded FIFO'); scene.worker=makeNode(scene,'worker','service','Worker');
+    scene.discard=makeNode(scene,'discard','discard',definition.discard);
+    scene.routes={incoming:route(scene,'incoming',scene.source,'right',scene.gate,'left','info'),admission:route(scene,'admission',scene.gate,'right',scene.queue,'left','info'),service:route(scene,'service',scene.queue,'right',scene.worker,'left','info')};
+    if (definition.id==='backpressure') scene.routes.credit=route(scene,'credit',scene.queue,'bottom',scene.gate,'bottom','warn');
+    else scene.routes.discard=route(scene,'discard',definition.id==='buffer'?scene.queue:scene.gate,'bottom',scene.discard,'top','bad');
+    scenes.set(definition.id,scene);
+  }
+  function bounds(node,x,y,w,h) {
+    Object.assign(node,{x,y,w,h});
+    for (const [key,value] of Object.entries({x,y,w,h})) node.group.dataset[key]=value;
+    for (const [key,value] of Object.entries({x,y,width:w,height:h})) node.box.setAttribute(key,value);
+    node.strip.setAttribute('d',`M ${x} ${y+14} H ${x+w}`);
+    node.heading.setAttribute('x',x+12); node.heading.setAttribute('y',y+34);
+    node.sub.setAttribute('x',x+12); node.sub.setAttribute('y',y+53);
+    if (node.cells) node.cells.forEach((cell,i)=>{
+      const columns=compact.matches?8:16;
+      cell.setAttribute('x',x+12+(i%columns)*(compact.matches?15:12));
+      cell.setAttribute('y',y+67+Math.floor(i/columns)*14);
+    });
+    if (node.track) {
+      node.track.setAttribute('x',x+12); node.track.setAttribute('y',y+h-22); node.track.setAttribute('width',w-24);
+      node.fill.setAttribute('x',x+12); node.fill.setAttribute('y',y+h-22);
+    }
+  }
+  function port(node,side) {return side==='left'?[node.x,node.y+node.h/2]:side==='right'?[node.x+node.w,node.y+node.h/2]:side==='top'?[node.x+node.w/2,node.y]:[node.x+node.w/2,node.y+node.h];}
+  function path(route,points,fromSide=route.fromSide,toSide=route.toSide) {
+    route.fromSide=fromSide; route.toSide=toSide;
+    const full=[port(route.from,fromSide),...points,port(route.to,toSide)];
+    const d=full.map((point,i)=>(i?'L ':'M ')+point.join(' ')).join(' ');
+    route.wire.setAttribute('d',d); route.motion.setAttribute('path',d);
+    route.wire.dataset.points=JSON.stringify(full); route.wire.dataset.fromSide=fromSide; route.wire.dataset.toSide=toSide;
+  }
+  function layout(scene) {
+    const small=compact.matches;
+    scene.svg.setAttribute('viewBox',small?'0 0 360 440':'0 0 800 265');
+    if (small) {
+      bounds(scene.source,20,26,142,96); bounds(scene.gate,200,26,140,96);
+      bounds(scene.queue,20,176,142,134); bounds(scene.worker,200,176,140,134); bounds(scene.discard,92,362,176,62);
+      path(scene.routes.incoming,[],'right','left');
+      path(scene.routes.admission,[[270,150],[91,150]],'bottom','top');
+      path(scene.routes.service,[],'right','left');
+      if (scene.routes.credit) path(scene.routes.credit,[[8,243],[8,8],[270,8]],'left','top');
+      else if (scene.id==='buffer') path(scene.routes.discard,[[91,338],[180,338]],'bottom','top');
+      else path(scene.routes.discard,[[352,74],[352,338],[180,338]],'right','top');
+    } else {
+      bounds(scene.source,16,38,156,124); bounds(scene.gate,205,38,108,124);
+      bounds(scene.queue,352,38,220,124); bounds(scene.worker,622,38,162,124); bounds(scene.discard,290,193,220,64);
+      path(scene.routes.incoming,[],'right','left'); path(scene.routes.admission,[],'right','left'); path(scene.routes.service,[],'right','left');
+      if (scene.routes.credit) path(scene.routes.credit,[[462,195],[259,195]],'bottom','bottom');
+      else path(scene.routes.discard,[[scene.id==='buffer'?462:259,185],[400,185]],'bottom','top');
+    }
+    scene.discard.group.style.display=scene.id==='backpressure'?'none':'';
+  }
+  function stopPackets(scene) {
+    for (const route of Object.values(scene.routes)) {
+      if (typeof route.motion.endElement==='function') route.motion.endElement();
+      if (typeof route.fade.endElement==='function') route.fade.endElement();
+      route.packet.setAttribute('visibility','hidden');
+    }
+  }
+  function animate(route,count) {
+    route.wire.dataset.events=count;
+    if (!count || reduced.matches || document.hidden || !inView || !pageActive) return;
+    route.packet.setAttribute('visibility','visible');
+    route.packet.dataset.events=count;
+    if (typeof route.motion.beginElement==='function') route.motion.beginElement();
+    if (typeof route.fade.beginElement==='function') route.fade.beginElement();
+  }
+  function chart(scene,lane) {
+    const svg=scene.lane.querySelector('.chart'), width=compact.matches?360:800, left=40,right=width-8,top=16,bottom=80;
+    svg.setAttribute('viewBox',`0 0 ${width} 112`);
+    const maximum=Math.max(state.p.capacity,...lane.history.map(item=>Math.max(item.queue,item.waiting,item.discarded)),1);
+    const start=Math.max(0,state.now-20),end=Math.max(20,state.now);
+    const x=time=>left+(time-start)/(end-start)*(right-left), y=count=>bottom-count/maximum*(bottom-top);
+    svg.querySelector('[data-grid]').setAttribute('d',`M ${left} ${top} H ${right} M ${left} ${bottom} H ${right}`);
+    for (const key of ['queue','waiting','discarded']) {
+      const curve=svg.querySelector(`[data-curve=${key}]`);
+      curve.setAttribute('d',lane.history.map((point,i)=>`${i?'L':'M'} ${x(point.time).toFixed(2)} ${y(point[key]).toFixed(2)}`).join(' '));
+    }
+    for (const [key,tx,ty,value] of [['scale',left-7,top+4,maximum],['zero',left-7,bottom+4,0],['left',left,104,start.toFixed(0)+'s'],['right',right,104,end.toFixed(0)+'s']]) {
+      const label=svg.querySelector(`[data-chart=${key}]`); label.setAttribute('x',tx); label.setAttribute('y',ty); label.textContent=value; label.style.fill='var(--text-muted)';
+    }
+    svg.dataset.samples=lane.history.length;
+  }
+  function render(motion) {
+    const p=state.p;
+    $('clock').textContent=state.now.toFixed(2)+'s'; $('offered-clock').textContent=state.offered+' offered to each lane';
+    $('arrival-value').textContent=p.arrival+' requests/s'; $('processing-value').textContent=p.processing+' requests/s';
+    $('capacity-value').textContent=p.capacity+' waiting requests'; $('burst-value').textContent=$('burst-size').value+' requests';
+    $('threshold-note').textContent=Math.ceil(p.capacity/2);
+    $('status-title').textContent=state.limit?'Run limit reached. Reset to compare again.':p.arrival>p.processing?`Arrival exceeds processing by ${p.arrival-p.processing} requests/s.`:p.arrival===0?'Source stopped: drain retained work.':`Processing has ${p.processing-p.arrival} requests/s of spare capacity.`;
+    $('status').textContent=state.limit?'The finite run limit bounds simulation memory. Retained work and all counters remain visible.':p.arrival>p.processing?'A larger buffer buys time. Backpressure moves the waiting upstream. Shedding preserves room by discarding excess offers.':'Queue depth can fall while completed throughput stays high. Previously discarded work does not return.';
+    for (const lane of state.lanes) {
+      const scene=scenes.get(lane.id); stopPackets(scene);
+      scene.source.sub.textContent=lane.waiting.length+' waiting';
+      scene.gate.sub.textContent=lane.id==='shedding'?'< '+Math.ceil(p.capacity/2)+' queued':lane.id==='backpressure'?Math.max(0,p.capacity-lane.queue.length)+' free slots':'Pass offers';
+      scene.queue.sub.textContent=lane.queue.length+' / '+p.capacity+' waiting';
+      scene.worker.sub.textContent=p.processing+' req/s'; scene.worker.fill.setAttribute('width',(scene.worker.w-24)*(lane.active?.progress||0));
+      scene.discard.sub.textContent=(lane.rejected+lane.dropped)+' requests';
+      scene.source.box.setAttribute('stroke',lane.waiting.length?'var(--warn)':'var(--border-node)');
+      scene.queue.box.setAttribute('stroke',lane.queue.length===p.capacity?'var(--warn)':'var(--border-node)');
+      scene.queue.cells.forEach((cell,i)=>{
+        cell.setAttribute('visibility',i<p.capacity?'visible':'hidden');
+        cell.setAttribute('fill',i<lane.queue.length?'var(--info)':'var(--track)');
+        if (i<lane.queue.length) cell.dataset.request=lane.queue[i].id; else delete cell.dataset.request;
+      });
+      const denominator=Math.min(state.now,5);
+      const metrics={offered:lane.offered,admitted:lane.admitted,completed:lane.completed,discarded:lane.dropped+lane.rejected,queue:lane.queue.length,waiting:lane.waiting.length,active:lane.active?1:0,throughput:denominator?(lane.recent.length/denominator).toFixed(2):'0.00'};
+      for (const [key,value] of Object.entries(metrics)) scene.lane.querySelector(`[data-metric=${key}]`).textContent=value;
+      const averages={queue:lane.queueWait,upstream:lane.upstreamWait,total:lane.totalLatency};
+      for (const [key,total] of Object.entries(averages)) scene.lane.querySelector(`[data-latency=${key}]`).textContent=lane.completed?(total/lane.completed).toFixed(2)+'s':'—';
+      scene.lane.querySelector('[data-latency=oldest]').textContent=lane.waiting.length?(state.now-lane.waiting[0].offeredAt).toFixed(2)+'s':'—';
+      const mode=lane.waiting.length?'waiting':lane.id==='shedding'&&lane.last.discarded?'shedding':lane.queue.length===p.capacity?'full':'ready';
+      scene.lane.dataset.state=mode;
+      scene.lane.querySelector('.lane-state').textContent=mode==='waiting'?`Demand paused · ${lane.waiting.length} retained upstream`:mode==='shedding'?`Rejected ${lane.last.discarded} early in this step · admission threshold ${Math.ceil(p.capacity/2)}`:mode==='full'?'Buffer full · excess offers overflow':lane.active?'Worker progressing · room in the queue':'Ready · no retained work';
+      if (lane.id==='backpressure' && lane.queue.length===p.capacity && !lane.waiting.length) scene.lane.querySelector('.lane-state').textContent='No free queue slots · further offers will wait upstream';
+      if (lane.id==='shedding' && lane.queue.length===p.capacity) scene.lane.querySelector('.lane-state').textContent='Admission threshold reached · further offers are rejected';
+      scene.lane.querySelector('.ledger').textContent=`${lane.offered} offered = ${lane.completed} completed + ${lane.queue.length} queued + ${lane.active?1:0} in flight + ${lane.waiting.length} upstream + ${lane.dropped} dropped + ${lane.rejected} rejected`;
+      for (const [key,value] of Object.entries({...metrics,dropped:lane.dropped,rejected:lane.rejected,time:state.now,capacity:p.capacity,history:lane.history.length})) scene.lane.dataset[key]=value;
+      scene.lane.dataset.queueIds=JSON.stringify(lane.queue.map(request=>request.id));
+      chart(scene,lane);
+      const events={incoming:lane.last.admitted,admission:lane.last.admitted,service:lane.last.started,discard:lane.last.discarded,credit:lane.last.completed};
+      for (const [key,route] of Object.entries(scene.routes)) {route.wire.dataset.events=events[key]; if (motion) animate(route,events[key]);}
+    }
+  }
+  function canProgress() {return state.p.arrival>0 || (state.p.processing>0 && state.lanes.some(lane=>lane.active || lane.queue.length || lane.waiting.length));}
+  function syncPlayback() {
+    clearTimeout(timer); timer=null;
+    const runnable=wantsPlay && inView && !document.hidden && pageActive && !state.limit && canProgress();
+    if (runnable) timer=setTimeout(advance,reduced.matches?900:550);
+    for (const scene of scenes.values()) {
+      const method=inView && !document.hidden && pageActive && !reduced.matches?'unpauseAnimations':'pauseAnimations';
+      if (typeof scene.svg[method]==='function') scene.svg[method]();
+      if (!runnable && (document.hidden || !inView || !pageActive || reduced.matches)) stopPackets(scene);
+    }
+    $('play').textContent=wantsPlay?'Pause':'Play'; $('play').setAttribute('aria-pressed',String(wantsPlay));
+    $('play').disabled=state.limit; $('step').disabled=state.limit; $('burst').disabled=state.limit;
+    $('playback').textContent=state.limit?'run limit':!wantsPlay?'paused':!pageActive || document.hidden || !inView?'suspended':!canProgress()?state.lanes.some(lane=>lane.active || lane.queue.length || lane.waiting.length)?'stalled · processing is 0':'idle':'playing';
+    document.querySelector('.story').setAttribute('aria-live',runnable?'off':'polite');
+  }
+  $('play').addEventListener('click',()=>{wantsPlay=!wantsPlay; if (!wantsPlay) for (const scene of scenes.values()) stopPackets(scene); syncPlayback();});
+  $('step').addEventListener('click',()=>{wantsPlay=false; advance();});
+  $('burst').addEventListener('click',burst);
+  $('reset').addEventListener('click',()=>reset());
+  $('arrival').addEventListener('input',()=>{state.p.arrival=Number($('arrival').value); interval(); clearEvents(); render(false); syncPlayback();});
+  $('processing').addEventListener('input',()=>{state.p.processing=Number($('processing').value); clearEvents(); render(false); syncPlayback();});
+  $('capacity').addEventListener('input',()=>reset('Capacity changed: comparison restarted with empty queues.'));
+  $('burst-size').addEventListener('input',()=>{$('burst-value').textContent=$('burst-size').value+' requests';});
+  $('seed').addEventListener('change',()=>{$('seed').value=Math.max(1,Math.min(9999,Math.floor(Number($('seed').value)||17))); reset('Seed changed: all lanes restarted with the same arrival phase.');});
+  compact.addEventListener('change',()=>{for (const scene of scenes.values()) layout(scene); render(false); syncPlayback();});
+  reduced.addEventListener('change',()=>{if (reduced.matches) wantsPlay=false; render(false); syncPlayback();});
+  document.addEventListener('visibilitychange',syncPlayback);
+  window.addEventListener('pagehide',()=>{pageActive=false; syncPlayback();});
+  window.addEventListener('pageshow',()=>{pageActive=true; syncPlayback();});
+  if ('IntersectionObserver' in window) new IntersectionObserver(entries=>{inView=entries.some(entry=>entry.isIntersecting); syncPlayback();},{threshold:0}).observe($('demo'));
+  for (const definition of definitions) build(definition);
+  for (const scene of scenes.values()) layout(scene);
+  reset();
+  // A bounded, read-only snapshot is useful for inspecting request conservation.
+  window.backpressureDemo=Object.freeze({snapshot:()=>({time:state.now,offered:state.offered,nextArrival:state.nextArrival,limit:state.limit,parameters:{...state.p},lanes:state.lanes.map(lane=>({id:lane.id,offered:lane.offered,admitted:lane.admitted,completed:lane.completed,dropped:lane.dropped,rejected:lane.rejected,queue:lane.queue.map(request=>({...request})),waiting:lane.waiting.length,oldest:lane.waiting[0]?.offeredAt??null,upstreamHead:lane.waiting.slice(0,24).map(request=>({...request})),active:lane.active?{...lane.active}:null,queueWait:lane.queueWait,upstreamWait:lane.upstreamWait,totalLatency:lane.totalLatency,recent:[...lane.recent],history:lane.history.map(point=>({...point})),finished:lane.finished.map(request=>({...request})),last:{...lane.last}}))})});
+})();
+</script>
+</body>
+</html>

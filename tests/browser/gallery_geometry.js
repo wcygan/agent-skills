@@ -1,4 +1,4 @@
-// Serve references/gallery on port 8765. Run in a dedicated playwright-cli session.
+// Serve skills/style-technical-visuals/references/archive/gallery on port 8765. Run in a dedicated playwright-cli session.
 async function verifyGalleryGeometry(page) {
   const base = "http://127.0.0.1:8765/";
   const slugs = [

@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MVCC · Row versions and transaction isolation</title>
+<!-- Original offline standalone. Folded version cards and snapshot views derive
+     from gallery/demos/mvcc.html. PostgreSQL 18 semantics; logical commit order,
+     not physical tuple metadata or a complete SSI implementation. -->
+<style>
+:root {
+  color-scheme: dark;
+  --canvas:#111111; --panel:#1c1c1c;
+  --border:rgba(255,255,255,.14); --border-node:rgba(255,255,255,.22); --track:rgba(255,255,255,.10);
+  --text:#fafafa; --text-muted:rgba(250,250,250,.60); --text-dim:rgba(250,250,250,.40);
+  --accent:#f35815; --good:#27b648; --warn:#d19f03; --bad:#ff455d; --info:#1e9de7;
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--canvas); color:var(--text); font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace; font-variant-numeric:tabular-nums; }
+main { max-width:940px; margin:auto; padding:44px 28px 32px; }
+h1 { margin:10px 0; font-size:clamp(24px,4vw,34px); font-weight:500; letter-spacing:-.04em; }
+h2,h3 { font-size:14px; font-weight:500; margin:0; }
+p { margin:0; }
+.eyebrow,.section-label { color:var(--text-muted); font-size:11px; letter-spacing:.10em; text-transform:uppercase; }
+.intro { max-width:72ch; color:var(--text-muted); }
+.setup { margin:24px 0 18px; display:flex; flex-wrap:wrap; justify-content:space-between; gap:14px; align-items:center; }
+.scenarios,.controls { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+button,select { color:var(--text); background:var(--panel); border:1px solid var(--border-node); border-radius:3px; font:inherit; min-height:40px; padding:8px 12px; }
+button { cursor:pointer; }
+button[aria-pressed="true"],#play { border-color:var(--accent); }
+button[aria-pressed="true"] { color:var(--accent); }
+button:disabled { opacity:.45; cursor:default; }
+button:focus-visible,select:focus-visible,a:focus-visible,[data-version]:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+label { display:flex; gap:8px; align-items:center; color:var(--text-muted); }
+#isolation-note { color:var(--text-muted); min-height:3em; margin-bottom:18px; }
+.controls { margin:16px 0; }
+#play { min-width:116px; }
+#progress-label { color:var(--text-muted); margin-left:auto; }
+.rail { display:flex; gap:4px; margin:12px 0 22px; }
+.rail span { height:3px; flex:1; background:var(--track); }
+.rail .done { background:var(--accent); }
+.transactions { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.transaction { background:var(--panel); border:1px solid var(--border); padding:18px; min-width:0; }
+.transaction[data-transaction="A"] h2 { color:var(--info); }
+.transaction[data-transaction="B"] h2 { color:var(--warn); }
+.transaction header { display:flex; gap:10px; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.state { font-size:11px; color:var(--text-muted); border:1px solid var(--border-node); padding:2px 6px; white-space:nowrap; }
+.state[data-state="aborted"] { color:var(--bad); border-color:var(--bad); }
+.state[data-state="committed"] { color:var(--good); border-color:var(--good); }
+.query { font:inherit; margin:0 0 12px; min-height:3em; white-space:pre-wrap; overflow-wrap:anywhere; }
+.transaction .read,.transaction .own { color:var(--text-muted); min-height:1.5em; }
+.transaction .read { color:var(--text); }
+figure { margin:22px 0 0; border:1px solid var(--border); background:var(--panel); }
+.figure-label { padding:14px 18px 0; }
+svg { display:block; width:100%; height:auto; font:inherit; user-select:none; -webkit-user-select:none; }
+svg text { fill:var(--text); }
+svg .small { fill:var(--text-muted); font-size:14px; }
+svg .value { font-size:19px; }
+svg .record { fill:var(--canvas); stroke:var(--border-node); stroke-width:1.4; }
+svg .selected .record { stroke:var(--accent); stroke-width:2; }
+svg .pending .record { stroke:var(--warn); stroke-dasharray:5 4; }
+svg .aborted .record { stroke:var(--bad); stroke-dasharray:3 4; }
+svg .aborted .value { fill:var(--bad); }
+svg [data-version][tabindex="0"] { cursor:pointer; }
+#version-detail { border-top:1px solid var(--border); color:var(--text-muted); padding:14px 18px; min-height:4.5em; }
+.outcome { display:grid; grid-template-columns:150px 1fr; gap:18px; padding:20px 0; border-bottom:1px solid var(--border); }
+.metric { font-size:32px; font-weight:500; }
+.metric-label { color:var(--text-muted); font-size:11px; }
+#outcome[data-tone="bad"] .metric,#outcome[data-tone="bad"] h3 { color:var(--bad); }
+#outcome[data-tone="good"] h3 { color:var(--good); }
+#explanation { color:var(--text-muted); margin-top:5px; }
+.legend { display:flex; flex-wrap:wrap; gap:16px; color:var(--text-muted); font-size:11px; margin:12px 0 24px; }
+.legend i { display:inline-block; width:7px; height:7px; margin-right:6px; }
+.comparison { margin-top:22px; }
+table { border-collapse:collapse; width:100%; margin-top:10px; font-size:12px; }
+th,td { text-align:left; vertical-align:top; border-bottom:1px solid var(--border); padding:10px 8px; }
+th { color:var(--text-muted); font-weight:400; }
+tr[data-current="true"] td:first-child { color:var(--accent); }
+footer { margin-top:22px; color:var(--text-muted); font-size:11px; line-height:1.8; }
+a { color:var(--text); text-underline-offset:3px; }
+@media(max-width:760px) {
+  main { padding:24px 14px; }
+  .transactions { grid-template-columns:1fr; gap:12px; }
+  .setup label { width:100%; }
+  #progress-label { width:100%; margin-left:0; }
+  .outcome { grid-template-columns:110px 1fr; gap:12px; }
+  th,td { padding:9px 5px; font-size:11px; }
+  svg .small { font-size:18px; }
+}
+@media(prefers-reduced-motion:reduce) { * { scroll-behavior:auto; } }
+</style>
+</head>
+<body>
+<main>
+<header>
+<p class="eyebrow">PostgreSQL / Multiversion concurrency control</p>
+<h1>Same rows. Different views.</h1>
+<p class="intro">MVCC keeps older row versions available while transactions run together. Explore which version a query sees, then test a rule that spans two rows.</p>
+</header>
+<div class="setup">
+<div class="scenarios" role="group" aria-label="Scenario">
+<button data-scenario="visibility" aria-pressed="true">1 · Row visibility</button>
+<button data-scenario="skew" aria-pressed="false">2 · Write skew</button>
+</div>
+<label for="mode">Isolation
+<select id="mode">
+<option value="rc">Read Committed</option>
+<option value="rr" selected>Repeatable Read</option>
+<option value="serial">Serializable</option>
+</select>
+</label>
+</div>
+<p id="isolation-note"></p>
+<div class="controls">
+<button id="play" aria-pressed="true">Pause demo</button>
+<button id="back">Previous</button>
+<button id="step">Next step</button>
+<button id="reset">Replay</button>
+<span id="progress-label"></span>
+</div>
+<div class="rail" id="rail" aria-hidden="true"></div>
+<div class="transactions">
+<article class="transaction" data-transaction="A">
+<header><h2 id="a-name">Transaction A · Reader</h2><span id="a-state" class="state">Ready</span></header>
+<pre class="query" id="a-query"></pre>
+<p class="read" id="a-result"></p><p class="own" id="a-own"></p>
+</article>
+<article class="transaction" data-transaction="B">
+<header><h2 id="b-name">Transaction B · Writer</h2><span id="b-state" class="state">Ready</span></header>
+<pre class="query" id="b-query"></pre>
+<p class="read" id="b-result"></p><p class="own" id="b-own"></p>
+</article>
+</div>
+<figure>
+<p class="section-label figure-label">Snapshot views → row versions</p>
+<svg id="scene" viewBox="0 0 860 430" role="group" aria-labelledby="scene-title scene-desc">
+<title id="scene-title">MVCC snapshots and row versions</title>
+<desc id="scene-desc">Two transaction views above folded row-version cards. Original and new versions are shown separately. Each version states whether the current transaction views can see it. Select a version for details.</desc>
+<g id="drawing"></g>
+</svg>
+<figcaption id="version-detail" role="status" aria-live="polite">Select a row version to inspect its visibility.</figcaption>
+</figure>
+<div class="legend" aria-label="Color and shape key">
+<span><i style="background:var(--info)"></i>Transaction A</span>
+<span><i style="background:var(--warn)"></i>Transaction B / pending write</span>
+<span><i style="background:var(--bad)"></i>Aborted / rule broken</span>
+<span>Folded card = row version · dashed edge = not committed</span>
+</div>
+<section class="outcome" id="outcome" data-tone="neutral" aria-labelledby="phase">
+<div><div class="metric" id="metric"></div><div class="metric-label" id="metric-label"></div></div>
+<div role="status" aria-live="polite" aria-atomic="true"><h3 id="phase"></h3><p id="explanation"></p></div>
+</section>
+<section class="comparison" aria-labelledby="comparison-title">
+<h2 id="comparison-title">What changes with isolation?</h2>
+<table>
+<thead><tr><th scope="col">PostgreSQL level</th><th scope="col">Snapshot</th><th scope="col">Later SELECT in A</th><th scope="col">Write skew</th></tr></thead>
+<tbody>
+<tr data-mode="rc"><td>Read Committed</td><td>Each statement</td><td>Sees newly committed version</td><td>Possible</td></tr>
+<tr data-mode="rr"><td>Repeatable Read</td><td>First data statement</td><td>Keeps earlier version</td><td>Possible</td></tr>
+<tr data-mode="serial"><td>Serializable</td><td>Stable + dependency checks</td><td>Keeps earlier version</td><td>Abort and retry</td></tr>
+</tbody>
+</table>
+</section>
+<footer>
+<p>Ordinary SELECTs; no explicit row locks. Commit numbers show logical publication order, not transaction IDs. Uncommitted changes are visible to their own writer. Older versions are retained here to explain visibility; vacuum and conflicting writes to the same row are omitted.</p>
+<p>Serializable illustrates a read/write dependency cycle with B chosen to abort. Real PostgreSQL SSI can choose another victim or detect the failure earlier. Retry restarts the whole transaction.</p>
+<p>Sources: <a href="https://www.postgresql.org/docs/18/mvcc-intro.html">PostgreSQL MVCC</a> · <a href="https://www.postgresql.org/docs/18/transaction-iso.html">Transaction isolation</a><br>Offline · automatic playback · reduced motion starts paused · click or use Enter to inspect a version.</p>
+</footer>
+</main>
+<script>
+(()=>{
+'use strict';
+const ns='http://www.w3.org/2000/svg';
+const $=id=>document.getElementById(id),svg=$('scene'),drawing=$('drawing');
+const reduced=matchMedia('(prefers-reduced-motion: reduce)'),compact=matchMedia('(max-width: 760px)');
+let scenario='visibility',mode='rr',phase=0,wantsPlay=!reduced.matches,inView=true,timer=null,selected=null,state;
+const viewNodes=new Map(),versionNodes=new Map();
+let wireLayer,packetLayer;
+const modes={
+  rc:'Read Committed refreshes the snapshot for each statement. Another transaction’s pending write stays invisible.',
+  rr:'PostgreSQL Repeatable Read uses snapshot isolation: the first data statement fixes the transaction’s view.',
+  serial:'Serializable keeps the stable view and checks read/write dependencies. A conflicting transaction may need a full retry.'
+};
+function transaction(id){return{id,status:'ready',snapshot:null,firstSnapshot:null,lastRead:null,reads:new Map(),query:'Waiting to begin.',abortRequired:false};}
+function initial(){
+  const rows=scenario==='visibility'?['account']:['alice','bob'];
+  return{clock:0,A:transaction('A'),B:transaction('B'),versions:rows.map(row=>({id:row+'-original',row,value:scenario==='visibility'?100:true,owner:null,commit:0,status:'committed'})),activity:null,edges:[]};
+}
+function begin(tx){tx.status='active';tx.query='BEGIN;';}
+function statement(tx,query){
+  if(mode==='rc'||tx.firstSnapshot===null){tx.snapshot=state.clock;if(tx.firstSnapshot===null)tx.firstSnapshot=tx.snapshot;}
+  tx.query=query;
+}
+function visible(tx,row){
+  if(tx.snapshot===null||tx.status!=='active')return null;
+  const own=state.versions.find(v=>v.row===row&&v.owner===tx.id&&v.status==='pending');
+  return own||state.versions.filter(v=>v.row===row&&v.status==='committed'&&v.commit<=tx.snapshot).sort((a,b)=>b.commit-a.commit)[0];
+}
+function read(tx){
+  const query=scenario==='visibility'?'SELECT balance FROM accounts\nWHERE id = 7;':'SELECT count(*) FROM doctors\nWHERE on_call = true;';
+  statement(tx,query);
+  const rows=scenario==='visibility'?['account']:['alice','bob'],versions=rows.map(row=>visible(tx,row));
+  for(const v of versions)tx.reads.set(v.row,v.id);
+  tx.lastRead=scenario==='visibility'?versions[0].value:versions.filter(v=>v.value).length;
+  state.activity={owner:tx.id,kind:'read',versions:versions.map(v=>v.id)};
+}
+function write(tx,row,value){
+  const query=scenario==='visibility'?'UPDATE accounts SET balance = 80\nWHERE id = 7;':"UPDATE doctors SET on_call = false\nWHERE name = '"+row+"';";
+  statement(tx,query);
+  const version={id:row+'-new',row,value,owner:tx.id,commit:null,status:'pending'};
+  state.versions.push(version);state.activity={owner:tx.id,kind:'write',versions:[version.id]};
+  dependencies();
+}
+function dependencies(){
+  state.edges=[];
+  for(const reader of [state.A,state.B])for(const writer of [state.A,state.B]){
+    if(reader===writer)continue;
+    for(const version of state.versions.filter(v=>v.owner===writer.id&&v.status!=='aborted')){
+      if(reader.reads.has(version.row)&&reader.reads.get(version.row)!==version.id){
+        state.edges.push({from:reader.id,to:writer.id,row:version.row});break;
+      }
+    }
+  }
+}
+function commit(tx){
+  if(tx.abortRequired){
+    tx.status='aborted';tx.query='COMMIT;\n→ serialization failure (40001)';
+    for(const v of state.versions)if(v.owner===tx.id&&v.status==='pending')v.status='aborted';
+    return;
+  }
+  // This small teaching schedule chooses B as the victim of its two-way cycle.
+  // It illustrates SSI's guarantee; it does not implement PostgreSQL's detector.
+  if(mode==='serial'&&state.edges.some(e=>e.from==='A'&&e.to==='B')&&state.edges.some(e=>e.from==='B'&&e.to==='A')&&tx.id==='A')state.B.abortRequired=true;
+  const pending=state.versions.filter(v=>v.owner===tx.id&&v.status==='pending');
+  if(pending.length){state.clock++;for(const v of pending){v.status='committed';v.commit=state.clock;}}
+  tx.status='committed';tx.query='COMMIT;';
+}
+const visibilityPlan=[
+  ['Two sessions, one committed row','The account starts at 100. BEGIN alone does not establish the stable snapshot.'],
+  ['A begins','A has started a transaction, but it has no data snapshot yet.',()=>begin(state.A)],
+  ['A reads 100','The first SELECT sees committed version #0. Stable isolation levels keep this snapshot.',()=>read(state.A)],
+  ['B writes 80, without committing','B can see its own new version. A and other sessions cannot see B’s pending write.',()=>{begin(state.B);write(state.B,'account',80);}],
+  ['A reads while B is uncommitted','A still reads 100 in every mode. MVCC provides no dirty read here.',()=>read(state.A)],
+  ['B commits version #1','The new balance becomes committed. The earlier version remains available for older snapshots.',()=>commit(state.B)],
+  ['A reads after B commits','Read Committed refreshes to #1 and returns 80. Repeatable Read and Serializable retain #0 and return 100.',()=>read(state.A)],
+  ['A finishes','A’s final read was governed by its snapshot. A new transaction can now read the latest committed balance, 80.',()=>commit(state.A)]
+];
+function skewPlan(){
+  const serial=mode==='serial';
+  const plan=[
+    ['Two doctors are on call','Business rule: at least one doctor must remain on call. Each transaction may go off call only if it read a count greater than one.'],
+    ['Both transactions begin','A will update Alice; B will update Bob. Neither transaction has a snapshot until its first data statement.',()=>{begin(state.A);begin(state.B);}],
+    ['A reads two doctors','A records a count of 2 at snapshot #0 and decides Alice may go off call.',()=>read(state.A)],
+    ['B also reads two doctors','B records the same count of 2. Both decisions are based on the original committed rows.',()=>read(state.B)],
+    ['A writes Alice off call','Alice’s new version is pending. A sees its own change; B still sees the original Alice version.',()=>write(state.A,'alice',false)],
+    ['B writes Bob off call','The writes touch different rows. A read Bob before B changed it; B read Alice before A changed it: a dependency cycle.',()=>write(state.B,'bob',false)],
+    ['A commits','Alice’s change is published. Bob is still committed as on call; B’s pending change remains private.',()=>commit(state.A)],
+    [serial?'B cannot commit':'Both commit: the rule is broken',serial?'Serializable rejects the cycle. In this schedule B aborts and its pending Bob version is discarded; one doctor remains on call.':'Both earlier decisions were individually reasonable. Together they leave zero doctors on call: write skew. Read Committed also permits this schedule because neither guard is rechecked.',()=>commit(state.B)]
+  ];
+  if(serial)plan.push(
+    ['Retry B from the beginning','A new transaction and SELECT see Alice off call and Bob on call. The count is 1, so the application keeps Bob on call.',()=>{state.B=transaction('B');state.edges=[];begin(state.B);read(state.B);}],
+    ['Retry commits without the unsafe write','B commits after rerunning the guard. One doctor stays on call, matching a valid serial execution.',()=>commit(state.B)]
+  );
+  return plan;
+}
+function plan(){return scenario==='visibility'?visibilityPlan:skewPlan();}
+function rebuild(){
+  state=initial();const steps=plan();
+  for(let i=1;i<=phase;i++){state.activity=null;steps[i][2]();}
+  render(steps);
+}
+function el(tag,attrs,parent){const node=document.createElementNS(ns,tag);for(const [key,value]of Object.entries(attrs))node.setAttribute(key,value);parent.append(node);return node;}
+function text(parent,x,y,value,attrs={}){const node=el('text',{x,y,...attrs},parent);node.textContent=value;return node;}
+function port(bounds,side){return side==='bottom'?[bounds.x+bounds.w/2,bounds.y+bounds.h]:[bounds.x,bounds.y+bounds.h/2];}
+function construct(){
+  drawing.replaceChildren();viewNodes.clear();versionNodes.clear();
+  const small=compact.matches;svg.setAttribute('viewBox',small?(scenario==='visibility'?'0 0 420 390':'0 0 420 640'):'0 0 860 430');
+  const defs=el('defs',{},drawing);
+  for(const id of ['A','B']){
+    const color=id==='A'?'info':'warn',marker=el('marker',{id:'arrow-'+id,viewBox:'0 -4 8 8',refX:8,refY:0,markerWidth:8,markerHeight:8,markerUnits:'userSpaceOnUse',orient:'auto'},defs);
+    el('path',{d:'M0 -3 L8 0 L0 3',fill:'none',stroke:'var(--'+color+')','stroke-width':1.3},marker);
+  }
+  wireLayer=el('g',{'data-layer':'wires'},drawing);
+  const nodeLayer=el('g',{'data-layer':'nodes'},drawing);packetLayer=el('g',{'data-layer':'packets'},drawing);
+  for(const [i,id]of ['A','B'].entries()){
+    const bounds=small?{x:12+i*208,y:20,w:188,h:86}:{x:20+i*430,y:20,w:390,h:76};
+    const group=el('g',{'data-node':'view-'+id,'data-x':bounds.x,'data-y':bounds.y,'data-w':bounds.w,'data-h':bounds.h},nodeLayer);
+    el('rect',{x:bounds.x,y:bounds.y,width:bounds.w,height:bounds.h,fill:'var(--canvas)',stroke:'var(--'+(id==='A'?'info':'warn')+')'},group);
+    text(group,bounds.x+14, bounds.y+23,'TRANSACTION '+id,{'font-size':small?16:14});
+    const snapshot=text(group,bounds.x+14,bounds.y+(small?50:47),'',{class:'small'});
+    const view=text(group,bounds.x+14,bounds.y+(small?74:64),'',{class:'small'});
+    viewNodes.set(id,{group,bounds,snapshot,view});
+  }
+  const rows=scenario==='visibility'?['account']:['alice','bob'];
+  for(const [i,row]of rows.entries()){
+    const title=row==='account'?'Account 7':row==='alice'?'Alice':'Bob';
+    text(nodeLayer,small?68:30,small?148+i*252:222+i*122,title,{'font-size':small?18:15});
+    for(const [slot,name]of ['original','new'].entries()){
+      const bounds=small?{x:68,y:164+i*252+slot*106,w:328,h:86}:{x:180+slot*340,y:180+i*122,w:300,h:86};
+      const id=row+'-'+name,group=el('g',{'data-version':id,'data-node':id,'data-x':bounds.x,'data-y':bounds.y,'data-w':bounds.w,'data-h':bounds.h,role:'button',tabindex:0,'aria-pressed':'false'},nodeLayer);
+      const {x,y,w,h}=bounds;
+      el('path',{d:'M'+x+' '+y+' H'+(x+w-12)+' L'+(x+w)+' '+(y+12)+' V'+(y+h)+' H'+x+' Z M'+(x+w-12)+' '+y+' V'+(y+12)+' H'+(x+w),class:'record'},group);
+      const value=text(group,x+16,y+28,'',{class:'value'}),meta=text(group,x+16,y+49,'',{class:'small'}),views=text(group,x+16,y+70,'',{class:'small'});
+      function inspect(){if(!state.versions.some(v=>v.id===id))return;selected=id;render(plan());}
+      group.addEventListener('click',inspect);
+      group.addEventListener('keydown',event=>{if(!['Enter',' '].includes(event.key))return;event.preventDefault();inspect();});
+      versionNodes.set(id,{group,bounds,value,meta,views});
+    }
+  }
+}
+function valueLabel(version){return scenario==='visibility'?'balance = '+version.value:'on_call = '+version.value;}
+function viewLabel(tx){
+  if(tx.snapshot===null)return compact.matches?'Ready':'No data snapshot yet';
+  if(tx.status!=='active')return compact.matches?'Ended':'No active snapshot';
+  if(scenario==='visibility')return(compact.matches?'View: ':'View: balance = ')+visible(tx,'account').value;
+  return(compact.matches?'':'View: ')+['alice','bob'].filter(row=>visible(tx,row).value).length+' on call';
+}
+function render(steps){
+  for(const id of ['A','B']){
+    const tx=state[id],prefix=id.toLowerCase();
+    $(prefix+'-name').textContent='Transaction '+id+' · '+(scenario==='visibility'?(id==='A'?'Reader':'Writer'):(id==='A'?'Alice':'Bob')+(id==='B'&&phase>=8?' (retry)':''));
+    $(prefix+'-state').textContent=tx.status[0].toUpperCase()+tx.status.slice(1);$(prefix+'-state').dataset.state=tx.status;
+    $(prefix+'-query').textContent=tx.query;
+    $(prefix+'-result').textContent=tx.lastRead===null?'Last SELECT: —':'Last SELECT: '+tx.lastRead+(scenario==='skew'?' on call':'');
+    const own=state.versions.find(v=>v.owner===id&&v.status==='pending');
+    $(prefix+'-own').textContent=own?'Own pending write: '+valueLabel(own):'Own pending write: —';
+    const node=viewNodes.get(id);node.snapshot.textContent=tx.snapshot===null?(compact.matches?'Not acquired':'Snapshot: not acquired'):(mode==='rc'?(compact.matches?'Statement #':'Statement view #'):'Snapshot #')+tx.snapshot;
+    node.view.textContent=viewLabel(tx);
+    node.group.dataset.snapshot=tx.snapshot===null?'none':String(tx.snapshot);node.group.dataset.state=tx.status;node.group.dataset.result=tx.lastRead===null?'none':String(tx.lastRead);
+  }
+  for(const [id,node]of versionNodes){
+    const version=state.versions.find(v=>v.id===id),shown=!!version;
+    node.group.setAttribute('class',(shown?version.status:'missing')+(selected===id?' selected':''));
+    node.group.setAttribute('tabindex',shown?'0':'-1');node.group.setAttribute('aria-disabled',String(!shown));node.group.setAttribute('aria-pressed',String(selected===id));
+    node.value.textContent=shown?valueLabel(version):'No new version yet';
+    node.meta.textContent=!shown?(compact.matches?'Waiting for a write.':'A write creates another version.'):version.status==='pending'?'UNCOMMITTED · writer '+version.owner:version.status==='aborted'?'ABORTED · never published':'COMMITTED · order #'+version.commit;
+    const a=shown&&visible(state.A,version.row)===version,b=shown&&visible(state.B,version.row)===version;
+    node.views.textContent=!shown?'':(a||b?'Visible in '+[a?'A':null,b?'B':null].filter(Boolean).join(' + '):(compact.matches?'No active view sees it':'Outside active transaction views'));
+    node.group.dataset.status=shown?version.status:'missing';node.group.dataset.visibleA=String(!!a);node.group.dataset.visibleB=String(!!b);
+    node.group.dataset.value=shown?String(version.value):'';node.group.dataset.commit=shown&&version.commit!==null?String(version.commit):'none';
+    node.group.setAttribute('aria-label',shown?version.row+', '+valueLabel(version)+', '+node.meta.textContent+', '+node.views.textContent:versionNodes.get(id).value.textContent);
+  }
+  wireLayer.replaceChildren();packetLayer.replaceChildren();
+  const activity=state.activity;
+  if(activity){
+    const source=viewNodes.get(activity.owner).bounds,start=port(source,'bottom'),color='var(--'+(activity.owner==='A'?'info':'warn')+')';
+    for(const id of activity.versions){
+      const target=versionNodes.get(id).bounds,end=port(target,'left'),bus=target.x-22;
+      const route='M'+start[0]+' '+start[1]+' V118 H'+bus+' V'+end[1]+' H'+end[0];
+      el('path',{d:route,fill:'none',stroke:color,'stroke-width':1.5,'marker-end':'url(#arrow-'+activity.owner+')','data-route':id,'data-start':start.join(','),'data-end':end.join(',')},wireLayer);
+      if(!reduced.matches&&running()){
+        const packet=el('circle',{cx:0,cy:0,r:3.5,fill:color,'data-packet':id},packetLayer);
+        const motion=el('animateMotion',{path:route,begin:'indefinite',dur:'0.85s',fill:'freeze'},packet);
+        if(typeof motion.beginElement==='function')motion.beginElement();
+      }
+    }
+  }
+  if(selected&&state.versions.some(v=>v.id===selected)){
+    const node=versionNodes.get(selected);$('version-detail').textContent=node.group.getAttribute('aria-label')+'. Visibility uses committed versions in the snapshot plus the transaction’s own pending writes.';
+  }else $('version-detail').textContent='Select a row version to inspect its visibility. Uncommitted writes belong only to their writer.';
+  $('isolation-note').textContent=modes[mode];
+  $('phase').textContent=steps[phase][0];$('explanation').textContent=steps[phase][1];
+  const committed=scenario==='visibility'?state.versions.filter(v=>v.status==='committed').sort((a,b)=>b.commit-a.commit)[0].value:['alice','bob'].filter(row=>state.versions.filter(v=>v.row===row&&v.status==='committed').sort((a,b)=>b.commit-a.commit)[0].value).length;
+  $('metric').textContent=committed;$('metric-label').textContent=scenario==='visibility'?'Latest committed balance':'On call · committed · rule ≥ 1';
+  $('outcome').dataset.tone=scenario==='skew'?(committed===0?'bad':phase>=7?'good':'neutral'):'neutral';
+  $('progress-label').textContent=(phase+1)+' / '+steps.length+' steps';
+  $('back').disabled=phase===0;$('step').disabled=phase===steps.length-1;
+  $('play').textContent=wantsPlay?'Pause demo':'Play demo';$('play').setAttribute('aria-pressed',String(wantsPlay));
+  $('rail').replaceChildren(...steps.map((_,i)=>{const node=document.createElement('span');if(i<=phase)node.className='done';return node;}));
+  for(const row of document.querySelectorAll('tr[data-mode]'))row.dataset.current=String(row.dataset.mode===mode);
+  for(const button of document.querySelectorAll('[data-scenario]'))button.setAttribute('aria-pressed',String(button.dataset.scenario===scenario));
+  svg.dataset.scenario=scenario;svg.dataset.mode=mode;svg.dataset.phase=phase;svg.dataset.commitOrder=state.clock;svg.dataset.dependencies=state.edges.map(e=>e.from+'>'+e.to+':'+e.row).join(',');
+}
+function running(){return wantsPlay&&inView&&!document.hidden;}
+function schedule(){
+  if(timer!==null){clearTimeout(timer);timer=null;}
+  if(running())timer=setTimeout(()=>{timer=null;phase=phase===plan().length-1?0:phase+1;selected=null;rebuild();schedule();},phase===plan().length-1?5200:2600);
+}
+function playback(){
+  if(typeof svg.pauseAnimations==='function'){if(running())svg.unpauseAnimations();else svg.pauseAnimations();}
+  $('play').textContent=wantsPlay?'Pause demo':'Play demo';$('play').setAttribute('aria-pressed',String(wantsPlay));schedule();
+}
+function changePhase(next){wantsPlay=false;phase=next;selected=null;rebuild();playback();}
+$('play').addEventListener('click',()=>{wantsPlay=!wantsPlay;playback();});
+$('step').addEventListener('click',()=>changePhase(Math.min(phase+1,plan().length-1)));
+$('back').addEventListener('click',()=>changePhase(Math.max(0,phase-1)));
+$('reset').addEventListener('click',()=>{phase=0;selected=null;rebuild();playback();});
+$('mode').addEventListener('change',event=>{mode=event.target.value;phase=0;selected=null;rebuild();playback();});
+for(const button of document.querySelectorAll('[data-scenario]'))button.addEventListener('click',()=>{scenario=button.dataset.scenario;phase=0;selected=null;construct();rebuild();playback();});
+document.addEventListener('visibilitychange',playback);
+if('IntersectionObserver'in window)new IntersectionObserver(entries=>{inView=entries.some(entry=>entry.isIntersecting);playback();}).observe(svg);
+reduced.addEventListener('change',()=>{if(reduced.matches)wantsPlay=false;packetLayer.replaceChildren();playback();});
+compact.addEventListener('change',()=>{construct();rebuild();playback();});
+construct();rebuild();playback();
+})();
+</script>
+</body>
+</html>

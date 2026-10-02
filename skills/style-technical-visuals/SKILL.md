@@ -1,6 +1,6 @@
 ---
 name: style-technical-visuals
-description: "Style technical diagrams, charts, and interactive explainers consistently. Use when a visual needs coherent color, typography, layout, or connection geometry."
+description: "Build and style technical diagrams, charts, and interactive visualizations in 2D or 3D. Use when creating a technical visual or improving its color, typography, layout, connection geometry, motion, or camera interaction."
 license: MIT
 metadata:
   author: William Cygan
@@ -10,328 +10,52 @@ metadata:
 
 # Style Technical Visuals
 
-Apply one coherent visual language to technical artifacts. Use the PlanetScale
-Engineering Blog as a directional reference: precise, restrained, technical,
-and editorial.
+Route technical diagramming and visualization through the standalone examples.
+They provide the current visual language and working implementation patterns.
 
-Adapt the language to the target. Preserve existing product tokens and brand
-rules when they exist. Use this skill as the fallback system.
+## Select the dimension
 
-## Start from the gallery
+Use the dimension the user requested. If the request leaves 2D versus 3D
+unspecified, ask the user to choose before building; do this on every
+unspecified request. Explain the tradeoff briefly: 2D favors direct reading,
+while 3D offers spatial structure and camera exploration.
 
-For a standalone primary/follower database topology, start from
-`references/standalone/database-cluster.html`. It is an original, offline HTML
-reference with inline SVG, semantic database cylinders, and a shared replication
-trunk. Standalone references remain independent of gallery registration and
-embedding code.
+| Selected dimension | Load | Primary examples |
+| --- | --- | --- |
+| 2D diagrams, charts, or interactive explainers | [2D guide](references/2d.md) | `references/standalone/` |
+| 3D, isometric, projected, or orbitable visuals | [3D guide](references/3d.md) | `references/standalone-3d/` |
 
-For an isometric database cluster, use
-`references/standalone-3d/database-cluster.html`. It projects three-dimensional
-cylinders onto a ground plane while preserving the standalone dark palette.
+Read the selected guide and the closest working example before implementation.
+When both dimensions are requested, load both guides. Match examples by the
+structure or interaction being taught, even when the topic differs.
 
-For an orbitable job-flow simulation, use
-`references/standalone-3d/queue-worker-pool.html`. A producer fills a bounded FIFO
-queue while three workers receive and process jobs; motion and orbit are independent.
-
-For an orbitable append-only tape, use `references/standalone-3d/commit-log.html`.
-Raised record blocks support selection, payload inspection, append, and reset.
-
-For Kafka producer-side key routing and partition-local offsets, use
-`references/standalone/kafka-partitioning.html` or the orbitable
-`references/standalone-3d/kafka-partitioning.html`. Both implement Java-compatible
-key hashing and explicit partition selection, with animated appends to three logs.
-
-For total order broadcast, use
-`references/standalone/total-order-broadcast.html`. Compare three unordered
-delivery logs against three matching ordered prefixes using colored message blocks.
-
-For Raft-style heartbeat failure detection, use
-`references/standalone-3d/heartbeat-failure-detector.html`. Five orbitable nodes
-show per-follower election timers, leader failure, majority election, and rejoin.
-Timeouts express suspicion rather than proof of failure.
-
-For deterministic checkpoint recovery, use
-`references/standalone/flink-checkpoint-recovery.html` or the orbitable
-`references/standalone-3d/flink-checkpoint-recovery.html`. Three stages snapshot,
-crash at the middle worker, restore state, and replay post-checkpoint records.
-The idempotent database sink keeps committed rows and ignores repeated event IDs.
-
-For a load balancer routing to three application instances, use
-`references/standalone/load-balancer.html`. Copy its service panels, face-center
-ports, and request-routing branches for service topologies.
-
-For asynchronous jobs buffered before parallel processing, use
-`references/standalone/queue-worker-pool.html`. Copy its slotted queue and
-worker panels; the arrows represent job flow to competing workers.
-
-For cache-aside reads, use `references/standalone/application-cache-database.html`.
-It separates cache hits from the database read and cache fill on a miss; the
-application owns both paths.
-
-For geographic DNS selection, use `references/standalone/geodns.html`.
-It distinguishes resolver queries and regional answers from the user's direct
-application connection, with location estimation and DNS caching caveats.
-
-For bounded retries and failed-job isolation, use
-`references/standalone/dead-letter-queue.html`. It separates successful
-acknowledgment, retry, and dead-letter paths with an explicit attempt limit.
-
-For synchronous service dependencies, use
-`references/standalone/service-request-chain.html`. It separates downstream
-calls from returning responses and explains waiting and failure propagation.
-
-For regional application and database groups, use
-`references/standalone/multi-region-deployment.html`. Each of three regions
-contains an app, a primary, and two replicas; compact layouts stack the regions.
-
-For key-based database partitioning, use
-`references/standalone/sharded-database.html`. It routes three example keys to
-distinct shards using an explicit modulo rule and distinguishes shards from replicas.
-
-For ticket drops and user admission queues, use
-`references/standalone/ticket-sale-waiting-room.html`. It separates waiting-room
-tokens, bounded admission, checkout, and ticket inventory.
-
-For append-only key-value records, use `references/standalone/commit-log.html`.
-It shows increasing LSNs, UTF-8 payload lengths, repeated keys, and manual append.
-
-Before building any new artifact, do this:
-
-1. Read `references/gallery/GALLERY.html` to see the quality bar and the
-   shared token block.
-2. Find the closest demo in `references/gallery/demos/` to the artifact you
-   were asked to build (pipeline, topology, table sampler, curve, matrix).
-3. Copy that demo's geometry, framing, and interaction patterns. Edit toward
-   the new content. Do not rebuild from prose alone when a working example
-   exists — the prose patterns in `references/design-patterns/` describe the
-   gallery demos; they are weaker than the demos themselves.
-
-Every demo in the gallery is a "good example": self-contained, zero-scroll,
-fixed-coordinate stage, exact pixel wire alignment, native SVG packets.
-Derivative artifacts must meet the same bar.
-
-The reviewed animation gallery lives in
-`references/gallery/GALLERY.html` (self-contained; dark theme only). Its header
-documents the shared color palette and design tokens; every demo under
-`references/gallery/demos/` must use that dark system.
-Read `references/caching/planetscale-caching.html` for a perfect, self-contained replica of the
-PlanetScale caching article's animations (the real bundle, inlined; opens offline in a browser).
-Read `references/caching/index.html` for the clean-room pattern study of the same visuals.
-To vendor a future PlanetScale post, follow `references/copy-strategy.md`.
-Read `references/io-devices-and-latency/index.html` for the same perfect replica of the
-IO devices and latency post.
-Read `references/database-sharding/index.html` for the same perfect replica of the
-database sharding post.
-Read `references/btrees-and-database-indexes/index.html` for the same perfect replica of the
-B-trees and database indexes post.
-Read `references/concurrency-vs-throughput/index.html` for the same perfect replica of the
-doing-more-with-less post (concurrency vs throughput, junction simulator, USL curve).
-Read `references/what-is-a-data-topology/index.html` for the same perfect replica of the
-data topology post (dual-theme Neki vector diagrams).
-Read `references/history-of-postgres-sharding/index.html` for the same perfect replica of the
-history of Postgres sharding post (timeline through Ultima Online, Skype, Vitess, Citus, Neki).
-Read `references/making-768-servers-look-like-1/index.html` for the same perfect replica of the
-many-servers-appear-as-one post (768-server matrix, USL curve, PgBouncer, shard topologies).
-Read `references/kubernetes-feedback-loops/index.html` for the same perfect replica of the
-feedback loops behind Kubernetes post (nine dual-theme control-loop and controller diagrams).
+Selection is complete when the dimension and starting example are identified.
 
 ## Establish the visual contract
 
-Before styling, identify:
+Resolve the audience, delivery format, supported viewports, themes, and teaching
+focus from the request and existing context. Preserve product tokens and brand
+rules where present. Otherwise use the standalone examples' shared dark palette,
+mono-forward typography, restrained surfaces, and semantic state colors.
 
-- the artifact and its delivery format;
-- the audience and reading distance;
-- the supported viewport sizes;
-- the required light and dark themes;
-- the existing design tokens and brand rules; and
-- the information that needs visual emphasis.
+Adapt example geometry and interactions to the requested meaning. The source
+skill or project owns domain facts, system behavior, and output requirements;
+this skill owns their presentation. Preserve source and license comments when
+reusing technology marks or other attributed assets.
 
-Resolve each item from available context. Ask one focused question only when a
-missing answer changes the visual system.
+## Consult history conditionally
 
-## Define semantic tokens
+Read the [archive index](references/archive/README.md) only for an explicit
+historical request, provenance questions, or a useful pattern absent from the
+active examples. Then load only the relevant historical resource.
 
-Define roles before individual values. At minimum, define:
+Archived galleries, article studies, and design patterns explain earlier work.
+The active branch guides govern new artifacts. If borrowing an archived pattern,
+adapt it to the standalone foundation and current acceptance criteria.
 
-- canvas, surface, elevated surface, and divider;
-- primary, secondary, muted, and inverse text;
-- accent, focus, selection, and active path;
-- success, warning, danger, and information;
-- chart series, diagram groups, and data emphasis; and
-- spacing, radius, border, and type scales.
+## Complete the visual
 
-Use semantic names in the artifact. Keep raw color values in one token block.
-
-Start an unbranded fallback palette from these PlanetScale-inspired anchors:
-
-| Role | Anchor | Use |
-| --- | --- | --- |
-| Ink | `#111111` | Dark canvas or light-theme text |
-| Paper | `#fafafa` | Light canvas or dark-theme text |
-| Signal | `#f35815` | Sparse emphasis and active state |
-
-Use black and off-white for most surfaces. Use orange to guide attention, not
-to decorate. Use `better-colors` when palette generation, gamut, or contrast
-calculations require exact values.
-
-For dark-theme artifacts — the default for gallery-style demos — use the
-canonical shared system verbatim. Keep these values in one `:root` token
-block and reference them only through their role names:
-
-```css
-:root {
-  color-scheme: dark;
-  /* Canvas & surfaces */
-  --canvas: #111111;                    /* page background */
-  --panel: #1c1c1c;                     /* demo panels, cards, table surfaces */
-  --border: rgba(255,255,255,.14);      /* 1px dividers and outlines */
-  --border-node: rgba(255,255,255,.22); /* emphasized node outlines */
-  --track: rgba(255,255,255,.10);       /* empty tracks, cell wells */
-  /* Text */
-  --text: #fafafa;                      /* primary */
-  --text-muted: rgba(250,250,250,.60);  /* captions, subheads */
-  --text-dim: rgba(250,250,250,.40);    /* x-axes, footnotes */
-  /* Accent (sparing: active state, focus, taught concept) */
-  --accent: #f35815;                    /* the one orange */
-  /* Series & states */
-  --good: #27b648;                      /* success, hits, caught-up */
-  --warn: #d19f03;                      /* caution, wasted scans, mid lag */
-  --bad: #ff455d;                       /* errors, stale reads, saturation */
-  --info: #1e9de7;                      /* network, secondary series */
-}
-```
-
-Usage rules for this system:
-
-- Dark canvas only for gallery demos; do not invent new grays per artifact.
-- `--accent` appears sparingly: one dominant accent per focal area, never as
-  decoration or as a series color.
-- Map each series/state color to one stable meaning and repeat the same
-  mapping across nodes, edges, badges, and counters.
-- Monospace is the default face: `font: 13px/1.5 ui-monospace,
-  SFMono-Regular, Menlo, monospace`, with `font-variant-numeric:
-  tabular-nums` on all counters, offsets, and axes.
-- Demos never scroll: `body { overflow: hidden }`, natural-height content,
-  max reading width `860px`, stage canvases with fixed pixel dimensions.
-  The gallery header in `references/gallery/GALLERY.html` is authoritative
-  if this block and it ever disagree.
-
-## Set the typography
-
-Use a clear sans serif for prose. Use a monospace face for code, labels,
-measurements, controls, and diagram nodes.
-
-Prefer Inter and Roboto Mono when they are available. Provide system fallbacks
-for offline and portable artifacts.
-
-Use regular, medium, and semibold weights. Create hierarchy with size, spacing,
-and color before heavier weight.
-
-Use tabular numbers for metrics, timelines, axes, and changing values.
-
-Use a mono-forward treatment for editorial explainers. Keep long prose readable
-with a comfortable measure and line height.
-
-## Build the visual language
-
-- Use flat surfaces, thin dividers, and one-pixel borders.
-- Use small radii or square corners for technical structures.
-- Reserve shadows for real layer separation.
-- Keep the grid visible through alignment, spacing, and repeated dimensions.
-- Use generous empty space around the main explanation.
-- Keep dense controls compact and clearly grouped.
-- Use one dominant accent per focal area.
-- Match highlighted prose with the related visual element.
-- Prefer direct labels over distant legends.
-- Keep labels outside crowded marks and connection paths.
-
-Each decorative element must support grouping, hierarchy, state, or reading
-order.
-
-## Style diagrams and charts
-
-Map each color to one stable meaning within the artifact. Keep that mapping
-consistent across text, nodes, edges, controls, and legends.
-
-Show important meaning with two signals. Combine color with text, shape,
-pattern, position, or line style.
-
-Use neutral structure for the baseline. Apply stronger color to the current
-path, changed state, selected series, or teaching focus.
-
-Place controls next to the visual state they change. Show their effect without
-requiring the reader to search elsewhere.
-
-Use motion only when it explains sequence, transition, or causality. Provide a
-reduced-motion state that preserves the explanation.
-
-### Build connected diagrams
-
-For node shapes, logos, ports, routing, or arrowheads, read
-[Diagram Structure and Exact Ports](references/design-patterns/topology-diagrams.md) before implementation.
-For moving packets or automatic playback, also read
-[Native SVG Tracers and Playback](references/design-patterns/traffic-animation.md).
-
-Follow this sequence:
-
-1. Assign semantic shapes and technology marks. Finish when each symbol has one stated role.
-2. Place nodes and labels in one fixed SVG scene. Finish when the longest labels fit every state.
-3. Derive face-center ports from node bounds. Finish when each route clears unrelated nodes and labels.
-4. Center each arrowhead tip on its destination port. Finish when the final segment points perpendicular into the node face.
-5. Animate native SVG packets on the exact wire path. Finish after browser checks confirm movement, alignment, looping, and reduced motion.
-
-Start database containers from `outbox.html`, partition grouping from
-`consumer-groups.html`, and bounded pipelines from `backpressure.html` in
-`references/gallery/demos/`. These examples include semantic shapes and exact port helpers.
-
-Keep new gallery entries in separate draft files during review. After approval, move them into
-`references/gallery/demos/` and add them to `references/gallery/GALLERY.html`.
-Preserve automatic playback and embedding behavior during promotion. Keep one maintained copy of each approved demo.
-
-Design light and dark themes as related systems. Preserve semantic roles,
-hierarchy, and emphasis across both themes.
-
-Avoid mechanical color inversion. Adjust surface separation, muted text, line
-strength, and data colors for each canvas.
-
-Keep the accent recognizable in both themes. Verify every foreground against
-the surface where it appears.
-
-## Design pattern references
-
-Detailed mechanics, layout techniques, and implementation patterns extracted
-from `references/gallery/GALLERY.html` live in `references/design-patterns/`:
-
-- [`layout-and-framing.md`](references/design-patterns/layout-and-framing.md): Zero-scroll embedding, auto-fit message reporting, canvas boxes, and dual DOM+SVG layers.
-- [`topology-diagrams.md`](references/design-patterns/topology-diagrams.md): Semantic shapes, inline technology marks, node bounds, exact ports, orthogonal routes, and centered arrowheads.
-- [`traffic-animation.md`](references/design-patterns/traffic-animation.md): Native SVG packets, explicit animation starts, automatic playback, visibility, reduced motion, and movement checks.
-- [`tables-and-matrices.md`](references/design-patterns/tables-and-matrices.md): Relational table samplers, row lock overlays, dual index comparison boards, and canvas matrices.
-- [`progress-and-queues.md`](references/design-patterns/progress-and-queues.md): SVG clip-path sliding progress reveal, stage state transitions, and connection pool exhaustion.
-- [`interactive-controls.md`](references/design-patterns/interactive-controls.md): Adjacent direct-manipulation controls, chip toggles, continuous math sliders (USL), and verdict callouts.
-- [`typography-and-badges.md`](references/design-patterns/typography-and-badges.md): Monospace type hierarchies, tabular numbers (`tabular-nums`), large metric readouts, and badge container padding.
-
-## Respect ownership
-
-- Use `show-me` to select the smallest useful visual format.
-- Use `better-colors` for color conversion and palette calculations.
-- Use `better-ui` for application interaction and interface polish.
-
-This skill owns presentation rules. The source skill owns domain facts, system behavior,
-and output requirements.
-
-## Verify the result
-
-Inspect every supported theme and viewport. Verify all of these conditions:
-
-- The reading order is clear without interaction.
-- Text and essential marks meet the target contrast standard.
-- Important meaning remains clear without color.
-- Labels remain legible and avoid collisions.
-- Repeated meanings use the same token.
-- The accent identifies the intended focus.
-- Controls expose their current state.
-- Reduced motion preserves sequence and causality.
-- Existing product tokens remain intact unless the user requested replacement.
-
-Deliver the styled artifact. Summarize the token roles and any intentional
-exceptions in a compact table.
+Follow the selected guide through implementation and verification. Deliver the
+requested artifact once its supported views, controls, motion, and geometry
+have been checked. Summarize the meaningful presentation choices and any
+unverified behavior. Continue all other work authorized by the user's request.

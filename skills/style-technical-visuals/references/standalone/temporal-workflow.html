@@ -1,0 +1,1246 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Temporal · An order that waits</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --canvas: #111111;
+        --panel: #1c1c1c;
+        --border: rgba(255, 255, 255, 0.14);
+        --border-node: rgba(255, 255, 255, 0.22);
+        --track: rgba(255, 255, 255, 0.1);
+        --text: #fafafa;
+        --text-muted: rgba(250, 250, 250, 0.6);
+        --text-dim: rgba(250, 250, 250, 0.4);
+        --accent: #f35815;
+        --good: #27b648;
+        --warn: #d19f03;
+        --bad: #ff455d;
+        --info: #1e9de7;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--canvas);
+        color: var(--text);
+        font:
+          13px/1.5 ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          monospace;
+        font-variant-numeric: tabular-nums;
+      }
+      main {
+        max-width: 1080px;
+        margin: auto;
+        padding: 40px 32px 28px;
+      }
+      header {
+        margin-bottom: 24px;
+      }
+      h1 {
+        font-size: 28px;
+        font-weight: 500;
+        letter-spacing: -0.04em;
+        margin: 10px 0;
+      }
+      .eyebrow {
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        color: var(--text-muted);
+      }
+      p {
+        margin: 0;
+        color: var(--text-muted);
+      }
+      header p {
+        line-height: 1.8;
+      }
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        margin: 0 0 20px;
+      }
+      .control-group {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .control-group label {
+        color: var(--text-muted);
+        margin-right: 4px;
+        font-size: 11px;
+      }
+      .actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 16px 0 0;
+      }
+      #hint {
+        color: var(--text-muted);
+        font-size: 11px;
+        margin-left: 8px;
+      }
+      button,
+      select {
+        font: inherit;
+        color: var(--text);
+        background: var(--panel);
+        border: 1px solid var(--border-node);
+        border-radius: 4px;
+        padding: 9px 12px;
+        min-height: 40px;
+      }
+      button {
+        cursor: pointer;
+        transition:
+          border-color 0.15s,
+          background-color 0.15s;
+      }
+      button:hover:not(:disabled),
+      select:hover {
+        border-color: var(--text-muted);
+      }
+      button:active:not(:disabled) {
+        background: var(--track);
+      }
+      #play {
+        min-width: 76px;
+      }
+      #signal:not(:disabled) {
+        border-color: var(--info);
+      }
+      #expire:not(:disabled) {
+        border-color: var(--warn);
+      }
+      button:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+      button:focus-visible,
+      select:focus-visible,
+      a:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+      }
+      .status {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 24px;
+        border-block: 1px solid var(--border);
+        padding: 14px 0;
+        color: var(--text-muted);
+      }
+      #status {
+        color: var(--text);
+        font-weight: 500;
+      }
+      #clock {
+        white-space: nowrap;
+        font-size: 11px;
+      }
+      figure {
+        margin: 24px 0 20px;
+        overflow-x: auto;
+      }
+      figure.zoomed svg {
+        width: 1000px;
+        max-width: none;
+      }
+      svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .wire {
+        fill: none;
+        stroke: var(--border-node);
+        stroke-width: 1.5;
+        stroke-linejoin: round;
+        stroke-linecap: round;
+      }
+      .wire.lit {
+        stroke: var(--accent);
+      }
+      .wire.signal {
+        stroke: var(--info);
+        stroke-dasharray: 5 5;
+      }
+      .wire.awaiting {
+        stroke: var(--warn);
+        stroke-dasharray: 5 5;
+      }
+      .wire.arrived {
+        stroke: var(--good);
+        stroke-dasharray: none;
+      }
+      .wire.blocked {
+        stroke-dasharray: 4 5;
+      }
+      .box {
+        fill: var(--panel);
+        stroke: var(--border-node);
+        stroke-width: 1.5;
+      }
+      .active .box {
+        stroke: var(--accent);
+        stroke-width: 2;
+      }
+      .done .box {
+        stroke: var(--good);
+      }
+      .failed .box {
+        stroke: var(--bad);
+      }
+      .title {
+        fill: var(--text);
+        font-size: 14px;
+      }
+      .meta {
+        fill: var(--text-muted);
+        font-size: 11px;
+      }
+      .tag {
+        fill: var(--text-muted);
+        font-size: 9px;
+        letter-spacing: 0.07em;
+      }
+      .active .tag {
+        fill: var(--accent);
+      }
+      .done .tag {
+        fill: var(--good);
+      }
+      .failed .tag {
+        fill: var(--bad);
+      }
+      .edge-label {
+        fill: var(--text-muted);
+        font-size: 11px;
+      }
+      .arm-label {
+        fill: var(--text-muted);
+        font-size: 11px;
+      }
+      .arm-label.awaiting {
+        fill: var(--warn);
+      }
+      .arm-label.arrived {
+        fill: var(--good);
+      }
+      #join-progress {
+        fill: var(--text-muted);
+        font-size: 11px;
+      }
+      #join-progress.arrived {
+        fill: var(--good);
+      }
+      .key {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 20px;
+        font-size: 11px;
+        color: var(--text-muted);
+      }
+      .key span:before {
+        content: "";
+        display: inline-block;
+        width: 9px;
+        height: 9px;
+        margin-right: 7px;
+        border: 1px solid var(--border-node);
+      }
+      .key .activity:before {
+        border-radius: 2px;
+      }
+      .key .wait:before {
+        border-style: dashed;
+        border-radius: 50%;
+      }
+      .key .signal:before {
+        background: var(--info);
+      }
+      .key .completed:before {
+        background: var(--good);
+      }
+      .key .pending:before {
+        border-color: var(--warn);
+        border-style: dashed;
+      }
+      .details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+        border-top: 1px solid var(--border);
+        padding-top: 20px;
+        margin-top: 20px;
+      }
+      h2 {
+        font-size: 11px;
+        font-weight: 500;
+        margin: 0 0 10px;
+      }
+      .details p,
+      #history {
+        font-size: 12px;
+        line-height: 1.8;
+        color: var(--text-muted);
+      }
+      #history {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        min-height: 78px;
+      }
+      #history li {
+        white-space: normal;
+      }
+      footer {
+        font-size: 11px;
+        line-height: 1.8;
+        color: var(--text-muted);
+        margin-top: 28px;
+        border-top: 1px solid var(--border);
+        padding-top: 16px;
+      }
+      a {
+        color: var(--text-muted);
+        text-underline-offset: 3px;
+      }
+      @media (max-width: 600px) {
+        main {
+          padding: 24px 16px;
+        }
+        .details {
+          grid-template-columns: 1fr;
+          gap: 20px;
+        }
+        .status {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 6px;
+        }
+        h1 {
+          font-size: 24px;
+        }
+        button,
+        select {
+          min-height: 44px;
+        }
+        .controls {
+          gap: 10px;
+        }
+        .control-group {
+          flex-wrap: wrap;
+        }
+        select {
+          max-width: 100%;
+        }
+        #hint {
+          margin: 4px 0 0;
+          flex-basis: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="eyebrow">DURABLE EXECUTION / TEMPORAL</div>
+        <h1>An order that waits.</h1>
+        <p>
+          Eight activities. Parallel checks, human approval, durable deadlines,
+          and a retry.<br />Workflow logic coordinates the work; activities
+          perform the external operations.
+        </p>
+      </header>
+      <div class="controls">
+        <div class="control-group">
+          <label for="scenario">SCENARIO</label
+          ><select id="scenario">
+            <option value="approved">High risk · approved</option>
+            <option value="low">Low risk · auto-approved</option>
+            <option value="rejected">High risk · rejected</option>
+            <option value="timeout">High risk · deadline expires</option>
+            <option value="deliveryTimeout">Approved · delivery timeout</option>
+          </select>
+        </div>
+        <div class="control-group" role="group" aria-label="Playback">
+          <button id="play" aria-pressed="true">Pause</button
+          ><button id="step">Step</button><button id="reset">Reset</button>
+        </div>
+        <button id="zoom" aria-pressed="false">Zoom diagram</button>
+      </div>
+      <div class="status" aria-live="polite">
+        <span id="status">Starting workflow</span
+        ><span id="clock">elapsed 0h · event 0</span>
+      </div>
+      <figure>
+        <svg
+          id="scene"
+          viewBox="0 0 1000 1000"
+          role="img"
+          aria-labelledby="diagram-title diagram-desc"
+        >
+          <title id="diagram-title">Temporal order fulfillment workflow</title>
+          <desc id="diagram-desc">
+            Validate an order, run inventory reservation and risk scoring in
+            parallel, and join both results. High-risk orders request approval
+            and wait for an approval signal or a 24-hour deadline. Approved
+            orders capture payment with retry, create shipment, wait for
+            delivery signal or 48-hour timeout, then notify the customer.
+            Rejected or expired orders release inventory. Rectangles are
+            activities, diamonds are workflow decisions, circles are fork and
+            join, and rounded dashed nodes are conditional waits.
+          </desc>
+          <defs>
+            <marker
+              id="arrow"
+              viewBox="0 -4 8 8"
+              refX="8"
+              refY="0"
+              markerWidth="8"
+              markerHeight="8"
+              markerUnits="userSpaceOnUse"
+              orient="auto"
+            >
+              <path
+                d="M0 -3 L8 0 L0 3"
+                fill="none"
+                stroke="context-stroke"
+                stroke-width="1.3"
+              />
+            </marker>
+          </defs>
+          <g id="wires"></g>
+          <g id="nodes"></g>
+          <g id="packets" aria-hidden="true"></g>
+        </svg>
+      </figure>
+      <div class="key">
+        <span class="activity">Rectangle = activity</span
+        ><span>Diamond = decision</span
+        ><span class="wait">Dashed round = wait / timer</span
+        ><span class="signal">Dashed blue = signal</span
+        ><span class="completed">Green = completed</span
+        ><span class="pending">Dashed amber = pending result</span>
+      </div>
+      <div class="actions" role="group" aria-label="Workflow inputs">
+        <button id="signal" disabled>Send approval</button
+        ><button id="expire" disabled>Advance to deadline</button
+        ><span id="hint">Inputs become available at a conditional wait.</span>
+      </div>
+      <div class="details">
+        <section>
+          <h2 id="detail-title">Workflow started</h2>
+          <p id="detail">
+            An illustrative event simulation, running offline. Time is
+            compressed; no Temporal server is connected.
+          </p>
+        </section>
+        <section>
+          <h2>RECENT HISTORY · illustrative events</h2>
+          <ol id="history" aria-live="polite"></ol>
+        </section>
+      </div>
+      <footer>
+        Timers and signals are persisted; a waiting workflow occupies no worker
+        thread. Completed activity results are reused on replay. Activity
+        retries require idempotent side effects.
+        <a href="https://docs.temporal.io/develop/typescript/timers">Timers</a>
+        ·
+        <a href="https://docs.temporal.io/develop/typescript/message-passing"
+          >Signals &amp; conditions</a
+        >
+      </footer>
+    </main>
+    <script>
+      "use strict";
+      const $ = (id) => document.getElementById(id),
+        NS = "http://www.w3.org/2000/svg";
+      function el(tag, attrs, parent, text) {
+        const e = document.createElementNS(NS, tag);
+        for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+        if (text) e.textContent = text;
+        parent.append(e);
+        return e;
+      }
+      // Node bounds define all ports. Layout follows the standalone worker-pool
+      // reference: one fixed SVG scene, shared fork/join trunks, inline surfaces.
+      const nodes = [
+        [
+          "validate",
+          "01 · Validate order",
+          "order + address",
+          "activity",
+          380,
+          30,
+          240,
+          72,
+        ],
+        ["fork", "FORK", "", "junction", 492, 146, 16, 16],
+        [
+          "reserve",
+          "02 · Reserve inventory",
+          "stock service",
+          "activity",
+          120,
+          202,
+          240,
+          72,
+        ],
+        [
+          "risk",
+          "03 · Score risk",
+          "risk service",
+          "activity",
+          640,
+          202,
+          240,
+          72,
+        ],
+        ["join", "JOIN ALL", "", "junction", 492, 346, 16, 16],
+        ["decision", "Risk ≥ 0.7?", "", "decision", 420, 422, 160, 80],
+        [
+          "request",
+          "04 · Request approval",
+          "notify reviewer",
+          "activity",
+          720,
+          426,
+          240,
+          72,
+        ],
+        [
+          "approval",
+          "Wait: approval ≠ null",
+          "condition · deadline 24h",
+          "wait",
+          720,
+          574,
+          240,
+          72,
+        ],
+        [
+          "capture",
+          "05 · Capture payment",
+          "retry · backoff 1s",
+          "activity",
+          380,
+          574,
+          240,
+          72,
+        ],
+        [
+          "release",
+          "08 · Release inventory",
+          "rejected / expired",
+          "activity",
+          720,
+          722,
+          240,
+          72,
+        ],
+        [
+          "ship",
+          "06 · Create shipment",
+          "shipping service",
+          "activity",
+          380,
+          722,
+          240,
+          72,
+        ],
+        [
+          "delivery",
+          "Wait: delivered",
+          "condition · deadline 48h",
+          "wait",
+          380,
+          868,
+          240,
+          72,
+        ],
+        [
+          "notify",
+          "07 · Notify customer",
+          "delivered / delayed",
+          "activity",
+          60,
+          868,
+          240,
+          72,
+        ],
+        [
+          "reviewer",
+          "Reviewer",
+          "approve / reject signal",
+          "external",
+          720,
+          30,
+          240,
+          72,
+        ],
+        [
+          "carrier",
+          "Carrier",
+          "delivered signal",
+          "external",
+          720,
+          868,
+          240,
+          72,
+        ],
+      ].map(([id, title, meta, kind, x, y, w, h]) => ({
+        id,
+        title,
+        meta,
+        kind,
+        x,
+        y,
+        w,
+        h,
+      }));
+      const byId = Object.fromEntries(nodes.map((n) => [n.id, n]));
+      function port(id, face) {
+        const { x, y, w, h } = byId[id];
+        return face === "t"
+          ? [x + w / 2, y]
+          : face === "b"
+            ? [x + w / 2, y + h]
+            : face === "l"
+              ? [x, y + h / 2]
+              : [x + w, y + h / 2];
+      }
+      const routes = {};
+      function wire(id, a, af, b, bf, bends = [], signal = false) {
+        const pts = [port(a, af), ...bends, port(b, bf)];
+        const d = pts.map((p, i) => (i ? "L" : "M") + p.join(" ")).join(" ");
+        routes[id] = el(
+          "path",
+          {
+            id: "wire-" + id,
+            "data-source": a,
+            "data-destination": b,
+            d,
+            class: "wire" + (signal ? " signal" : ""),
+            "marker-end": "url(#arrow)",
+          },
+          $("wires"),
+        );
+      }
+      // All connections enter face-center ports perpendicularly. The approval
+      // and delivery rows share a centerline, so they need no corrective jogs.
+      wire("start", "validate", "b", "fork", "t");
+      wire("reserve", "fork", "l", "reserve", "t", [[240, 154]]);
+      wire("risk", "fork", "r", "risk", "t", [[760, 154]]);
+      wire("reserveJoin", "reserve", "b", "join", "l", [[240, 354]]);
+      wire("riskJoin", "risk", "b", "join", "r", [[760, 354]]);
+      wire("decide", "join", "b", "decision", "t");
+      wire("high", "decision", "r", "request", "l");
+      wire("low", "decision", "b", "capture", "t");
+      wire("requestWait", "request", "b", "approval", "t");
+      wire("approve", "approval", "l", "capture", "r");
+      wire("release", "approval", "b", "release", "t");
+      wire("ship", "capture", "b", "ship", "t");
+      wire("delivery", "ship", "b", "delivery", "t");
+      wire("notify", "delivery", "l", "notify", "r");
+      wire(
+        "approvalSignal",
+        "reviewer",
+        "r",
+        "approval",
+        "r",
+        [
+          [982, 66],
+          [982, 610],
+        ],
+        true,
+      );
+      wire("deliverySignal", "carrier", "l", "delivery", "r", [], true);
+      for (const n of nodes) {
+        const g = el("g", { id: n.id, "data-kind": n.kind }, $("nodes"));
+        n.g = g;
+        if (n.kind === "junction") {
+          el(
+            "circle",
+            { cx: n.x + n.w / 2, cy: n.y + n.h / 2, r: 8, class: "box" },
+            g,
+          );
+          if (n.id === "fork")
+            el("text", { x: 522, y: n.y - 8, class: "tag" }, g, n.title);
+          continue;
+        }
+        if (n.kind === "decision") {
+          el(
+            "path",
+            {
+              d: `M${n.x + n.w / 2} ${n.y} L${n.x + n.w} ${n.y + n.h / 2} L${n.x + n.w / 2} ${n.y + n.h} L${n.x} ${n.y + n.h / 2} Z`,
+              class: "box",
+            },
+            g,
+          );
+          el(
+            "text",
+            {
+              x: n.x + n.w / 2,
+              y: n.y + n.h / 2 + 4,
+              "text-anchor": "middle",
+              class: "meta",
+            },
+            g,
+            n.title,
+          );
+          continue;
+        }
+        el(
+          "rect",
+          {
+            x: n.x,
+            y: n.y,
+            width: n.w,
+            height: n.h,
+            rx: n.kind === "wait" ? 20 : 3,
+            class: "box",
+            ...(n.kind === "wait" ? { "stroke-dasharray": "5 4" } : {}),
+          },
+          g,
+        );
+        el("text", { x: n.x + 14, y: n.y + 30, class: "title" }, g, n.title);
+        el("text", { x: n.x + 14, y: n.y + 51, class: "meta" }, g, n.meta);
+        el(
+          "text",
+          { x: n.x + n.w - 10, y: n.y - 7, "text-anchor": "end", class: "tag" },
+          g,
+          n.kind === "activity" ? "ACTIVITY" : n.kind.toUpperCase(),
+        );
+      }
+      for (const [x, y, t, c] of [
+        [645, 450, "yes · review", "edge-label"],
+        [516, 543, "no · skip review", "edge-label"],
+        [670, 596, "approved", "edge-label"],
+        [855, 694, "reject / timeout", "edge-label"],
+        [180, 975, "WORKFLOW COMPLETE", "tag"],
+        [840, 829, "WORKFLOW CANCELED", "tag"],
+      ])
+        el(
+          "text",
+          {
+            x,
+            y,
+            class: c,
+            "text-anchor":
+              t === "approved" ||
+              t === "yes · review" ||
+              t.startsWith("WORKFLOW")
+                ? "middle"
+                : "start",
+          },
+          $("nodes"),
+          t,
+        );
+      const armLabels = {
+        reserve: el(
+          "text",
+          {
+            x: 342,
+            y: 335,
+            "text-anchor": "middle",
+            class: "arm-label",
+            id: "inventory-result",
+          },
+          $("nodes"),
+        ),
+        risk: el(
+          "text",
+          {
+            x: 658,
+            y: 335,
+            "text-anchor": "middle",
+            class: "arm-label",
+            id: "risk-result",
+          },
+          $("nodes"),
+        ),
+      };
+      const joinProgress = el(
+        "text",
+        { x: 524, y: 390, id: "join-progress" },
+        $("nodes"),
+      );
+      function renderJoin() {
+        const started = index >= 1;
+        const count = ["reserve", "risk"].filter((id) =>
+          received.has(id),
+        ).length;
+        for (const [id, name] of [
+          ["reserve", "Inventory"],
+          ["risk", "Risk"],
+        ]) {
+          const ready = received.has(id),
+            state = ready ? "arrived" : started ? "awaiting" : "";
+          routes[id + "Join"].classList.remove("lit", "arrived", "awaiting");
+          if (state) routes[id + "Join"].classList.add(state);
+          armLabels[id].setAttribute("class", "arm-label " + state);
+          armLabels[id].textContent = ready
+            ? "✓ " + name + " ready"
+            : started
+              ? "… " + name + " pending"
+              : name + " result";
+        }
+        joinProgress.textContent = "JOIN ALL · " + count + "/2 ready";
+        joinProgress.setAttribute("class", count === 2 ? "arrived" : "");
+        routes.decide.classList.toggle("blocked", count < 2);
+        // Dynamic description also exposes the join state to screen readers.
+        $("diagram-desc").textContent =
+          diagramDescription +
+          " Join state: " +
+          armLabels.reserve.textContent +
+          "; " +
+          armLabels.risk.textContent +
+          ". " +
+          count +
+          " of 2 results ready.";
+      }
+      const diagramDescription = $("diagram-desc").textContent;
+      let playing = true,
+        index = -1,
+        events = [],
+        history = [],
+        finished = new Set(),
+        received = new Set(),
+        hours = 0,
+        override = null,
+        transition = null;
+      const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+      function event(
+        active,
+        edges,
+        title,
+        detail,
+        record,
+        done = [],
+        time = 0,
+      ) {
+        return { active, edges, title, detail, record, done, time };
+      }
+      function schedule() {
+        const mode = $("scenario").value,
+          low = mode === "low",
+          outcome =
+            override ||
+            (mode === "timeout"
+              ? "timeout"
+              : mode === "rejected"
+                ? "rejected"
+                : "approved");
+        const s = [
+          event(
+            ["validate"],
+            [],
+            "Validate the order",
+            "Activity 01 checks external order data. Workflow code itself performs no network I/O.",
+            "ActivityTaskScheduled · validate",
+          ),
+          event(
+            ["reserve", "risk"],
+            ["start", "reserve", "risk"],
+            "Two activities run in parallel",
+            "Both activities are scheduled before awaiting either result. The join requires both to finish.",
+            "ActivityTaskScheduled · reserve + scoreRisk",
+            ["validate", "fork"],
+          ),
+          event(
+            ["risk"],
+            ["reserveJoin"],
+            "Inventory reserved; risk still running",
+            "The faster branch finishes first. The workflow cannot pass the join yet.",
+            "ActivityTaskCompleted · reserveInventory",
+            ["reserve"],
+          ),
+          event(
+            ["decision"],
+            ["riskJoin", "decide"],
+            "Join both results, then choose a path",
+            low
+              ? "Risk score 0.2: skip human review."
+              : "Risk score 0.9: require human review. The threshold is deterministic workflow logic.",
+            "ActivityTaskCompleted · scoreRisk",
+            ["risk", "fork", "join"],
+          ),
+        ];
+        if (!low) {
+          s.push(
+            event(
+              ["request"],
+              ["high"],
+              "Ask a reviewer",
+              "Activity 04 sends a review request. The reviewer responds asynchronously through a signal.",
+              "ActivityTaskScheduled · requestApproval",
+              ["decision"],
+            ),
+            event(
+              ["approval"],
+              ["requestWait"],
+              "Wait for approval or the deadline",
+              'A signal handler stores approval in workflow state. condition(() => approval !== null, "24h") waits without polling. Send a signal or advance the deadline.',
+              "TimerStarted · approvalDeadline 24h",
+              ["request"],
+            ),
+          );
+          s.push(
+            event(
+              [outcome === "approved" ? "capture" : "release"],
+              outcome === "timeout"
+                ? ["release"]
+                : [
+                    "approvalSignal",
+                    outcome === "approved" ? "approve" : "release",
+                  ],
+              outcome === "approved"
+                ? "Approval received"
+                : outcome === "rejected"
+                  ? "Reviewer rejected the order"
+                  : "Approval deadline expired",
+              outcome === "timeout"
+                ? "The timed condition returns false. Release the reserved stock; payment and shipment are skipped."
+                : outcome === "rejected"
+                  ? "The signal stores a rejection. The wait resolves and the workflow chooses the release branch."
+                  : "The signal stores approval. The wait resolves and its pending deadline is canceled.",
+              outcome === "timeout"
+                ? "TimerFired · approvalDeadline"
+                : `WorkflowExecutionSignaled · approval=${outcome}`,
+              ["approval"],
+              outcome === "timeout" ? 24 : 2,
+            ),
+          );
+          if (outcome !== "approved") {
+            s.push(
+              event(
+                [],
+                [],
+                "Order canceled",
+                "Activity 08 released the inventory. The workflow returns a canceled business result.",
+                "WorkflowExecutionCompleted · canceled",
+                ["release"],
+              ),
+            );
+            return s;
+          }
+        } else
+          s.push(
+            event(
+              ["capture"],
+              ["low"],
+              "Low risk: capture payment",
+              "No approval activity, signal wait, or approval timer is needed on this path.",
+              "ActivityTaskScheduled · capturePayment",
+              ["decision"],
+            ),
+          );
+        s.push(
+          event(
+            ["capture"],
+            [],
+            "Payment attempt 1 fails",
+            "A transient payment-service error triggers an activity retry with durable backoff. Reuse order ID as an idempotency key.",
+            "Activity attempt failed · retry in 1s",
+          ),
+          event(
+            ["capture"],
+            [],
+            "Payment attempt 2 succeeds",
+            "A retry is another attempt of activity 05, not a ninth activity. This is an illustrative attempt trace, not an exact raw server history.",
+            "ActivityTaskCompleted · capturePayment",
+          ),
+          event(
+            ["ship"],
+            ["ship"],
+            "Create the shipment",
+            "Activity 06 creates one shipment using an idempotency key. Payment has succeeded.",
+            "ActivityTaskScheduled · createShipment",
+            ["capture"],
+          ),
+          event(
+            ["delivery"],
+            ["delivery"],
+            "Wait for delivery confirmation",
+            "The carrier sends a delivered signal. A 48-hour durable deadline prevents waiting indefinitely.",
+            "TimerStarted · deliveryDeadline 48h",
+            ["ship"],
+          ),
+          event(
+            ["notify"],
+            mode === "deliveryTimeout"
+              ? ["notify"]
+              : ["deliverySignal", "notify"],
+            mode === "deliveryTimeout"
+              ? "Delivery deadline expired"
+              : "Carrier confirmed delivery",
+            mode === "deliveryTimeout"
+              ? "The wait timed out. Notify the customer that delivery is delayed; timeout does not prove shipment failure."
+              : "The delivered signal updates workflow state and cancels the pending deadline. Notify the customer.",
+            mode === "deliveryTimeout"
+              ? "TimerFired · deliveryDeadline"
+              : "WorkflowExecutionSignaled · delivered",
+            ["delivery"],
+            mode === "deliveryTimeout" ? 48 : 12,
+          ),
+          event(
+            [],
+            [],
+            "Order workflow completed",
+            "Activity 07 sent the final notification. Completed activity results are recorded and reused when workflow code replays.",
+            "WorkflowExecutionCompleted",
+            ["notify"],
+          ),
+        );
+        return s;
+      }
+      function packet(id, onArrival) {
+        if (reduced.matches) {
+          onArrival?.();
+          return;
+        }
+        const p = el(
+          "circle",
+          {
+            r: 3,
+            "data-route": id,
+            fill: routes[id].classList.contains("signal")
+              ? "var(--info)"
+              : routes[id].classList.contains("arrived")
+                ? "var(--good)"
+                : "var(--accent)",
+          },
+          $("packets"),
+        );
+        const m = el(
+          "animateMotion",
+          {
+            path: routes[id].getAttribute("d"),
+            dur: ".8s",
+            begin: "indefinite",
+            fill: "freeze",
+          },
+          p,
+        );
+        m.addEventListener(
+          "endEvent",
+          () => {
+            p.remove();
+            onArrival?.();
+          },
+          { once: true },
+        );
+        m.beginElement();
+      }
+      function render() {
+        const e = events[index];
+        if (!e) return;
+        hours += e.time;
+        for (const id of e.done) finished.add(id);
+        for (const n of nodes)
+          n.g.setAttribute("class", finished.has(n.id) ? "done" : "");
+        for (const id of e.active) byId[id].g.setAttribute("class", "active");
+        if (e.title.includes("fails"))
+          byId.capture.g.setAttribute("class", "failed");
+        for (const r of Object.values(routes)) r.classList.remove("lit");
+        $("packets").replaceChildren();
+        for (const id of e.edges) routes[id].classList.add("lit");
+        renderJoin();
+        $("status").textContent = e.title;
+        $("clock").textContent =
+          `elapsed ${hours}h · event ${index + 1}/${events.length}`;
+        $("detail-title").textContent = e.title;
+        $("detail").textContent = e.detail;
+        history.push(`${String(index + 1).padStart(2, "0")}  ${e.record}`);
+        $("history").replaceChildren(
+          ...history.slice(-3).map((t) => {
+            const li = document.createElement("li");
+            li.textContent = t;
+            return li;
+          }),
+        );
+        $("signal").disabled = !e.active.includes("approval");
+        $("expire").disabled = !e.active.some((x) =>
+          ["approval", "delivery"].includes(x),
+        );
+        $("signal").textContent =
+          $("scenario").value === "rejected"
+            ? "Send rejection"
+            : "Send approval";
+        $("hint").textContent = e.active.includes("approval")
+          ? "Send a reviewer signal, or let the 24h deadline expire."
+          : e.active.includes("delivery")
+            ? "Advance the 48h delivery deadline to explore a delay."
+            : "Inputs become available at a conditional wait.";
+      }
+      // Each event can contain multiple causal phases. The fork fans out only
+      // after its input arrives; other connected edges run in route order.
+      // Completion of an activity is distinct from receipt of its join result.
+      function next() {
+        if (transition) return;
+        if (index >= events.length - 1) {
+          restart();
+          return;
+        }
+        index++;
+        const e = events[index];
+        if (!e.edges.length) {
+          render();
+          return;
+        }
+        const phases = e.edges.includes("start")
+          ? [["start"], ["reserve", "risk"]]
+          : e.edges.map((id) => [id]);
+        const current = { phase: 0, pending: new Set(), settle: null };
+        transition = current;
+        const active = new Set(
+          nodes
+            .filter((n) => n.g.classList.contains("active"))
+            .map((n) => n.id),
+        );
+        const signalDestinations = e.edges
+          .filter((id) => routes[id].classList.contains("signal"))
+          .map((id) => routes[id].dataset.destination);
+        for (const id of e.done) {
+          if (!["fork", "join", ...signalDestinations].includes(id)) {
+            finished.add(id);
+            active.delete(id);
+          }
+        }
+        function paint() {
+          for (const n of nodes)
+            n.g.setAttribute(
+              "class",
+              finished.has(n.id) ? "done" : active.has(n.id) ? "active" : "",
+            );
+          renderJoin();
+        }
+        function runPhase() {
+          if (transition !== current) return;
+          if (current.phase === phases.length) {
+            transition = null;
+            $("step").disabled = false;
+            render();
+            return;
+          }
+          const ids = phases[current.phase++];
+          current.pending = new Set(ids);
+          $("packets").replaceChildren();
+          for (const r of Object.values(routes)) r.classList.remove("lit");
+          for (const id of ids) routes[id].classList.add("lit");
+          const titles = {
+            start: "Validation complete · approaching fork",
+            reserve: "Fork reached · dispatching parallel activities",
+            reserveJoin: "Inventory complete · result traveling to join",
+            riskJoin: "Risk complete · result traveling to join",
+            decide: "Both results received · leaving join",
+            approvalSignal: "Reviewer signal in transit",
+            deliverySignal: "Delivery signal in transit",
+          };
+          $("status").textContent = titles[ids[0]] || e.title;
+          $("detail-title").textContent = $("status").textContent;
+          $("detail").textContent =
+            "Packets show control flow. A destination becomes active when its incoming packet arrives; the join releases only after both results have arrived.";
+          $("signal").disabled = true;
+          $("expire").disabled = true;
+          $("step").disabled = true;
+          $("hint").textContent =
+            "Transition in progress · waiting for arrival.";
+          paint();
+          function arrive(id) {
+            if (transition !== current || !current.pending.delete(id)) return;
+            const destination = routes[id].dataset.destination;
+            if (id === "reserveJoin" || id === "riskJoin") {
+              received.add(routes[id].dataset.source);
+              if (received.size === 2) finished.add("join");
+            } else if (destination === "fork") finished.add("fork");
+            else if (routes[id].classList.contains("signal")) {
+              finished.add(destination);
+              active.delete(destination);
+            } else if (e.active.includes(destination)) active.add(destination);
+            paint();
+            if (!current.pending.size) runPhase();
+          }
+          current.settle = () => [...current.pending].forEach(arrive);
+          for (const id of ids) packet(id, () => arrive(id));
+        }
+        runPhase();
+      }
+      function restart() {
+        transition = null;
+        $("step").disabled = false;
+        $("packets").replaceChildren();
+        index = -1;
+        hours = 0;
+        override = null;
+        history = [];
+        finished.clear();
+        received.clear();
+        events = schedule();
+        next();
+      }
+      function setPlaying(value) {
+        playing = value;
+        $("play").textContent = playing ? "Pause" : "Play";
+        $("play").setAttribute("aria-pressed", String(playing));
+      }
+      $("zoom").onclick = () => {
+        const zoomed = document
+          .querySelector("figure")
+          .classList.toggle("zoomed");
+        $("zoom").setAttribute("aria-pressed", String(zoomed));
+        $("zoom").textContent = zoomed ? "Fit diagram" : "Zoom diagram";
+      };
+      $("play").onclick = () => setPlaying(!playing);
+      $("step").onclick = () => {
+        setPlaying(false);
+        next();
+      };
+      $("reset").onclick = restart;
+      $("scenario").onchange = restart;
+      $("signal").onclick = () => {
+        override = $("scenario").value === "rejected" ? "rejected" : "approved";
+        events = schedule();
+        next();
+      };
+      $("expire").onclick = () => {
+        if (events[index].active.includes("approval")) {
+          override = "timeout";
+          events = schedule();
+        } else {
+          const e = events[index + 1];
+          e.edges = ["notify"];
+          e.title = "Delivery deadline expired";
+          e.detail =
+            "The 48-hour wait expired. Notify the customer of delayed delivery; do not infer shipment failure.";
+          e.record = "TimerFired · deliveryDeadline";
+          e.time = 48;
+        }
+        next();
+      };
+      reduced.addEventListener("change", () => {
+        $("packets").replaceChildren();
+        transition?.settle?.();
+      });
+      // Automatic demonstration injects the selected scenario's external events.
+      // Manual Step pauses; reset and path changes preserve playback intent.
+      setInterval(() => {
+        if (playing && !document.hidden) next();
+      }, 2200);
+      restart();
+    </script>
+  </body>
+</html>

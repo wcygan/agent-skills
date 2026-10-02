@@ -1,4 +1,4 @@
-// Serve the gallery directory at http://127.0.0.1:8765, then run:
+// Serve skills/style-technical-visuals/references/archive/gallery at http://127.0.0.1:8765, then run:
 // playwright-cli run-code --filename=tests/browser/gallery_playback.js
 // Use a dedicated browser session. This check navigates its active tab.
 async function verifyGalleryPlayback(page) {

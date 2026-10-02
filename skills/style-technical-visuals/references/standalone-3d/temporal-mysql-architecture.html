@@ -134,55 +134,206 @@ const phases=[
 {path:paths.worker,message:'The worker reports commands/results through Frontend.'},
 {path:[...paths.history,...paths.historyDb],message:'History processes the completion and persists resulting state and events in MySQL.'}
 ];
+let sin=Math.sin(angle),cos=Math.cos(angle);
+const originX=orbitCenter.x*Math.cos(initialAngle)-orbitCenter.z*Math.sin(initialAngle);
+const originZ=orbitCenter.x*Math.sin(initialAngle)+orbitCenter.z*Math.cos(initialAngle);
 function p(x,y,z){
- // Orbit around the deployment center while preserving the initial framing.
- const dx=x-orbitCenter.x,dz=z-orbitCenter.z;
- const X=dx*Math.cos(angle)-dz*Math.sin(angle)+orbitCenter.x*Math.cos(initialAngle)-orbitCenter.z*Math.sin(initialAngle);
- const Z=dx*Math.sin(angle)+dz*Math.cos(angle)+orbitCenter.x*Math.sin(initialAngle)+orbitCenter.z*Math.cos(initialAngle);
- return{x:600+X,y:365+Z*.56-y*.9,depth:Z+y*.622};
+ const dx=x-orbitCenter.x,dz=z-orbitCenter.z,X=dx*cos-dz*sin+originX,Z=dx*sin+dz*cos+originZ;
+ return{x:600+X,y:365+Z*.56-y*.9,depth:Z+y*(.56/.9)};
 }
-let sceneFragment;
-function el(tag,a){const e=document.createElementNS(ns,tag);for(const[k,v]of Object.entries(a))e.setAttribute(k,v);sceneFragment.append(e);return e;}
-function render(){sceneFragment=document.createDocumentFragment();const faces=[],labels=[],stage=Math.min(11,Math.floor(elapsed/3)),phase=phases[stage];
-function face(v,fill,stroke,layer=1){faces.push({v,fill,stroke,layer,depth:v.reduce((s,a)=>s+p(...a).depth,0)/v.length});}
-function box(x,z,w,d,h,color,base=0,layer=1){const a=x-w/2,b=x+w/2,c=z-d/2,e=z+d/2,fill=layer===0?'var(--scale-platform)':'var(--panel)',front=Math.cos(angle)>=0?e:c,side=Math.sin(angle)>=0?b:a;face([[a,base,front],[b,base,front],[b,h,front],[a,h,front]],fill,color,layer);face([[side,base,c],[side,base,e],[side,h,e],[side,h,c]],fill,color,layer);face([[a,h,c],[b,h,c],[b,h,e],[a,h,e]],fill,color,layer);}
-function label(value,x,y,z,color,size=14){labels.push({value,x,y,z,color,size});}
-box(-90,750,470,190,4,'var(--border-node)',0,0);box(-70,0,520,640,4,'var(--border-node)',0,0);box(380,0,200,240,4,'var(--border-node)',0,0);
-// Ports, shafts, active arrowheads, and packets share exact world coordinates.
-// Baseline paths describe connections; the highlighted path shows this step's direction.
-function connection(path,color,arrow=false){
- for(let i=1;i<path.length;i++){
-  const a=path[i-1],b=path[i],start=p(...a),end=p(...b),length=Math.hypot(end.x-start.x,end.y-start.y);
-  const trim=arrow&&i===path.length-1?Math.min(.45,9.5/length):0;
-  for(let k=0;k<20;k++){
-   const t=(1-trim)*k/20,u=(1-trim)*(k+1)/20;
-   const v=a.map((c,j)=>c+(b[j]-c)*t),w=a.map((c,j)=>c+(b[j]-c)*u),pa=p(...v),pb=p(...w);
-   faces.push({layer:1,depth:(pa.depth+pb.depth)/2,draw:()=>el('line',{x1:pa.x,y1:pa.y,x2:pb.x,y2:pb.y,stroke:color,'stroke-width':arrow?2:1.4})});
+// Route lengths and shared baseline spans do not change during playback.
+for(const phase of phases){
+ phase.lengths=phase.path.slice(1).map((v,i)=>Math.hypot(...v.map((c,k)=>c-phase.path[i][k])));
+ phase.total=phase.lengths.reduce((sum,length)=>sum+length,0);
+}
+const baselineGroups=new Map();
+for(const path of Object.values(paths))for(let i=1;i<path.length;i++){
+ const a=path[i-1],b=path[i],axis=a.findIndex((v,k)=>v!==b[k]);
+ if(axis<0)continue;
+ const key=axis+':'+a.map((v,k)=>k===axis?'*':v).join(',');
+ if(!baselineGroups.has(key))baselineGroups.set(key,{axis,origin:a,ranges:[]});
+ baselineGroups.get(key).ranges.push([Math.min(a[axis],b[axis]),Math.max(a[axis],b[axis])]);
+}
+const baseline=[];
+for(const {axis,origin,ranges}of baselineGroups.values()){
+ const merged=[];
+ for(const range of ranges.sort((a,b)=>a[0]-b[0])){
+  const previous=merged.at(-1);
+  if(previous&&range[0]<=previous[1])previous[1]=Math.max(previous[1],range[1]);else merged.push(range.slice());
+ }
+ for(const [lo,hi]of merged){const a=origin.slice(),b=origin.slice();a[axis]=lo;b[axis]=hi;baseline.push([a,b]);}
+}
+let sceneFragment,packetNode,packetMask,packetRect,packetCutout,occluders=[];
+let renderedStage=-1,renderedAngle=null,frameId=null,inView=true,dirty=false;
+const status=document.querySelector('#status'),history=document.querySelector('#history'),worker=document.querySelector('#worker'),pause=document.querySelector('#pause');
+function el(tag,attrs,parent=sceneFragment){const e=document.createElementNS(ns,tag);for(const[k,v]of Object.entries(attrs))e.setAttribute(k,v);parent.append(e);return e;}
+function set(e,key,value){const text=String(value);if(e.getAttribute(key)!==text)e.setAttribute(key,text);}
+function polygonPath(points){return'M'+points.map(q=>`${q.x} ${q.y}`).join(' L')+' Z';}
+function positivePolygon(points){
+ const area=points.reduce((sum,q,i)=>{const r=points[(i+1)%points.length];return sum+q.x*r.y-r.x*q.y;},0);
+ return area<0?points.slice().reverse():points;
+}
+function arrowGeometry(path){
+ const tip=p(...path.at(-1)),tail=p(...path.at(-2)),length=Math.hypot(tip.x-tail.x,tip.y-tail.y),ux=(tip.x-tail.x)/length,uy=(tip.y-tail.y)/length;
+ const head=[tip,{x:tip.x-ux*10-uy*4,y:tip.y-uy*10+ux*4},{x:tip.x-ux*10+uy*4,y:tip.y-uy*10-ux*4}];
+ return{tip,ux,uy,head};
+}
+// Clip static gray strokes out of the orange route once per phase/view change.
+// Unlike a moving shared mask, this leaves no large mask surfaces to repaint.
+function routeCutouts(path,arrow){
+ const points=path.map(v=>p(...v)),polygons=[];
+ for(let i=1;i<points.length;i++){
+  const a=points[i-1],b=points[i],theta=Math.atan2(b.y-a.y,b.x-a.x),capsule=[];
+  for(const [center,start]of [[a,theta+Math.PI/2],[b,theta-Math.PI/2]])for(let j=0;j<=8;j++){
+   const t=start+j*Math.PI/8;capsule.push({x:center.x+1.8*Math.cos(t),y:center.y+1.8*Math.sin(t)});
   }
+  polygons.push(positivePolygon(capsule));
  }
- if(arrow){
-  const a=path.at(-2),b=path.at(-1),tip=p(...b),tail=p(...a),length=Math.hypot(tip.x-tail.x,tip.y-tail.y),ux=(tip.x-tail.x)/length,uy=(tip.y-tail.y)/length;
-  faces.push({layer:1,depth:tip.depth+.02,draw:()=>el('path',{d:`M${tip.x} ${tip.y} L${tip.x-ux*10-uy*4} ${tip.y-uy*10+ux*4} L${tip.x-ux*10+uy*4} ${tip.y-uy*10-ux*4} Z`,fill:color,'data-arrow':'active','data-tip':`${tip.x},${tip.y}`,'data-port':b.join(','),'data-direction':`${ux},${uy}`})});
- }
+ const {tip,ux,uy}=arrow;
+ polygons.push(positivePolygon([{x:tip.x+ux*2,y:tip.y+uy*2},{x:tip.x-ux*12-uy*6,y:tip.y-uy*12+ux*6},{x:tip.x-ux*12+uy*6,y:tip.y-uy*12-ux*6}]));
+ return polygons;
 }
-for(const path of Object.values(paths))connection(path,'var(--scale-wire)');
-connection(phase.path,'var(--accent)',true);
-
-box(-220,750,130,110,80,'var(--scale-app)');label('Client',-220,94,750,'var(--scale-app)');
-box(40,750,130,110,80,'var(--scale-worker)');label('Your workers',40,94,750,'var(--scale-worker)');
-box(-230,0,120,510,80,'var(--scale-front)');label('Frontend',-230,94,0,'var(--scale-front)');
-box(70,-190,180,120,80,'var(--scale-history)');label('History',70,94,-190,'var(--scale-history)');
-box(70,190,180,120,80,'var(--scale-matching)');label('Matching',70,105,190,'var(--scale-matching)');
-for(let i=0;i<3;i++)box(20+i*48,154,24,20,87,stage>=3&&stage<8&&i===0?'var(--scale-matching)':'var(--border-node)',80,2);
-const top=p(380,100,0),base=p(380,0,0);faces.push({layer:1,depth:p(380,50,0).depth,draw:()=>{el('path',{d:`M${top.x-60} ${top.y} V${base.y} A60 34 0 0 0 ${base.x+60} ${base.y} V${top.y} Z`,fill:'var(--panel)',stroke:'var(--scale-storage)','stroke-width':1.5});for(const h of [33,66]){const q=p(380,h,0);el('path',{d:`M${q.x-60} ${q.y} A60 34 0 0 0 ${q.x+60} ${q.y}`,fill:'none',stroke:'var(--scale-storage)'});}el('ellipse',{cx:top.x,cy:top.y,rx:60,ry:34,fill:'var(--panel)',stroke:'var(--scale-storage)'});}});label('MySQL',380,100,0,'var(--scale-storage)');
-if(phase.path){const path=phase.path,lengths=path.slice(1).map((v,i)=>Math.hypot(...v.map((c,k)=>c-path[i][k]))),total=lengths.reduce((a,b)=>a+b,0);let remaining=total*(elapsed%3)/3;for(let i=0;i<lengths.length;i++){if(remaining<=lengths[i]){const t=remaining/lengths[i],q=p(...path[i].map((v,k)=>v+(path[i+1][k]-v)*t));faces.push({layer:1,depth:q.depth,draw:()=>el('circle',{cx:q.x,cy:q.y,r:6,fill:'var(--accent)','data-packet':'active'})});break;}remaining-=lengths[i];}}
-faces.sort((a,b)=>a.layer-b.layer||a.depth-b.depth).forEach(f=>f.draw?f.draw():el('polygon',{points:f.v.map(v=>{const q=p(...v);return q.x+','+q.y;}).join(' '),fill:f.fill,stroke:f.stroke,'stroke-width':1.4}));
-label('YOUR APPLICATION',-90,0,895,'var(--scale-app)',14);label('TEMPORAL SERVER',-70,0,370,'var(--scale-front)',14);label('MYSQL STORAGE',380,0,180,'var(--scale-storage)',14);
-for(const l of labels){const q=p(l.x,l.y,l.z),e=el('text',{x:q.x,y:q.y,fill:l.color,'font-size':l.size,'text-anchor':'middle','dominant-baseline':'central'});e.textContent=l.value;}
-world.replaceChildren(sceneFragment);
-document.querySelector('#status').textContent=`${stage+1}/12 · ${phase.message}`;document.querySelector('#history').textContent=stage<3?'Awaiting persisted execution.':stage<11?'Event History + mutable state durable.\nInternal transfer/timer tasks recorded.':'Workflow Task completion and resulting state durable.';document.querySelector('#worker').textContent=stage<9?'Long-polling through Frontend.':stage<10?'Running Workflow code using delivered history.':'Reporting commands/results through Frontend.';document.querySelector('#pause').textContent=playing?'Pause demo':'Play demo';}
-document.querySelector('#pause').addEventListener('click',()=>{playing=!playing;render();});document.querySelector('#step').addEventListener('click',()=>{playing=false;elapsed=(Math.floor(elapsed/3)*3+3)%39;render();});document.querySelector('#reset').addEventListener('click',()=>{elapsed=0;playing=!reduced.matches;render();});document.querySelector('#view').addEventListener('click',()=>{angle=initialAngle;render();});
-svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointerId,x:e.clientX};svg.setPointerCapture(e.pointerId);});svg.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;angle+=(e.clientX-drag.x)*.004;drag.x=e.clientX;render();});for(const event of ['pointerup','pointercancel','lostpointercapture'])svg.addEventListener(event,()=>drag=null);svg.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();angle+=e.key==='ArrowRight'?.08:-.08;render();});function frame(now){if(last!==null&&playing&&!document.hidden){elapsed=(elapsed+Math.min((now-last)/1000,.05))%39;render();}last=now;requestAnimationFrame(frame);}render();requestAnimationFrame(frame);
+function intervalInPolygon(a,b,polygon){
+ let lo=0,hi=1;
+ for(let i=0;i<polygon.length;i++){
+  const q=polygon[i],r=polygon[(i+1)%polygon.length],dx=r.x-q.x,dy=r.y-q.y;
+  const start=dx*(a.y-q.y)-dy*(a.x-q.x),change=dx*(b.y-a.y)-dy*(b.x-a.x);
+  if(Math.abs(change)<1e-9){if(start<0)return null;continue;}
+  const t=-start/change;if(change>0)lo=Math.max(lo,t);else hi=Math.min(hi,t);
+  if(lo>=hi)return null;
+ }
+ return[lo,hi];
+}
+function visibleIntervals(a,b,cutouts){
+ let intervals=[[0,1]];
+ for(const polygon of cutouts){
+  const hidden=intervalInPolygon(a,b,polygon);if(!hidden)continue;
+  const next=[];
+  for(const [lo,hi]of intervals){
+   if(hidden[1]<=lo||hidden[0]>=hi){next.push([lo,hi]);continue;}
+   if(hidden[0]>lo)next.push([lo,hidden[0]]);if(hidden[1]<hi)next.push([hidden[1],hi]);
+  }
+  intervals=next;if(!intervals.length)break;
+ }
+ return intervals;
+}
+function buildScene(stage){
+ sin=Math.sin(angle);cos=Math.cos(angle);sceneFragment=document.createDocumentFragment();occluders=[];
+ const faces=[],labels=[],phase=phases[stage],arrow=arrowGeometry(phase.path),cutouts=routeCutouts(phase.path,arrow);
+ function surface(vertices){
+  const points=positivePolygon(vertices.map(v=>p(...v)));
+  occluders.push({points,left:Math.min(...points.map(q=>q.x)),right:Math.max(...points.map(q=>q.x)),top:Math.min(...points.map(q=>q.y)),bottom:Math.max(...points.map(q=>q.y))});
+ }
+ function face(v,fill,stroke,layer){
+  const points=v.map(q=>p(...q));if(layer>=1)surface(v);
+  faces.push({layer,depth:points.reduce((sum,q)=>sum+q.depth,0)/points.length,draw:()=>el('polygon',{points:points.map(q=>`${q.x},${q.y}`).join(' '),fill,stroke,'stroke-width':1.4})});
+ }
+ function box(x,z,w,d,h,color,base=0,layer=1){
+  const a=x-w/2,b=x+w/2,c=z-d/2,e=z+d/2,fill=layer===0?'var(--scale-platform)':'var(--panel)',front=cos>=0?e:c,side=sin>=0?b:a;
+  face([[a,base,front],[b,base,front],[b,h,front],[a,h,front]],fill,color,layer);
+  face([[side,base,c],[side,base,e],[side,h,e],[side,h,c]],fill,color,layer);
+  face([[a,h,c],[b,h,c],[b,h,e],[a,h,e]],fill,color,layer);
+ }
+ function label(value,x,y,z,color,size=14){labels.push({value,x,y,z,color,size});}
+ function connection(path,color,active=false){
+  for(let i=1;i<path.length;i++){
+   const a=path[i-1],b=path[i],start=p(...a),end=p(...b),length=Math.hypot(end.x-start.x,end.y-start.y);
+   const trim=active&&i===path.length-1?Math.min(.45,9.5/length):0;
+   for(let k=0;k<20;k++){
+    const t=(1-trim)*k/20,u=(1-trim)*(k+1)/20;
+    const v=a.map((c,j)=>c+(b[j]-c)*t),w=a.map((c,j)=>c+(b[j]-c)*u),pa=p(...v),pb=p(...w);
+    for(const [lo,hi]of active?[[0,1]]:visibleIntervals(pa,pb,cutouts)){
+     const from=v.map((c,j)=>c+(w[j]-c)*lo),to=v.map((c,j)=>c+(w[j]-c)*hi),q=p(...from),r=p(...to);
+     if(Math.hypot(r.x-q.x,r.y-q.y)<1e-6)continue;
+     faces.push({layer:1,depth:(q.depth+r.depth)/2,draw:()=>el('line',{x1:q.x,y1:q.y,x2:r.x,y2:r.y,stroke:color,'stroke-width':active?2:1.4,...(active?{'stroke-linecap':'round'}:{}),'data-line-role':active?'active':'baseline','data-world-start':from.join(','),'data-world-end':to.join(',')})});
+    }
+   }
+  }
+  if(active){const {tip,ux,uy,head}=arrow;faces.push({layer:1,depth:tip.depth+.02,draw:()=>el('path',{d:polygonPath(head),fill:color,'data-arrow':'active','data-tip':`${tip.x},${tip.y}`,'data-port':path.at(-1).join(','),'data-direction':`${ux},${uy}`})});}
+ }
+ box(-90,750,470,190,4,'var(--border-node)',0,0);box(-70,0,520,640,4,'var(--border-node)',0,0);box(380,0,200,240,4,'var(--border-node)',0,0);
+ for(const path of baseline)connection(path,'var(--scale-wire)');connection(phase.path,'var(--accent)',true);
+ box(-220,750,130,110,80,'var(--scale-app)');label('Client',-220,94,750,'var(--scale-app)');
+ box(40,750,130,110,80,'var(--scale-worker)');label('Your workers',40,94,750,'var(--scale-worker)');
+ box(-230,0,120,510,80,'var(--scale-front)');label('Frontend',-230,94,0,'var(--scale-front)');
+ box(70,-190,180,120,80,'var(--scale-history)');label('History',70,94,-190,'var(--scale-history)');
+ box(70,190,180,120,80,'var(--scale-matching)');label('Matching',70,105,190,'var(--scale-matching)');
+ for(let i=0;i<3;i++)box(20+i*48,154,24,20,87,stage>=3&&stage<8&&i===0?'var(--scale-matching)':'var(--border-node)',80,2);
+ // A small, retained payload mask handles depth; gray wires need no raster masks.
+ const ring=Array.from({length:64},(_,i)=>{const t=i*Math.PI/32;return[380+60*Math.cos(t),0,60*Math.sin(t)];});
+ surface(ring.map(([x,,z])=>[x,100,z]));
+ for(let i=0;i<ring.length;i++){
+  const a=ring[i],b=ring[(i+1)%ring.length];if((a[0]+b[0]-760)*sin+(a[2]+b[2])*cos<=0)continue;
+  surface([a,b,[b[0],100,b[2]],[a[0],100,a[2]]]);
+ }
+ const top=p(380,100,0),base=p(380,0,0);
+ faces.push({layer:1,depth:p(380,50,0).depth,draw:()=>{
+  el('path',{d:`M${top.x-60} ${top.y} V${base.y} A60 33.6 0 0 0 ${base.x+60} ${base.y} V${top.y} Z`,fill:'var(--panel)',stroke:'var(--scale-storage)','stroke-width':1.5});
+  for(const h of [33,66]){const q=p(380,h,0);el('path',{d:`M${q.x-60} ${q.y} A60 33.6 0 0 0 ${q.x+60} ${q.y}`,fill:'none',stroke:'var(--scale-storage)'});}
+  el('ellipse',{cx:top.x,cy:top.y,rx:60,ry:33.6,fill:'var(--panel)',stroke:'var(--scale-storage)'});
+ }});label('MySQL',380,100,0,'var(--scale-storage)');
+ faces.sort((a,b)=>a.layer-b.layer||a.depth-b.depth).forEach(f=>f.draw());
+ const definitions=el('defs',{});
+ packetMask=el('mask',{id:'execution-packet-mask',maskUnits:'userSpaceOnUse',maskContentUnits:'userSpaceOnUse',width:18,height:18,'mask-type':'luminance'},definitions);
+ packetRect=el('rect',{width:18,height:18,fill:'white'},packetMask);
+ packetCutout=el('path',{fill:'black'},packetMask);
+ packetNode=el('circle',{r:6,fill:'var(--accent)',mask:'url(#execution-packet-mask)','data-packet':'active'});
+ label('YOUR APPLICATION',-90,0,895,'var(--scale-app)',14);label('TEMPORAL SERVER',-70,0,370,'var(--scale-front)',14);label('MYSQL STORAGE',380,0,180,'var(--scale-storage)',14);
+ for(const l of labels){const q=p(l.x,l.y,l.z);el('text',{x:q.x,y:q.y,fill:l.color,'font-size':l.size,'text-anchor':'middle','dominant-baseline':'central'}).textContent=l.value;}
+ world.replaceChildren(sceneFragment);renderedStage=stage;renderedAngle=angle;
+ status.textContent=`${stage+1}/12 · ${phase.message}`;
+ history.textContent=stage<3?'Awaiting persisted execution.':stage<11?'Event History + mutable state durable.\nInternal transfer/timer tasks recorded.':'Workflow Task completion and resulting state durable.';
+ worker.textContent=stage<9?'Long-polling through Frontend.':stage<10?'Running Workflow code using delivered history.':'Reporting commands/results through Frontend.';
+}
+function updatePacket(stage){
+ const phase=phases[stage];let remaining=phase.total*(elapsed%3)/3,position=phase.path.at(-1);
+ for(let i=0;i<phase.lengths.length;i++){
+  const length=phase.lengths[i];if(remaining<=length){position=phase.path[i].map((v,k)=>v+(phase.path[i+1][k]-v)*remaining/length);break;}remaining-=length;
+ }
+ const q=p(...position),left=q.x-9,top=q.y-9,hidden=[];
+ for(const surface of occluders){
+  if(surface.right<left||surface.left>left+18||surface.bottom<top||surface.top>top+18)continue;
+  const clipped=[],points=surface.points;
+  for(let i=0;i<points.length;i++){
+   const a=points[i],b=points[(i+1)%points.length],da=a.depth-q.depth-.01,db=b.depth-q.depth-.01;
+   if(da>0)clipped.push(a);
+   if((da>0)!==(db>0)){const t=da/(da-db);clipped.push({x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t});}
+  }
+  if(clipped.length>=3)hidden.push(polygonPath(clipped));
+ }
+ set(packetNode,'cx',q.x);set(packetNode,'cy',q.y);set(packetNode,'data-position',position.join(','));
+ set(packetMask,'x',left);set(packetMask,'y',top);set(packetRect,'x',left);set(packetRect,'y',top);set(packetCutout,'d',hidden.join(' '));
+}
+function render(){
+ const stage=Math.min(11,Math.floor(elapsed/3));if(stage!==renderedStage||angle!==renderedAngle)buildScene(stage);updatePacket(stage);
+ const action=playing?'Pause demo':'Play demo';if(pause.textContent!==action)pause.textContent=action;dirty=false;
+}
+function animating(){return playing&&inView&&!document.hidden;}
+function schedule(){if(frameId===null&&(dirty||animating()))frameId=requestAnimationFrame(frame);}
+function syncPlayback(){
+ last=null;if(frameId!==null){cancelAnimationFrame(frameId);frameId=null;}schedule();
+}
+function frame(now){
+ frameId=null;
+ if(animating()){if(last!==null)elapsed=(elapsed+Math.min((now-last)/1000,.05))%39;last=now;render();}
+ else if(dirty)render();
+ schedule();
+}
+function controlsChanged(){render();syncPlayback();}
+function viewChanged(){dirty=true;schedule();}
+// Retain SVG geometry while the payload moves. Pause background/offscreen work,
+// and coalesce high-frequency pointer events into one scene rebuild per frame.
+pause.addEventListener('click',()=>{playing=!playing;controlsChanged();});
+document.querySelector('#step').addEventListener('click',()=>{playing=false;elapsed=(Math.floor(elapsed/3)*3+3)%39;controlsChanged();});
+document.querySelector('#reset').addEventListener('click',()=>{elapsed=0;playing=!reduced.matches;controlsChanged();});
+document.querySelector('#view').addEventListener('click',()=>{angle=initialAngle;controlsChanged();});
+svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointerId,x:e.clientX};svg.setPointerCapture(e.pointerId);});
+svg.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;angle+=(e.clientX-drag.x)*.004;drag.x=e.clientX;viewChanged();});
+for(const event of ['pointerup','pointercancel','lostpointercapture'])svg.addEventListener(event,()=>drag=null);
+svg.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();angle+=e.key==='ArrowRight'?.08:-.08;viewChanged();});
+document.addEventListener('visibilitychange',syncPlayback);
+if('IntersectionObserver'in window)new IntersectionObserver(entries=>{inView=entries.some(entry=>entry.isIntersecting);syncPlayback();}).observe(svg);
+render();schedule();
 })();</script><script>
 (()=>{
   const ns='http://www.w3.org/2000/svg';
@@ -192,6 +343,10 @@ svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointer
   let highlightedConnection='all';
   let message='Start: 2 History instances own H1–H12; 3 physical MySQL write shards hold example data. Scale each layer independently.';
   const colors={app:'var(--scale-app)',frontend:'var(--scale-front)',history:'var(--scale-history)',matching:'var(--scale-matching)',worker:'var(--scale-worker)',storage:'var(--scale-storage)'};
+  // Coplanar shard insets must paint above their parent platform at every angle.
+  const shardPlatformLayer=.5;
+  // Keep two distinct RPC lanes in a wide corridor between Frontend and backend faces.
+  const backendOffset=140,historyBusX=-185,matchingBusX=-125,sqlBusX=690+backendOffset;
   const connections={application:{color:colors.app},grpc:{color:colors.frontend},history:{color:colors.history},matching:{color:colors.matching},scheduling:{color:'var(--scale-scheduling)'},sql:{color:colors.storage},replication:{color:'var(--scale-replication)',dash:'5 5'}};
   function project(x,y,z){
     const dx=x-orbitCenter.x,dz=z-orbitCenter.z;
@@ -214,8 +369,8 @@ svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointer
       faces.push({layer,depth:vertices.reduce((sum,v)=>sum+project(...v).depth,0)/vertices.length,draw:()=>element('polygon',{points:vertices.map(v=>{const q=project(...v);return q.x+','+q.y;}).join(' '),fill,stroke,'stroke-width':1.3})});
     }
     function box(x,z,w,d,h,color,base=0,layer=1){
-      const a=x-w/2,b=x+w/2,c=z-d/2,e=z+d/2,fill=layer===0?'var(--scale-platform)':'var(--panel)';
-      const owner=layer>0?{type:'box',a,b,c,e,base,h}:null;
+      const a=x-w/2,b=x+w/2,c=z-d/2,e=z+d/2,fill=layer<1?'var(--scale-platform)':'var(--panel)';
+      const owner=layer>=1?{type:'box',a,b,c,e,base,h}:null;
       if(owner)solids.push(owner);
       const front=Math.cos(angle)>=0?e:c,side=Math.sin(angle)>=0?b:a;
       face([[a,base,front],[b,base,front],[b,h,front],[a,h,front]],fill,color,layer,owner);
@@ -323,10 +478,11 @@ svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointer
       }});
     }
     box(-590,40,240,960,4,'var(--border-node)',0,0);
-    box(125,40,1050,960,4,'var(--border-node)',0,0);
+    const serverRight=sqlBusX+40,serverCenter=(serverRight-400)/2;
+    box(serverCenter,40,serverRight+400,960,4,'var(--border-node)',0,0);
     box(0,1080,1380,980,4,'var(--border-node)',0,0);
     label('YOUR APPLICATION',-590,0,-465,colors.app,16);
-    label('TEMPORAL SERVER',125,0,-625,colors.frontend,17);
+    label('TEMPORAL SERVER',serverCenter,0,-625,colors.frontend,17);
     label('VITESS / MYSQL PERSISTENCE',0,0,1630,colors.storage,17);
 
     box(-590,-335,180,90,52,colors.app);label('Client',-590,60,-335,colors.app);
@@ -343,17 +499,17 @@ svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointer
       box(-305,z,140,70,52,colors.frontend);label('Frontend '+(i+1),-305,64,z,colors.frontend,14);
       // Leave the load balancer perpendicular to its face before joining the bus.
       route([[-305,26,-240],[-305,26,-205],[-405,26,-205],[-405,26,z],[-375,26,z]],'grpc',true);
-      route([[-235,38,z-12],[-185,38,z-12],[-185,38,-395]],'history');
-      route([[-235,26,z+12],[-155,26,z+12],[-155,26,450]],'matching');
+      route([[-235,38,z-12],[historyBusX,38,z-12],[historyBusX,38,-395]],'history');
+      route([[-235,26,z+12],[matchingBusX,26,z+12],[matchingBusX,26,450]],'matching');
     }
 
-    const hosts=historyCount===2?[-20,400]:[-40,210,460],width=historyCount===2?260:200,per=12/historyCount;
+    const hosts=(historyCount===2?[-20,400]:[-40,210,460]).map(x=>x+backendOffset),width=historyCount===2?260:200,per=12/historyCount;
     for(let host=0;host<historyCount;host++){
       const x=hosts[host];
       box(x,-250,width,220,64,colors.history);label('History '+(host+1),x,80,-335,colors.history);
-      route([[-185,38,-395],[x,38,-395],[x,38,-360]],'history',true);
+      route([[historyBusX,38,-395],[x,38,-395],[x,38,-360]],'history',true);
       route([[x,32,-140],[x,32,80]],'scheduling');
-      route([[x+width*.3,18,-140],[x+width*.3,18,-100],[690,18,-100],[690,18,610],[0,18,610],[0,18,645]],'sql',true);
+      route([[x+width*.3,18,-140],[x+width*.3,18,-100],[sqlBusX,18,-100],[sqlBusX,18,610],[0,18,610],[0,18,645]],'sql',true);
       for(let k=0;k<per;k++){
         const id=host*per+k+1,columns=historyCount===2?3:2;
         const xx=x+(k%columns-(columns-1)/2)*62,zz=-265+Math.floor(k/columns)*67;
@@ -362,12 +518,12 @@ svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointer
     }
     // Task queue partitions stay inside Matching; they are not database shards.
     for(let i=0;i<2;i++){
-      const x=i===0?-20:400;
+      const x=(i===0?-20:400)+backendOffset;
       box(x,260,260,160,64,colors.matching);label('Matching '+(i+1),x,80,200,colors.matching);
-      route([[-155,26,450],[x,26,450],[x,26,340]],'matching',true);
-      route([[-40,32,80],[460,32,80]],'scheduling');
+      route([[matchingBusX,26,450],[x,26,450],[x,26,340]],'matching',true);
+      route([[-40+backendOffset,32,80],[460+backendOffset,32,80]],'scheduling');
       route([[x,32,80],[x,32,180]],'scheduling',true);
-      route([[x+78,18,340],[x+78,18,390],[690,18,390],[690,18,610],[0,18,610],[0,18,645]],'sql',true);
+      route([[x+78,18,340],[x+78,18,390],[sqlBusX,18,390],[sqlBusX,18,610],[0,18,610],[0,18,645]],'sql',true);
       for(let k=0;k<2;k++){
         const xx=x+(k-.5)*108;
         box(xx,270,88,56,77,colors.matching,64,2);label('Q'+(i*2+k),xx,85,270,colors.matching,13);
@@ -378,7 +534,7 @@ svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointer
     const shards=dbCount===3?[-470,-155,160]:[-480,-235,10,255];
     for(let i=0;i<dbCount;i++){
       const x=shards[i];
-      box(x,1175,210,650,4,colors.storage,0,0);
+      box(x,1175,210,650,4,colors.storage,0,shardPlatformLayer);
       label('MySQL shard '+String.fromCharCode(65+i),x,100,900,colors.storage,15);
       cylinder(x,1060,36,78,colors.storage,'primary');label('primary',x,92,1060,colors.storage,13);
       label('VTTablet + MySQL',x,92,950,'var(--text-muted)',12);
@@ -391,7 +547,7 @@ svg.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointer
       const sample=Array.from({length:12},(_,k)=>k+1).filter((_,k)=>k%dbCount===i).map(id=>'H'+id).join('·');
       label('sample: '+sample,x,0,1480,colors.history,11);
     }
-    box(540,1175,220,650,4,'var(--border-node)',0,0);
+    box(540,1175,220,650,4,'var(--border-node)',0,shardPlatformLayer);
     label('Unsharded keyspace',540,100,900,'var(--text)',15);
     cylinder(540,1060,36,78,'var(--border-node)','metadata');label('VTTablet + MySQL',540,0,1245,'var(--text-muted)',12);
     label('selected metadata',540,0,1410,'var(--text-muted)',12);
