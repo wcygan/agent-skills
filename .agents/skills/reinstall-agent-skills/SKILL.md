@@ -15,8 +15,9 @@ Use `--dotfiles /path/to/dotfiles` to override the sibling checkout default.
 Read the dotfiles repository instructions and its `dotfiles-operations` and
 `agent-skills-integration` skills before execution.
 
-The script validates and commits all current provider changes, pushes them,
-fast-forwards dotfiles, advances `agent-skills.lock.toml` to the exact provider
+The script regenerates `catalog-snapshot.json` with `just catalog-snapshot`,
+then validates with `just check-full`, commits all current provider changes,
+pushes them, fast-forwards dotfiles, advances `agent-skills.lock.toml` to the exact provider
 commit, verifies or installs through `./bootstrap.sh agent-skills`, runs the
 consumer checks, and commits and pushes the consumer lock. Installation uses
 GitHub CLI through dotfiles, including its collision checks and journal.

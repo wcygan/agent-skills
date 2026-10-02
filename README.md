@@ -103,8 +103,9 @@ uv run --script tools/reinstall_agent_skills.py
 uv run --script tools/reinstall_agent_skills.py --dotfiles /path/to/dotfiles
 ```
 
-The script validates, commits **all non-ignored provider changes**, and pushes
-this repository. It then fast-forwards the sibling `dotfiles` checkout,
+The script regenerates `catalog-snapshot.json` with `just catalog-snapshot`,
+validates with `just check-full`, commits **all non-ignored provider changes**,
+and pushes this repository. It then fast-forwards the sibling `dotfiles` checkout,
 updates its `agent-skills.lock.toml` to the exact published commit, installs
 through `./bootstrap.sh agent-skills`, verifies, and commits and pushes the
 consumer lock. Dotfiles owns collision checks, installation, and recovery.

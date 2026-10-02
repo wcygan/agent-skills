@@ -88,6 +88,7 @@ def main() -> None:
         git(provider, "fetch", "origin", provider_branch)
         if git(provider, "merge-base", "HEAD", f"origin/{provider_branch}") != git(provider, "rev-parse", f"origin/{provider_branch}"):
             raise ValueError("Provider is behind or diverged; reconcile it before publishing")
+        run(provider, "just", "catalog-snapshot")
         run(provider, "just", "check-full")
         commit_if_changed(provider, "chore(skills): publish current catalog", ".")
         run(provider, "git", "push", "origin", f"HEAD:refs/heads/{provider_branch}")
