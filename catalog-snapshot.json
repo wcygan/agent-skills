@@ -39,6 +39,7 @@
     "delegate-and-verify": "81eb126c4b317130aaaece0f57ffb42972292296f4037e78fafd6a193e1b9478",
     "design-bounded-loop": "c0891190a8264bb93e37fbd3c0621e91582d67e63f42746b104e6452d725a9fc",
     "design-llm-evaluation-suite": "a4c8b0118260ca86a830e983ae85ab1e831b8d8766bca2ba72df87f2f023bdbc",
+    "design-loop": "3b82f2c97c997eeec752841143785a8f89740028a2707f689b6ecae8c9bb7208",
     "design-verification-strategy": "bfd3e4b038ef07911906cfbf2d31dc2464c974638bf5912b7c29dcb7a653bfea",
     "design-workflow-graph": "d89e7a335f3232929fa128a3159fc2b9459369f3de70b959b3823de2c5746bb2",
     "diagnose-difficult-bug": "9fca2d5b27c905ff164c554847747dd0a14311ce2efc805c7d71f7ba40d04e13",
