@@ -1,0 +1,5 @@
+{
+  "name": "ts-application-skeleton",
+  "version": "0.2.0",
+  "updatePolicy": "Independent application; apply reviewed migration notes manually."
+}

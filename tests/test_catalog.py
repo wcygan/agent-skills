@@ -394,6 +394,12 @@ class CatalogTests(unittest.TestCase):
             (".data", "app.sqlite"),
             (".output", "server/index.mjs"),
             ("test-results", ".last-run.json"),
+            (".tanstack", "cache.json"),
+            ("dist", "index.js"),
+            ("playwright-report", "index.html"),
+            ("coverage", "coverage.json"),
+            (".browser-use", "inspection.png"),
+            (".venv", "pyvenv.cfg"),
         ):
             with self.subTest(directory=directory):
                 generated = examples / directory / filename
@@ -407,6 +413,15 @@ class CatalogTests(unittest.TestCase):
         (examples / "source.ts").write_text("export const version = 1;\n")
         with self.assertRaisesRegex(catalog.CatalogError, "snapshot content drift"):
             catalog.verify_snapshot(self.parent.root, require_fresh=True)
+
+    def test_snapshot_excludes_private_env_but_keeps_template(self) -> None:
+        expected = catalog.load_snapshot(self.parent.root)
+        skill = self.parent.root / "skills" / "base"
+        for name in (".env", ".env.local", ".env.production"):
+            (skill / name).write_text("PRIVATE_KEY=local-only\n")
+        self.assertEqual(catalog.generate_snapshot(self.parent.root), expected)
+        (skill / ".env.example").write_text("PRIVATE_KEY=\n")
+        self.assertNotEqual(catalog.generate_snapshot(self.parent.root), expected)
 
     def test_snapshot_ignores_generated_python_cache_files(self) -> None:
         cache = self.parent.root / "skills" / "base" / "__pycache__"

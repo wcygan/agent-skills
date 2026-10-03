@@ -4,7 +4,7 @@ description: "Design, style, or redesign websites and apps through investigation
 license: MIT
 metadata:
   author: William Cygan
-  version: "0.2.0"
+  version: "0.3.0"
 ---
 
 # Design Loop
@@ -80,31 +80,33 @@ design-system inspiration or resolving an unfamiliar interaction pattern.
 Use LinkedIn, X, Linear, Facebook, Mercury, Ramp, Figma, and Vercel as reference
 candidates. Inspect relevant examples and adapt the underlying task pattern.
 
-For a focused settings or preferences task, inspect
-[examples/settings-preferences/index.html](examples/settings-preferences/index.html)
-and read [examples/settings-preferences/NOTES.md](examples/settings-preferences/NOTES.md)
-for the rationale, inspected sources, review modes, and limits. Adapt the example
-to the brief; its layout and styles are starting points rather than requirements.
+Use the bundled **Forma reference app** for settings, records, overview/detail,
+public product pages, feeds, approval workflows, and agent chat. It connects
+these patterns through actual React routes, shared tokens, and local SQLite.
+Read [references/reference-app.md](references/reference-app.md) before running
+or inspecting it; [examples/README.md](examples/README.md) owns application setup.
 
-For searchable records, list/detail workflows, filters, contextual actions, or
-bulk changes, inspect [examples/records-workspace/index.html](examples/records-workspace/index.html)
-and read [examples/records-workspace/NOTES.md](examples/records-workspace/NOTES.md)
-for selection scope, recovery behavior, inspected inspiration, and limitations.
+Resolve paths from this skill's directory, including when installed under
+`~/.agents/skills/design-loop`. Run from any working directory using the installed global location:
 
-For prioritized summaries, status overviews, recent activity, and drill-down actions,
-inspect [examples/overview-detail/index.html](examples/overview-detail/index.html)
-and read [examples/overview-detail/NOTES.md](examples/overview-detail/NOTES.md)
-for summary definitions, recovery transitions, inspected inspiration, and limits.
+```sh
+just --justfile "$HOME/.agents/skills/design-loop/examples/justfile" dev
+```
 
-For public landing pages, product explanation, plan comparison, trust, and a
-primary conversion action, inspect [examples/public-website/index.html](examples/public-website/index.html)
-and read [examples/public-website/NOTES.md](examples/public-website/NOTES.md)
-for the content sequence, CTA behavior, inspected inspiration, and claim boundaries.
+For another installation location, resolve the justfile relative to this loaded
+skill. In the repository example directory, `just dev` or `bun run dev` works.
+The launcher prepares dependencies and samples; installed skills run from a
+writable cache so the pinned skill contents remain unchanged.
 
-For social or team feeds, composing updates, inline replies, unread notifications,
-and contextual post actions, inspect [examples/feed-discussion/index.html](examples/feed-discussion/index.html)
-and read [examples/feed-discussion/NOTES.md](examples/feed-discussion/NOTES.md)
-for conversation hierarchy, draft recovery, inspected inspiration, and limits.
+The app listens on `0.0.0.0:5173`, including the host's Tailscale interface.
+Open `http://127.0.0.1:5173` locally or the printed Tailscale MagicDNS/IP URL
+from a peer. The launcher discovers and allows the host's exact Tailscale names.
+Use Browser Use's local CLI to navigate, exercise the relevant route and recovery
+states, and capture layout evidence. Keep the app in mock mode, use sample data,
+and record the route, observed interaction, design rationale, and adaptation to
+the target brief. Read the inspection guide for Browser Use setup, MagicDNS,
+responsive checks, lifecycle, and limits. Adapt the patterns in the target app's
+stack; the reference is inspiration rather than a required product or framework.
 
 Start structural exploration with grayscale, system fonts, plain borders, real
 labels, and representative content. Use existing visual styles directly when the

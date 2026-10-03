@@ -1,0 +1,48 @@
+# List supported application commands.
+default:
+    @just --list
+
+# Install the locked application dependencies.
+setup:
+    bun install --frozen-lockfile
+
+# Install dependencies, seed missing samples, and start the network dev server.
+dev:
+    bun run dev
+
+# Run a loopback-only development preview.
+dev-local:
+    HOST=127.0.0.1 bun run dev
+
+# Validate recipes and run lint, types, tests, and the production build.
+check:
+    just --fmt --check
+    bun run check
+
+# Build the production application.
+build:
+    bun run build
+
+# Serve the production build on all interfaces (HOST can override).
+start:
+    bun run start
+
+# Check local prerequisites and configuration without printing credentials.
+doctor:
+    bun scripts/doctor.ts
+
+# Add missing demo items without replacing existing edits.
+seed:
+    bun scripts/seed-workspace.ts
+
+# Write a consistent SQLite backup to a new file.
+backup destination:
+    bun scripts/database.ts backup {{ quote(destination) }}
+
+# Restore to a new database file; destination parent must already exist.
+restore source destination:
+    bun scripts/database.ts restore {{ quote(source) }} {{ quote(destination) }}
+
+# Build and exercise the app in a real browser with disposable SQLite data.
+test-browser:
+    bun run test:e2e

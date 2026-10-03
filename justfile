@@ -69,3 +69,9 @@ foundation-bootstrap-test:
 # Verify SQLite-backed workflows through a disposable Bun API, crashes, and restarts.
 workflow-integration-test:
     bun skills/effect-ts/scripts/test-workflow.ts
+
+# Verify the connected design reference app (requires Bun and Playwright Chromium).
+design-reference-check:
+    cd skills/design-loop/examples && bun install --frozen-lockfile
+    cd skills/design-loop/examples && just check
+    cd skills/design-loop/examples && just test-browser

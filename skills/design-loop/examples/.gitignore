@@ -1,0 +1,30 @@
+# Dependencies and generated app/build state
+node_modules/
+.output/
+dist/
+.tanstack/
+
+# Local configuration; distribute the blank template only
+.env
+.env.*
+!.env.example
+
+# SQLite databases and sidecars, including backups
+.data/
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+*.db
+*.db-*
+
+# Browser runs, coverage, and local tooling
+.browser-use/
+playwright-report/
+test-results/
+coverage/
+*.log
+.venv/
+__pycache__/
+*.py[cod]
+.DS_Store

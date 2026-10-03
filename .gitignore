@@ -17,3 +17,12 @@ venv/
 .data/
 .output/
 test-results/
+node_modules/
+.tanstack/
+dist/
+playwright-report/
+coverage/
+.browser-use/
+.env
+.env.*
+!.env.example

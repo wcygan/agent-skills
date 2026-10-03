@@ -29,7 +29,8 @@ SKILL_PATTERN = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 # Local runtime data, build output, and test reports are never catalog content.
 IGNORED_DIRECTORIES = {
     "__pycache__", ".mypy_cache", ".pytest_cache", ".ruff_cache", "node_modules",
-    ".data", ".output", "test-results",
+    ".data", ".output", ".tanstack", "dist", "test-results", "playwright-report",
+    "coverage", ".browser-use", ".venv",
 }
 IGNORED_FILES = {".DS_Store"}
 
@@ -163,7 +164,12 @@ def _tree_files(directory: Path) -> list[Path]:
             child = current_path / name
             if child.is_symlink():
                 raise CatalogError(f"symbolic links are not supported: {child}")
-            if name in IGNORED_FILES or child.suffix in {".pyc", ".pyo"}:
+            if (
+                name in IGNORED_FILES
+                or child.suffix in {".pyc", ".pyo"}
+                or name == ".env"
+                or (name.startswith(".env.") and name != ".env.example")
+            ):
                 continue
             _check_regular_file(child)
             files.append(child)
