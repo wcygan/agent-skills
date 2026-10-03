@@ -22,8 +22,8 @@ match the installed Pi version. Do not infer SDK behavior from the CLI alone.
 4. If the application should use Sign in with ChatGPT for subscription access
    and credits, or legacy `openai-codex` OAuth, read
    [openai-codex-subscription.md](references/openai-codex-subscription.md).
-5. For decision models, Jev, typed classification, or classifier-driven model
-   routing, read [decision-models.md](references/decision-models.md).
+5. For decision models, Jev, typed classification, or virtual models that route
+   coding requests, read [decision-models.md](references/decision-models.md).
 6. Prefer the smallest surface that meets the requirement:
    - SDK for in-process TypeScript control;
    - RPC for process isolation or language-independent control;
@@ -61,9 +61,13 @@ match the installed Pi version. Do not infer SDK behavior from the CLI alone.
   `ResourceLoader`; check `cwd` and `agentDir` discovery semantics.
 - Model selection and authentication: use `ModelRuntime`; distinguish model
   resolution from credential availability.
+- Classifier and coding models are separate roles: use a classifier to decide,
+  then a virtual model to dispatch the coding request to a physical model.
+  Their providers can differ, such as an OpenRouter classifier routing to an
+  OpenAI coding model. Classifiers do not handle the coding conversation.
 - Typed decisions: Pi supports classifier models with `choice`, `score`, and
   `bool` questions. Use the version-matched classifier API; an extension can
-  use `ctx.modelRegistry.classify()` to inform model routing.
+  call `ctx.modelRegistry.classify()` inside virtual-model routing.
 - Effect integration: wrap the SDK at a service/layer boundary; do not spread
   raw `AgentSession` or provider state through unrelated application code.
 

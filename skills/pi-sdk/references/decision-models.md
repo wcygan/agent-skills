@@ -6,6 +6,15 @@ category selection, or scoring. This reference is source-derived from
 before adopting these APIs; the tag pins the implementation, not the remote
 model behind an alias such as `jev-latest`.
 
+> **Keep the two model roles separate.** A classifier answers the routing
+> question; it does not generate the coding response. A virtual model is the
+> selectable router that calls a classifier, then dispatches each coding
+> request to a physical chat model. These can use different providers: for
+> example, classify with Jev through OpenRouter and route coding requests to
+> OpenAI. Configure credentials for both providers. Selecting a classifier is
+> not the same as selecting the virtual model, and a classifier does not
+> appear as an ordinary chat model.
+
 ## Request and result contract
 
 The [classifier types](https://github.com/earendil-works/pi/blob/v0.99.0/packages/ai/src/types.ts#L633-L689)
@@ -27,8 +36,9 @@ usage is optional.
 ## Calling Jev from an extension
 
 This fragment assumes a version-matched `ExtensionContext` named `ctx`, a
-`prompt` string, and an `AbortSignal` named `signal`. It produces a decision;
-the caller remains responsible for selecting and running a coding model.
+`prompt` string, and an `AbortSignal` named `signal`. It produces only the
+decision. In the routing pattern below, `ctx.modelRegistry.classify()` uses a
+classifier model; the router separately returns a physical coding model.
 
 ```ts
 const jev = ctx.modelRegistry.findOfType("classifier", "typesafe", "jev-latest");
@@ -56,16 +66,27 @@ if (answer?.type !== "choice") throw new Error("Missing complexity choice");
 const needsStrongPlanner = (answer.probabilities.complex ?? 0) >= 0.5;
 ```
 
+To use OpenRouter for classification, resolve an OpenRouter classifier model
+from the installed version's catalog (Pi 0.99.0 provides Jev classifier models
+through OpenRouter) and pass that model to the same `classify()` call. OpenAI
+can remain the coding provider. The example above uses TypeSafe directly, so
+its `TYPESAFE_API_KEY` requirement applies only to that example. Resolve each
+provider's credentials independently through the runtime.
+
 Keep `ctx.modelRegistry` scoped to extension APIs. For an embedded SDK
 integration, locate the installed runtime's classifier surface rather than
-assuming an `AgentSession` exposes this context. Resolve credentials through
-the runtime; the pinned Jev example requires `TYPESAFE_API_KEY` and separate
-OpenAI Codex authentication.
+assuming an `AgentSession` exposes this context.
 
 ## Routing across planning and implementation
 
 The [Jev router example](https://github.com/earendil-works/pi/blob/v0.99.0/packages/coding-agent/examples/extensions/jev-router.ts)
-registers the virtual model `jev/auto` using `pi.registerVirtualModel()`:
+registers the selectable virtual model `jev/auto` using
+`pi.registerVirtualModel()`. That virtual model is the coding route; Jev is a
+separate classifier dependency called from its `route()` implementation. The
+example classifies with TypeSafe and dispatches coding requests to OpenAI Codex
+models. Replace the classifier lookup with the OpenRouter classifier from the
+installed catalog to keep classification on OpenRouter while coding stays on
+OpenAI.
 
 - When initializing router state, it preserves an existing Sol/Terra route;
   otherwise it classifies the latest user text, limited to 16,000 characters.
