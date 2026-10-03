@@ -1,7 +1,7 @@
 ---
 name: effect-ts
 description: |
-  Opinionated guide for building production TypeScript applications with Effect v4. Use when implementing Effect workflows, services, layers, schemas, configuration, schedules, caches, streams, HTTP clients, or tests.
+  Opinionated guide for building production TypeScript applications with Effect v4. Use when implementing Effect composition, durable workflows, services, layers, schemas, configuration, schedules, caches, streams, SQL persistence, HTTP clients, AI integrations, or tests.
 license: MIT
 compatibility: Requires Effect v4. Examples are reviewed against the version documented in this repository.
 ---
@@ -24,18 +24,21 @@ Read only the branch references that match the task.
 
 - Data models, schemas, brands, variants, optional keys, or decoders: read `references/SCHEMA.md`.
 - Services, module surfaces, layers, runtime wiring, errors, `Effect.fn`, or test services: read `references/SERVICES_LAYERS.md`.
+- Durable execution, replay, workflow activities, persisted waits, workers, or workflow HTTP/RPC proxies: read `references/WORKFLOW.md`.
 - Runtime config, env variables, `ConfigProvider`, or `layerConfig`: read `references/CONFIG.md`.
 - Retry, repeat, polling, backoff, jitter, rate-limit-aware policies, or pass loops: read `references/SCHEDULING.md`.
 - Memoization, per-key TTL caches, deduplicating concurrent lookups, or request batching: read `references/CACHING.md`.
 - Streams, event sources, async iterables, queues/pubsubs, pagination, backpressure, or stream consumers: read `references/STREAMS.md`.
 - Outgoing HTTP calls, Effect HttpClient, status handling, or HTTP rate limiting: read `references/HTTP_CLIENTS.md`.
+- SQL persistence, Bun SQLite, queries, transactions, migrations, or row decoding: read `references/SQL.md`.
+- AI integrations, Pi agent sessions, model providers, or structured decisions: read `references/AI.md`.
 - Effect tests, time, sleeps, concurrency synchronization, or fakes: read `references/TESTING.md`.
 
 If a task spans several branches, read all matching files before editing.
 
 ## Core Defaults
 
-- Compose workflows with `Effect.gen(function* () { ... })`.
+- Compose ordinary effects with `Effect.gen(function* () { ... })`.
 - Define public service methods and non-trivial internal service methods with `Effect.fn("Domain.operation")`.
 - Use `Effect.fnUntraced` only for internal helpers where stack-frame/span metadata is intentionally unnecessary.
 - Prefer `Context.Service` for application services when the codebase has not standardized on another current service-tag style.
