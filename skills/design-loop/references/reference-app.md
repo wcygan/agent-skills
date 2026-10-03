@@ -157,8 +157,8 @@ cover bind and host handling; [Tailscale addresses](https://tailscale.com/docs/c
 explain the peer address. Recheck current docs when a tool's installed API differs.
 
 Bundled-app verification: locked install, seeding, lint/types, 19 unit tests,
-production build, and 4 browser journeys passed. Browser Use navigated the running
-app and captured desktop/mobile chat states; the mobile document fit its viewport
+production build, and 5 browser journeys passed. Browser Use navigated the running
+app and captured desktop/mobile chat states and the navigation drawer; the mobile document fit its viewport
 with the send control visible. HTTP checks passed on loopback and the host's
 Tailscale IP and MagicDNS name. A separate Linux tailnet peer also reached the
 agent route through MagicDNS. Installed-style startup from `/tmp` prepared a

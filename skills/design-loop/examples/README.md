@@ -116,7 +116,10 @@ rendered after completion, without fake streaming. Cancellation restores the las
 draft; leaving the page interrupts an active request.
 
 The settings connection/model/fast/effort controls demonstrate the preference UI;
-they persist locally but do not override the server provider configuration.
+they offer GPT 6 Luna and GPT 6.1 Sol (the default), persist locally, and do not
+override the server provider configuration. Loading samples replaces obsolete
+model preferences while preserving selections from those two models. Fast mode
+defaults to on and effort defaults to low; saved overrides remain unchanged.
 OpenAI/OpenRouter sign-in is clearly labeled as a demo connection.
 
 ## Ownership

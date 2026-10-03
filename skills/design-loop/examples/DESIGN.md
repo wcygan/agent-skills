@@ -14,11 +14,15 @@ radii. Most content is flat, separated by hairline borders. Forms and bounded
 content panels use a single white surface. Avoid unrelated recommendation columns,
 fabricated metrics, or decorative gradients.
 
-Header and content gutters use 32–40px desktop and 20px mobile. Forms and feed
+Header and content gutters use 32–40px desktop; mobile uses a 16px header
+gutter and 20px content gutter. Forms and feed
 content cap at 720px; comparable deployment pipelines can fill the workspace.
 Desktop pipeline steps read horizontally; narrow layouts use two columns in
-reading order. Navigation stays visible in a horizontally scrollable header on
-small screens, with Settings anchored at the right. Header destinations read
+reading order. Below 760px, a compact header opens a modal drawer from the left. Navigation
+rows have 48px touch targets, an active-page highlight, and Settings at the
+bottom. The drawer locks background scrolling, contains keyboard focus, and
+closes on a destination, backdrop tap, close button, or Escape; dismissal restores
+focus to the menu button. Desktop keeps Settings at the right of the header. Header destinations read
 Overview, Agent, Tickets, Deployments, Approvals, Team feed, then Settings. Each
 link combines a text label and a decorative SVG icon using the current text color.
 Tables scroll inside their own container without widening the page.

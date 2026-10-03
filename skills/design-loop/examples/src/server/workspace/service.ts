@@ -14,6 +14,7 @@ import {
   Command,
 } from "../../shared/workspace";
 import { AppError } from "../errors";
+import { defaultModel, models } from "../../shared/models";
 
 const StoredRelease = Schema.Struct({
   ...Release.fields,
@@ -114,7 +115,8 @@ export const WorkspaceLive = Layer.effect(
       yield* sql`INSERT OR IGNORE INTO posts VALUES ('goal-console','Maya Chen','Goal: make the customer console easier to use. Notification preferences are done; mobile review is in progress. The release is in staging, waiting for production approval.','FRM-102','rel-console','2026-10-03T10:00:00Z',0,0,0),('goal-api','Build agent','The API artifact failed signature verification. Production is blocked until the build is repaired and staging passes.','FRM-103','rel-api','2026-10-03T09:30:00Z',0,0,0)`;
       yield* sql`INSERT OR IGNORE INTO replies VALUES ('reply-one','goal-console','Alex Rivera','I’ll finish the mobile check before we request production approval.','2026-10-03T10:15:00Z')`;
       yield* sql`INSERT OR IGNORE INTO notifications VALUES ('notice-one','goal-console','Alex replied to the console launch goal',0)`;
-      yield* sql`INSERT OR IGNORE INTO preferences VALUES ('provider','OpenAI'),('model','gpt-5'),('effort','medium'),('fast','false'),('email','true'),('mentions','true')`;
+      yield* sql`INSERT OR IGNORE INTO preferences VALUES ('provider','OpenAI'),('model',${defaultModel.id}),('effort','low'),('fast','true'),('email','true'),('mentions','true')`;
+      yield* sql`UPDATE preferences SET value=${defaultModel.id} WHERE key='model' AND NOT ${sql.in("value", models.map((model) => model.id))}`;
     });
 
     const mutate = Effect.fn("Workspace.mutate")(function* (input: Command) {
@@ -319,6 +321,10 @@ export const WorkspaceLive = Layer.effect(
                 ].includes(c.id)
               )
                 return yield* Effect.fail(conflict("Unknown preference."));
+
+              if (c.id === "model" && !models.some((model) => model.id === c.value))
+                return yield* Effect.fail(conflict("Choose GPT 6 Luna or GPT 6.1 Sol."));
+
               yield* sql`INSERT INTO preferences VALUES (${c.id},${c.value}) ON CONFLICT(key) DO UPDATE SET value=excluded.value`;
             }
           }),

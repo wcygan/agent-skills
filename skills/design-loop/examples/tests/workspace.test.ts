@@ -118,7 +118,21 @@ test("workspace updates survive restart, stale writes fail, and seeding preserve
     await first.runPromise(
       Effect.gen(function* () {
         const service = yield* Workspace;
+        const sql = yield* SqlClient.SqlClient;
+
         yield* service.mutate(command("seed"));
+        yield* sql`UPDATE preferences SET value='gpt-5' WHERE key='model'`;
+
+        const seeded = yield* service.mutate(command("seed"));
+
+        expect(seeded.preferences.find((p) => p.key === "model")?.value).toBe("gpt-6.1-sol");
+
+        const unsupported = yield* service.mutate(
+          command("preference", { id: "model", value: "gpt-5" }),
+        ).pipe(Effect.result);
+
+        expect(Result.isFailure(unsupported)).toBe(true);
+        yield* service.mutate(command("preference", { id: "model", value: "gpt-6-luna" }));
         yield* service.mutate(
           command("ticket-update", {
             id: "FRM-102",
@@ -139,8 +153,9 @@ test("workspace updates survive restart, stale writes fail, and seeding preserve
 
         expect(Result.isFailure(stale)).toBe(true);
         yield* service.mutate(
-          command("preference", { id: "fast", value: "true" }),
+          command("preference", { id: "fast", value: "false" }),
         );
+        yield* service.mutate(command("preference", { id: "effort", value: "high" }));
         yield* service.mutate(command("seed"));
       }),
     );
@@ -156,8 +171,10 @@ test("workspace updates survive restart, stale writes fail, and seeding preserve
         "Done",
       );
       expect(state.preferences.find((p) => p.key === "fast")?.value).toBe(
-        "true",
+        "false",
       );
+      expect(state.preferences.find((p) => p.key === "effort")?.value).toBe("high");
+      expect(state.preferences.find((p) => p.key === "model")?.value).toBe("gpt-6-luna");
     } finally {
       await second.dispose();
     }

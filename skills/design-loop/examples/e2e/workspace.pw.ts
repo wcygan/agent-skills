@@ -85,6 +85,22 @@ test("connected workspace: approval gate, production action, tickets, feed, sett
     .getByRole("navigation", { name: "Main navigation" })
     .getByRole("link", { name: "Settings" })
     .click();
+  const modelPicker = page.locator(".model-picker > summary");
+
+  await expect(modelPicker).toContainText("GPT 6.1 Sol");
+  await expect(page.getByRole("switch", { name: "Fast mode" })).toBeChecked();
+  await expect(page.getByRole("combobox", { name: "Effort level" })).toHaveValue("low");
+  await page.getByRole("button", { name: "Sign in with OAuth" }).first().click();
+  await page.getByRole("button", { name: "Connect demo account" }).click();
+  await modelPicker.click();
+  await expect(page.locator(".model-menu").getByRole("button")).toHaveText([
+    "GPT 6 Luna", "GPT 6.1 Sol", "GPT 6 Luna", "GPT 6.1 Sol",
+  ]);
+  await page.getByRole("button", { name: "GPT 6 Luna", exact: true }).first().click();
+  await expect(modelPicker).toContainText("GPT 6 Luna");
+  await page.reload();
+  await expect(modelPicker).toContainText("GPT 6 Luna");
+
   await page
     .getByRole("button", { name: "Notifications", exact: true })
     .click();
@@ -117,9 +133,16 @@ test("all routes retain the header and mobile access", async ({ page }) => {
     "/agent",
   ]) {
     await page.goto(route);
+    const open = page.getByRole("button", { name: "Open navigation" });
+
+    await expect(open).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Main navigation" })).toBeHidden();
+    await open.click();
     await expect(
       page.getByRole("navigation", { name: "Main navigation" }),
     ).toBeVisible();
+    await page.getByRole("button", { name: "Close navigation" }).click();
+    await expect(open).toBeFocused();
 
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth > innerWidth,
@@ -128,11 +151,62 @@ test("all routes retain the header and mobile access", async ({ page }) => {
     expect(overflow).toBe(false);
   }
 
-  await page.getByRole("link", { name: "Agent", exact: true }).click();
+  await page.getByRole("button", { name: "Open navigation" }).click();
+  await page.getByRole("navigation", { name: "Main navigation" })
+    .getByRole("link", { name: "Agent", exact: true }).click();
   await expect(
     page.getByRole("textbox", { name: "Ask the workspace agent" }),
   ).toBeVisible();
   await expect(page).toHaveURL(/\/agent/);
+});
+
+test("mobile drawer contains focus, dismisses, navigates, and adapts to desktop", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/agent");
+
+  const open = page.getByRole("button", { name: "Open navigation" });
+  const drawer = page.getByRole("dialog", { name: "Main menu" });
+  const close = drawer.getByRole("button", { name: "Close navigation" });
+  const settings = drawer.getByRole("link", { name: "Settings" });
+
+  await open.click();
+  await expect(drawer).toBeVisible();
+  await expect(open).toHaveAttribute("aria-expanded", "true");
+  await expect(close).toBeFocused();
+  await expect(drawer.getByRole("link", { name: "Agent", exact: true }))
+    .toHaveAttribute("aria-current", "page");
+  expect(await page.evaluate(() => document.body.style.overflow)).toBe("hidden");
+
+  await close.press("Shift+Tab");
+  await expect(settings).toBeFocused();
+  await settings.press("Tab");
+  await expect(close).toBeFocused();
+  await close.press("Escape");
+  await expect(drawer).toBeHidden();
+  await expect(open).toBeFocused();
+  await expect(open).toHaveAttribute("aria-expanded", "false");
+  await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe("");
+
+  await open.click();
+  await drawer.getByRole("button", { name: "Dismiss navigation" })
+    .click({ position: { x: 382, y: 200 } });
+  await expect(drawer).toBeHidden();
+  await expect(open).toBeFocused();
+
+  await page.setViewportSize({ width: 320, height: 568 });
+  await open.click();
+  await expect(settings).toBeInViewport({ ratio: 1 });
+  await settings.click();
+  await expect(page).toHaveURL(/\/settings$/);
+  await expect(page.getByRole("heading", { name: "Settings", exact: true })).toBeVisible();
+  await expect(drawer).toBeHidden();
+
+  await open.click();
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await expect(drawer).toBeHidden();
+  await expect(open).toBeHidden();
+  await expect(page.getByRole("navigation", { name: "Main navigation" })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe("");
 });
 
 test("record links open a focused agent discussion", async ({ page }) => {

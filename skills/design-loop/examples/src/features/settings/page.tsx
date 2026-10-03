@@ -2,14 +2,11 @@ import { useRef, useState } from "react";
 import { useWorkspace } from "../../app/workspace-provider";
 import { Button, PageHeading } from "../../components/workspace-ui";
 import { command } from "../../shared/workspace";
+import { defaultModel, models } from "../../shared/models";
 
 const providers = [
-  { name: "OpenAI", key: "openai", models: ["gpt-5", "gpt-5-mini"] },
-  {
-    name: "OpenRouter",
-    key: "openrouter",
-    models: ["openai/gpt-5", "anthropic/claude-sonnet-4"],
-  },
+  { name: "OpenAI", key: "openai" },
+  { name: "OpenRouter", key: "openrouter" },
 ];
 
 function ProviderIcon({ name }: { name: string }) {
@@ -37,6 +34,7 @@ export function SettingsPage() {
 
   const provider = preference("provider", "OpenAI");
   const connected = preference(provider.toLowerCase(), "false") === "true";
+  const selectedModel = models.find((model) => model.id === preference("model", "")) ?? defaultModel;
 
   return (
     <>
@@ -123,7 +121,7 @@ export function SettingsPage() {
                     <ProviderIcon name={provider} />
                     <span>
                       {provider}
-                      <small>{preference("model", "gpt-5")}</small>
+                      <small>{selectedModel.name}</small>
                     </span>
                     <span aria-hidden="true">⌄</span>
                   </summary>
@@ -134,19 +132,19 @@ export function SettingsPage() {
                           <ProviderIcon name={p.name} />
                           {p.name}
                         </h3>
-                        {p.models.map((model) => (
+                        {models.map((model) => (
                           <Button
-                            key={model}
+                            key={model.id}
                             disabled={
                               pending || preference(p.key, "false") !== "true"
                             }
                             aria-pressed={
                               provider === p.name &&
-                              preference("model", "") === model
+                              selectedModel.id === model.id
                             }
                             onClick={async () => {
                               if (await save("provider", p.name))
-                                await save("model", model);
+                                await save("model", model.id);
 
                               if (menu.current) {
                                 menu.current.open = false;
@@ -154,7 +152,7 @@ export function SettingsPage() {
                               }
                             }}
                           >
-                            {model}
+                            {model.name}
                           </Button>
                         ))}
                       </div>
@@ -175,8 +173,8 @@ export function SettingsPage() {
                   aria-labelledby="fast-label"
                   aria-describedby="fast-description"
                   disabled={pending || !connected}
-                  aria-checked={preference("fast", "false") === "true"}
-                  checked={preference("fast", "false") === "true"}
+                  aria-checked={preference("fast", "true") === "true"}
+                  checked={preference("fast", "true") === "true"}
                   onChange={(e) => void save("fast", String(e.target.checked))}
                 />
               </div>
@@ -188,7 +186,7 @@ export function SettingsPage() {
                 <select
                   id="effort"
                   disabled={pending || !connected}
-                  value={preference("effort", "medium")}
+                  value={preference("effort", "low")}
                   onChange={(e) => void save("effort", e.target.value)}
                 >
                   <option>low</option>
