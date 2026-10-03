@@ -1,0 +1,22 @@
+{
+  "dependencies": {
+    "@effect/platform-bun": "4.0.0-rc.116",
+    "@effect/sql-sqlite-bun": "4.0.0-rc.116",
+    "effect": "4.0.0-rc.116"
+  },
+  "devDependencies": {
+    "@types/bun": "1.4.2",
+    "typescript": "7.0.2"
+  },
+  "overrides": {
+    "@effect/platform-node-shared": "4.0.0-rc.116"
+  },
+  "name": "effect-workflow-integration",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "start": "bun server.ts"
+  }
+}

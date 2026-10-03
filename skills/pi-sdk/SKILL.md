@@ -1,6 +1,6 @@
 ---
 name: pi-sdk
-description: "Build or debug TypeScript integrations with the Pi coding agent SDK. Use for embedded agent sessions, custom tools, runtime events, and SDK APIs."
+description: "Build or debug TypeScript integrations with the Pi coding agent SDK. Use for embedded agent sessions, custom tools, runtime events, decision models, classifier routing, and SDK APIs."
 ---
 
 # Pi SDK
@@ -22,13 +22,15 @@ match the installed Pi version. Do not infer SDK behavior from the CLI alone.
 4. If the application should use Sign in with ChatGPT for subscription access
    and credits, or legacy `openai-codex` OAuth, read
    [openai-codex-subscription.md](references/openai-codex-subscription.md).
-5. Prefer the smallest surface that meets the requirement:
+5. For decision models, Jev, typed classification, or classifier-driven model
+   routing, read [decision-models.md](references/decision-models.md).
+6. Prefer the smallest surface that meets the requirement:
    - SDK for in-process TypeScript control;
    - RPC for process isolation or language-independent control;
    - CLI/print/JSON mode for shell-level automation.
-6. Inspect the project’s package manager, TypeScript configuration, and existing
+7. Inspect the project’s package manager, TypeScript configuration, and existing
    integration conventions before adding imports or dependencies.
-7. Validate with the project’s narrowest meaningful typecheck, test, or smoke
+8. Validate with the project’s narrowest meaningful typecheck, test, or smoke
    command. Report the Pi version, package/docs source, files inspected, and
    any mismatch or unverified assumption.
 
@@ -59,6 +61,9 @@ match the installed Pi version. Do not infer SDK behavior from the CLI alone.
   `ResourceLoader`; check `cwd` and `agentDir` discovery semantics.
 - Model selection and authentication: use `ModelRuntime`; distinguish model
   resolution from credential availability.
+- Typed decisions: Pi supports classifier models with `choice`, `score`, and
+  `bool` questions. Use the version-matched classifier API; an extension can
+  use `ctx.modelRegistry.classify()` to inform model routing.
 - Effect integration: wrap the SDK at a service/layer boundary; do not spread
   raw `AgentSession` or provider state through unrelated application code.
 

@@ -137,6 +137,27 @@ the current API pages; resolve compatibility before copying layer wiring.
 Source: [SingleRunner](https://effect.website/docs/v4/api/effect/cluster/SingleRunner)
 and [ClusterWorkflowEngine](https://effect.website/docs/v4/api/effect/cluster/ClusterWorkflowEngine).
 
+### Executable Integration Evidence
+
+Use the bundled [Bun API fixture](../examples/workflow/README.md) as the verified
+single-process wiring example. It pins Effect and the Bun adapters to
+`4.0.0-rc.116`, including the platform-node-shared transitive override. Its
+`effect/unstable/...` imports match that prerelease; adapt them only after
+checking the destination app's resolved version.
+
+Run `just workflow-integration-test` from this repository, or
+`bun /path/to/effect-ts/scripts/test-workflow.ts` from an installed skill.
+The runner installs dependencies in a disposable copy, typechecks, tests through
+HTTP, builds a Bun bundle, and repeats the test against that bundle.
+
+The test kills the API process while awaiting approval, reopens the same SQLite
+database, approves the run, kills it again after its durable timer is persisted,
+and restarts after the deadline. It verifies the original activity value and
+approval survive, the overdue timer completes, completed activities have not
+rerun, and duplicate starts reuse the execution ID. It also verifies completed
+results after graceful reopen. This establishes recovery at those wait
+boundaries; external side-effect crash windows still require idempotency.
+
 ## Replay And Idempotency
 
 - Treat the handler as replayable orchestration. Put side effects and values

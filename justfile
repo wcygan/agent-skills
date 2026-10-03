@@ -65,3 +65,7 @@ check-full: check
 # Bootstrap a disposable foundation app and verify its production routes (requires Bun).
 foundation-bootstrap-test:
     bun test skills/ts-application-skeleton/scripts/create.test.ts
+
+# Verify SQLite-backed workflows through a disposable Bun API, crashes, and restarts.
+workflow-integration-test:
+    bun skills/effect-ts/scripts/test-workflow.ts
