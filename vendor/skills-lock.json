@@ -86,26 +86,6 @@
         "LICENSE"
       ],
       "license": "MIT"
-    },
-    {
-      "repository": "https://github.com/wheresryan22/anatomy.git",
-      "branch": "main",
-      "ref": "dbf697a527bbf7d358668e1557cb1e35ff725d46",
-      "skills_root": ".",
-      "skills": {
-        ".": "anatomy"
-      },
-      "include": [
-        "SKILL.md",
-        "README.md",
-        "CHANGELOG.md",
-        "LICENSE",
-        "kit",
-        "references",
-        "scripts",
-        "examples"
-      ],
-      "license": "MIT"
     }
   ]
 }
