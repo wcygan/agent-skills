@@ -52,3 +52,10 @@ These skills are copied from their upstream repositories.
 - Revision: `225a6f39ac85f76ee48dbad772ea4abe4ed6c9d8`
 
 - `humanizer` from `.`
+
+## https://github.com/wheresryan22/anatomy.git
+
+- License: MIT
+- Revision: `dbf697a527bbf7d358668e1557cb1e35ff725d46`
+
+- `anatomy` from `.`

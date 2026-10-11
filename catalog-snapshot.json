@@ -14,14 +14,15 @@
     "tools/catalog.py": "96d000ca4a86ef78e87e53a632137e0a547251acf8b3ea4d5366d15cbc11d165",
     "tools/sync_skills.py": "4726c4e7702a586522031e2684aea035d921ec90a1ba83d49a4daac01b564dab",
     "uv.lock": "b8088892e84e2a71c92df67f4b74ec1b7b9b3d7f6fffa4eebbec26fd22be8f9d",
-    "vendor/ATTRIBUTIONS.md": "ab02c253779eca35276e23d12c5bb4d8fe84bb1576aabc2eb43c1107c617980f",
+    "vendor/ATTRIBUTIONS.md": "d4737ae90a6e7dfb9ff6b2c3cbf5f2977b96200cac8fd5dcb9c5a2d0bbe8863e",
     "vendor/LOCAL-ATTRIBUTIONS.md": "5532e53c034bd1da36851b8e81f0ab73ea0b6ef587b290f54442e1e37ba67195",
     "vendor/architecture-decision-record-LICENSE.md": "fdd10dd615a587c0631e5e2a2251c67840e3d06a80d35ced0408e064b90d23cd",
     "vendor/diagram-design-third-party-LICENSES.md": "97261d25ab590d1be08112e34ff43dad99afa01ae300507d0841a9295ad4a164",
-    "vendor/skills-lock.json": "1e23e4bacb0c81052d87090d8d380d7397c7a875be5e4b21f673dc6541874ed7"
+    "vendor/skills-lock.json": "c52c19e389492fb53a4995295a99ede300e93253bfaf03fdf581dec7297491ea"
   },
   "schema": 1,
   "skills": {
+    "anatomy": "2b6802ca140342878126426ec46a5554a4b4e923c1f176269ddc5aec5dd5e285",
     "animate": "de0b848f903c1af3b2eac7166a54d7515fee88ab0d93f8d292e553e0a859da33",
     "architecture-decision-record-skill": "a9b96bb5f6493e620150c00be0379774a69de179b3c6fe8dc7b51c539e845273",
     "ask-matt": "f3af0b7082b75e74ba09f214ed5c336237e3dbf22c4c5d019db4ac89d98f5cdd",
