@@ -1,19 +1,22 @@
 # AI Integration
 
-Use this when embedding Pi agents, calling model providers, or implementing
-structured AI decisions in an Effect application.
+Use this when embedding Pi or OpenCode agents, calling model providers, or
+implementing structured AI decisions in an Effect application.
 
 ## Choose The Surface
 
 | Need | Default |
 | --- | --- |
-| Agent sessions with conversation, tools, and workspace resources | Pi SDK behind an Effect service |
+| Agent sessions with conversation, tools, and workspace resources | Pi SDK behind an Effect service, or OpenCode embedded SDK with a domain service |
+| Native Effect agent host, Streams, plugins, or a shared OpenCode platform | `@opencode/sdk/effect`; network clients use `@opencode/client/effect` |
 | Generation or structured extraction without an agent session | Effect `LanguageModel` with a provider layer |
 | Classification, ordered ratings, or probabilities | Effect `Decision` definitions and `DecisionModel` |
-| Agent process isolation or control from another language | Pi RPC behind an adapter |
+| Agent process isolation or control from another language | Pi RPC or an OpenCode HTTP client behind an adapter |
 
-Pi is the usual choice for agent behavior. Add Effect AI when the application
-needs a separate model operation; keep ownership of each operation explicit.
+Choose Pi or OpenCode according to existing app conventions and required runtime
+surfaces. Pi uses an SDK adapter; OpenCode offers a native Effect host and plugins.
+Add Effect AI when the application needs a separate model operation; keep
+ownership of each operation explicit.
 Avoid running two agent loops for the same task.
 
 ## Source And Version Checks
@@ -22,7 +25,12 @@ Avoid running two agent loops for the same task.
   It owns package discovery, session APIs, tools, resources, and authentication
   details. If unavailable, consult the [official SDK docs](https://pi.dev/docs/latest/sdk)
   and installed declarations before implementation.
-- Check resolved package versions and exports. Latest online Pi docs may differ
+- For OpenCode work, apply `opencode-sdk` and read its documentation index and
+  native Effect integration reference. It owns SDK/client selection, host/session
+  lifecycle, tools/plugins, permissions, and completion contracts. If unavailable,
+  consult the [Effect SDK docs](https://opencode.ai/v2/docs/build/sdk/effect/)
+  and installed declarations. Check OpenCode/Effect dependency compatibility.
+- Check resolved package versions and exports. Latest online runtime docs may differ
   from the installed SDK; use the installed package's docs and types.
 - Keep separately published Effect provider packages at versions matching
   `effect`. Check stability annotations against the pinned version: unstable
@@ -71,6 +79,14 @@ Inspection sessions use a read-only allowlist. Load extensions only when their
 capabilities are required; SDK behavior must be checked separately from CLI
 defaults.
 
+## OpenCode Adapter
+
+Use the `opencode-sdk` skill for the verified native Effect host/service recipe,
+domain-tool dependency wiring, configuration isolation, result correlation,
+progress and cancellation. Keep raw OpenCode state behind the application's
+domain service. Choose a host scope matching application/job lifetime; native
+Effect integration alone does not provide durable Workflow replay guarantees.
+
 ## Effect Models And Providers
 
 Use [LanguageModel](https://effect.website/docs/v4/api/effect/ai/LanguageModel)
@@ -89,7 +105,7 @@ Compose the model layer with its client and required HTTP transport at startup.
 Read configuration with `Config` and credentials with `Config.redacted`; keep
 provider/model selection explicit. A language-model provider is not automatically
 a `DecisionModel` provider. Do not invent an `OpenAiDecisionModel` from naming
-symmetry or assume Pi authentication supplies Effect provider credentials.
+symmetry or assume Pi or OpenCode authentication supplies Effect provider credentials.
 
 ## Structured Decisions
 

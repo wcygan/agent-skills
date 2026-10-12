@@ -70,6 +70,10 @@ foundation-bootstrap-test:
 workflow-integration-test:
     bun skills/effect-ts/scripts/test-workflow.ts
 
+# Verify embedded OpenCode domain agents with an isolated synthetic model.
+opencode-sdk-integration-test:
+    bun skills/opencode-sdk/scripts/verify.ts
+
 # Verify the connected design reference app (requires Bun and Playwright Chromium).
 design-reference-check:
     cd skills/design-loop/examples && bun install --frozen-lockfile
