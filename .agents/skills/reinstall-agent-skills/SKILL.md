@@ -9,6 +9,8 @@ Run the repository-owned script from the repository root:
 
 ```sh
 uv run --script tools/reinstall_agent_skills.py
+# For an explicitly requested full shared-user reset:
+uv run --script tools/reinstall_agent_skills.py --reset-global
 ```
 
 Use `--dotfiles /path/to/dotfiles` to override the sibling checkout default.
@@ -19,7 +21,10 @@ The script regenerates `catalog-snapshot.json` with `just catalog-snapshot`,
 then validates with `just check-full`, commits all current provider changes,
 pushes them, fast-forwards dotfiles, advances `agent-skills.lock.toml` to the exact provider
 commit, verifies or installs through `./bootstrap.sh agent-skills`, runs the
-consumer checks, and commits and pushes the consumer lock. Installation uses
+consumer checks, and commits and pushes the consumer lock. Changed catalogs use
+`agent-skills --prune` to archive retired provider-owned copies outside discovery
+roots. `--reset-global` authorizes archiving every other shared user skill and
+passes `agent-skills --reset --yes`. Installation uses
 GitHub CLI through dotfiles, including its collision checks and journal.
 
 A request to run this workflow authorizes both repositories’ commits and
@@ -34,6 +39,7 @@ the remote. Resolve divergence, unrelated consumer changes, collisions, or
 pending installer recovery before rerunning. The workflow spans two Git
 repositories and machine state; it is resumable rather than atomic.
 
-Report both commit SHAs, installation/check results, worktree and push status,
-and any failure. Skills removed upstream require separate cleanup review.
+Report both commit SHAs, installation/check results, archive paths, worktree and
+push status, and any failure. Preserve unrelated dotfiles work; use a clean
+consumer checkout when the primary checkout contains unrelated edits.
 This project-local skill remains outside the published `skills/` catalog.

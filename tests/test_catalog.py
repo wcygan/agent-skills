@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import shutil
 import subprocess
 import tempfile
+import tarfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -198,6 +200,55 @@ class CatalogTests(unittest.TestCase):
 
         self.assertEqual(resolved, self.parent.revision_one)
         catalog.verify_child(child)
+
+    def test_dated_archive_preserves_the_catalog_without_discoverable_entrypoints(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        archive = root / "archive" / "2026-10-14"
+        manifest = json.loads(archive.joinpath("manifest.json").read_text())
+        bundle = archive / manifest["bundle"]
+        self.assertEqual(hashlib.sha256(bundle.read_bytes()).hexdigest(), manifest["bundle_sha256"])
+        self.assertEqual(len(manifest["skills"]), 116)
+        self.assertEqual(len(manifest["retired_skills"]), 113)
+        self.assertFalse(list(archive.rglob("SKILL.md")))
+        with tarfile.open(bundle) as contents:
+            for name in manifest["skills"]:
+                self.assertTrue(contents.getmember(f"skills/{name}/SKILL.md").isfile())
+
+    def test_reset_upgrade_removes_inherited_skills_and_preserves_child_additions(self) -> None:
+        child = self.adopt_child("reset")
+        local = child / "skills" / "child-only"
+        local.mkdir()
+        local.joinpath("SKILL.md").write_text(
+            "---\nname: child-only\ndescription: Child addition.\n---\nLocal.\n"
+        )
+        catalog.snapshot(child, check=False)
+        shutil.rmtree(self.parent.root / "skills" / "base")
+        for name in ("uv-python", "just", "design-loop"):
+            skill = self.parent.root / "skills" / name
+            skill.mkdir()
+            skill.joinpath("SKILL.md").write_text(
+                f"---\nname: {name}\ndescription: Retained.\n---\n"
+            )
+        archive = self.parent.root / "archive" / "2026-10-14"
+        archive.mkdir(parents=True)
+        archive.joinpath("catalog.tar.gz").write_bytes(b"historical bundle")
+        projection = catalog.load_projection(self.parent.root)
+        projection["managed_paths"].append("archive/2026-10-14")
+        write_json(self.parent.root / catalog.PROJECTION_NAME, projection)
+        catalog.snapshot(self.parent.root, check=False)
+        revision = self.parent.commit("reset catalog")
+
+        preview = catalog.upgrade(child, revision, dry_run=True)
+        self.assertIn("skills removed: base", preview)
+        self.assertTrue((child / "skills" / "base").is_dir())
+        catalog.upgrade(child, revision, dry_run=False)
+
+        _, manifest = catalog.verify_child(child)
+        self.assertEqual(set(manifest["skills"]), {"uv-python", "just", "design-loop"})
+        self.assertFalse((child / "skills" / "base").exists())
+        self.assertTrue(local.joinpath("SKILL.md").is_file())
+        self.assertEqual((child / "archive/2026-10-14/catalog.tar.gz").read_bytes(),
+                         b"historical bundle")
 
     def test_upgrade_refuses_a_new_parent_skill_collision(self) -> None:
         child = self.adopt_child("collision")

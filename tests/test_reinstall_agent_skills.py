@@ -37,7 +37,7 @@ class PinTests(unittest.TestCase):
 
 
 class PublicationTests(unittest.TestCase):
-    def exercise_workflow(self, failed_gate=None):
+    def exercise_workflow(self, failed_gate=None, *, reset_global=False, check_returncode=0):
         with tempfile.TemporaryDirectory() as directory:
             provider = Path(directory).resolve() / "provider"
             consumer = Path(directory).resolve() / "consumer"
@@ -58,13 +58,15 @@ class PublicationTests(unittest.TestCase):
 
             events = Mock()
             with patch.object(reinstall, "__file__", str(provider / "tools" / "reinstall.py")), \
-                    patch.object(reinstall.sys, "argv", ["reinstall.py", "--dotfiles", str(consumer)]), \
+                    patch.object(reinstall.sys, "argv", ["reinstall.py", "--dotfiles", str(consumer)]
+                                 + (["--reset-global"] if reset_global else [])), \
                     patch.object(reinstall, "preflight", return_value="main"), \
                     patch.object(reinstall, "git", side_effect=git_result), \
                     patch.object(reinstall, "run", side_effect=command_result) as run, \
                     patch.object(reinstall, "commit_if_changed") as commit, \
                     patch.object(reinstall, "update_pin") as pin, \
-                    patch.object(reinstall.subprocess, "run", return_value=subprocess.CompletedProcess([], 0)), \
+                    patch.object(reinstall.subprocess, "run",
+                                 return_value=subprocess.CompletedProcess([], check_returncode)), \
                     patch("builtins.print"):
                 events.attach_mock(run, "run")
                 events.attach_mock(commit, "commit")
@@ -95,3 +97,15 @@ class PublicationTests(unittest.TestCase):
                 if gate == "check-full":
                     expected.append(call.run(provider, "just", "check-full"))
                 self.assertEqual(events, expected)
+
+    def test_requested_reset_runs_even_when_existing_pin_checks_pass(self):
+        _, consumer, _, events = self.exercise_workflow(reset_global=True)
+        self.assertIn(call.run(consumer, "./bootstrap.sh", "agent-skills", "--reset", "--yes"),
+                      events)
+        self.assertNotIn(call.run(consumer, "./bootstrap.sh", "agent-skills", "--prune"), events)
+
+    def test_failed_catalog_check_uses_provider_only_pruning(self):
+        _, consumer, _, events = self.exercise_workflow(check_returncode=1)
+        self.assertIn(call.run(consumer, "./bootstrap.sh", "agent-skills", "--prune"), events)
+        self.assertNotIn(call.run(consumer, "./bootstrap.sh", "agent-skills", "--reset", "--yes"),
+                         events)

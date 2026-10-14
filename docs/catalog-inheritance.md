@@ -186,6 +186,30 @@ Synchronization never moves the locked commit.
 
 ## Understand upgrade ownership
 
+### Catalog retirement and the 2026-10-14 reset
+
+The active parent catalog now contains only `uv-python`, `just`, and
+`design-loop`. The complete prior catalog is preserved in
+`archive/2026-10-14/catalog.tar.gz`, alongside its inventory and provenance.
+Archive bundles have no discoverable skill entrypoints and are not installed.
+
+For an adopted fork, preview and apply the new parent commit with
+`just parent-upgrade-preview` and `just parent-upgrade`. The manifest identifies
+previously inherited skills: an upgrade removes names retired by the parent and
+updates the three surviving skills. The dated archive is included in the parent
+projection so descendants retain the historical material too.
+
+Independently added child skills and `blocked_skills` remain child-owned.
+Modified inherited paths still stop an upgrade rather than discarding edits;
+move intentional adaptations to child ownership before upgrading. A plain Git
+fork may merge upstream normally, or adopt the catalog to track exact ownership.
+
+Updating repository files does not prune an existing global installation.
+The dotfiles consumer supports `./bootstrap.sh agent-skills --prune` to archive
+retired copies belonging to its pinned provider. An explicitly requested full
+user-catalog reset uses `./bootstrap.sh agent-skills --reset --yes`, which also
+archives unrelated shared user skills. Archives live outside discovery roots.
+
 One parent commit pins these imported surfaces:
 
 - Parent skills and their nested vendored skills.

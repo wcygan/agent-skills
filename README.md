@@ -1,287 +1,95 @@
 # agent-skills
 
-A public collection of reusable **agent skills** installable with the GitHub CLI:
+A public Agent Skills catalog. The active catalog contains three skills:
 
-```bash
-gh skill install wcygan/agent-skills --agent codex --scope user --all
+| Skill | Purpose |
+| --- | --- |
+| [uv-python](skills/uv-python/SKILL.md) | Python development and dependency workflows with uv. |
+| [just](skills/just/SKILL.md) | Maintain clear, reusable justfile commands. |
+| [design-loop](skills/design-loop/SKILL.md) | Design, implement and verify a bounded UI outcome. |
+
+## Install
+
+Use a GitHub CLI build with `gh skill` support. Install to the shared user
+directory explicitly:
+
+```sh
+gh skill install wcygan/agent-skills --agent codex --scope user --all --dir ~/.agents/skills
 ```
 
-> Creating your own catalog? Point your agent to [BOOTSTRAP.md](BOOTSTRAP.md)
-> for the complete template workflow.
+Add `--pin <full-commit>` for a fixed version. Other supported agents are listed
+by `gh skill install --help`. For project scope, select `--scope project`.
+Test discovery and installation from a local checkout in an isolated directory:
 
-Skills follow the [Agent Skills](https://agentskills.io/specification) format
-(`skills/<name>/SKILL.md`), which is what `gh skill install` discovers and
-installs natively. The layout is also compatible with
-[Agent Plugins](https://agent-plugins.org/) packaging, so the same tree can be
-loaded as a plugin by plugin-capable clients.
-
-> `gh skill` is a GitHub CLI preview feature and may change.
-> Use a GitHub CLI build that provides `gh skill`: `gh skill --help`.
-
-## Skills
-
-Browse the complete [skills directory](https://github.com/wcygan/agent-skills/tree/main/skills).
-
-- [`prompt-kit`](skills/prompt-kit/SKILL.md) — evidence-backed PromptKit component, block, and primitive integration.
-- [`delegate-and-verify`](skills/delegate-and-verify/SKILL.md) — let a worker complete a task while the primary session scopes, reviews, and verifies it. The thin [`luna`](skills/luna/SKILL.md) and [`sol`](skills/sol/SKILL.md) entry points select the worker model.
-
-For supervised delegation, select Astra in the primary session and invoke an
-entry point with a task, for example: `$sol Implement the settings change and
-run the relevant checks.` Install `delegate-and-verify` alongside any entry
-point you select individually; `--all` includes the parent and both entry points.
-
-Use [`audit-skill-catalog`](skills/audit-skill-catalog/SKILL.md) to review a
-flat catalog and propose safe semantic grouping or consolidation.
-
-## PR and stack health
-
-From a repository checkout, the `check-my-prs` terminal inspector checks the current PR and expands an official GitHub PR stack when detected:
-
-```bash
-uv run skills/check-my-prs/scripts/check_my_prs.py
-```
-
-Use `--pr 123`, `--repo OWNER/REPO`, `--plain`, or `--json` to change the target or presentation. The inspector is read-only; exit `0` means healthy, `1` means action is needed, `2` means evidence is incomplete, and `3` means the environment or input prevented inspection.
-
-## Installation
-
-### Requirements
-
-- [GitHub CLI](https://cli.github.com/) with the `gh skill` commands
-  (`gh skill --help`).
-- [uv](https://docs.astral.sh/uv/) for maintenance commands and the optional
-  PR inspector.
-- [just](https://just.systems/) for the shared local and CI command interface.
-- A Git URL or local path for parent catalog adoption.
-
-### Install all skills for one agent
-
-```bash
-# Global (user scope) for Codex
-gh skill install wcygan/agent-skills --agent codex --scope user --all
-
-# Project scope (inside a git repo) for Claude Code
-gh skill install wcygan/agent-skills --agent claude-code --scope project --all
-```
-
-- `--agent` values include `github-copilot`, `claude-code`, `cursor`, `codex`,
-  `gemini-cli`, `opencode`, `warp`, and more. Run `gh skill install --help` for
-  the full list.
-- `--scope` is `project` (current git repo, default) or `user` (your home
-  directory, available everywhere). At project scope several agents share
-  `.agents/skills`, so a skill is installed only once.
-- Skip `--all` to choose interactively, or pass a skill name to install just one:
-
-```bash
-gh skill install wcygan/agent-skills new-plugin --agent codex --scope user
-```
-
-### Pin a specific version
-
-```bash
-# Tags or commit SHAs; semver tags recommended
-gh skill install wcygan/agent-skills --agent codex --scope user --all --pin v1.0.0
-# or per skill: gh skill install wcygan/agent-skills new-plugin@v1.0.0 ...
-```
-
-### Install from a local checkout (for testing)
-
-```bash
+```sh
 gh skill install . --from-local --all --dir /tmp/skill-check
 ```
 
-### Reinstall the global catalog from this checkout
+## Dated archive and reset
 
-In a Codex chat opened in this repository, run `$reinstall-agent-skills`.
-The project-local skill at
-[.agents/skills/reinstall-agent-skills/SKILL.md](.agents/skills/reinstall-agent-skills/SKILL.md)
-runs this dependency-free Python script with uv:
+[archive/2026-10-14](archive/2026-10-14/README.md) preserves the full prior
+repository at its exact source commit: 116 skills, references, scripts, assets,
+source locks, licenses, attribution and maintenance files. Its manifest contains
+the bundle SHA-256 and the original catalog snapshot. The active catalog retired
+113 skills and retained the three listed above.
 
-```bash
+Historical entrypoints exist only inside `catalog.tar.gz`. The archive does not
+contain extracted SKILL.md files, because GitHub CLI also discovers nested
+`skills/` trees. Archive bundles never participate in skill installation. Restore
+a skill deliberately from the bundle, validate it and refresh the snapshot.
+
+## Update a fork
+
+Read [docs/catalog-inheritance.md](docs/catalog-inheritance.md). Adopted forks
+track parent ownership and an exact source commit:
+
+```sh
+just parent-upgrade-preview
+just parent-upgrade
+just check
+```
+
+Upgrades remove inherited skills retired by the parent, retain child-owned
+additions and blocked names, and copy the dated archive. Modified inherited
+files require explicit reconciliation. Plain Git forks can merge upstream;
+[BOOTSTRAP.md](BOOTSTRAP.md) describes adoption for templates and other arrival
+routes. A repository update does not by itself remove globally installed copies.
+
+## Publish and reset this machine through dotfiles
+
+The repository-local [reinstall-agent-skills](.agents/skills/reinstall-agent-skills/SKILL.md)
+workflow owns provider publication, the exact dotfiles pin and global refresh:
+
+```sh
 uv run --script tools/reinstall_agent_skills.py
-# Optional alternate dotfiles checkout:
-uv run --script tools/reinstall_agent_skills.py --dotfiles /path/to/dotfiles
+# Explicitly reset the entire shared user catalog:
+uv run --script tools/reinstall_agent_skills.py --reset-global
+# Use a clean alternate consumer checkout when preserving unrelated edits:
+uv run --script tools/reinstall_agent_skills.py --dotfiles /path/to/dotfiles --reset-global
 ```
 
-The script regenerates `catalog-snapshot.json` with `just catalog-snapshot`,
-validates with `just check-full`, commits **all non-ignored provider changes**,
-and pushes this repository. It then fast-forwards the sibling `dotfiles` checkout,
-updates its `agent-skills.lock.toml` to the exact published commit, installs
-through `./bootstrap.sh agent-skills`, verifies, and commits and pushes the
-consumer lock. Dotfiles owns collision checks, installation, and recovery.
+The script refreshes the snapshot, runs `just check-full`, commits and pushes
+provider changes, advances the consumer pin, installs and verifies through
+`./bootstrap.sh agent-skills`, then commits and pushes the pin. Standard refresh
+archives retired provider-owned copies through `--prune`. `--reset-global`
+archives every other shared user skill through `--reset --yes`. Machine archives
+live under XDG state outside skill discovery roots. Unrelated dotfiles edits must
+be preserved; the consumer checkout used by the script must be clean.
 
-Unchanged reruns skip new commits and an already verified installation.
-Failures retain completed steps; rerun after resolving the reported issue.
-Dotfiles must be clean, except for a lock-only interrupted update whose HEAD
-matches the remote. Provider divergence requires reconciliation first.
-The script serializes invocations within this checkout and uses normal Git
-pushes, never force pushes. Removed upstream skills need separate cleanup.
+## Author and validate
 
-The workflow skill stays outside the distributable `skills/` catalog. Normal
-CLI discovery excludes hidden directories; keep `--allow-hidden-dirs` omitted.
+Skills remain immediate children of `skills/`, following the
+[Agent Skills specification](https://agentskills.io/specification). The layout
+also supports Agent Plugins packaging. Source ownership for future vendors is
+recorded in `vendor/skills-lock.json`; adapted upstream work must preserve its
+provenance and license. The active vendor lock is empty after this reset.
 
-### Create a derived catalog
-
-Fork, copy, or create a repository from this template.
-The source owner must first enable GitHub's **Template repository** setting.
-Downloaded archives and new Git histories are also supported.
-
-Adopt the default parent and run the shared check:
-
-```bash
-just catalog-adopt
-just check
+```sh
+uv tool run --from skills-ref agentskills validate ./skills/<name>
+just catalog-snapshot
+just check-full
 ```
 
-Adoption stores one exact parent commit in `catalog.lock.json`.
-Tags and branches only select commits for adoption or upgrade.
-
-Read [the catalog inheritance guide](docs/catalog-inheritance.md) for every
-arrival route, local skills, upgrades, rollback, recursive catalogs, and CI.
-
-## Updating
-
-Use `gh skill update` to update skills installed into an agent:
-
-```bash
-# Update all installed skills
-gh skill update --all
-
-# Update every installed skill named new-plugin
-gh skill update new-plugin
-
-# See what would update without changing anything
-gh skill update --dry-run
-```
-
-The update command scans supported agents in project and user scope.
-
-Use the catalog commands to update a derived repository:
-
-```bash
-just parent-check
-just parent-upgrade-preview v1.3.0
-just parent-upgrade v1.3.0
-just check
-```
-
-The upgrade command resolves the target once and stores its full commit ID.
-Use `just catalog-sync` to reproduce the current lock without moving it.
-
-## Vendored skills
-
-This repository vendors selected skills from external repositories so the
-collection can be installed as one tested, versioned set. Source repositories,
-selected skills, and pinned revisions are recorded in
-`vendor/skills-lock.json`; attribution is kept in [vendor/ATTRIBUTIONS.md](vendor/ATTRIBUTIONS.md).
-
-Five unchanged skills remain upstream-managed: `playwright-cli`, `handoff`,
-`writing-for-agents`, `wait-what`, and `define-goal`. Thirty-seven adapted skills
-are now locally maintained, with their original repositories, paths, revisions,
-and licenses recorded in [vendor/LOCAL-ATTRIBUTIONS.md](vendor/LOCAL-ATTRIBUTIONS.md)
-and each skill's metadata. Automatic source updates do not overwrite those
-adaptations. Catalog inheritance distributes both the skills and their attribution.
-
-Use the `uv`-managed maintenance tool to check or update an external source:
-
-```bash
-uv run tools/sync_skills.py check
-uv run tools/sync_skills.py check microsoft/playwright-cli
-uv run tools/sync_skills.py check --jobs 1  # sequential fallback
-uv run tools/sync_skills.py check --color always  # preserve color when piping
-uv run tools/sync_skills.py update microsoft/playwright-cli
-uv run tools/sync_skills.py validate
-```
-
-`check` is non-mutating and checks sources concurrently with up to four workers.
-Use `--jobs` to change that bound; output remains in lock-file order. Status
-prefixes are green for up-to-date sources and yellow when an update is
-available. Color defaults to terminal-aware `auto`, respects `NO_COLOR`, and
-can be controlled with `--color always|never`.
-
-A source can declare `remove_frontmatter` in the lock file for upstream,
-client-specific top-level keys that the Agent Skills specification rejects.
-The sync tool applies that compatibility normalization on every update.
-Provider-specific `openai.yaml` and `openai.yml` manifests are excluded from
-every vendored skill copy and rejected by vendored-skill validation.
-
-Imported skills retain their established public names, including namespaced
-adaptations such as `planetscale-mysql` and `planetscale-postgres`. Updating a
-source changes only its remaining mapped skills and lock revision.
-
-To revise a vendored skill locally, remove its source mapping and `.vendored`
-marker, retain its provenance and license in metadata and the local attribution
-document, and regenerate the remaining vendored listing from the existing lock.
-Do not advance upstream revisions during this ownership conversion. Refresh
-`catalog-snapshot.json` after distributable changes. Follow the validation and
-release requirements below when preparing publication.
-
-Notes:
-- Skills installed with `--pin` are skipped until you unpin
-  (`gh skill update new-plugin --unpin`).
-- `gh skill update` compares a tree SHA that gh stores in the installed skill's
-  frontmatter against the remote repo.
-- gh injects source-tracking `metadata.github-*` into installed skills, which
-  is what makes `gh skill update` work. Keep this metadata out of the repo —
-  `gh skill publish --fix` strips it if it ever gets committed.
-
-## Managing installed skills
-
-```bash
-gh skill list                 # all hosts, project + user scope
-gh skill list --agent codex --scope user
-gh skill preview wcygan/agent-skills new-plugin   # inspect before installing
-gh skill search <query>       # find skills across GitHub
-```
-
-The CLI does not currently provide `gh skill uninstall`; to remove a skill,
-delete its directory from the location shown in `gh skill list`.
-
-## For repository maintainers
-
-This repo is distributed via `gh skill install`, so it follows the
-**Agent Skills** conventions:
-
-- Every skill is an immediate child of `skills/`: `skills/<name>/SKILL.md`.
-- `SKILL.md` frontmatter `name` must match the directory name (1-64 chars,
-  lowercase `a-z0-9` + hyphens, no `--`, no leading/trailing hyphen) and must
-  include a `description` (1-1024 chars).
-- Adding `plugin.json` at the repository root packages the same tree as an
-  Agent Plugin.
-
-For authoring guidance, use [writing-for-agents](skills/writing-for-agents/SKILL.md).
-Use [new-plugin](skills/new-plugin/SKILL.md) for a catalog skill or plugin scaffold,
-and [new-router-skill](skills/new-router-skill/SKILL.md) when distinct workflows
-need a routing layer. Keep essential instructions in the entrypoint and load
-substantial branch-specific references only when relevant.
-
-### Validate and release
-
-```bash
-just check                          # run the shared local and CI gate
-just check-full                     # add the GitHub skill publication check
-gh skill publish --tag v1.0.0       # add the `agent-skills` topic + create a release
-```
-
-Run `just check-full` before pushing changes.
-Cut a semver tag when users need a stable release selector.
-
-## Contributing
-
-- Add a new skill: use the `new-plugin` skill (or read `AGENTS.md`).
-- Validate before pushing: run `just check-full` from the repository root.
-- Skills must follow the [Agent Skills specification](https://agentskills.io/specification).
-
-## Official documentation
-
-- Agent Skills specification (skill format): <https://agentskills.io/specification>
-- `gh skill install` manual: <https://cli.github.com/manual/gh_skill_install>
-- `gh skill update` manual: <https://cli.github.com/manual/gh_skill_update>
-- Agent Plugins (portable plugin packaging): <https://agent-plugins.org/>
-- Agent Plugins specification: <https://agent-plugins.org/specification>
-- Plugin manifest (`plugin.json`): <https://agent-plugins.org/plugin-authors/manifest>
-- Agent Plugins skills: <https://agent-plugins.org/plugin-authors/skills>
-
-## License
-
-MIT — see [LICENSE](LICENSE).
+`just check` runs maintenance tests, source validation and snapshot verification;
+`check-full` also checks GitHub CLI publication. The design reference app retains
+its focused CI workflow and `just design-reference-check` command.

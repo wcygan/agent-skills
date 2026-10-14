@@ -66,6 +66,8 @@ def update_pin(path: Path, sha: str) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dotfiles", type=Path, default=Path(__file__).resolve().parents[2] / "dotfiles")
+    parser.add_argument("--reset-global", action="store_true",
+                        help="Archive every shared user skill outside this catalog")
     args = parser.parse_args()
     provider = Path(__file__).resolve().parents[1]
     consumer = args.dotfiles.resolve()
@@ -97,8 +99,10 @@ def main() -> None:
             run(consumer, "git", "pull", "--ff-only", "origin", consumer_branch)
         update_pin(consumer / "agent-skills.lock.toml", sha)
         check = subprocess.run(["./bootstrap.sh", "agent-skills", "--check"], cwd=consumer)
-        if check.returncode:
-            run(consumer, "./bootstrap.sh", "agent-skills")
+        if args.reset_global:
+            run(consumer, "./bootstrap.sh", "agent-skills", "--reset", "--yes")
+        elif check.returncode:
+            run(consumer, "./bootstrap.sh", "agent-skills", "--prune")
         run(consumer, "./bootstrap.sh", "agent-skills", "--check")
         run(consumer, "make", "test-pre")
         run(consumer, "git", "diff", "--check")

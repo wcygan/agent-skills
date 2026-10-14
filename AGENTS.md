@@ -21,6 +21,7 @@ its `skills/` component, so the same tree can be packaged as an Agent Plugin
 ## Core paths
 
 - `skills/` contains the distributable skill catalog.
+- `archive/<date>/` contains immutable historical bundles, never installable skill entrypoints.
 - `vendor/skills-lock.json` defines the skills still managed by upstream synchronization.
 - `vendor/LOCAL-ATTRIBUTIONS.md` preserves provenance for locally maintained adaptations.
 - `justfile` defines the supported maintenance commands.
@@ -50,11 +51,15 @@ its `skills/` component, so the same tree can be packaged as an Agent Plugin
 
 ## Authoring and ownership
 
-Use `writing-for-agents` for instruction-writing guidance; its source is
-`skills/writing-for-agents/SKILL.md`. Keep the capability and distinguishing
-trigger early, retain essential knowledge and decision criteria, and load
-branch-specific resources only when their stated conditions apply. A phase
+Keep the capability and distinguishing trigger early, retain essential knowledge
+and decision criteria, and load branch-specific resources only when their stated
+conditions apply. A phase
 boundary must not discard authorization for the rest of the requested work.
+
+Archive retired catalogs as compressed bundles with the date, source commit,
+content hash, inventory and original attribution. Never leave an extracted
+`SKILL.md` or nested `skills/` tree in the archive: GitHub CLI discovers nested
+catalogs too. Restore only explicitly selected skills into the active catalog.
 
 When revising a vendored skill, convert it to local maintenance: remove its
 source mapping and `.vendored` marker, preserve upstream revision, original

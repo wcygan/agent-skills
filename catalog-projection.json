@@ -16,9 +16,8 @@
     "uv.lock",
     "vendor/ATTRIBUTIONS.md",
     "vendor/LOCAL-ATTRIBUTIONS.md",
-    "vendor/architecture-decision-record-LICENSE.md",
-    "vendor/diagram-design-third-party-LICENSES.md",
-    "vendor/skills-lock.json"
+    "vendor/skills-lock.json",
+    "archive/2026-10-14"
   ],
   "schema": 1
 }

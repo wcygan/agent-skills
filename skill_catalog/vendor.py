@@ -162,7 +162,7 @@ def main() -> int:
         parser.error("--color can only be used with check")
     lock = load_lock()
     sources = [s for s in lock["sources"] if not args.source or args.source in s["repository"]]
-    if not sources:
+    if not sources and args.source:
         raise SystemExit("no matching source")
     if args.command == "validate":
         for source in sources:
@@ -175,6 +175,9 @@ def main() -> int:
                 if any(path.name.lower() in {"openai.yaml", "openai.yml"} for path in skill.rglob("*")):
                     raise SystemExit(f"forbidden OpenAI manifest in vendored skill: {skill}")
         print(f"validated {sum(len(s['skills']) for s in sources)} vendored skills")
+        return 0
+    if not sources:
+        print("no vendored sources configured")
         return 0
     if args.command == "check":
         use_color = color_enabled(args.color or "auto")

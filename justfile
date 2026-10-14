@@ -62,18 +62,6 @@ check:
 check-full: check
     gh skill publish --dry-run
 
-# Bootstrap a disposable foundation app and verify its production routes (requires Bun).
-foundation-bootstrap-test:
-    bun test skills/ts-application-skeleton/scripts/create.test.ts
-
-# Verify SQLite-backed workflows through a disposable Bun API, crashes, and restarts.
-workflow-integration-test:
-    bun skills/effect-ts/scripts/test-workflow.ts
-
-# Verify embedded OpenCode domain agents with an isolated synthetic model.
-opencode-sdk-integration-test:
-    bun skills/opencode-sdk/scripts/verify.ts
-
 # Verify the connected design reference app (requires Bun and Playwright Chromium).
 design-reference-check:
     cd skills/design-loop/examples && bun install --frozen-lockfile
