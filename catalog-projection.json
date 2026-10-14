@@ -18,7 +18,9 @@
     "vendor/LOCAL-ATTRIBUTIONS.md",
     "vendor/skills-lock.json",
     "archive/2026-10-14",
-    "tests/test_mode_tools.py"
+    "tests/test_mode_tools.py",
+    "tests/test_principle_catalog.py",
+    "tools/check_principle_parity.py"
   ],
   "schema": 1
 }

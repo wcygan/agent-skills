@@ -16,9 +16,10 @@ metadata:
 Own the requested outcome. Establish scope, acceptance evidence, and the requested
 destination; preserve prior authorization and explicit checkpoints across phases.
 
-1. Apply the ambition check below, then select and read the smallest relevant
-   playbook. Load its linked procedures and components only when their conditions
-   apply; reuse existing evidence.
+1. Read the [principle index](references/principles.md) and the leaves triggered by
+   the task. Apply the ambition check below, then select and read the smallest
+   relevant playbook. Load its linked procedures and components only when their
+   conditions apply; reuse existing evidence.
 2. Investigate observable uncertainty before asking the user to guess. Product and
    preference decisions remain with the user unless already delegated.
 3. Prefer simple structures and small verifiable units. Use available tools and

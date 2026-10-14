@@ -15,6 +15,9 @@ metadata:
 
 Read linked components only when their stated condition applies. Use available
 tools and preserve the task's scope, prior authorization, and explicit checkpoints.
+Read the shared [principle index](../wcygan-mode/references/principles.md)
+and relevant leaves at entry; reconsider them as the work changes and report
+each principle that changed a decision with the specific choice it shaped.
 
 
 1. State the hypothesis, baseline, success criteria, resource budget, and stopping

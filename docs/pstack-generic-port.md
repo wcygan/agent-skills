@@ -187,7 +187,7 @@ The listed components are available branches, not steps that always run.
 | `typescript-best-practices` | Omitted as a language-specific reference; no equivalent TypeScript skill was added. |
 | `teach` | No dedicated teaching workflow was added. Investigation and clear-writing components cover parts of explanation, without promising the upstream visual teaching flow. |
 | `make-bot-ui` and the separate Benny automation pack | Omitted. No webhook, bot, messaging, secrets, or hosted automation integration is included. |
-| 24 `principle-*` skills | No standalone principle catalog was imported. Relevant criteria appear within workflows; `principle-prove-it-works` is explicitly a source for `verify-behavior` and `wcygan-verify`. |
+| 24 `principle-*` skills | Originally omitted as standalone skills. Now imported with original names and closely preserved rules, a shared index, and routing from wcygan-mode and all nine procedures. See the [principle mapping](pstack-principles.md). |
 | Poteto Mode playbooks | All 23 now have generic Markdown counterparts. Six have plainer filenames; see the [playbook mapping](../skills/wcygan-mode/references/parity.md#playbook-mapping). Runtime capabilities remain conditional. |
 | Agent definitions | Omitted. No fixed model roster, custom agent registration, or scheduler is installed. |
 | Runtime helper scripts | Reimplemented in Python with uv: orchestration records, PR/stack watching, generic plan validation, and observational worktree auditing. |

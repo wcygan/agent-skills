@@ -72,7 +72,7 @@ Other source names become plain descriptions: `why` → `explain-history`,
 `swarm` → `coordinate-work`. Feature, refactoring, verification, and shipping
 playbooks contribute to the components and procedures listed above.
 
-The source's standalone principle catalog, setup/help configuration, bot UI and
+The source's setup/help configuration, bot UI and
 Benny automation integration, strict comment-sicko persona, TypeScript reference,
 and dedicated teaching workflow are not imported. The local no-comments adaptation
 preserves schema and contract documentation and has no named-agent requirement.
@@ -82,6 +82,27 @@ covers core engineering work; it does not promise those additional capabilities.
 
 Historical provenance and licenses for the retired catalog remain preserved in
 [the dated archive](../archive/2026-10-14/README.md).
+
+## Engineering principles
+
+All 24 standalone `principle-*` skills are locally maintained adaptations of
+Lauren Tan's Pstack at `afd51cf66a3100a95f878d6c4b93a01f6508e3b0` in
+<https://github.com/cursor/plugins>. Names and source paths are unchanged:
+`skills/principle-<name>` maps to `pstack/skills/principle-<name>`.
+Each skill records that exact revision, author, and path in its metadata and
+includes the upstream MIT notice in `references/LICENSE.txt`.
+
+The [complete mapping](../docs/pstack-principles.md) enumerates every leaf.
+Seventeen bodies retain the original text; seven remove unavailable dependencies
+or preserve host authorization with targeted edits. Portable frontmatter and an
+attribution footer are added to all leaves. The [principle parity matrix](../skills/wcygan-mode/references/parity.md#principle-catalog)
+records the exceptions; [the source checker](../tools/check_principle_parity.py)
+verifies all text against the immutable source and explicit replacement list.
+These skills have no `.vendored` markers or synchronization-lock entries.
+
+Wcygan-mode and its nine procedures load one shared index and name principles
+only when they changed a specific choice. These routing additions are local;
+the original procedure, playbook, and tool source revisions remain unchanged.
 
 ## Orchestrator and Python tools
 

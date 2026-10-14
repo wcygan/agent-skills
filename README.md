@@ -1,7 +1,8 @@
 # agent-skills
 
-A public Agent Skills catalog with one orchestrator, 30 focused components, nine
-procedural skills, and three specialist skills. Components work independently. Procedures load only
+A public Agent Skills catalog with one orchestrator, 24 engineering principles,
+30 focused components, nine procedural skills, and three specialist skills.
+Components work independently. Procedures load only
 the components needed for the task, using relative links within the catalog.
 
 ## Orchestrator
@@ -21,6 +22,19 @@ a limiting assumption worth challenging, or a stronger method. Use
 prove readiness, and `maintain-outcome` to sustain an objective. Stretch experiments
 separate required outcomes from exploration targets. Scope, truthful verification,
 and resource budgets remain explicit; ongoing operation requires a real trigger.
+
+## Principles
+
+The [principle index](skills/wcygan-mode/references/principles.md) gives all 24
+Pstack engineering principles their original names and task triggers. Each is a
+standalone `principle-*` skill, preserving the original rule as closely as possible.
+Wcygan-mode and all nine procedures read the shared index, load relevant leaves,
+and name each principle that changed a decision together with that specific choice.
+
+Steer with a name such as “Subtract Before You Add,” or invoke a leaf directly as
+`$principle-subtract-before-you-add`. The index guides selection; it does not add
+a mandatory sequence to every task. See the [source mapping and fidelity checks](docs/pstack-principles.md)
+for provenance, minimal adaptations, and verification commands.
 
 ## Procedures
 
@@ -117,9 +131,9 @@ directory explicitly:
 gh skill install wcygan/agent-skills --agent codex --scope user --all --dir ~/.agents/skills
 ```
 
-Install the full catalog for procedural composition; individual component installs
-are also supported. A procedure uses sibling components through relative links,
-so install its referenced components alongside it.
+Install the full catalog for procedural composition; individual component and
+principle installs are also supported. A procedure uses the shared principle index
+and sibling components through relative links, so install its dependencies alongside it.
 
 Add `--pin <full-commit>` for a fixed version. Other supported agents are listed
 by `gh skill install --help`. For project scope, select `--scope project`.

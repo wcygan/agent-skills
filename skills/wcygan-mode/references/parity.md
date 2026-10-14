@@ -64,3 +64,33 @@ separate landing owner, and actual publication are distinct contracts. Fixed
 model rosters, cloud-machine assumptions, blind hard resets, implicit external
 messages, and automatic PR creation are removed. The existing procedures supply
 reusable phase logic; playbooks supply task-specific order and completion gates.
+
+## Principle catalog
+
+The 24 standalone `principle-*` skills preserve Lauren Tan's Pstack names,
+descriptions, and rules at revision `afd51cf66a3100a95f878d6c4b93a01f6508e3b0`.
+This later source applies to the principles only; the playbooks and tools retain
+their original revision. Each leaf records its own source and MIT notice.
+
+Seventeen bodies are unchanged apart from the attribution footer. Seven have
+only the following targeted adaptations:
+
+| Principle | Local adaptation |
+| --- | --- |
+| Build the Lever | Delegation and commits preserve the executing environment's authorization; retain the lever even when committing is outside scope. |
+| Explain the Number | Replace the unavailable benchmark-checklist dependency with inline matched-workload, repeated-run, raw-result, and actual-work checks. |
+| Guard the Context Window | Make the routing rule explicit in the body; allow bounded local reads when delegation is unavailable or unauthorized. |
+| Never Block on the Human | Proceed within authorized scope; preserve prior authorization and checkpoints rather than demanding repeated confirmation. |
+| Prove It Works | Replace show-me-your-work with an inline decision log and evidence pointers; preserve commit authority. |
+| Sequence Work into Verifiable Units | Use a known starting revision and preserve unrelated edits; do not implicitly rebase onto trunk. |
+| Type System Discipline | Replace the unavailable TypeScript specialist dependency with language idioms; retain all original examples and type-design rules. |
+
+All leaves use portable Agent Skills frontmatter with source metadata, omitting
+Pstack's host-specific `disable-model-invocation` field. No aliases or synchronization
+lock entries are added. Individual principles are usable without invoking a workflow;
+cross-principle links supply optional context rather than missing implementation steps.
+
+The [shared index](principles.md) is read by wcygan-mode and all nine procedural
+entrypoints. It selects relevant leaves, preserves project contracts, and requires
+each applied principle to be named together with the specific decision it changed.
+The existing playbooks and components supply methods without duplicating the rules.
