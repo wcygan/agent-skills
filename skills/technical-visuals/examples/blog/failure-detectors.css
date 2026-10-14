@@ -1,0 +1,62 @@
+.visual-heading p:last-child {
+  color: var(--muted);
+  max-width: 760px;
+}
+.controls {
+  padding-bottom: 14px;
+}
+.controls label {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 12px;
+  align-items: center;
+  width: 184px;
+  margin-left: 8px;
+}
+.controls input {
+  accent-color: var(--focus);
+  width: 100%;
+  grid-column: 1 / -1;
+  margin: 0;
+}
+.faults {
+  border-bottom: 1px solid var(--subtle);
+  padding-bottom: 22px;
+}
+.stage svg {
+  min-width: 850px;
+}
+.diagnostic {
+  margin: 0;
+  padding: 22px 28px;
+  border-top: 2px solid var(--failure);
+  background: var(--controlFill);
+}
+.diagnostic h3 {
+  margin-top: 0;
+}
+.diagnostic p {
+  max-width: 850px;
+}
+.notes h3 {
+  font-size: 16px;
+}
+.hint {
+  margin: 0;
+}
+#status {
+  min-height: 48px;
+}
+h3 {
+  font-weight: 600;
+}
+output {
+  color: var(--text);
+}
+
+.faults [data-action="export"] { margin-left: auto; }
+.controls output { font-variant-numeric: tabular-nums; font-weight: 600; }
+@media (max-width: 720px) {
+  .controls label { margin-left: 0; }
+  .faults [data-action="export"] { margin-left: 0; }
+}

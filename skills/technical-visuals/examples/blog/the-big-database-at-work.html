@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>The Big Database at Work · Visual lab</title>
+    <link rel="stylesheet" href="../style.css" />
+    <link rel="stylesheet" href="blog.css" />
+    <link rel="stylesheet" href="the-big-database-at-work.css" />
+  </head>
+  <body data-post="the-big-database-at-work">
+    <main>
+      <nav aria-label="Visual lab">
+        <a href="index.html">← Blog visualizations</a
+        ><a href="../index.html">Design system</a
+        ><a href="https://wcygan.net/the-big-database-at-work/"
+          >Original post ↗</a
+        >
+      </nav>
+      <header>
+        <div>
+          <p class="eyebrow">DATABASES / SEVEN VISUAL EXPLANATIONS</p>
+          <h1>Keep the history.<br />Cache the working set.</h1>
+          <p class="intro">
+            Twenty billion rows across six tables. 14.8 TiB stored. Ordinary
+            requests repeatedly touch a much smaller set of pages.
+          </p>
+        </div>
+        <button id="theme" aria-label="Toggle dark theme">☀ / ☾</button>
+      </header>
+      <div id="figures"></div>
+      <footer>
+        <p>
+          Reported values come from “The Big Database at Work.” Topology is
+          conceptual; animation timings, traffic shape, read destinations, and
+          tree fan-out are illustrative. No partitioning or sharding is implied.
+        </p>
+      </footer>
+    </main>
+    <script src="../tokens.js"></script>
+    <script src="the-big-database-at-work.js"></script>
+  </body>
+</html>

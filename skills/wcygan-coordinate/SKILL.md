@@ -20,7 +20,9 @@ tools and preserve the task's scope, prior authorization, and explicit checkpoin
 1. Establish the final acceptance criteria and constraints with
    [clarify-task](../clarify-task/SKILL.md) when needed. Resolve risky shared interfaces
    before splitting implementation across them.
-2. Use [coordinate-work](../coordinate-work/SKILL.md) to define units, owners,
+2. When units will become separate PRs, use [slice-changes](../slice-changes/SKILL.md)
+   to establish reviewable intermediate states before assigning owners.
+   Use [coordinate-work](../coordinate-work/SKILL.md) to define units, owners,
    dependencies, isolated outputs, and evidence requirements. Use available execution
    capacity; a serial plan is valid when parallel work cannot be isolated.
 3. For long work, maintain [decision-log](../decision-log/SKILL.md). On pickup, use

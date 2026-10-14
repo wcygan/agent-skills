@@ -22,7 +22,10 @@ tools and preserve the task's scope, prior authorization, and explicit checkpoin
 2. Use [verify-behavior](../verify-behavior/SKILL.md) for missing or stale proof, and
    [review-changes](../review-changes/SKILL.md) for required review or unresolved
    consequential concerns. Resolve blockers before proceeding.
-3. Use [deliver-change](../deliver-change/SKILL.md) to present or publish within
+3. For a pull request, use [prepare-pull-request](../prepare-pull-request/SKILL.md)
+   to assemble the concise explanation, useful visual, and current evidence.
+   Reuse that package rather than drafting a second description.
+   Use [deliver-change](../deliver-change/SKILL.md) to present or publish within
    authorized scope and confirm the destination's resulting state.
 4. Use [write-clearly](../write-clearly/SKILL.md) for the handoff and
    [progress-report](../progress-report/SKILL.md) when the user needs a status update.

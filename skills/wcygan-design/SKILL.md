@@ -27,7 +27,9 @@ tools and preserve the task's scope, prior authorization, and explicit checkpoin
    its candidates rather than generating a second set.
 3. For contested or consequential choices, use
    [review-changes](../review-changes/SKILL.md) to challenge the selected structure.
-4. Record the chosen interfaces, ownership, tradeoffs, and acceptance criteria.
+4. Use [technical-visuals](../technical-visuals/SKILL.md) when a diagram clarifies
+   the chosen boundaries or behavior. Default to 2D; 3D requires an explicit request.
+   Record the chosen interfaces, ownership, tradeoffs, and acceptance criteria.
    Honor an explicit design checkpoint; otherwise continue implementation when it
    was already requested.
 

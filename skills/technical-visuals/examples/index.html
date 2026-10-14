@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Technical visuals · Reference studio</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="tokens.js" defer></script>
+    <script src="shapes.js" defer></script>
+    <script src="studio.js" defer></script>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <p class="eyebrow">WCYGAN / TECHNICAL VISUALS</p>
+          <h1>Make the relationship clear.</h1>
+          <p class="intro">
+            Six small teaching models. One visual language. Compare an
+            explanation with the choices that make it harder to read.
+          </p>
+        </div>
+        <button
+          id="theme"
+          class="theme-toggle"
+          type="button"
+          aria-label="Dark theme"
+          aria-pressed="false"
+          title="Switch theme"
+        >
+          <svg class="sun" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" />
+            <path
+              d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"
+            />
+          </svg>
+          <svg class="moon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 14a8 8 0 0 1-10-10A8 8 0 1 0 20 14Z" />
+          </svg>
+        </button>
+      </header>
+      <nav class="review-nav" aria-label="Review sections">
+        <a href="#examples">Examples</a
+        ><a href="#system-heading">Colors &amp; principles</a
+        ><a href="#shape-library">2D shape library</a>
+      </nav>
+      <section class="system-cases" aria-label="Blog visualization renditions">
+        <p class="eyebrow">APPLY THE DESIGN SYSTEM</p>
+        <h2>Eight blog posts. New visual renditions.</h2>
+        <p>
+          Working sets, commit decisions, gossip, replication, elections,
+          timeouts, partitioned logs, and connection pools.
+        </p>
+        <nav class="review-nav">
+          <a href="blog/index.html">Explore the blog visual lab →</a
+          ><a href="systems/scheduler.html">System design archive</a>
+        </nav>
+      </section>
+      <section id="examples" class="toolbar" aria-label="Example controls">
+        <label
+          >Teaching pattern
+          <select id="scenario">
+            <option value="routing">Request routing</option>
+            <option value="queue">Bounded queue</option>
+            <option value="cache">Cache paths</option>
+            <option value="replication">Replication</option>
+            <option value="log">Ordered records</option>
+            <option value="recovery">Checkpoint recovery</option>
+          </select></label
+        >
+        <label
+          >Dimension
+          <select id="dimension">
+            <option value="2d">2D · default</option>
+            <option value="3d">3D · explicit preview</option>
+          </select></label
+        >
+        <div class="step-controls">
+          <button id="previous" aria-label="Previous state">← Back</button
+          ><button id="next">Next state →</button
+          ><button id="reset">Reset</button>
+        </div>
+        <p id="state" role="status" aria-live="polite"></p>
+      </section>
+      <div id="camera-controls" class="toolbar" hidden>
+        <span>Camera</span><button id="orbit-left">Rotate left</button
+        ><button id="orbit-right">Rotate right</button
+        ><button id="camera-reset">Reset camera</button>
+        <span class="hint"
+          >Bounded ±20° view. Keyboard-accessible buttons; no autoplay.</span
+        >
+      </div>
+      <section class="figure-card" aria-labelledby="figure-heading">
+        <div class="card-heading">
+          <div>
+            <p class="eyebrow">REFERENCE</p>
+            <h2 id="figure-heading"></h2>
+          </div>
+          <span class="badge">Conceptual model</span>
+        </div>
+        <p class="scroll-hint">
+          On narrow screens, scroll the diagram horizontally.
+        </p>
+        <div
+          id="good-figure"
+          class="figure"
+          tabindex="0"
+          aria-label="Technical diagram; scroll horizontally on narrow screens"
+        ></div>
+        <div class="caption">
+          <p id="takeaway"></p>
+          <div class="exports">
+            <button id="export-svg">Save SVG</button
+            ><button id="export-png">Save PNG</button>
+          </div>
+        </div>
+      </section>
+      <section class="comparison" aria-label="Presentation critique">
+        <article>
+          <p class="eyebrow">WHY IT WORKS</p>
+          <h2>Meaning comes first.</h2>
+          <p id="good-reason"></p>
+          <p id="practice" class="practice"></p>
+        </article>
+        <article class="counterexample">
+          <p class="eyebrow">COUNTEREXAMPLE · DO NOT COPY</p>
+          <h2>The same facts, harder to read.</h2>
+          <div id="bad-figure" class="figure"></div>
+          <p id="bad-reason"></p>
+        </article>
+      </section>
+      <section class="system" aria-labelledby="system-heading">
+        <div>
+          <p class="eyebrow">DESIGN SYSTEM</p>
+          <h2 id="system-heading">Quiet surfaces. Specific emphasis.</h2>
+          <p>
+            Purple identifies processing, blue storage, teal flow, and rose
+            control. Orange highlights the selected teaching point. Status
+            colors accompany explicit labels. Shape and text carry meaning
+            without color. Theme and camera changes preserve the selected state.
+          </p>
+        </div>
+        <div id="swatches" class="swatches"></div>
+      </section>
+      <section
+        id="shape-library"
+        class="shape-library"
+        aria-labelledby="shape-heading"
+      >
+        <p class="eyebrow">2D VISUAL VOCABULARY</p>
+        <h2 id="shape-heading">A shape should tell you its role.</h2>
+        <p class="intro">
+          Use familiar silhouettes, then name the component. These are diagram
+          conventions, not promises about durability, delivery, or correctness.
+        </p>
+        <div id="shape-groups"></div>
+      </section>
+      <footer>
+        <p>
+          2D is the default. The 3D preview is available only for the
+          replication model; depth groups regions, not magnitude. These examples
+          illustrate relationships and are not production evidence.
+        </p>
+        <p id="export-status" role="status" aria-live="polite"></p>
+        <a href="../references/examples.md"
+          >Example notes and review procedure</a
+        >
+      </footer>
+    </main>
+  </body>
+</html>

@@ -6,8 +6,9 @@ Prepare a reviewable proposal for an implemented change.
    and inspect the final diff for unrelated work and temporary artifacts.
 2. Follow [verify](../../wcygan-verify/SKILL.md) for required evidence. Preserve
    requested draft status and the project's submission conventions.
-3. Describe the problem, resulting behavior, important tradeoffs, and reproducible
-   verification through [write-clearly](../../write-clearly/SKILL.md).
+3. Use [prepare-pull-request](../../prepare-pull-request/SKILL.md) for the title,
+   concise problem/result, useful visual, and current verification evidence. Respect
+   the repository template and omit decoration for a trivial change.
 4. Use the available publication mechanism and read back the created proposal,
    current revision, and target. Do not reset unrelated work to obtain a clean branch.
 

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Distributed Transactions · Visual lab</title>
+    <link rel="stylesheet" href="../style.css" />
+    <link rel="stylesheet" href="blog.css" />
+    <link rel="stylesheet" href="distributed-transactions.css" />
+  </head>
+  <body data-post="distributed-transactions">
+    <main>
+      <nav aria-label="Visual lab">
+        <a href="index.html">← Blog visualizations</a
+        ><a href="../index.html">Design system</a
+        ><a href="https://wcygan.net/distributed-transactions/"
+          >Original post ↗</a
+        >
+      </nav>
+      <header>
+        <div>
+          <p class="eyebrow">DISTRIBUTED SYSTEMS / ATOMIC COMMIT</p>
+          <h1>One transaction.<br />One shared outcome.</h1>
+          <p class="intro">
+            Prepare makes a promise. A durable decision resolves it. Follow both
+            phases, then look inside a replicated participant.
+          </p>
+        </div>
+        <button id="theme" aria-label="Switch theme">☀ / ☾</button>
+      </header>
+      <section
+        class="visual"
+        data-figure="prepare"
+        data-source-component="TwoPhasePrepareDemo"
+        aria-labelledby="prepare-heading"
+      >
+        <div class="visual-heading">
+          <p class="eyebrow">PHASE ONE · PREPARE</p>
+          <h2 id="prepare-heading">YES means prepared, with locks held.</h2>
+          <p>
+            The coordinator asks each participant to validate and durably
+            prepare its local change.
+          </p>
+        </div>
+        <p class="scroll-hint">↔ Scroll the diagram to see both participants</p>
+        <div
+          class="stage"
+          tabindex="0"
+          role="region"
+          aria-label="Prepare diagram; scroll horizontally on narrow screens"
+        ></div>
+        <div class="controls playback"></div>
+        <p class="event" role="status"></p>
+        <p class="caption">
+          This phase ends with votes ready to send. A prepared participant
+          cannot safely abort just because it times out.
+        </p>
+      </section>
+      <section
+        class="visual"
+        data-figure="decision"
+        data-source-component="TwoPhaseDecisionDemo"
+        aria-labelledby="decision-heading"
+      >
+        <div class="visual-heading">
+          <p class="eyebrow">PHASE TWO · DECIDE</p>
+          <h2 id="decision-heading">Record the decision before sending it.</h2>
+          <p>
+            Try all four vote combinations. Any NO produces ABORT; two YES votes
+            permit COMMIT.
+          </p>
+        </div>
+        <div class="controls choices">
+          <label
+            >Participant A vote<select id="vote-a">
+              <option>YES</option>
+              <option>NO</option>
+            </select></label
+          ><label
+            >Participant B vote<select id="vote-b">
+              <option>YES</option>
+              <option>NO</option>
+            </select></label
+          ><label
+            >Decision delivery<select id="decision">
+              <option value="available">Available</option>
+              <option value="unavailable">
+                Unavailable after durable record
+              </option>
+            </select></label
+          >
+        </div>
+        <p class="scroll-hint">↔ Scroll the diagram to see both participants</p>
+        <div
+          class="stage"
+          tabindex="0"
+          role="region"
+          aria-label="Decision diagram; scroll horizontally on narrow screens"
+        ></div>
+        <div class="controls playback"></div>
+        <p class="event" role="status"></p>
+        <p class="caption">
+          A NO voter has already rolled back and unlocked. A YES voter waits
+          until it learns the durable decision. Missing votes can cause an abort
+          only before COMMIT has been recorded.
+        </p>
+      </section>
+      <section
+        class="visual"
+        data-figure="replicated-shards"
+        data-source-component="ReplicatedShardsDemo"
+        aria-labelledby="shards-heading"
+      >
+        <div class="visual-heading">
+          <p class="eyebrow">TWO DISTINCT COORDINATION BOUNDARIES</p>
+          <h2 id="shards-heading">
+            Quorum within each shard. Every vote across shards.
+          </h2>
+          <p>
+            Each leader first replicates PREPARE to its own consensus group. The
+            coordinator then needs one YES from each shard.
+          </p>
+        </div>
+        <p class="scroll-hint">↔ Scroll the diagram to see both shard groups</p>
+        <div
+          class="stage"
+          tabindex="0"
+          role="region"
+          aria-label="Replicated shards diagram; scroll horizontally on narrow screens"
+        ></div>
+        <div class="controls playback"></div>
+        <p class="event" role="status"></p>
+        <p class="caption">
+          Simplified leader/quorum trace: each group contains three replicas and
+          needs two durable copies. The third replica may catch up later. This
+          is not a global four-of-six vote, nor a single protocol shared by all
+          distributed SQL databases.
+        </p>
+      </section>
+      <footer>
+        <p>
+          Three original visual renditions based on the article’s three
+          interactive figures. Use Play for message travel, Step for discrete
+          transitions, and Replay to start again. Motion starts paused;
+          reduced-motion mode keeps manual stepping available.
+        </p>
+      </footer>
+    </main>
+    <script src="../tokens.js"></script>
+    <script src="distributed-transactions.js"></script>
+  </body>
+</html>

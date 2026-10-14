@@ -1,0 +1,30 @@
+.visual + .visual {
+  margin-top: 36px;
+}
+.visual-heading > p:last-child:not(.eyebrow) {
+  max-width: 760px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.stage svg {
+  min-width: 760px;
+}
+.controls {
+  align-items: end;
+}
+header .intro {
+  max-width: 730px;
+}
+.result {
+  min-height: 100px;
+}
+@media (max-width: 720px) {
+  header button {
+    margin-top: 16px;
+  }
+}
+
+.gossip-scroll-hint { display: none; }
+@media (max-width: 720px) {
+  .gossip-scroll-hint { display: block; margin: 0; padding: 0 18px 14px; color: var(--muted); font-size: 12px; }
+}

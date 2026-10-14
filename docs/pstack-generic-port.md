@@ -3,9 +3,9 @@
 Updated: 2026-10-14.
 
 This catalog adapts pstack into short, harness-agnostic engineering skills. The
-implemented port contains **one orchestrator, 22 self-contained components, and
+implemented port contains **one orchestrator, 27 self-contained components, and
 nine `wcygan-*` procedures**, alongside the retained `uv-python`, `just`, and `design-loop`
-specialists: 35 skills in total.
+specialists: 40 skills in total.
 
 The source is Lauren Tan's MIT-licensed pstack 0.15.24 at
 [`1e5c90a4b6f249917bd21fe361b3a2a7deb741b8`](https://github.com/cursor/plugins/tree/1e5c90a4b6f249917bd21fe361b3a2a7deb741b8/pstack).
@@ -128,12 +128,14 @@ than a standalone upstream skill. Local names link to the implemented instructio
 
 | Pstack source | Local component | Engineering behavior retained |
 | --- | --- | --- |
+| in-your-own-words | [in-your-own-words](../skills/in-your-own-words/SKILL.md) | Dedicated plain-language restatement of the user’s goal and problem, using write-clearly. |
+| no-comments | [no-comments](../skills/no-comments/SKILL.md) | Remove implementation narration; preserve schema documentation, contracts, required directives, and verified external constraints. |
 | how | [explain-code](../skills/explain-code/SKILL.md) | Trace behavior, ownership, and runtime flow with code evidence. |
 | why | [explain-history](../skills/explain-history/SKILL.md) | Separate historical facts, inferred rationale, and unknowns. |
 | architect | [design-options](../skills/design-options/SKILL.md) | Sketch caller usage and compare at least two structural alternatives. |
 | arena | [compare-solutions](../skills/compare-solutions/SKILL.md) | Compare candidates against predefined criteria and verify the synthesis. |
 | interrogate | [review-changes](../skills/review-changes/SKILL.md) | Challenge the work and classify findings by evidence and impact. |
-| sharpen; in-your-own-words; figure-it-out | [clarify-task](../skills/clarify-task/SKILL.md) | Establish the outcome, scope, uncertainties, and stopping conditions. |
+| sharpen; figure-it-out | [clarify-task](../skills/clarify-task/SKILL.md) | Establish the outcome, scope, uncertainties, and stopping conditions. |
 | poteto-mode: feature and refactoring playbooks | [implement-change](../skills/implement-change/SKILL.md) | Implement coherent units while preserving behavior contracts and ownership. |
 | tdd | [reproduce-bug](../skills/reproduce-bug/SKILL.md) | Demonstrate failure before a fix and success after it with a practical check. |
 | blast-radius | [assess-impact](../skills/assess-impact/SKILL.md) | Trace downstream contracts and prove the crucial safety assumptions. |
@@ -181,7 +183,7 @@ The listed components are available branches, not steps that always run.
 | `poteto-mode` | [wcygan-mode](../skills/wcygan-mode/SKILL.md) is the generic orchestrator, with all 23 adapted playbooks and four Python tool entrypoints. |
 | `poteto-help` | The [catalog README](../README.md) and this mapping provide navigation; there is no help skill. |
 | `setup-pstack` | Omitted. Tool availability, model selection, and host configuration remain outside the skill instructions. |
-| `no-comments` and `comment-sicko` agent | Omitted. `review-changes` assesses concrete correctness and maintenance costs without a blanket comment-removal policy. |
+| `comment-sicko` agent | No named agent or harness API is required. The dedicated `no-comments` skill adapts the workflow with schema and contract exceptions. |
 | `typescript-best-practices` | Omitted as a language-specific reference; no equivalent TypeScript skill was added. |
 | `teach` | No dedicated teaching workflow was added. Investigation and clear-writing components cover parts of explanation, without promising the upstream visual teaching flow. |
 | `make-bot-ui` and the separate Benny automation pack | Omitted. No webhook, bot, messaging, secrets, or hosted automation integration is included. |

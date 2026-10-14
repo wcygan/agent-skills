@@ -1,0 +1,17 @@
+.controls {
+  align-items: flex-end;
+}
+.stage svg {
+  min-width: 1000px;
+}
+.notes h3 {
+  font-size: 16px;
+  margin: 0 0 10px;
+}
+code {
+  overflow-wrap: anywhere;
+}
+.visual-heading p:last-child {
+  color: var(--muted);
+  max-width: 780px;
+}

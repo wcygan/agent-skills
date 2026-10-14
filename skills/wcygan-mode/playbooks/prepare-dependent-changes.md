@@ -3,7 +3,8 @@
 Build a verified sequence that another owner will land.
 
 1. Define the target sequence, dependency order, acceptance criteria, and who will
-   land it. Use [coordinate](../../wcygan-coordinate/SKILL.md) to assign bounded units.
+   land it. Use [slice-changes](../../slice-changes/SKILL.md) to verify that each
+   prefix remains valid and that the full sequence meets the goal. Use [coordinate](../../wcygan-coordinate/SKILL.md) to assign bounded units.
 2. Give one coordinator ownership of base changes and sequence maintenance. Workers
    produce their assigned changes and evidence without independently rebasing the stack.
 3. Verify each change against its intended predecessor and the integrated sequence.

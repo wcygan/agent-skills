@@ -30,6 +30,8 @@ frontmatter and focused descriptions; selection behavior belongs to the host.
 | [compare-solutions](../skills/compare-solutions/SKILL.md) | component | `skills/arena` |
 | [review-changes](../skills/review-changes/SKILL.md) | component | `skills/interrogate` |
 | [explain-history](../skills/explain-history/SKILL.md) | component | `skills/why` |
+| [in-your-own-words](../skills/in-your-own-words/SKILL.md) | component | `skills/in-your-own-words` |
+| [no-comments](../skills/no-comments/SKILL.md) | component | `skills/no-comments`, `agents/comment-sicko.md` |
 | [clarify-task](../skills/clarify-task/SKILL.md) | component | `skills/sharpen`, `skills/in-your-own-words`, `skills/figure-it-out` |
 | [implement-change](../skills/implement-change/SKILL.md) | component | `skills/poteto-mode/playbooks/feature.md`, `skills/poteto-mode/playbooks/refactoring.md` |
 | [reproduce-bug](../skills/reproduce-bug/SKILL.md) | component | `skills/tdd` |
@@ -71,8 +73,11 @@ Other source names become plain descriptions: `why` → `explain-history`,
 playbooks contribute to the components and procedures listed above.
 
 The source's standalone principle catalog, setup/help configuration, bot UI and
-Benny automation integration, strict no-comments persona, TypeScript reference,
-and dedicated teaching/visualization workflow are not imported. This catalog
+Benny automation integration, strict comment-sicko persona, TypeScript reference,
+and dedicated teaching workflow are not imported. The local no-comments adaptation
+preserves schema and contract documentation and has no named-agent requirement.
+The dedicated in-your-own-words adaptation retains the upstream restatement task
+and adds write-clearly guidance. Local technical visuals are described below. This catalog
 covers core engineering work; it does not promise those additional capabilities.
 
 Historical provenance and licenses for the retired catalog remain preserved in
@@ -90,3 +95,14 @@ script capability, retained interfaces, and deliberate changes. Runtime code is
 Python 3.11+ using uv and the standard library. Git and `gh` remain integrations;
 Bun, TypeScript, shell implementations, Origin CLI support, and harness-specific
 transcript discovery are not required. This remains locally maintained work.
+
+
+## Original communication components
+
+`technical-visuals`, `slice-changes`, and `prepare-pull-request` are original local
+components by William Cygan, licensed MIT. The technical-visuals design system and
+example implementation are new; historical topic/style precedent is documented in
+its `references/precedent.md`. No retired example code or upstream teaching workflow
+was copied. The existing pstack-derived `write-clearly` retains its attribution and
+license, with new local examples for concise prose, labels, captions, and evidence.
+Local routing additions connect these components to wcygan-mode and its procedures.

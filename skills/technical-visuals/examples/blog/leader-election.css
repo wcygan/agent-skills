@@ -1,0 +1,56 @@
+.raft-meta,
+.raft-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 28px;
+  padding: 14px 28px;
+  color: var(--muted);
+  font:
+    12px/1.5 ui-monospace,
+    monospace;
+}
+.raft-meta {
+  border-top: 1px solid var(--subtle);
+  justify-content: space-between;
+}
+.raft-legend {
+  border-top: 1px solid var(--subtle);
+}
+.notes h3 {
+  font-size: 16px;
+  font-weight: 600;
+}
+.visual-heading > p:last-child {
+  max-width: 780px;
+  color: var(--muted);
+  font-size: 15px;
+}
+.controls {
+  align-items: flex-end;
+}
+.stage svg {
+  min-width: 850px;
+}
+.notes article {
+  min-width: 0;
+}
+@media (max-width: 720px) {
+  .raft-meta,
+  .raft-legend {
+    padding: 14px 18px;
+  }
+  header #theme {
+    margin-top: 12px;
+  }
+}
+/* Match the legend to the actual packet marks, with room around each glyph. */
+.raft-legend { align-items: center; gap: 12px 24px; }
+.raft-legend > span { display: inline-flex; align-items: center; gap: 8px; }
+.packet-key { display: inline-grid; place-items: center; width: 24px; height: 24px; border: 1.5px solid currentColor; border-radius: 5px; font-size: 14px; font-weight: 650; background: var(--surface); }
+.packet-key.heartbeat { color: var(--flow); }
+.packet-key.request { color: var(--control); }
+.packet-key.granted { color: var(--success); }
+.packet-key.denied { color: var(--failure); }
+.controls [data-action="play"] { border-color: var(--control); background: var(--controlFill); min-width: 74px; }
+.raft-meta { font-variant-numeric: tabular-nums; }
+.result { min-height: 106px; }

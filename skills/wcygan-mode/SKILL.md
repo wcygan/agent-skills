@@ -42,6 +42,7 @@ destination; preserve prior authorization and explicit checkpoints across phases
 | Build new or changed user behavior. | [feature](playbooks/feature.md) |
 | Change structure while preserving behavior. | [refactoring](playbooks/refactoring.md) |
 | Build a small experiment to settle a design uncertainty. | [prototype](playbooks/prototype.md) |
+| Explain a system or change with a technical visual. | [technical explanation](playbooks/technical-explanation.md) |
 | Verify visual and interaction equivalence between implementations. | [visual-parity](playbooks/visual-parity.md) |
 | Create or revise an agent skill. | [authoring-a-skill](playbooks/authoring-a-skill.md) |
 | Compare workflow or instruction changes before promoting them. | [eval](playbooks/eval.md) |
@@ -59,6 +60,14 @@ destination; preserve prior authorization and explicit checkpoints across phases
 
 For a mixed task, sequence the relevant playbooks rather than restarting framing.
 The nine `wcygan-*` procedures own reusable phase logic; components own focused methods.
+Keep changes easy to review: use [slice-changes](../slice-changes/SKILL.md) when
+work spans several reviewer questions, [technical-visuals](../technical-visuals/SKILL.md)
+when a figure clarifies the relationship (2D by default; 3D only when requested),
+and [prepare-pull-request](../prepare-pull-request/SKILL.md) for a concise visual
+review package. These components supplement the selected playbook; they do not
+require a PR or illustration for every task. Use [write-clearly](../write-clearly/SKILL.md)
+for prose, captions, and labels when editing is needed.
+
 Use existing specialists such as [uv-python](../uv-python/SKILL.md),
 [just](../just/SKILL.md), or [design-loop](../design-loop/SKILL.md) when applicable.
 

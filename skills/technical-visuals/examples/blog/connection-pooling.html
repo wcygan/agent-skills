@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Connection pooling · Visual lab</title>
+    <link rel="stylesheet" href="../style.css" />
+    <link rel="stylesheet" href="blog.css" />
+    <link rel="stylesheet" href="connection-pooling.css" />
+  </head>
+  <body data-post="connection-pooling">
+    <main>
+      <nav>
+        <a href="index.html">← Blog visualizations</a
+        ><a href="../index.html">Design system</a
+        ><a href="https://wcygan.net/connection-pooling/">Original post ↗</a>
+      </nav>
+      <header>
+        <div>
+          <p class="eyebrow">DATABASES / CONNECTION LIFECYCLE</p>
+          <h1>Connection pooling</h1>
+          <p class="intro">
+            Reuse is efficient. Unbounded concurrency is expensive. Four
+            interactive figures connect socket reuse to server pressure and pool
+            exhaustion.
+          </p>
+        </div>
+        <button id="theme" aria-label="Switch theme">☀ / ☾</button>
+      </header>
+      <section
+        class="visual"
+        data-figure="socket-reuse"
+        data-source-component="PlanetScaleConnectionPoolDemo"
+      >
+        <div class="visual-heading">
+          <p class="eyebrow">CONNECTION LIFECYCLE</p>
+          <h2>Reuse the socket, release the slot</h2>
+          <p>
+            Seven requests share a bounded set of warm sockets. Follow
+            acquisition, SQL execution, the returning result, and reuse.
+          </p>
+        </div>
+        <div class="controls">
+          <label
+            >Transport<select name="transport">
+              <option value="pooled">Pooled · warm sockets</option>
+              <option value="unpooled">Unpooled · connect per request</option>
+            </select></label
+          ><label
+            >Pool size <output>4</output
+            ><input name="pool" type="range" min="2" max="6" value="4" /></label
+          ><button data-action="play">Play</button
+          ><button data-action="step">Step</button
+          ><button data-action="reset">Reset</button
+          ><button data-action="export">Save SVG</button>
+        </div>
+        <p class="scroll-hint">
+          Scroll the diagram horizontally to explore it.
+        </p>
+        <div
+          class="stage"
+          tabindex="0"
+          role="region"
+          aria-label="Reuse the socket, release the slot"
+        >
+          <svg
+            role="img"
+            viewBox="0 0 1000 500"
+            xmlns="http://www.w3.org/2000/svg"
+          ></svg>
+        </div>
+        <div class="result"><p class="status" aria-live="polite"></p></div>
+        <p class="model-note">
+          Illustrative timeline, not a latency benchmark. Warm sockets skip
+          connection setup; unpooled mode adds an illustrative handshake and
+          closes each socket afterward.
+        </p>
+      </section>
+      <section
+        class="visual"
+        data-figure="scaling-curve"
+        data-source-component="ConnectionScalingCurveDemo"
+      >
+        <div class="visual-heading">
+          <p class="eyebrow">CONCURRENCY &amp; THROUGHPUT</p>
+          <h2>More connections eventually do less work</h2>
+          <p>
+            Explore a four-core workload: throughput rises, reaches a peak, then
+            falls as contention grows.
+          </p>
+        </div>
+        <div class="controls">
+          <label
+            >Concurrent connections <output>1</output
+            ><input
+              name="connections"
+              type="range"
+              min="1"
+              max="500"
+              value="1" /></label
+          ><button data-action="play">Play</button
+          ><button data-action="step">Step</button
+          ><button data-action="reset">Reset</button
+          ><button data-action="export">Save SVG</button>
+        </div>
+        <p class="scroll-hint">
+          Scroll the diagram horizontally to explore it.
+        </p>
+        <div
+          class="stage"
+          tabindex="0"
+          role="region"
+          aria-label="More connections eventually do less work"
+        >
+          <svg
+            role="img"
+            viewBox="0 0 1000 500"
+            xmlns="http://www.w3.org/2000/svg"
+          ></svg>
+        </div>
+        <div class="result"><p class="status" aria-live="polite"></p></div>
+        <p class="model-note">
+          Illustrative Universal Scalability Law: X(n) = 40n / [1 + 0.25(n−1) +
+          0.0013n(n−1)]. Latency = n / X(n), assuming zero think time. The 8–40
+          band is a starting heuristic, not a sizing guarantee.
+        </p>
+      </section>
+      <section
+        class="visual"
+        data-figure="server-resources"
+        data-source-component="ConnectionServerBoardDemo"
+      >
+        <div class="visual-heading">
+          <p class="eyebrow">SERVER RESOURCE PRESSURE</p>
+          <h2>A healthy pool can overload its server</h2>
+          <p>
+            Watch four CPU cores, runnable threads, lock waits, and working
+            memory as concurrency rises.
+          </p>
+        </div>
+        <div class="controls">
+          <label
+            >Concurrent connections <output>1</output
+            ><input
+              name="connections"
+              type="range"
+              min="1"
+              max="500"
+              value="1" /></label
+          ><button data-action="play">Play</button
+          ><button data-action="step">Step</button
+          ><button data-action="reset">Reset</button
+          ><button data-action="export">Save SVG</button>
+        </div>
+        <p class="scroll-hint">
+          Scroll the diagram horizontally to explore it.
+        </p>
+        <div
+          class="stage"
+          tabindex="0"
+          role="region"
+          aria-label="A healthy pool can overload its server"
+        >
+          <svg
+            role="img"
+            viewBox="0 0 1000 500"
+            xmlns="http://www.w3.org/2000/svg"
+          ></svg>
+        </div>
+        <div class="result"><p class="status" aria-live="polite"></p></div>
+        <p class="model-note">
+          Conceptual thread states, not a scheduler trace. Assumes one thread
+          per connection, 8 MiB of active buffers per connection and a 4 GiB
+          buffer budget. Real allocation is workload-dependent; idle connections
+          do not necessarily allocate these buffers.
+        </p>
+      </section>
+      <section
+        class="visual"
+        data-figure="pool-exhaustion"
+        data-source-component="ConnectionPoolExhaustionDemo"
+      >
+        <div class="visual-heading">
+          <p class="eyebrow">LONG QUERIES &amp; ACQUISITION TIMEOUTS</p>
+          <h2>Long queries hold every connection</h2>
+          <p>
+            Four scans occupy the pool. Later short requests wait for a socket
+            and reach their acquisition timeout.
+          </p>
+        </div>
+        <div class="controls">
+          <button data-action="play">Play</button
+          ><button data-action="step">Step</button
+          ><button data-action="reset">Reset</button
+          ><button data-action="export">Save SVG</button>
+        </div>
+        <p class="scroll-hint">
+          Scroll the diagram horizontally to explore it.
+        </p>
+        <div
+          class="stage"
+          tabindex="0"
+          role="region"
+          aria-label="Long queries hold every connection"
+        >
+          <svg
+            role="img"
+            viewBox="0 0 1000 500"
+            xmlns="http://www.w3.org/2000/svg"
+          ></svg>
+        </div>
+        <div class="result"><p class="status" aria-live="polite"></p></div>
+        <p class="model-note">
+          Incident-inspired model: SELECT * FROM events holds each socket for 30
+          seconds here; six later requests have a 5.4-second acquisition
+          timeout. Timings and arrivals are illustrative. A timed-out waiter
+          does not cancel an already-running scan.
+        </p>
+      </section>
+      <footer>
+        Recreated from all four interactive figures in the original post.
+        Category colors: purple processing · blue storage · teal flow · rose
+        control. Orange marks the current event. Each figure can be stepped,
+        replayed, and exported independently.
+      </footer>
+    </main>
+    <script src="../tokens.js"></script>
+    <script src="connection-pooling.js"></script>
+  </body>
+</html>

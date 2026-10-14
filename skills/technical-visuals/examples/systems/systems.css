@@ -1,0 +1,250 @@
+nav {
+  display: flex;
+  gap: 12px 24px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+  font-size: 14px;
+}
+nav a {
+  color: var(--muted);
+}
+nav a:hover {
+  color: var(--focus);
+}
+.scope {
+  border-left: 3px solid var(--border);
+  padding-left: 16px;
+  color: var(--muted);
+  max-width: 900px;
+  margin-bottom: 24px;
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  font:
+    12px ui-monospace,
+    monospace;
+  margin: 24px 0;
+}
+.processing {
+  color: var(--processing);
+}
+.storage {
+  color: var(--storage);
+}
+.flow {
+  color: var(--flow);
+}
+.control {
+  color: var(--control);
+}
+.focus {
+  color: var(--focus);
+}
+#diagram {
+  overflow-x: auto;
+}
+#diagram svg {
+  display: block;
+  min-width: 850px;
+  width: 100%;
+  height: auto;
+}
+.figure-top,
+.figure-bottom {
+  padding: 24px;
+}
+.figure-bottom {
+  border-top: 1px solid var(--subtle);
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  justify-content: space-between;
+}
+.figure-bottom p {
+  margin: 0;
+  max-width: 780px;
+}
+.notes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin: 36px 0;
+}
+.notes h2 {
+  font-size: 18px;
+}
+.notes p {
+  color: var(--muted);
+  font-size: 14px;
+}
+button:focus-visible,
+a:focus-visible,
+#diagram:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 4px;
+}
+@media (max-width: 720px) {
+  main {
+    padding: 24px 16px;
+  }
+  .notes {
+    grid-template-columns: 1fr;
+  }
+  .figure-bottom {
+    flex-direction: column;
+    align-items: start;
+  }
+  header {
+    gap: 12px;
+  }
+  #theme {
+    white-space: nowrap;
+  }
+}
+#theme {
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 72px;
+}
+#diagram svg {
+  min-width: 720px;
+}
+.system-cases {
+  margin-bottom: 32px;
+}
+
+.architecture,
+.bottlenecks {
+  margin: 36px 0;
+}
+#architecture {
+  max-width: 920px;
+  color: var(--muted);
+}
+.bottleneck {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.7fr;
+  gap: 24px;
+  padding: 22px 0;
+  border-top: 1px solid var(--subtle);
+}
+.bottleneck h3 {
+  margin: 0;
+  font-size: 17px;
+  color: var(--text);
+}
+.bottleneck p {
+  margin: 0;
+  font-size: 15px;
+  color: var(--muted);
+}
+.bottleneck strong {
+  display: block;
+  color: var(--text);
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+@media (max-width: 720px) {
+  .bottleneck {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+.problem-brief {
+  margin: 36px 0;
+}
+#stories {
+  padding-left: 22px;
+  max-width: 920px;
+  color: var(--muted);
+}
+#stories li {
+  margin-bottom: 10px;
+}
+.assumption-note {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 12px 0 18px;
+  max-width: 980px;
+}
+.number-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.number-card {
+  background: var(--surface);
+  border: 1px solid var(--subtle);
+  border-radius: 8px;
+  padding: 20px;
+}
+.number-card .number-value {
+  color: var(--storage);
+  font-size: 28px;
+  line-height: 1.2;
+  margin: 0 0 10px;
+  font-weight: 600;
+}
+.number-card h3 {
+  font-size: 14px;
+  margin: 0 0 8px;
+}
+.number-card p {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
+}
+.brief-table {
+  overflow-x: auto;
+  border: 1px solid var(--subtle);
+  border-radius: 8px;
+}
+.brief-table table {
+  width: 100%;
+  min-width: 680px;
+  border-collapse: collapse;
+  font-size: 14px;
+  text-align: left;
+}
+.brief-table th,
+.brief-table td {
+  padding: 16px;
+  vertical-align: top;
+  border-bottom: 1px solid var(--subtle);
+}
+.brief-table thead {
+  background: var(--surface);
+}
+.brief-table td {
+  color: var(--muted);
+}
+.brief-table th {
+  font-weight: 550;
+}
+.brief-table code {
+  font:
+    12px/1.5 ui-monospace,
+    monospace;
+  overflow-wrap: anywhere;
+}
+.brief-table tr:last-child td,
+.brief-table tr:last-child th {
+  border-bottom: 0;
+}
+.brief-table:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+@media (max-width: 720px) {
+  .number-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 420px) {
+  .number-grid {
+    grid-template-columns: 1fr;
+  }
+}

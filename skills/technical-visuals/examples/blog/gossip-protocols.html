@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Gossip Protocols · Visual lab</title>
+    <link rel="stylesheet" href="../style.css" />
+    <link rel="stylesheet" href="blog.css" />
+    <link rel="stylesheet" href="gossip-protocols.css" />
+  </head>
+  <body data-post="gossip-protocols">
+    <main>
+      <nav aria-label="Visual lab">
+        <a href="index.html">← Blog visualizations</a
+        ><a href="../index.html">Design system</a
+        ><a href="https://wcygan.net/gossip-protocols/">Original post ↗</a>
+      </nav>
+      <header>
+        <div>
+          <p class="eyebrow">DISTRIBUTED SYSTEMS / TWO CONNECTED IDEAS</p>
+          <h1>Small exchanges.<br />Shared knowledge.</h1>
+          <p class="intro">
+            First, watch a local epidemic grow. Then follow a new cluster
+            member’s introduction as ordinary peers carry the news onward.
+          </p>
+        </div>
+        <button id="theme" class="theme-toggle" aria-label="Toggle dark theme"><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 15.5A8.5 8.5 0 0 1 8.5 4a8.5 8.5 0 1 0 11.5 11.5Z"/></svg></button>
+      </header>
+      <section
+        class="visual"
+        data-figure="epidemic-spread"
+        data-source-component="EpidemicSpreadDemo"
+        aria-labelledby="epidemic-heading"
+      >
+        <div class="visual-heading">
+          <p class="eyebrow">THE METAPHOR / LOCAL TRANSMISSION</p>
+          <h2 id="epidemic-heading">
+            A newly infected neighbor can spread it next turn.
+          </h2>
+          <p>
+            Each infected cell attempts to infect its four immediate neighbors,
+            with a 50% chance per eligible contact.
+          </p>
+        </div>
+        <div class="controls">
+          <button data-action="play">Play</button
+          ><button data-action="step">Next turn</button
+          ><button data-action="reset">Reset outbreak</button
+          ><label
+            >Starting cell<select id="origin">
+              <option value="14">Near center</option>
+              <option value="0">Corner</option>
+              <option value="17">Right edge</option>
+            </select></label
+          >
+        </div>
+        <p class="gossip-scroll-hint">↔ Scroll the diagram to see the complete figure.</p>
+        <div
+          class="stage"
+          tabindex="0"
+          role="region"
+          aria-label="Epidemic grid; scroll horizontally on small screens"
+        ></div>
+        <div class="result">
+          <p role="status" aria-live="polite"></p>
+          <button data-action="export">Save SVG</button>
+        </div>
+      </section>
+      <section
+        class="visual"
+        data-figure="membership-gossip"
+        data-source-component="GossipDemo"
+        aria-labelledby="gossip-heading"
+      >
+        <div class="visual-heading">
+          <p class="eyebrow">THE PROTOCOL / PEER EXCHANGES</p>
+          <h2 id="gossip-heading">
+            The seed is a first contact. Peers carry the news.
+          </h2>
+          <p>
+            E joins through A. Follow E → A, A → B, B → C, then A → D until
+            every member knows E.
+          </p>
+        </div>
+        <div class="controls">
+          <button data-action="play">Play</button
+          ><button data-action="step">Next exchange</button
+          ><button data-action="reset">Replay</button
+          ><label
+            >Playback speed<select id="speed">
+              <option value="1">1×</option>
+              <option value="2">2×</option>
+              <option value="4">4×</option>
+            </select></label
+          >
+        </div>
+        <p class="gossip-scroll-hint">↔ Scroll the diagram to see the complete figure.</p>
+        <div
+          class="stage"
+          tabindex="0"
+          role="region"
+          aria-label="Peer membership graph; scroll horizontally on small screens"
+        ></div>
+        <div class="result">
+          <p role="status" aria-live="polite"></p>
+          <button data-action="export">Save SVG</button>
+        </div>
+      </section>
+      <footer>
+        <p>
+          Original 2D renditions of EpidemicSpreadDemo and GossipDemo. The
+          epidemic is a metaphor, not a disease forecast. The membership
+          sequence illustrates dissemination, not Cassandra’s full failure
+          detection or wire protocol. Dashed links represent established peer
+          relationships; solid arrows show this exchange.
+        </p>
+        <p>
+          Both figures begin paused. Step or play independently; reduced motion
+          removes traveling markers. Theme changes retain state. On small
+          screens, scroll inside each figure.
+        </p>
+      </footer>
+    </main>
+    <script src="../tokens.js"></script>
+    <script src="gossip-protocols.js"></script>
+  </body>
+</html>

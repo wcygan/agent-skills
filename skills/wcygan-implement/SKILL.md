@@ -22,7 +22,10 @@ tools and preserve the task's scope, prior authorization, and explicit checkpoin
    [design-options](../design-options/SKILL.md) where the structure remains unsettled.
 2. For a bug, use [reproduce-bug](../reproduce-bug/SKILL.md) before changing the
    implementation. For a refactor, retain a baseline equivalence check.
-3. Use [implement-change](../implement-change/SKILL.md) for each coherent unit.
+3. When the work spans several reviewer questions, use
+   [slice-changes](../slice-changes/SKILL.md) before implementation grows. Keep a
+   single coherent change together when splitting would weaken its verification.
+   Use [implement-change](../implement-change/SKILL.md) for each coherent unit.
    When several owners are useful, use [coordinate-work](../coordinate-work/SKILL.md)
    to establish boundaries and integration order.
 4. Use [verify-behavior](../verify-behavior/SKILL.md) on the integrated result.

@@ -1,13 +1,13 @@
 # agent-skills
 
-A public Agent Skills catalog with one orchestrator, 22 focused components, nine
+A public Agent Skills catalog with one orchestrator, 27 focused components, nine
 procedural skills, and three specialist skills. Components work independently. Procedures load only
 the components needed for the task, using relative links within the catalog.
 
 ## Orchestrator
 
 [wcygan-mode](skills/wcygan-mode/SKILL.md) selects and sequences workflows for an
-end-to-end task. It includes 23 generic Markdown playbooks and Python tools for
+end-to-end task. It includes 24 generic Markdown playbooks and Python tools for
 orchestration state, PR observation, plan validation, and worktree audits.
 Read its [tool usage](skills/wcygan-mode/references/tools.md) for uv commands and
 external environment placement, and its
@@ -46,6 +46,8 @@ providers. Independent execution is optional and its absence is stated honestly.
 | [compare-solutions](skills/compare-solutions/SKILL.md) | Compare competing solutions and verify a coherent synthesis. |
 | [review-changes](skills/review-changes/SKILL.md) | Challenge a change or design and synthesize evidence-backed findings. |
 | [explain-history](skills/explain-history/SKILL.md) | Explain the evidence behind a design decision or past failure. |
+| [in-your-own-words](skills/in-your-own-words/SKILL.md) | Restate the user’s goal and underlying problem in clear, plain language. |
+| [no-comments](skills/no-comments/SKILL.md) | Remove implementation commentary while preserving schema and contract documentation. |
 | [clarify-task](skills/clarify-task/SKILL.md) | Turn an ambiguous task into an observable outcome and bounded scope. |
 | [implement-change](skills/implement-change/SKILL.md) | Implement a bounded feature or refactor in verifiable steps. |
 | [reproduce-bug](skills/reproduce-bug/SKILL.md) | Establish a failing-before and passing-after check for a bug. |
@@ -62,7 +64,10 @@ providers. Independent execution is optional and its absence is stated honestly.
 | [create-verification-skill](skills/create-verification-skill/SKILL.md) | Create a project skill that launches, exercises, and verifies real application behavior. |
 | [maintain-verification-skill](skills/maintain-verification-skill/SKILL.md) | Check and repair a project verification skill against source and live behavior. |
 | [deliver-change](skills/deliver-change/SKILL.md) | Present or publish a verified result within authorized scope. |
-| [write-clearly](skills/write-clearly/SKILL.md) | Make technical prose concise, concrete, and accurate. |
+| [write-clearly](skills/write-clearly/SKILL.md) | Make technical prose, captions, and labels concise, concrete, and accurate. |
+| [slice-changes](skills/slice-changes/SKILL.md) | Plan coherent PRs with verifiable intermediate states. |
+| [technical-visuals](skills/technical-visuals/SKILL.md) | Explain technical relationships in 2D, or explicitly requested 3D, with paired light/dark themes. |
+| [prepare-pull-request](skills/prepare-pull-request/SKILL.md) | Assemble a concise visual review package from the actual diff and evidence. |
 
 The initial names `how`, `architect`, `arena`, and `interrogate` are now
 `explain-code`, `design-options`, `compare-solutions`, and `review-changes`.
@@ -74,6 +79,16 @@ mapping, procedure composition, and adaptation scope.
 `create-verification-skill` produces executable project-specific guidance and a
 feature map. `maintain-verification-skill` checks that map against source and live
 behavior, keeping product regressions distinct from documentation drift.
+
+The communication components connect planning to review: `slice-changes` establishes
+small review boundaries, `technical-visuals` supplies a useful explanation, and
+`prepare-pull-request` combines it with accurate prose and verification evidence.
+Browse the [visual design system](skills/technical-visuals/references/design-system.md)
+and [interactive examples](skills/technical-visuals/examples/index.html). Open the
+examples locally; GitHub's source view does not execute the HTML. 2D is the default,
+and 3D requires an explicit request. See the
+[example check instructions](skills/technical-visuals/references/examples.md) for
+browser validation and export checks.
 
 ## Specialists
 

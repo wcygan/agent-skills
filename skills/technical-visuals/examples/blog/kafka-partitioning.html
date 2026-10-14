@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Kafka Partitioning · Visual lab</title>
+    <link rel="stylesheet" href="../style.css" />
+    <link rel="stylesheet" href="blog.css" />
+    <link rel="stylesheet" href="kafka-partitioning.css" />
+  </head>
+  <body data-post="kafka-partitioning">
+    <main>
+      <nav aria-label="Visual lab">
+        <a href="index.html">← Blog visualizations</a
+        ><a href="../index.html">Design system</a
+        ><a href="https://wcygan.net/kafka-partitioning/">Original post ↗</a>
+      </nav>
+      <header>
+        <div>
+          <p class="eyebrow">DATA / ORDERED LOGS</p>
+          <h1>One topic. Separate histories.</h1>
+          <p class="intro">
+            Follow nine records from a producer into partition-local logs. The
+            routing rule chooses the destination; the destination assigns the
+            next offset.
+          </p>
+        </div>
+        <button id="theme" aria-label="Toggle dark theme" aria-pressed="false">
+          ☀ / ☾
+        </button>
+      </header>
+      <section
+        class="visual"
+        data-figure="kafka-routing"
+        data-source-component="KafkaPartitioningDemo"
+        aria-labelledby="routing-heading"
+      >
+        <div class="visual-heading">
+          <p class="eyebrow">ORDERS.EVENTS</p>
+          <h2 id="routing-heading">
+            Same key, same partition—while the partition count stays fixed.
+          </h2>
+          <p>
+            Compare keyed routing with explicit round-robin. Step alternates
+            between routing a record and appending it.
+          </p>
+        </div>
+        <div class="controls">
+          <label
+            >Routing<select id="routing">
+              <option value="keyed">Keyed · Murmur2</option>
+              <option value="round-robin">Explicit round-robin</option>
+            </select></label
+          ><label
+            >Partitions<select id="partitions">
+              <option>1</option>
+              <option>2</option>
+              <option selected>3</option>
+              <option>4</option>
+              <option>5</option>
+            </select></label
+          ><label
+            >Speed<select id="speed">
+              <option>1</option>
+              <option>2</option>
+              <option>4</option>
+              <option>8</option>
+            </select></label
+          ><button data-action="play">Play</button
+          ><button data-action="step">Step</button
+          ><button data-action="reset">Replay</button>
+        </div>
+        <p class="scroll-hint">
+          Scroll the diagram horizontally to follow the logs.
+        </p>
+        <div
+          class="stage"
+          tabindex="0"
+          role="region"
+          aria-label="Record routing diagram; horizontally scrollable"
+        >
+          <svg
+            id="diagram"
+            xmlns="http://www.w3.org/2000/svg"
+            role="img"
+            aria-labelledby="svg-title svg-desc"
+          ></svg>
+        </div>
+        <div class="result">
+          <p id="status" role="status" aria-live="polite"></p>
+          <button id="export">Save SVG</button>
+        </div>
+      </section>
+      <section class="notes">
+        <h2>Read the routing rule</h2>
+        <div>
+          <article>
+            <h3>Keys are bytes</h3>
+            <p>
+              Kafka Java-compatible Murmur2 hashes the UTF-8 key. Clear the sign
+              bit, then take the remainder:
+              <code>(hash &amp; 0x7fffffff) % N</code>. Repeated keys choose the
+              same log for a fixed N.
+            </p>
+          </article>
+          <article>
+            <h3>Offsets are local</h3>
+            <p>
+              Each partition starts at offset 0. Record IDs show producer order;
+              offsets show order within one log. There is no single topic-wide
+              offset.
+            </p>
+          </article>
+          <article>
+            <h3>Changing N changes routing</h3>
+            <p>
+              Changing the partition count here restarts the sample under the
+              new rule. In Kafka, existing records stay in their original logs;
+              later records with the same key may route elsewhere.
+            </p>
+          </article>
+        </div>
+      </section>
+      <footer>
+        <p>
+          Complete 2D rendition of the original KafkaPartitioningDemo: original
+          nine-record sequence, keyed and explicit round-robin routing, one to
+          five partitions, playback and speed controls. Fixed overhead view
+          replaces camera controls.
+        </p>
+        <p>
+          This is a routing illustration. Explicit round-robin is a comparison
+          strategy, not a claim about Kafka’s default unkeyed producer behavior.
+          Log slots show this sample, not a capacity limit.
+        </p>
+      </footer>
+    </main>
+    <script src="../tokens.js"></script>
+    <script src="kafka-partitioning.js"></script>
+  </body>
+</html>

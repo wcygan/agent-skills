@@ -20,8 +20,17 @@ metadata:
    repeated conclusions, decorative framing, and unsupported certainty.
 4. Use examples for unfamiliar behavior and tables for genuine comparisons. Keep
    commands and examples consistent with the actual interface and project conventions.
-5. Read the result as a newcomer. Resolve missing prerequisites and ambiguous
+5. Use one term for one concept across prose, code references, and visual labels.
+   Keep conditions close to the actions they qualify. Prefer concrete verbs and
+   short sentences, but retain uncertainty, exceptions, and necessary technical terms.
+   For PR prose, instructions, captions, or labels, read
+   [examples and editing checks](references/examples.md) when useful.
+6. Read the result as a newcomer. Resolve missing prerequisites and ambiguous
    references; link deeper detail where it changes a decision.
+
+For a relationship that is clearer visually, use an available technical-visuals
+skill and keep prose for the takeaway, evidence, and qualifications. Do not force a
+visual into a simple fact or use an image to conceal missing explanation.
 
 Done when the reader can understand the point or perform the task without guessing,
 and every substantive claim retains its original support and degree of certainty.
