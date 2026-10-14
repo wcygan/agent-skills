@@ -1,19 +1,26 @@
 # agent-skills
 
-A public Agent Skills catalog with one orchestrator, 27 focused components, nine
+A public Agent Skills catalog with one orchestrator, 30 focused components, nine
 procedural skills, and three specialist skills. Components work independently. Procedures load only
 the components needed for the task, using relative links within the catalog.
 
 ## Orchestrator
 
 [wcygan-mode](skills/wcygan-mode/SKILL.md) selects and sequences workflows for an
-end-to-end task. It includes 24 generic Markdown playbooks and Python tools for
+end-to-end task. It includes 25 generic Markdown playbooks and Python tools for
 orchestration state, PR observation, plan validation, and worktree audits.
 Read its [tool usage](skills/wcygan-mode/references/tools.md) for uv commands and
 external environment placement, and its
 [parity matrix](skills/wcygan-mode/references/parity.md) for upstream behavior and
 intentional changes. GitHub observation uses Git and authenticated `gh`; the
 playbooks assume no particular agent harness or model.
+
+Wcygan-mode considers ambition on every substantive task: a more valuable outcome,
+a limiting assumption worth challenging, or a stronger method. Use
+`discover-ambitious-goals` to choose opportunities, `prepare-agent-objective` to
+prove readiness, and `maintain-outcome` to sustain an objective. Stretch experiments
+separate required outcomes from exploration targets. Scope, truthful verification,
+and resource budgets remain explicit; ongoing operation requires a real trigger.
 
 ## Procedures
 
@@ -41,6 +48,9 @@ providers. Independent execution is optional and its absence is stated honestly.
 
 | Component | Purpose |
 | --- | --- |
+| [discover-ambitious-goals](skills/discover-ambitious-goals/SKILL.md) | Find valuable outcomes, stretch goals, and evidence-backed first experiments. |
+| [prepare-agent-objective](skills/prepare-agent-objective/SKILL.md) | Prove the inputs, execution, verification, and authority needed to pursue an outcome. |
+| [maintain-outcome](skills/maintain-outcome/SKILL.md) | Run bounded improvement cycles with operational evidence and durable state. |
 | [explain-code](skills/explain-code/SKILL.md) | Explain subsystem behavior and ownership from evidence. |
 | [design-options](skills/design-options/SKILL.md) | Compare designs and sketch interfaces before implementation. |
 | [compare-solutions](skills/compare-solutions/SKILL.md) | Compare competing solutions and verify a coherent synthesis. |

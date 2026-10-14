@@ -4,6 +4,11 @@ Coordinate a sustained project across multiple work units.
 
 1. Define the completion predicate, tracks, dependencies, ownership, and budget. Use
    [coordinate](../../wcygan-coordinate/SKILL.md); keep one-session work lightweight.
+   For outcome ownership with uncertain operational inputs or proof, use
+   [prepare-agent-objective](../../prepare-agent-objective/SKILL.md) first. Route
+   recurring health or performance objectives through
+   [maintain-outcome](../../maintain-outcome/SKILL.md); an active execution trigger is needed
+   for automatic future cycles.
 2. For durable coordination, initialize the Python store described in
    [tools](../references/tools.md) outside installed skills. Record instructions,
    units, verification evidence, unresolved gates, and current artifact identities.

@@ -16,8 +16,9 @@ metadata:
 Own the requested outcome. Establish scope, acceptance evidence, and the requested
 destination; preserve prior authorization and explicit checkpoints across phases.
 
-1. Select the smallest relevant playbook below and read it. Load its linked
-   procedures and components only when their conditions apply; reuse existing evidence.
+1. Apply the ambition check below, then select and read the smallest relevant
+   playbook. Load its linked procedures and components only when their conditions
+   apply; reuse existing evidence.
 2. Investigate observable uncertainty before asking the user to guess. Product and
    preference decisions remain with the user unless already delegated.
 3. Prefer simple structures and small verifiable units. Use available tools and
@@ -29,10 +30,34 @@ destination; preserve prior authorization and explicit checkpoints across phases
 6. Compare the final result with the original goal. Report verified outcomes, gaps,
    and the confirmed delivery state. Stop at the requested destination.
 
+## Exercise ambition by default
+
+On every substantive task, consider the outcome beyond the requested mechanism,
+the assumption limiting it, and a stronger method or tool that could improve it.
+Look for ways to eliminate work, prevent a class of failures, or materially improve
+the user experience. Scale this check to the task; a small edit may need only a
+brief consideration, with no extra artifact. State the opportunity when it changes
+the approach or presents a meaningful choice.
+
+Pursue promising approaches within the authorized goal and budget. Propose broader
+product changes without silently adopting them. Ambition can mean a simpler solution
+or deeper proof; it does not require more features, agents, or infrastructure.
+Treat stretch targets as hypotheses, keep acceptance criteria honest, and revisit
+assumptions when evidence suggests the current approach cannot reach the target.
+
+- To find higher-value outcomes, use [discover-ambitious-goals](../discover-ambitious-goals/SKILL.md).
+- Before pursuing an outcome with uncertain inputs, authority, or verification,
+  use [prepare-agent-objective](../prepare-agent-objective/SKILL.md).
+- For sustained objectives, use [maintain-outcome](../maintain-outcome/SKILL.md)
+  with a tested contract and an actual execution trigger for future cycles.
+- For an aggressive measurable target, use [experiment](../wcygan-experiment/SKILL.md)
+  and its stretch-target guidance. Preserve gains without misreporting target attainment.
+
 ## Select a playbook
 
 | Task | Playbook |
 | --- | --- |
+| Discover, prepare, or sustain an ambitious project outcome. | [ambitious outcome](playbooks/ambitious-outcome.md) |
 | Explain or diagnose without changing the product. | [investigation](playbooks/investigation.md) |
 | Reproduce and correct a reported defect. | [bug-fix](playbooks/bug-fix.md) |
 | Diagnose and improve one measured performance problem. | [perf-issue](playbooks/perf-issue.md) |

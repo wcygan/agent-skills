@@ -3,9 +3,9 @@
 Updated: 2026-10-14.
 
 This catalog adapts pstack into short, harness-agnostic engineering skills. The
-implemented port contains **one orchestrator, 27 self-contained components, and
+implemented port contains **one orchestrator, 30 self-contained components, and
 nine `wcygan-*` procedures**, alongside the retained `uv-python`, `just`, and `design-loop`
-specialists: 40 skills in total.
+specialists: 43 skills in total.
 
 The source is Lauren Tan's MIT-licensed pstack 0.15.24 at
 [`1e5c90a4b6f249917bd21fe361b3a2a7deb741b8`](https://github.com/cursor/plugins/tree/1e5c90a4b6f249917bd21fe361b3a2a7deb741b8/pstack).

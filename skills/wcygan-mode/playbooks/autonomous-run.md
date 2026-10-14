@@ -4,6 +4,11 @@ Drive one bounded task to an observable completion condition.
 
 1. State the completion predicate, scope, resource budget, and explicit pause gates.
    Use [clarify-task](../../clarify-task/SKILL.md) for missing decisions.
+   For outcome ownership with uncertain operational inputs or proof, use
+   [prepare-agent-objective](../../prepare-agent-objective/SKILL.md) first. Route
+   recurring health or performance objectives through
+   [maintain-outcome](../../maintain-outcome/SKILL.md); an active execution trigger is needed
+   for automatic future cycles.
 2. Select the matching engineering playbook and execute small verified units. Record
    significant decisions with [decision-log](../../decision-log/SKILL.md).
 3. Reassess failed assumptions using evidence; stop repeating an approach that fails

@@ -106,3 +106,18 @@ its `references/precedent.md`. No retired example code or upstream teaching work
 was copied. The existing pstack-derived `write-clearly` retains its attribution and
 license, with new local examples for concise prose, labels, captions, and evidence.
 Local routing additions connect these components to wcygan-mode and its procedures.
+
+
+## Original ambition workflows
+
+`discover-ambitious-goals`, `prepare-agent-objective`, and `maintain-outcome` are
+original local components by William Cygan, licensed MIT. The ambition routing in
+wcygan-mode and stretch-target guidance in wcygan-experiment are local extensions;
+the existing Pstack adaptations retain their source attribution and MIT notices.
+
+Conceptual inspiration: Felix Rieseberg's
+[How to be more ambitious: A tutorial for humans with models](https://felixrieseberg.com/how-to-be-more-ambitious-a-tutorial-for-humans-with-models/)
+(2026-10-13), discussed with the catalog owner. These workflows are original
+instructions for evidence-backed goal discovery, tested operating contracts,
+bounded maintenance cycles, and honest stretch-target experiments. No article
+text is copied or relicensed as part of the catalog.
