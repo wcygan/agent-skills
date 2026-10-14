@@ -1,0 +1,9 @@
+[project]
+name = "wcygan-mode-tools"
+version = "0.1.0"
+description = "Portable orchestration, verification, and repository observation tools"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.uv]
+package = false

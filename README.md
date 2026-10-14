@@ -1,6 +1,81 @@
 # agent-skills
 
-A public Agent Skills catalog. The active catalog contains three skills:
+A public Agent Skills catalog with one orchestrator, 22 focused components, nine
+procedural skills, and three specialist skills. Components work independently. Procedures load only
+the components needed for the task, using relative links within the catalog.
+
+## Orchestrator
+
+[wcygan-mode](skills/wcygan-mode/SKILL.md) selects and sequences workflows for an
+end-to-end task. It includes 23 generic Markdown playbooks and Python tools for
+orchestration state, PR observation, plan validation, and worktree audits.
+Read its [tool usage](skills/wcygan-mode/references/tools.md) for uv commands and
+external environment placement, and its
+[parity matrix](skills/wcygan-mode/references/parity.md) for upstream behavior and
+intentional changes. GitHub observation uses Git and authenticated `gh`; the
+playbooks assume no particular agent harness or model.
+
+## Procedures
+
+Choose a procedure for an end-to-end task. Each preserves scope and prior
+authorization across phases; it does not require a particular harness, model,
+or delegation API.
+
+| Procedure | Owns |
+| --- | --- |
+| [wcygan-investigate](skills/wcygan-investigate/SKILL.md) | Understand behavior and history. |
+| [wcygan-design](skills/wcygan-design/SKILL.md) | Compare structures and define interfaces. |
+| [wcygan-implement](skills/wcygan-implement/SKILL.md) | Make small changes with clear ownership. |
+| [wcygan-verify](skills/wcygan-verify/SKILL.md) | Check real results against requirements. |
+| [wcygan-review](skills/wcygan-review/SKILL.md) | Challenge correctness and tradeoffs with independent scrutiny where available. |
+| [wcygan-experiment](skills/wcygan-experiment/SKILL.md) | Measure alternatives with a fair, repeatable method. |
+| [wcygan-coordinate](skills/wcygan-coordinate/SKILL.md) | Divide work, manage dependencies, and integrate results. |
+| [wcygan-record](skills/wcygan-record/SKILL.md) | Preserve decisions, evidence, and unresolved issues. |
+| [wcygan-deliver](skills/wcygan-deliver/SKILL.md) | Present or publish the verified result within authorized scope. |
+
+## Components
+
+Use a component for a focused task without invoking an entire procedure. Components
+are self-contained: they have no required sibling skills, agent roles, or model
+providers. Independent execution is optional and its absence is stated honestly.
+
+| Component | Purpose |
+| --- | --- |
+| [explain-code](skills/explain-code/SKILL.md) | Explain subsystem behavior and ownership from evidence. |
+| [design-options](skills/design-options/SKILL.md) | Compare designs and sketch interfaces before implementation. |
+| [compare-solutions](skills/compare-solutions/SKILL.md) | Compare competing solutions and verify a coherent synthesis. |
+| [review-changes](skills/review-changes/SKILL.md) | Challenge a change or design and synthesize evidence-backed findings. |
+| [explain-history](skills/explain-history/SKILL.md) | Explain the evidence behind a design decision or past failure. |
+| [clarify-task](skills/clarify-task/SKILL.md) | Turn an ambiguous task into an observable outcome and bounded scope. |
+| [implement-change](skills/implement-change/SKILL.md) | Implement a bounded feature or refactor in verifiable steps. |
+| [reproduce-bug](skills/reproduce-bug/SKILL.md) | Establish a failing-before and passing-after check for a bug. |
+| [assess-impact](skills/assess-impact/SKILL.md) | Trace what a change could break beyond its immediate diff. |
+| [verify-behavior](skills/verify-behavior/SKILL.md) | Check actual results against acceptance criteria. |
+| [measure-performance](skills/measure-performance/SKILL.md) | Measure a performance claim fairly and repeatably. |
+| [coordinate-work](skills/coordinate-work/SKILL.md) | Assign independent units, control shared writes, and reconcile results. |
+| [decision-log](skills/decision-log/SKILL.md) | Keep an auditable record of consequential choices and evidence. |
+| [progress-report](skills/progress-report/SKILL.md) | Catch the user up on changes, status, and decisions awaiting them. |
+| [recover-context](skills/recover-context/SKILL.md) | Reconstruct the current state of prior work from scoped records and live artifacts. |
+| [improve-workflow](skills/improve-workflow/SKILL.md) | Find evidence-backed improvements to an engineering process. |
+| [prevent-recurrence](skills/prevent-recurrence/SKILL.md) | Prevent a demonstrated class of repeated mistakes through structure or checks. |
+| [personalize-workflow](skills/personalize-workflow/SKILL.md) | Capture a user’s established working preferences in a concise skill. |
+| [create-verification-skill](skills/create-verification-skill/SKILL.md) | Create a project skill that launches, exercises, and verifies real application behavior. |
+| [maintain-verification-skill](skills/maintain-verification-skill/SKILL.md) | Check and repair a project verification skill against source and live behavior. |
+| [deliver-change](skills/deliver-change/SKILL.md) | Present or publish a verified result within authorized scope. |
+| [write-clearly](skills/write-clearly/SKILL.md) | Make technical prose concise, concrete, and accurate. |
+
+The initial names `how`, `architect`, `arena`, and `interrogate` are now
+`explain-code`, `design-options`, `compare-solutions`, and `review-changes`.
+There are no alias copies. Upstream provenance and the mapping for every adapted
+skill are recorded in [vendor/LOCAL-ATTRIBUTIONS.md](vendor/LOCAL-ATTRIBUTIONS.md).
+See [Pstack generic port](docs/pstack-generic-port.md) for the upstream-to-local
+mapping, procedure composition, and adaptation scope.
+
+`create-verification-skill` produces executable project-specific guidance and a
+feature map. `maintain-verification-skill` checks that map against source and live
+behavior, keeping product regressions distinct from documentation drift.
+
+## Specialists
 
 | Skill | Purpose |
 | --- | --- |
@@ -17,6 +92,10 @@ directory explicitly:
 gh skill install wcygan/agent-skills --agent codex --scope user --all --dir ~/.agents/skills
 ```
 
+Install the full catalog for procedural composition; individual component installs
+are also supported. A procedure uses sibling components through relative links,
+so install its referenced components alongside it.
+
 Add `--pin <full-commit>` for a fixed version. Other supported agents are listed
 by `gh skill install --help`. For project scope, select `--scope project`.
 Test discovery and installation from a local checkout in an isolated directory:
@@ -31,7 +110,8 @@ gh skill install . --from-local --all --dir /tmp/skill-check
 repository at its exact source commit: 116 skills, references, scripts, assets,
 source locks, licenses, attribution and maintenance files. Its manifest contains
 the bundle SHA-256 and the original catalog snapshot. The active catalog retired
-113 skills and retained the three listed above.
+113 skills and retained `uv-python`, `just`, and `design-loop`. The generic pstack
+adaptations were added after that reset.
 
 Historical entrypoints exist only inside `catalog.tar.gz`. The archive does not
 contain extracted SKILL.md files, because GitHub CLI also discovers nested
