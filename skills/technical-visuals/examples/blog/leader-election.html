@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Leader election · Visual lab</title>
-    <link rel="stylesheet" href="../style.css" />
-    <link rel="stylesheet" href="blog.css" />
-    <link rel="stylesheet" href="leader-election.css" />
+    <link rel="stylesheet" href="../style.css?v=7845c8602e12" />
+    <link rel="stylesheet" href="blog.css?v=a2bf371124c7" />
+    <link rel="stylesheet" href="leader-election.css?v=60a83b9c3d47" />
   </head>
   <body data-post="leader-election">
     <main>
@@ -17,16 +17,22 @@
       </nav>
       <header>
         <div>
-          <p class="eyebrow">DISTRIBUTED SYSTEMS / RAFT</p>
-          <h1>When the heartbeats stop</h1>
-          <p class="intro">
-            A timeout starts a candidacy. A majority makes a leader. Watch five
-            peers agree, split their votes, and welcome a crashed leader back as
-            a follower.
-          </p>
+          <h1>Leader election</h1>
         </div>
-        <button id="theme" aria-label="Switch theme" aria-pressed="false">
-          ☀ / ☾
+        <button
+          id="theme"
+          class="theme-toggle"
+          aria-label="Dark theme"
+          aria-pressed="false"
+        >
+          <svg class="sun" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" />
+            <path
+              d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"
+            /></svg
+          ><svg class="moon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 15.5A8.5 8.5 0 0 1 8.5 4a8.5 8.5 0 1 0 11.5 11.5Z" />
+          </svg>
         </button>
       </header>
       <section
@@ -35,17 +41,7 @@
         data-source-component="RaftElectionDemo"
         aria-labelledby="raft-heading"
       >
-        <div class="visual-heading">
-          <p class="eyebrow">FIVE NODES · THREE VOTES TO WIN</p>
-          <h2 id="raft-heading">
-            Silence starts an election; votes decide it.
-          </h2>
-          <p>
-            B begins as leader in term 1. Play to see its heartbeats, then crash
-            the leader. Choose a split vote to see two candidates retry in a new
-            term.
-          </p>
-        </div>
+        <header class="visual-heading"><h2 id="raft-heading">A majority elects the next leader</h2></header>
         <div class="controls">
           <label
             >Election schedule<select id="scenario">
@@ -57,10 +53,6 @@
           ><button data-action="crash">Crash leader B</button
           ><button data-action="reset">Reset</button>
         </div>
-        <div class="raft-meta">
-          <span id="clock">Model time 0.00 s</span
-          ><span id="playback-state">½ speed · paused</span>
-        </div>
         <p class="scroll-hint">
           Scroll the network horizontally to see every node.
         </p>
@@ -68,60 +60,30 @@
           class="stage"
           tabindex="0"
           role="region"
-          aria-label="Five-node Raft network; scroll horizontally on small screens"
+          aria-label="Five-node Raft network"
           id="network"
         ></div>
         <div class="raft-legend">
           <span><b class="packet-key heartbeat">♥</b> Heartbeat</span>
-          <span><b class="packet-key request">R</b> Request vote</span>
-          <span><b class="packet-key granted">✓</b> Vote granted</span>
-          <span><b class="packet-key denied">×</b> Vote denied</span><span>Bar: time until election / recovery</span>
+          <span><b class="packet-key request">R</b> Request</span>
+          <span><b class="packet-key granted">✓</b> Yes</span>
+          <span><b class="packet-key denied">×</b> No</span>
         </div>
-        <div class="result">
-          <p id="status" role="status" aria-live="polite"></p>
-          <button data-action="export">Save SVG</button>
+        <div class="supporting-copy sr-only">
+          <p id="summary" role="status" aria-live="polite"></p>
+          <span id="playback-state">½ speed · paused</span>
         </div>
+        <div id="protocol-details" class="supporting-copy sr-only">
+          <p id="status"></p>
+          <p id="clock">Model time 0.00 s</p>
+          <p>Bars show election or recovery timers. Solid arrows connect the leader to online peers; dashed arrows carry other messages. Colors identify nodes, regardless of role.</p>
+          <p>One vote per term; three votes win. A split triggers a retry. Crashed nodes return after five seconds of playback, preserving their term and vote.</p>
+          <p>Illustrative timings. Log replication, log freshness, and partitions are omitted.</p>
+        </div>
+        <footer class="result"><p>After a heartbeat timeout, a candidate starts a new term and requests votes. Three of five votes elect a leader; this model omits log freshness checks.</p></footer>
       </section>
-      <section class="notes">
-        <h2>Follow the evidence</h2>
-        <div>
-          <article>
-            <h3>One vote per term</h3>
-            <p>
-              Each node records its term and vote. A candidate counts its own
-              vote, but still needs two peers. Delivered votes never carry into
-              a new term.
-            </p>
-          </article>
-          <article>
-            <h3>A split is not a winner</h3>
-            <p>
-              In the split schedule, A and C time out together and each receives
-              two votes. Different retry timers eventually let one candidate
-              collect three votes in a later term.
-            </p>
-          </article>
-          <article>
-            <h3>Recovery changes the role</h3>
-            <p>
-              The crashed node returns after 2.5 model seconds (five seconds of
-              playback). Its durable term and vote survive; it rejoins as a
-              follower and learns the current leader from messages.
-            </p>
-          </article>
-        </div>
-      </section>
-      <footer>
-        <p>
-          Coverage: the original RaftElectionDemo, including both schedules,
-          repeated leader crashes, recovery, terms, votes, timers, and traveling
-          messages. Deterministic teaching timings; no log replication, log
-          freshness comparison, or network partition control. The majority
-          remains three of five even during a crash.
-        </p>
-      </footer>
     </main>
-    <script src="../tokens.js"></script>
-    <script src="leader-election.js"></script>
+    <script src="../tokens.js?v=debecdea2d99"></script>
+    <script src="leader-election.js?v=3cf13c850f4b"></script>
   </body>
 </html>

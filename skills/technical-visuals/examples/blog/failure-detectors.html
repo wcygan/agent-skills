@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Failure Detectors · Visual lab</title>
-    <link rel="stylesheet" href="../style.css" />
-    <link rel="stylesheet" href="blog.css" />
-    <link rel="stylesheet" href="failure-detectors.css" />
+    <link rel="stylesheet" href="../style.css?v=7845c8602e12" />
+    <link rel="stylesheet" href="blog.css?v=a2bf371124c7" />
+    <link rel="stylesheet" href="failure-detectors.css?v=52ae54834b2b" />
   </head>
   <body data-post="failure-detectors">
     <main>
@@ -17,15 +17,23 @@
       </nav>
       <header>
         <div>
-          <p class="eyebrow">DISTRIBUTED SYSTEMS / FAILURE DETECTION</p>
-          <h1>Silence is a local observation.</h1>
-          <p class="intro">
-            A heartbeat arriving at a follower restarts that follower’s election
-            timer. A missing heartbeat gives it a reason to suspect the leader —
-            never proof of a crash.
-          </p>
+          <h1>Failure detectors</h1>
         </div>
-        <button id="theme" aria-label="Switch theme">☀ / ☾</button>
+        <button
+          id="theme"
+          class="theme-toggle"
+          aria-label="Dark theme"
+          aria-pressed="false"
+        >
+          <svg class="sun" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" />
+            <path
+              d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"
+            /></svg
+          ><svg class="moon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 15.5A8.5 8.5 0 0 1 8.5 4a8.5 8.5 0 1 0 11.5 11.5Z" />
+          </svg>
+        </button>
       </header>
       <section
         class="visual"
@@ -33,20 +41,13 @@
         data-source-component="FailureDetectorDemo"
         aria-labelledby="network-heading"
       >
-        <div class="visual-heading">
-          <p class="eyebrow">HEARTBEATS → LOCAL DEADLINES → SUSPICION</p>
-          <h2 id="network-heading">One leader, independent clocks</h2>
-          <p>
-            Follow the hearts from B to its followers. Interrupt a path or crash
-            B, then watch whose deadline expires first.
-          </p>
-        </div>
+        <header class="visual-heading"><h2 id="network-heading">Each follower has its own heartbeat timer</h2></header>
         <div class="controls">
           <button data-action="play">Play</button
           ><button data-action="step">Step 100 ms</button
           ><button data-action="reset">Reset</button
           ><label for="nodes"
-            ><span>Number of nodes</span> <output id="count">5</output
+            ><span>Nodes</span> <output id="count">5</output
             ><input id="nodes" type="range" min="2" max="5" value="5" /></label
           ><span class="hint">½ speed · simulation time</span>
         </div>
@@ -54,7 +55,7 @@
           <button data-action="crash">Crash leader</button
           ><button data-action="cut">Cut random link</button
           ><button data-action="drop">Drop random heartbeat</button
-          ><button data-action="export">Save SVG</button>
+          >
         </div>
         <p class="scroll-hint">
           Scroll the diagram horizontally to inspect each follower’s deadline.
@@ -63,7 +64,7 @@
           class="stage"
           tabindex="0"
           role="region"
-          aria-label="Heartbeat network; scroll horizontally on narrow screens"
+          aria-label="Interactive heartbeat network and follower deadlines"
         >
           <svg
             id="network"
@@ -72,21 +73,23 @@
             aria-labelledby="svg-title"
           ></svg>
         </div>
-        <div class="result">
+        <div class="supporting-copy sr-only">
           <p id="status" role="status" aria-live="polite"></p>
         </div>
-        <div class="diagnostic" id="diagnostic" hidden>
-          <h3>Election boundary reached</h3>
+        <dialog class="diagnostic" id="diagnostic" aria-labelledby="failure-heading" aria-describedby="failure-node outcome">
+          <svg class="failure-icon" viewBox="0 0 48 48" aria-hidden="true">
+            <path d="M24 5C13 5 7 12 7 22c0 7 4 11 9 13v8h16v-8c5-2 9-6 9-13C41 12 35 5 24 5Z"/>
+            <circle cx="17" cy="22" r="4"/><circle cx="31" cy="22" r="4"/>
+            <path d="m24 28-3 5h6Z M21 37v6m6-6v6"/>
+          </svg>
+          <h3 id="failure-heading">Failure detected</h3>
+          <div class="failure-node"><span id="failure-node-badge" aria-hidden="true"></span><strong id="failure-node"></strong></div>
           <p id="outcome"></p>
-          <p>
-            The experiment is frozen at the first timeout. In Raft, that
-            follower would start an election; votes and leader selection are
-            outside this model. Reset to begin again.
-          </p>
-        </div>
+          <button data-action="restart" autofocus>Reset Demo</button>
+        </dialog>
+        <footer class="result"><p>An arriving heartbeat resets that follower’s timer. A timeout creates suspicion, not proof of a crash; this demo pauses at the first timeout.</p></footer>
       </section>
-      <section class="notes">
-        <h2>What the timer actually means</h2>
+      <div class="supporting-copy sr-only">
         <div>
           <article>
             <h3>Receive, then restart</h3>
@@ -113,15 +116,9 @@
             </p>
           </article>
         </div>
-      </section>
-      <footer>
-        Original 2D rendition of FailureDetectorDemo. Deterministic pseudorandom
-        draws make Reset replayable. Broadcast interval 650 ms; transit 700 ms.
-        Illustrative timings, not a production Raft configuration. Change node
-        count while running; existing clocks are preserved.
-      </footer>
+      </div>
     </main>
-    <script src="../tokens.js"></script>
-    <script src="failure-detectors.js"></script>
+    <script src="../tokens.js?v=debecdea2d99"></script>
+    <script src="failure-detectors.js?v=ac75d44a0171"></script>
   </body>
 </html>

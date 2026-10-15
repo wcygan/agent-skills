@@ -29,6 +29,28 @@ harder. The studio is a reference gallery, not a benchmark of reader comprehensi
    itself is not a required dependency for a standalone artifact.
 5. Inspect every relevant state, theme, and exported result at its delivery size.
 
+## Lessons from the blog iterations
+
+These are communication precedents, not mandatory layouts or protocol guarantees.
+Open each linked page to inspect its current states in both themes.
+
+| Situation | Preferred treatment | Avoid / why |
+| --- | --- | --- |
+| [Overlapping index lessons](../examples/blog/the-big-database-at-work.html) | One four-level lookup with a visible hot edge; capacity math stays compact | Separate depth and locality animations repeat the same model and controls |
+| [Hardware and query traffic](../examples/blog/the-big-database-at-work.html) | Resource icons, capacity bars, a moving chart cursor, compact reported statistics | Paragraphs on the canvas; aggregate CPU usage drawn as individual busy cores |
+| [Distributed transactions](../examples/blog/distributed-transactions.html) | Accumulate arriving yes votes; retain replicas and local majority; finish after acknowledgements return | Empty state until the last vote; removing replicas; declaring completion before the response arrives |
+| [Leader election](../examples/blog/leader-election.html) | Stable node colors, a gold leader star, candidate ballot icon, small term/vote metadata | Stripping all metadata makes roles and election decisions indistinguishable |
+| [Gossip and failure detection](../examples/blog/gossip-protocols.html) / [timers](../examples/blog/failure-detectors.html) | Infection on payload arrival; red heartbeats; independent local timer state | Coloring recipients early implies receipt; shared timers suggest a global failure verdict |
+| [Follower identity and timeout popup](../examples/blog/failure-detectors.html) | Distinct, stable node colors repeated in timers, connections, and the popup's node-ID badge; heartbeats remain red | One shared follower color obscures whose timer expired; a generic failure popup loses the connection to the node |
+| [Replication](../examples/blog/replication.html) | Compact sender; visible in-flight records, received buffer, and active apply state | Oversized transport machinery crowds out the receiving/applying distinction |
+| [Kafka partitioning](../examples/blog/kafka-partitioning.html) | Stable key colors, visible key-to-partition routing, compact partition-local logs | Fast decorative dots, off-path motion, or oversized empty logs hide the mapping |
+
+Keep the initial view concise: short actor labels, visual state, and breathing room.
+Use a disclosure for exact metadata, assumptions, and caveats that do not belong on
+the canvas. Keep critical facts visible; fewer words must not erase causality.
+For a demo gallery, use a title, a short description, and an abstract thumbnail
+rather than a miniature screenshot of the full interface.
+
 ## Repeatable checks
 
 The browser test uses a caller-supplied Playwright installation. Resolve these paths
@@ -84,8 +106,8 @@ and downloads and renders eight standalone SVG exports.
 
 ## Blog visual lab
 
-[Eight post pages](../examples/blog/index.html) reinterpret the complete diagram
-inventory of eight wcygan.net posts. The earlier system-design pages remain
+[Seven post pages](../examples/blog/index.html) reinterpret the complete diagram
+inventory of seven wcygan.net posts. The earlier system-design pages remain
 available through an archive link. These are original 2D renderings using the
 shared tokens, with per-figure controls for causal animation and manual steps.
 They open directly from disk without a build or external runtime.
@@ -93,13 +115,12 @@ They open directly from disk without a build or external runtime.
 | Post | Source figures | Coverage |
 | --- | --- | --- |
 | The Big Database at Work | 7 | Regions, hardware, traffic, recent-key locality, memory reads, working-set budget, tree depth |
-| Distributed Transactions | 3 | Prepare, durable decision, replicated shards |
+| Distributed Transactions | 3 | One continuous prepare/decision demo, plus replicated shards |
 | Gossip Protocols | 2 | Epidemic metaphor and peer membership dissemination |
 | Replication | 3 | Database log, log replication, group replication lag |
 | Leader Election | 1 | Election workbench and source scenarios |
 | Failure Detectors | 1 | Heartbeats, independent deadlines, failure and network controls |
 | Kafka Partitioning | 1 | Animated record routing and partition-local logs |
-| Connection Pooling | 4 | Socket reuse, scaling curve, server resources, pool exhaustion |
 
 Source inspection: October 14, 2026. Local MDX and component models were read
 from the user's `wcygan.net` checkout at HEAD
@@ -111,13 +132,36 @@ The source blog checkout is unchanged by this work.
 
 Each page owns its rendering and teaching model in a same-named JavaScript file.
 The `data-source-component` attribute maps each figure back to its source
-component; `data-figure` provides a stable identifier. Models distinguish article
+component; merged renditions use `data-source-components` to retain each source
+mapping. The 18 source figures are covered by 16 rendered diagrams: the transaction
+prepare and decision figures share one continuous demo, as do the database
+index-depth and recent-read figures. `data-figure` provides a
+stable identifier. Models distinguish article
 observations, illustrative quantities, and protocol simplifications. Animation
-is optional: manual steps expose the same states, and theme changes preserve them.
+starts automatically when a figure is visible. Pause and step preserve manual
+control; offscreen and hidden figures suspend without catching up elapsed time.
+Reduced-motion preferences start the models paused. Theme changes preserve state.
+These reading demos have no SVG download controls. Animation uses browser-timed
+motion or requestAnimationFrame with elapsed time; moving packets should update
+stable elements instead of rebuilding a diagram each frame. Follow the display's
+refresh rate without speeding up the teaching sequence. A 120 Hz display provides
+about 8.33 ms per frame, but callback timing alone does not prove rendered frame rate.
 
 Run `scripts/check-blog.mjs` with `PLAYWRIGHT_MODULE` and an external output path
-as above. It checks the full source inventory, all eight pages in both themes,
+as above. It checks the full source inventory, all seven pages in both themes,
 manual steps and theme preservation, keyboard theme switching, narrow layout,
-text bounds, and standalone SVG exports in both themes. Post-specific `check-blog-<slug>.mjs` checks, where provided,
-exercise deeper model behavior. Inspect screenshots separately for causal clarity,
+text bounds, and the absence of SVG download controls in both themes. Post-specific `check-blog-<slug>.mjs` checks, where provided,
+exercise deeper model behavior. `check-blog-working-set-budget.mjs` checks the
+integrated disk-scale map and animated occupancy, matching panel geometry, icons,
+and used/free counters through every arrival and responsive redraw. Inspect screenshots separately for causal clarity,
 route collisions, and legibility; automated coverage does not judge visual quality.
+
+
+For phone acceptance, run `scripts/check-blog-mobile.mjs` with the same module
+and external output arguments. It checks 360/390/430-pixel viewports in both
+themes, primary-stage overflow, rendered SVG label sizes, control hit heights,
+and native input text sizes, and saves 390-pixel figure screenshots. The gallery
+uses compact diagram geometry below 600 pixels rather than scaled-down desktop
+canvases. Post-specific checks cover model preservation through responsive redraws
+and deeper touch/playback behavior. Inspect the phone screenshots for spacing,
+reading order, route collisions, and useful abstraction as well as passing bounds.

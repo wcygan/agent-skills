@@ -298,9 +298,10 @@
   const crash = section.querySelector('[data-action="crash"]');
   const reduce = matchMedia("(prefers-reduced-motion: reduce)");
   let s = createSimulation(),
-    playing = false,
+    playing = !reduce.matches,
     frame = 0,
     anchor = 0;
+  let visible = false, packetViews = [], timerViews = [], lastLabels = -Infinity;
   let theme;
   try {
     theme = localStorage.getItem("visual-lab-theme");
@@ -309,19 +310,27 @@
     theme = matchMedia("(prefers-color-scheme: dark)").matches
       ? "dark"
       : "light";
-  const centers = {
+  const identities = { A: "processing", B: "storage", C: "flow", D: "control", E: "warning" };
+  const portrait = matchMedia("(max-width: 600px)");
+  const desktopCenters = {
     A: [500, 100],
     B: [790, 270],
     C: [680, 510],
     D: [320, 510],
     E: [210, 270],
   };
+  const portraitCenters = {
+    A: [188, 70], B: [298, 220], C: [268, 510],
+    D: [108, 510], E: [78, 220],
+  };
+  let centers = portrait.matches ? portraitCenters : desktopCenters;
   const esc = (v) =>
     String(v)
       .replaceAll("&", "&amp;")
       .replaceAll("<", "&lt;")
       .replaceAll('"', "&quot;");
   function text(x, y, str, size = 14, color = "text", weight = 400) {
+    if (portrait.matches) size = Math.max(14, size);
     return `<text x="${x}" y="${y}" fill="${window.visualTokens[theme][color]}" text-anchor="middle" dominant-baseline="middle" font-size="${size}" font-weight="${weight}">${esc(str)}</text>`;
   }
   function route(from, to) {
@@ -329,23 +338,34 @@
       [bx, by] = centers[to],
       dx = bx - ax,
       dy = by - ay;
-    const f = Math.min(112 / Math.abs(dx), 87 / Math.abs(dy));
+    const f = Math.min(70 / Math.abs(dx), 50 / Math.abs(dy));
     return [ax + dx * f, ay + dy * f, bx - dx * f, by - dy * f];
   }
+  function roleIcon(role, x, y) {
+    const t = window.visualTokens[theme];
+    if (role === "leader")
+      return `<g data-role-icon="leader" transform="translate(${x} ${y})" role="img" aria-label="Leader"><title>Leader</title><path d="M11 1 14 7.5 21 8.5 16 13.5 17.2 21 11 17.5 4.8 21 6 13.5 1 8.5 8 7.5Z" fill="#ffd34e" stroke="#805600" stroke-width="1.5" stroke-linejoin="round"/></g>`;
+    if (role === "candidate")
+      return `<g data-role-icon="candidate" transform="translate(${x} ${y})" role="img" aria-label="Candidate ballot box"><title>Candidate ballot box</title><path d="M2 10H20V21H2Z" fill="${t.surface}" stroke="${t.text}" stroke-width="1.5" stroke-linejoin="round"/><path d="M6 10 8 7H16L18 10" fill="${t.raised}" stroke="${t.text}" stroke-width="1.5"/><path d="M8 1H15V11H8Z" fill="${t.surface}" stroke="${t.text}" stroke-width="1.5"/><path d="m9.5 5 1.5 1.5 2.5-3M6 12H17" fill="none" stroke="${t.text}" stroke-width="1.3"/><path d="M8 16H14" stroke="${t.muted}" stroke-width="1.5"/></g>`;
+    return "";
+  }
   function render() {
+    centers = portrait.matches ? portraitCenters : desktopCenters;
+    const width = portrait.matches ? 376 : 1000, height = portrait.matches ? 580 : 620;
     const t = window.visualTokens[theme],
       leader = currentLeader(s);
     let parts = [
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" role="img" aria-labelledby="raft-title raft-desc" font-family="system-ui,sans-serif"><title id="raft-title">Five-node Raft election at ${(s.now / 1000).toFixed(2)} model seconds</title><desc id="raft-desc">${esc(s.status)} Lines connect sending and receiving peers. Moving letters identify heartbeat, request, granted and denied vote packets.</desc><defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10" fill="${t.border}"/></marker></defs><rect width="1000" height="620" fill="${t.surface}"/>`,
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="raft-title raft-desc" font-family="system-ui,sans-serif"><title id="raft-title">Five-node Raft election at ${(s.now / 1000).toFixed(2)} model seconds</title><desc id="raft-desc">${esc(s.status)} Solid arrows continuously connect the current leader to its online peers. Other routes carry election messages. Node colors identify peers, independently of their roles. Moving letters identify heartbeat, request, granted and denied vote packets.</desc><defs><marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10" fill="${t.border}"/></marker></defs><rect width="${width}" height="${height}" fill="${t.surface}"/>`,
     ];
-    const links = [...new Set(s.packets.map((p) => `${p.from}${p.to}`))];
+    const leaderLinks = leader ? NODES.filter((id) => id !== leader && !s.crashed.includes(id)).map((id) => `${leader}${id}`) : [];
+    const links = [...new Set([...leaderLinks, ...s.packets.map((p) => `${p.from}${p.to}`)])];
     for (const link of links) {
       const [x1, y1, x2, y2] = route(link[0], link[1]);
       parts.push(
-        `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${t.border}" stroke-width="1.25" marker-end="url(#arrow)"/>`,
+        `<line data-route="${link}" data-leader-route="${leaderLinks.includes(link)}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${t.border}" stroke-width="${leaderLinks.includes(link) ? 1.8 : 1.25}" stroke-dasharray="${leaderLinks.includes(link) ? "none" : "5 4"}" marker-end="url(#arrow)"/>`,
       );
     }
-    // Packets use the same clipped path as the route. Reverse traffic gets a lane offset.
+    // Packet centers follow the same clipped segment as their connector.
     for (const p of s.packets) {
       const [x1, y1, x2, y2] = route(p.from, p.to),
         progress = Math.min(
@@ -354,12 +374,11 @@
         );
       const dx = x2 - x1,
         dy = y2 - y1,
-        len = Math.hypot(dx, dy),
-        x = x1 + dx * progress - (dy / len) * 10,
-        y = y1 + dy * progress + (dx / len) * 10;
+        x = x1 + dx * progress,
+        y = y1 + dy * progress;
       const role =
         p.kind === "heartbeat"
-          ? "flow"
+          ? "failure"
           : p.kind === "request"
             ? "control"
             : p.granted
@@ -374,7 +393,7 @@
               ? "✓"
               : "×";
       parts.push(
-        `<g data-packet="${p.id}"><title>${p.from} → ${p.to}: ${p.kind}${p.kind === "reply" ? (p.granted ? " granted" : " denied") : ""}, term ${p.term}</title><rect x="${x - 12}" y="${y - 12}" width="24" height="24" rx="5" fill="${t.surface}" stroke="${t[role]}" stroke-width="1.8"/>${text(x, y, label, 15, role, 650)}</g>`,
+        `<g data-packet="${p.id}" data-from="${p.from}" data-to="${p.to}" transform="translate(${x} ${y})"><title>${p.from} → ${p.to}: ${p.kind}${p.kind === "reply" ? (p.granted ? " granted" : " denied") : ""}, term ${p.term}</title><rect x="-12" y="-12" width="24" height="24" rx="5" fill="${t.surface}" stroke="${t[role]}" stroke-width="1.8"/>${text(0, 0, label, 15, role, 650)}</g>`,
       );
     }
     for (const id of NODES) {
@@ -382,38 +401,53 @@
         [x, y] = centers[id],
         dead = s.crashed.includes(id),
         role = dead ? "crashed" : n.role;
-      const border = dead
-        ? t.failure
-        : n.role === "leader"
-          ? t.focus
-          : t.control;
+      const identity = identities[id], border = t[identity];
+      const fill = t[`${identity}Fill`] ?? `color-mix(in srgb, ${t.warning} 12%, ${t.surface})`;
       const remaining = dead ? s.recoverAt[id] - s.now : n.deadline - s.now,
         duration = dead ? RECOVERY_DELAY : n.timerDuration;
       const fraction = Number.isFinite(remaining)
         ? Math.min(1, Math.max(0, remaining / duration))
         : 1;
-      const timer = dead
-        ? `Recovery ${(remaining / 1000).toFixed(2)} s`
-        : n.role === "leader"
-          ? "Heartbeats every 0.65 s"
-          : `Timeout ${Math.max(0, remaining / 1000).toFixed(2)} s`;
       parts.push(
-        `<g data-node="${id}" data-role="${role}"><rect x="${x - 90}" y="${y - 65}" width="180" height="130" rx="8" fill="${dead ? t.raised : t.controlFill}" stroke="${border}" stroke-width="${n.role === "leader" && !dead ? 3 : 1.8}"/>${text(x, y - 42, `${id} · ${role}`, 17, dead ? "failure" : n.role === "leader" ? "focus" : "text", 650)}${text(x, y - 17, `Term ${n.term} · voted ${n.votedFor ?? "—"}`, 13)}${text(x, y + 5, n.role === "candidate" && !dead ? `${n.votes.length} / 5 votes · need 3` : dead ? "Durable term & vote kept" : n.leader ? `Leader known: ${n.leader}` : "Awaiting a leader", 12, "muted")}<rect x="${x - 70}" y="${y + 25}" width="140" height="5" rx="2" fill="${t.subtle}"/><rect x="${x - 70}" y="${y + 25}" width="${140 * fraction}" height="5" rx="2" fill="${border}"/>${text(x, y + 46, timer, 12, "muted")}</g>`,
+        `<g data-node="${id}" data-role="${role}" data-identity="${identity}"><rect x="${x - 70}" y="${y - 50}" width="140" height="100" rx="8" fill="${fill}" stroke="${border}" stroke-dasharray="${dead ? "5 4" : "none"}" stroke-width="${n.role === "leader" && !dead ? 3 : 1.8}"/><title>${id}: ${role}</title>${roleIcon(role, x - 59, y - 40)}${text(x, y - 27, dead ? `${id} · crashed` : id, dead ? 16 : 23, "text", 650)}<g data-node-term="${n.term}">${text(x, y - 1, `Term ${n.term}`, 13, "muted")}</g><g data-node-vote="${n.votedFor ?? ""}">${text(x, y + 19, `Vote ${n.votedFor ? `→ ${n.votedFor}` : "—"}`, 13, "text")}</g><rect x="${x - 50}" y="${y + 36}" width="100" height="4" rx="2" fill="${t.subtle}"/><rect x="${x - 50}" y="${y + 36}" data-timer-bar="${id}" width="${100 * fraction}" height="4" rx="2" fill="${border}"/></g>`,
       );
     }
     parts.push("</svg>");
     network.innerHTML = parts.join("");
+    packetViews = s.packets.map((packet) => {
+      const [x1, y1, x2, y2] = route(packet.from, packet.to);
+      const dx = x2 - x1, dy = y2 - y1;
+      return { packet, element: network.querySelector(`[data-packet="${packet.id}"]`),
+        x: x1, y: y1, dx, dy };
+    });
+    timerViews = NODES.map((id) => ({ id,
+      bar: network.querySelector(`[data-timer-bar="${id}"]`) }));
+    updateLabels();
+    updatePlayback();
+    updateState();
+  }
+  function updateLabels() {
+    const leader = currentLeader(s);
     document.querySelector("#clock").textContent =
       `Model time ${(s.now / 1000).toFixed(2)} s · ${leader ? `leader ${leader}, term ${s.nodes[leader].term}` : "no active leader"}`;
+    const summary = leader ? `${leader} leads · term ${s.nodes[leader].term}`
+      : s.splitSeen ? "Split vote · retrying" : "No leader · election in progress";
+    document.querySelector("#summary").textContent = summary;
     const status = document.querySelector("#status");
     if (status.textContent !== s.status) status.textContent = s.status;
     crash.disabled = !leader;
     crash.textContent = leader
       ? `Crash leader ${leader}`
       : "No leader to crash";
-    document.querySelector("#playback-state").textContent = `½ speed · ${playing ? "playing" : "paused"}`;
+  }
+  function updatePlayback() {
+    document.querySelector("#playback-state").textContent =
+      `½ speed · ${playing ? (visible && !document.hidden ? "playing" : "waiting for view") : "paused"}`;
     play.textContent = playing ? "Pause" : "Play";
     play.setAttribute("aria-pressed", String(playing));
+  }
+  function updateState() {
+    const leader = currentLeader(s);
     section.dataset.state = JSON.stringify({
       now: s.now,
       scenario: s.scenario,
@@ -457,30 +491,53 @@
       );
     render();
   }
-  function stop() {
-    playing = false;
+  function animate(now) {
+    for (const { packet, element, x, y, dx, dy } of packetViews) {
+      const progress = Math.min(1, Math.max(0,
+        (s.now - packet.sentAt) / (packet.arrivesAt - packet.sentAt)));
+      element.setAttribute("transform", `translate(${x + dx * progress} ${y + dy * progress})`);
+    }
+    const labelsDue = now - lastLabels >= 100;
+    for (const { id, bar } of timerViews) {
+      const n = s.nodes[id], dead = s.crashed.includes(id);
+      const remaining = dead ? s.recoverAt[id] - s.now : n.deadline - s.now;
+      const duration = dead ? RECOVERY_DELAY : n.timerDuration;
+      bar.setAttribute("width", 100 * (Number.isFinite(remaining)
+        ? Math.min(1, Math.max(0, remaining / duration)) : 1));
+    }
+    if (labelsDue) {
+      lastLabels = now;
+      updateLabels();
+      updateState();
+    }
+  }
+  function syncPlayback() {
     cancelAnimationFrame(frame);
     frame = 0;
-    render();
+    anchor = 0;
+    if (playing && visible && !document.hidden) frame = requestAnimationFrame(tick);
+    updatePlayback();
+  }
+  function stop() {
+    playing = false;
+    syncPlayback();
+    updateState();
   }
   function tick(now) {
-    if (!playing) return;
-    s = transition(s, {
-      type: "advance",
-      to: s.now + Math.min(100, now - anchor) * 0.5,
-    });
+    frame = 0;
+    if (!playing || !visible || document.hidden) return;
+    const target = s.now + (anchor ? Math.min(100, now - anchor) * 0.5 : 0);
     anchor = now;
-    render();
+    if (nextEventAt(s) <= target) {
+      s = transition(s, { type: "advance", to: target });
+      render();
+    } else s.now = target;
+    animate(now);
     frame = requestAnimationFrame(tick);
   }
   play.onclick = () => {
-    if (playing) stop();
-    else {
-      playing = true;
-      anchor = performance.now();
-      render();
-      frame = requestAnimationFrame(tick);
-    }
+    playing = !playing;
+    syncPlayback();
   };
   section.querySelector('[data-action="step"]').onclick = () => {
     stop();
@@ -494,7 +551,9 @@
   section.querySelector('[data-action="reset"]').onclick = () => {
     stop();
     s = createSimulation(document.querySelector("#scenario").value);
+    playing = !reduce.matches;
     render();
+    syncPlayback();
   };
   document.querySelector("#scenario").onchange = (e) => {
     s = transition(s, { type: "scenario", scenario: e.target.value });
@@ -507,20 +566,14 @@
     } catch {}
     applyTheme();
   };
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) stop();
-  });
+  document.addEventListener("visibilitychange", syncPlayback);
+  new IntersectionObserver(([entry]) => {
+    visible = entry.isIntersecting;
+    syncPlayback();
+  }, { threshold: 0 }).observe(network);
   reduce.addEventListener("change", () => {
     if (reduce.matches) stop();
   });
-  section.querySelector('[data-action="export"]').onclick = () => {
-    const blob = new Blob([network.innerHTML], { type: "image/svg+xml" }),
-      url = URL.createObjectURL(blob),
-      a = document.createElement("a");
-    a.href = url;
-    a.download = `raft-election-${theme}-${Math.round(s.now)}.svg`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  };
+  portrait.addEventListener("change", render);
   applyTheme();
 })();

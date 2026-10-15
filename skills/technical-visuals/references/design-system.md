@@ -6,6 +6,25 @@ Give the reader a correct high-level model before exposing implementation detail
 Each visual answers one question. Name that question in the title or caption;
 show the main relationship first, then the exception or changed behavior.
 
+For a high-level explanation, use one short label per actor and let geometry,
+record chips, queues, and state symbols carry the relationship. Leave space between
+actors and routes. Avoid repeating the same state in a node, a table, a legend,
+and a caption. Put exact offsets, transaction IDs, row values, and per-request
+timers in optional details when the reader does not need them for the main lesson.
+Review the first view with details collapsed; a correct model can still be too dense.
+For an index or gallery card, use a short title, one-sentence description, and an
+abstract diagram of the post's central relationship. Keep it readable as a thumbnail;
+reserve protocol controls and detailed metadata for the destination.
+
+Merge related explanations when one scene can show their combined insight. For
+example, index depth and recent-read locality belong in one lookup animation.
+Retain distinct lessons when combining them would crowd the canvas or obscure
+meaning. Source coverage counts source concepts, not the number of separate demos.
+
+Preserve essential topology and causal state while removing words. A replica,
+an arriving vote, or a held lock may be the explanation itself; use a compact
+shape, pip, or icon rather than hiding it with optional metadata.
+
 Use 2D unless the user explicitly asks for 3D, isometric, or spatial rendering.
 Do not infer a 3D request from words such as architecture, layers, or topology.
 A request for 3D still needs a readable initial view and a useful static export.
@@ -14,6 +33,25 @@ The priority is meaning → hierarchy → geometry → style → interaction. If
 visual needs a paragraph explaining its arrows, repair the visual before adding
 more decoration. Simplification may omit irrelevant parts, but must not invent
 causality, ordering, guarantees, measured values, or evidence.
+
+## Phone layouts
+
+Design interactive explanations to read comfortably on a phone as well as a desktop.
+Prefer stacked groups, portrait routes, and compact charts to sideways panning.
+Use the same facts and state in each layout; rearrange actors rather than hiding
+essential replicas, votes, locks, or outcomes. Do not squeeze a wide desktop SVG
+into the screen until its labels become tiny. Leave breathing room around routes,
+labels, and controls in the compact layout too.
+
+For the bundled gallery, check 360, 390, and 430 CSS-pixel viewports. Aim for main
+diagram labels at least 12 CSS pixels after SVG scaling, 44-pixel touch targets,
+and 16-pixel native input text. Wrap controls without clipping their labels; keep
+pause and step easy to reach. Dense optional detail can scroll independently when
+its structure requires it, but the primary explanation should fit the viewport.
+
+Derive connectors and payload positions from the same responsive geometry.
+Orientation changes must preserve the model, in-flight progress, theme, and the
+reader's pause intent. Do not restart an election or transaction merely to relayout.
 
 ## Tokens and themes
 
@@ -73,6 +111,19 @@ without zoom. Reflow dense scenes rather than shrinking them until text disappea
 
 A dashed arrow may mean optional, failed, or asynchronous, but choose one meaning
 per scene and label it. Do not assign all three meanings to the same style.
+Give nodes stable, distinct identity colors within a scene. Carry each node's color
+into its timer, connecting routes, and any popup that identifies it. In a popup,
+pair the node ID with a matching colored badge so the reader can connect the event
+to the node without rereading the diagram. Keep the same identity across resets,
+layout changes, and role changes; use corresponding theme colors in light and dark
+mode. Keep IDs visible so color is never the only identifier.
+
+Keep identity separate from state: name the current role and show waiting,
+committed, failed, or completed with text and symbols. A timeout must not recolor
+all nodes as failures and erase their identities. Payloads with an established
+semantic color retain it: heartbeat hearts stay red even on differently colored
+node connections. Use the node identity for messages and records when they do not
+have a conflicting semantic encoding.
 Show state with words or symbols as well as color. Distinguish selected, waiting,
 successful, and failed; selected is not automatically successful.
 
@@ -86,6 +137,11 @@ multi-line title/subtitle groups; do not position them with ad hoc baseline offs
 
 Keep nodes and routes in one coordinate model. Derive ports from actual shape
 bounds; share route points between strokes, arrowheads, and moving markers.
+Sample each moving payload's center from the connector's actual path; do not tune
+separate coordinates by eye. For comparable deliveries, use distance-based travel
+time so a longer route takes longer at the same speed. At bends, interpolate by
+cumulative path length. While a payload is inside a node, show node activity instead
+of drawing it over the label. Keep attached highlights on the shape boundary.
 Route around unrelated labels and nodes. Use directional fanout only where the
 relationship is genuinely shared. Put labels beside the route segment they name.
 
@@ -102,10 +158,20 @@ is supplemental; information must also be reachable by focus or selection.
 Support keyboard and touch for essential actions, with visible focus and native
 controls where possible. Do not hijack page scrolling for a diagram.
 
-A discrete stepper is often clearer than autoplay. If motion is needed, provide
-pause, step, and reset; respect reduced motion; suspend hidden work; keep a static
-explanation available. Camera controls and simulation playback are independent.
-Do not animate healthy traffic merely to make the page look alive.
+For an animated reading demo, autoplay while visible with Pause, Step, and Replay
+available immediately. Replay restores the initial model and resumes, including
+after a manual pause; reduced-motion preferences start and remain paused. Suspend
+offscreen or hidden work without catching up missed wall time. Theme and layout
+changes retain simulation state and the reader's pause intent. Keep static figures
+static when motion adds no explanation. Camera and simulation controls are independent.
+
+Keep routes visible between messages and update recipient state only on arrival.
+Give payloads enough travel time to follow; separate display refresh rate from
+simulation speed and the interval between messages. Use elapsed-time browser motion
+and stable SVG elements rather than rebuilding the scene every frame. Follow the
+display refresh rate; a 120 Hz target is not a measured result without paint/display
+evidence. Put optional scenario experiments in a disclosure. Reading demos do not
+need download controls; provide exports only when the delivery calls for them.
 
 ## Design review
 

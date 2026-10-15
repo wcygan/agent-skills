@@ -1,17 +1,36 @@
-.controls {
-  align-items: flex-end;
+
+.visual-heading { padding-bottom:14px; }
+.routing-toolbar { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:0 28px 18px; }
+.routing-modes { display:flex; gap:6px; }
+.routing-modes button { min-height:44px; }
+.routing-modes [aria-pressed="true"] { background:var(--text); color:var(--surface); border-color:var(--text); }
+.routing-toolbar label { display:flex; flex-direction:row; align-items:center; gap:12px; }
+.routing-toolbar select { min-height:44px; }
+.key-legend { display:flex; flex-wrap:wrap; gap:10px 20px; padding:0 28px 20px; }
+.key-legend > span { display:inline-flex; align-items:center; gap:7px; font:12px ui-monospace,monospace; color:var(--muted); }
+.key-legend i { width:10px; height:10px; border-radius:2px; background:var(--key); }
+.key-legend .current { color:var(--text); font-weight:700; }
+.stage svg { min-width:0; width:100%; display:block; }
+.stage { overflow:hidden; }
+.playback { padding-top:16px; padding-bottom:16px; gap:10px; }
+.routing-settings { margin-left:auto; position:relative; color:var(--muted); }
+.routing-settings summary { min-height:44px; align-content:center; cursor:pointer; }
+.routing-settings select { min-height:44px; }
+.result { min-height:0; font-size:14px; color:var(--muted); }
+.notes summary { cursor:pointer; min-height:44px; align-content:center; }
+.notes h3 { font-size:16px; }
+code { overflow-wrap:anywhere; }
+.scroll-hint { display:none; }
+@media(max-width:600px){
+ .routing-toolbar { padding-inline:18px; flex-wrap:wrap; }
+ .routing-toolbar label { font-size:14px; }
+ .routing-toolbar select,.routing-modes button,.routing-settings select { font-size:16px; }
+ .key-legend { padding-inline:18px; gap:10px 14px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+ .key-legend > span { font-size:13px; }
+ .notes div { display:block; }
 }
-.stage svg {
-  min-width: 1000px;
-}
-.notes h3 {
-  font-size: 16px;
-  margin: 0 0 10px;
-}
-code {
-  overflow-wrap: anywhere;
-}
-.visual-heading p:last-child {
-  color: var(--muted);
-  max-width: 780px;
-}
+
+.routing-toolbar label { display:grid; grid-template-columns:1fr auto; width:220px; gap:4px 12px; }
+#partitions { grid-column:1/-1; width:100%; min-height:44px; margin:0; accent-color:var(--focus); font-size:16px; }
+#partition-count { color:var(--text); font-variant-numeric:tabular-nums; }
+@media(max-width:600px){ .routing-toolbar label { width:100%; } }

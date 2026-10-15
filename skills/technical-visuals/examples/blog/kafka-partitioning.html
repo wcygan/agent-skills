@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Kafka Partitioning · Visual lab</title>
-    <link rel="stylesheet" href="../style.css" />
-    <link rel="stylesheet" href="blog.css" />
-    <link rel="stylesheet" href="kafka-partitioning.css" />
+    <link rel="stylesheet" href="../style.css?v=7845c8602e12" />
+    <link rel="stylesheet" href="blog.css?v=a2bf371124c7" />
+    <link rel="stylesheet" href="kafka-partitioning.css?v=1992975322e9" />
   </head>
   <body data-post="kafka-partitioning">
     <main>
@@ -17,16 +17,22 @@
       </nav>
       <header>
         <div>
-          <p class="eyebrow">DATA / ORDERED LOGS</p>
-          <h1>One topic. Separate histories.</h1>
-          <p class="intro">
-            Follow nine records from a producer into partition-local logs. The
-            routing rule chooses the destination; the destination assigns the
-            next offset.
-          </p>
+          <h1>Kafka partitioning</h1>
         </div>
-        <button id="theme" aria-label="Toggle dark theme" aria-pressed="false">
-          ☀ / ☾
+        <button
+          id="theme"
+          class="theme-toggle"
+          aria-label="Dark theme"
+          aria-pressed="false"
+        >
+          <svg class="sun" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" />
+            <path
+              d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"
+            /></svg
+          ><svg class="moon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 15.5A8.5 8.5 0 0 1 8.5 4a8.5 8.5 0 1 0 11.5 11.5Z" />
+          </svg>
         </button>
       </header>
       <section
@@ -35,41 +41,9 @@
         data-source-component="KafkaPartitioningDemo"
         aria-labelledby="routing-heading"
       >
-        <div class="visual-heading">
-          <p class="eyebrow">ORDERS.EVENTS</p>
-          <h2 id="routing-heading">
-            Same key, same partition—while the partition count stays fixed.
-          </h2>
-          <p>
-            Compare keyed routing with explicit round-robin. Step alternates
-            between routing a record and appending it.
-          </p>
-        </div>
-        <div class="controls">
-          <label
-            >Routing<select id="routing">
-              <option value="keyed">Keyed · Murmur2</option>
-              <option value="round-robin">Explicit round-robin</option>
-            </select></label
-          ><label
-            >Partitions<select id="partitions">
-              <option>1</option>
-              <option>2</option>
-              <option selected>3</option>
-              <option>4</option>
-              <option>5</option>
-            </select></label
-          ><label
-            >Speed<select id="speed">
-              <option>1</option>
-              <option>2</option>
-              <option>4</option>
-              <option>8</option>
-            </select></label
-          ><button data-action="play">Play</button
-          ><button data-action="step">Step</button
-          ><button data-action="reset">Replay</button>
-        </div>
+        <header class="visual-heading"><h2 id="routing-heading">The same key chooses the same partition</h2></header>
+        <div class="routing-toolbar"><div class="routing-modes" role="group" aria-label="Routing strategy"><button data-mode="keyed" aria-pressed="true">By key</button><button data-mode="round-robin" aria-pressed="false">Round-robin</button></div><label for="partitions">Partitions <output id="partition-count">3</output><input id="partitions" type="range" min="1" max="5" step="1" value="3" /></label></div>
+        <div id="key-map" class="key-legend" aria-label="Record keys"></div>
         <p class="scroll-hint">
           Scroll the diagram horizontally to follow the logs.
         </p>
@@ -77,7 +51,7 @@
           class="stage"
           tabindex="0"
           role="region"
-          aria-label="Record routing diagram; horizontally scrollable"
+          aria-label="Record routing diagram"
         >
           <svg
             id="diagram"
@@ -86,13 +60,14 @@
             aria-labelledby="svg-title svg-desc"
           ></svg>
         </div>
-        <div class="result">
+        <div class="controls playback"><button data-action="step">Step</button><button data-action="play">Play</button><button data-action="reset">Replay</button><details class="routing-settings"><summary>Speed</summary><select id="speed" aria-label="Playback speed"><option value="1">1×</option><option value="1.5" selected>1.5×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option></select></details></div>
+        <div class="supporting-copy sr-only">
           <p id="status" role="status" aria-live="polite"></p>
-          <button id="export">Save SVG</button>
         </div>
+        <footer class="result"><p>With key routing and a fixed partition count, the same key selects the same log. Each partition has its own offsets. Changing the slider restarts this sample; Kafka keeps existing records in their original partitions.</p></footer>
       </section>
-      <section class="notes">
-        <h2>Read the routing rule</h2>
+      <div class="supporting-copy sr-only">
+        <p><code id="rule"></code></p>
         <div>
           <article>
             <h3>Keys are bytes</h3>
@@ -120,22 +95,16 @@
             </p>
           </article>
         </div>
-      </section>
-      <footer>
-        <p>
-          Complete 2D rendition of the original KafkaPartitioningDemo: original
-          nine-record sequence, keyed and explicit round-robin routing, one to
-          five partitions, playback and speed controls. Fixed overhead view
-          replaces camera controls.
-        </p>
-        <p>
-          This is a routing illustration. Explicit round-robin is a comparison
-          strategy, not a claim about Kafka’s default unkeyed producer behavior.
-          Log slots show this sample, not a capacity limit.
-        </p>
-      </footer>
+        <div class="caveat">
+          <p>
+            This is a routing illustration. Explicit round-robin is a comparison
+            strategy, not a claim about Kafka’s default unkeyed producer
+            behavior. Log slots show this sample, not a capacity limit.
+          </p>
+        </div>
+      </div>
     </main>
-    <script src="../tokens.js"></script>
-    <script src="kafka-partitioning.js"></script>
+    <script src="../tokens.js?v=debecdea2d99"></script>
+    <script src="kafka-partitioning.js?v=d6e0c318ec3a"></script>
   </body>
 </html>

@@ -27,17 +27,31 @@
   min-width: 850px;
 }
 .diagnostic {
-  margin: 0;
-  padding: 22px 28px;
-  border-top: 2px solid var(--failure);
-  background: var(--controlFill);
+  width: min(340px, calc(100vw - 40px));
+  box-sizing: border-box;
+  margin: auto;
+  padding: 28px;
+  border: 1px solid var(--subtle);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--text);
+  text-align: center;
+  box-shadow: 0 20px 80px #0005;
 }
-.diagnostic h3 {
-  margin-top: 0;
+.diagnostic::backdrop { background: #0007; }
+.failure-icon {
+  width: 56px;
+  height: 56px;
+  margin-bottom: 16px;
+  fill: var(--surface);
+  stroke: var(--failure);
+  stroke-width: 2;
+  stroke-linejoin: round;
 }
-.diagnostic p {
-  max-width: 850px;
-}
+.failure-icon circle { fill: var(--failure); }
+.diagnostic h3 { margin: 0 0 12px; font-size: 24px; }
+.diagnostic p { white-space: pre-line; line-height: 1.6; font-size: 16px; margin: 0 0 24px; }
+.diagnostic button { width: 100%; min-height: 44px; font-size: 16px; }
 .notes h3 {
   font-size: 16px;
 }
@@ -45,7 +59,7 @@
   margin: 0;
 }
 #status {
-  min-height: 48px;
+  min-height: 0;
 }
 h3 {
   font-weight: 600;
@@ -54,9 +68,49 @@ output {
   color: var(--text);
 }
 
-.faults [data-action="export"] { margin-left: auto; }
-.controls output { font-variant-numeric: tabular-nums; font-weight: 600; }
-@media (max-width: 720px) {
-  .controls label { margin-left: 0; }
-  .faults [data-action="export"] { margin-left: 0; }
+.faults [data-action="export"] {
+  margin-left: auto;
 }
+.controls output {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+@media (max-width: 720px) {
+  .controls label {
+    margin-left: 0;
+  }
+  .faults [data-action="export"] {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .stage svg { min-width: 0; width: 100%; }
+  .stage { overflow: hidden; }
+  .controls { gap: 10px; }
+  .controls button { min-height: 44px; font-size: 16px; }
+  .controls label { width: 100%; margin: 0; font-size: 16px; }
+  .controls input { min-height: 44px; }
+  .scroll-hint { display: none; }
+  .diagnostic { padding: 18px; }
+  .result { padding: 18px; }
+}
+
+.model-details { border-top: 1px solid var(--subtle); padding-top: 12px; }
+.model-details summary { min-height: 44px; align-content: center; cursor: pointer; color: var(--muted); }
+.model-details > div { margin-top: 16px; }
+
+.failure-node { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 20px 0 12px; }
+#failure-node-badge {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--node-color);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--node-color) 12%, var(--surface));
+  color: var(--node-color);
+  font-size: 22px;
+  font-weight: 650;
+}
+#failure-node { font-size: 18px; }

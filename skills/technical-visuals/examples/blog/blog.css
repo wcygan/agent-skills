@@ -190,18 +190,6 @@ header .intro {
   border-color: var(--focus);
   font-weight: 600;
 }
-.controls button[data-action="export"],
-.result button {
-  border-color: var(--subtle);
-}
-.controls button[data-action="export"]:hover,
-.result button:hover {
-  border-color: var(--border);
-}
-button,
-select {
-  transition: background-color 120ms, border-color 120ms;
-}
 .controls input[type="range"] {
   accent-color: var(--focus);
   min-height: 24px;
@@ -272,9 +260,63 @@ select {
   fill: var(--focus);
   stroke: none;
 }
-@media (prefers-reduced-motion: reduce) {
-  button,
-  select {
-    transition: none;
+
+button,
+select,
+.controls label,
+.conditions label,
+.eyebrow {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+@media (max-width: 600px) {
+  nav { gap: 8px 18px; margin-bottom: 24px; }
+  nav a { display: inline-flex; align-items: center; min-height: 44px; }
+  .controls { gap: 12px; }
+  .controls > * { min-width: 0; max-width: 100%; }
+  .controls button,
+  .controls select,
+  .controls input[type="text"],
+  .controls input[type="number"] {
+    min-height: 44px;
+    font-size: 16px;
+    max-width: 100%;
+    box-sizing: border-box;
   }
+  .controls label { max-width: 100%; }
+  .visual .controls label input[type="range"] { min-height: 44px; max-width: 100%; font-size: 16px; }
+  .controls label:has(input[type="checkbox"]) { min-height: 44px; justify-content: center; }
+  .result { padding: 18px; gap: 12px; }
+  .post-card { padding: 20px; }
+  .post-card h2 { font-size: 24px; }
+  .post-preview { margin-bottom: 8px; }
+  details > summary { min-height: 44px; align-content: center; cursor: pointer; }
+}
+
+/* One heading and one factual caption per figure. */
+.visual > header.visual-heading {
+  display: block;
+  margin: 0;
+}
+.visual > footer.result {
+  display: block;
+  margin: 0;
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.5;
+}
+.visual > footer.result p {
+  font-size: inherit;
+  color: inherit;
+}
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip-path: inset(50%) !important;
+  white-space: normal !important;
+  border: 0 !important;
 }

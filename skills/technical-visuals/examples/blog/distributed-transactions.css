@@ -67,3 +67,28 @@ button:disabled {
     overflow-wrap: anywhere;
   }
 }
+
+.scenario-options { margin: 0 28px 16px; border: 1px solid var(--subtle); border-radius: 8px; }
+.scenario-options summary { padding: 14px 18px; cursor: pointer; color: var(--muted); }
+.scenario-options .choices { padding: 8px 18px 18px; }
+.scenario-options[open] summary { color: var(--text); }
+
+.trace-details { margin: 0 28px 18px; color: var(--muted); font-size: 14px; }
+.trace-details summary { cursor: pointer; }
+.trace-state { max-width: 780px; line-height: 1.65; }
+.event { min-height: 68px; font-size: 17px; }
+
+@media (max-width: 600px) {
+  .stage, .stage svg { min-width: 0; width: 100%; max-width: 100%; overflow: visible; }
+  .stage svg { display: block; height: auto; }
+  .scroll-hint { display: none; }
+  .controls { flex-wrap: wrap; }
+  button, select { min-height: 44px; font-size: 16px; }
+  .scenario-options { margin-inline: 12px; }
+  .scenario-options .choices { min-width: 0; padding-inline: 12px; }
+  .choices label, .choices select { min-width: 0; width: 100%; }
+  .trace-details { margin-inline: 18px; }
+  .trace-details summary { min-height: 44px; display: flex; align-items: center; }
+  .trace-state { overflow-wrap: anywhere; }
+  .playback .progress { flex-basis: 100%; }
+}

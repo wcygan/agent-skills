@@ -42,11 +42,16 @@
     svg = document.querySelector("#diagram");
   const play = document.querySelector('[data-action="play"]');
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+  const compact = matchMedia("(max-width: 600px)");
   let step = 0,
     count = 3,
     mode = "keyed",
-    speed = 1,
-    playing = false,
+    speed = 1.5,
+    playing = !reduced.matches,
+    visible = false,
+    running = false,
+    remaining = 2300 / 1.5,
+    deadline = 0,
     timer,
     animation;
   let theme =
@@ -66,154 +71,141 @@
       };
     });
   }
+  function keyStyle(key,t){
+    const role=['focus','storage','success','processing','flow','warning'][keys.indexOf(key)];
+    return {color:t[role],fill:t[role],ink:theme==='dark'?t.canvas:t.surface};
+  }
+  function mapping(t,list,current){
+    document.querySelector('#key-map').innerHTML=keys.map(key=>{
+      const r=list.find(r=>r.key===key),style=keyStyle(key,t);
+      return `<span data-key-map="${key}" data-partition-map="${r.partition}" class="${current?.key===key?'current':''}" style="--key:${style.color}"><i aria-hidden="true"></i>${key}</span>`;
+    }).join('');
+  }
+  const phaseDuration = () => (step % 2 ? 2300 : 4600 * 0.7 - 2300) / speed;
+  function syncPlayback() {
+    const active =
+      playing && visible && !document.hidden && !reduced.matches && step < 18;
+    if (!active && running) {
+      remaining = Math.max(0, deadline - performance.now());
+      clearTimeout(timer);
+      animation?.pause();
+    }
+    if (active && !running) {
+      if (step === 0) {
+        step = 1;
+        remaining = 2300 / speed;
+        render(true);
+      }
+      if (
+        animation &&
+        animation.currentTime < animation.effect.getTiming().duration
+      ) {
+        remaining = Math.max(
+          remaining,
+          animation.effect.getTiming().duration -
+            animation.currentTime +
+            500 / speed,
+        );
+        animation.play();
+      }
+      deadline = performance.now() + remaining;
+      timer = setTimeout(() => {
+        running = false;
+        step++;
+        remaining = phaseDuration();
+        render(true);
+        if (step === 18) playing = false;
+        syncPlayback();
+      }, remaining);
+    }
+    running = active;
+    play.textContent = playing && !reduced.matches ? "Pause" : "Play";
+    play.disabled = reduced.matches;
+  }
   function stop() {
     playing = false;
-    clearTimeout(timer);
-    animation?.pause();
-    play.textContent = "Play";
+    syncPlayback();
   }
-  function schedule() {
-    clearTimeout(timer);
-    if (playing && step < 18)
-      timer = setTimeout(() => {
-        step++;
-        render(true);
-        schedule();
-      }, 1200 / speed);
-    else if (step === 18) stop();
+  function resetPhase() {
+    remaining = phaseDuration();
   }
-  function render(motion = false) {
-    animation?.cancel();
-    const t = window.visualTokens[theme],
-      list = records(),
-      appended = list.slice(0, Math.floor(step / 2));
-    const current = step ? list[Math.floor((step - 1) / 2)] : null;
-    const routing = step % 2 === 1,
-      height = 320 + count * 100;
-    const text = (x, y, value, size = 14, color = t.text, anchor = "middle") =>
-      `<text x="${x}" y="${y}" fill="${color}" font-size="${size}" text-anchor="${anchor}" dominant-baseline="middle">${value}</text>`;
-    const rect = (x, y, w, h, fill, stroke = t.border) =>
-      `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>`;
-    const laneY = (p) => 250 + p * 100;
-    const card = (r, x, y, stroke = t.storage) =>
-      rect(x, y, 60, 52, t.storageFill, stroke) +
-      text(x + 30, y + 17, `#${r.id}`, 15) +
-      text(x + 30, y + 37, r.key.slice(6), 12);
-    let out = `<title id="svg-title">Producer routes nine records into ${count} partition logs</title><desc id="svg-desc">${mode} routing. Each log has independent offsets. Record numbers identify producer order; three-digit labels are order key suffixes.</desc><rect width="1060" height="${height}" fill="${t.surface}"/>`;
-    out += text(
-      30,
-      30,
-      "PRODUCER SEQUENCE · record ID / order key",
-      13,
-      t.muted,
-      "start",
-    );
-    list.forEach((r, i) => {
-      const x = 30 + i * 112;
-      out +=
-        rect(
-          x,
-          52,
-          100,
-          51,
-          i < appended.length ? t.raised : t.flowFill,
-          current?.id === r.id ? t.focus : t.flow,
-        ) +
-        text(x + 50, 68, `#${r.id}`, 13) +
-        text(x + 50, 88, r.key, 12);
+  function render(motion=false,duration=1800/speed){
+    animation?.cancel();animation=null;
+    const t=window.visualTokens[theme],mobile=compact.matches;
+    const list=records(),appended=list.slice(0,Math.floor(step/2));
+    const current=step?list[Math.floor((step-1)/2)]:null,routing=step%2===1;
+    mapping(t,list,current);
+    const locals=Array.from({length:count},(_,p)=>list.filter(r=>r.partition===p));
+    const capacity=Math.max(...locals.map(rs=>rs.length));
+    const columns=mobile?Math.min(5,capacity):capacity;
+    const pitch=mobile?42:64,blockW=mobile?34:46,blockH=mobile?30:42;
+    const laneWidth=mobile?234:capacity*pitch+28;
+    const laneHeight=mobile?Math.ceil(capacity/columns)*62+26:88;
+    const logX=mobile?54:capacity>6?340:450;
+    const firstY=mobile?186:70;
+    const height=mobile?firstY+count*(laneHeight+34)+10:Math.max(420,firstY+count*116+30);
+    const width=mobile?320:1060;
+    const source={x:mobile?120:100,y:mobile?38:height/2-38,w:80,h:76};
+    const position=r=>({x:logX+14+(r.offset%columns)*pitch,y:firstY+r.partition*(mobile?laneHeight+34:116)+14+Math.floor(r.offset/columns)*62});
+    const endFor=r=>{const p=position(r);return[p.x+blockW/2,p.y+blockH/2];};
+    const start=mobile?[source.x+source.w,source.y+source.h/2]:[source.x+source.w,source.y+source.h/2];
+    const curve=end=>{
+      const rail=end[1]-blockH/2-32;
+      const pts=mobile?[start,[302,start[1]],[302,end[1]],end]:[start,[300,start[1]],[300,rail],[end[0],rail],end];
+      let d=`M${pts[0]}`;
+      for(let i=1;i<pts.length-1;i++){
+        const a=pts[i-1],v=pts[i],b=pts[i+1],before=Math.hypot(v[0]-a[0],v[1]-a[1]),after=Math.hypot(b[0]-v[0],b[1]-v[1]);
+        const r=Math.min(12,before/2,after/2);
+        const entry=[v[0]-(v[0]-a[0])*r/before,v[1]-(v[1]-a[1])*r/before];
+        const exit=[v[0]+(b[0]-v[0])*r/after,v[1]+(b[1]-v[1])*r/after];
+        d+=` L${entry} Q${v} ${exit}`;
+      }
+      return d+` L${pts.at(-1)}`;
+    };
+    const text=(x,y,value,size=16,color=t.text,anchor='middle')=>`<text x="${x}" y="${y}" fill="${color}" font-size="${size}" text-anchor="${anchor}" dominant-baseline="middle">${value}</text>`;
+    const rect=(x,y,w,h,fill,stroke=t.border,weight=1.5)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${mobile?3:4}" fill="${fill}" stroke="${stroke}" stroke-width="${weight}"/>`;
+    const tint=(rs)=>{
+      const cs=[...new Set(rs.map(r=>r.key))].map(key=>keyStyle(key,t).color);
+      if(!cs.length)return t.raised;
+      const rgb=hex=>[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16));
+      const base=rgb(t.surface),average=[0,1,2].map(i=>cs.reduce((n,col)=>n+rgb(col)[i],0)/cs.length);
+      return '#'+base.map((v,i)=>Math.round(v*.85+average[i]*.15).toString(16).padStart(2,'0')).join('');
+    };
+    let out=`<title id="svg-title">Kafka records entering partition logs</title><desc id="svg-desc">Record numbers show producer order. Colors identify keys. Offsets below the blocks belong to each individual partition. Only arrived records append.</desc><rect width="${width}" height="${height}" fill="${t.surface}"/>`;
+    if(!current)locals.forEach((rs,p)=>{const y=firstY+p*(mobile?laneHeight+34:116)+laneHeight/2;out+=`<path d="${curve([logX-8,y])}" fill="none" stroke="${t.subtle}" stroke-width="1.2" stroke-dasharray="4 5"/>`;});
+    out+=text(source.x+40,source.y-15,'Producer',16)
+      +rect(source.x,source.y,source.w,source.h,t.canvas,t.border);
+    keys.forEach((key,i)=>{out+=`<rect x="${source.x+7+i*11}" y="${source.y+10}" width="11" height="${source.h-20}" fill="${keyStyle(key,t).color}"/>`;});
+
+    locals.forEach((rs,p)=>{
+      const y=firstY+p*(mobile?laneHeight+34:116);
+      out+=`<g data-partition="${p}" data-capacity="${rs.length}" data-display-capacity="${capacity}">`
+        +rect(logX,y,laneWidth,laneHeight,tint(mode==='keyed'?rs:list),t.border)
+        +text(logX-(mobile?20:26),y+laneHeight/2,`P${p}`,15,t.muted);
+      rs.forEach(r=>{const pos=position(r);out+=`<g data-slot-offset="${r.offset}"><path d="M${pos.x+blockW/2},${pos.y+blockH+6} v4" stroke="${t.border}"/>`+text(pos.x+blockW/2,pos.y+blockH+19,r.offset,mobile?12:14,t.muted)+'</g>';});
+      appended.filter(r=>r.partition===p).forEach(r=>{const pos=position(r),style=keyStyle(r.key,t);out+=`<g data-record-key="${r.key}" data-record-id="${r.id}"><title>Record ${r.id}: ${r.key}, P${p}, offset ${r.offset}</title>`+rect(pos.x,pos.y,blockW,blockH,style.fill,style.color)+text(pos.x+blockW/2,pos.y+blockH/2,r.id,16,style.ink)+'</g>';});
+      out+='</g>';
     });
-    out +=
-      rect(30, 160, 150, 76, t.processingFill, t.processing) +
-      text(105, 185, "Producer", 17) +
-      text(105, 211, "one record at a time", 12);
-    out += text(
-      360,
-      145,
-      "orders.events · append-only logs",
-      17,
-      t.text,
-      "start",
-    );
-    out += text(
-      360,
-      174,
-      "ID # / key suffix inside each record • local offset below",
-      12,
-      t.muted,
-      "start",
-    );
-    for (let p = 0; p < count; p++) {
-      const y = laneY(p),
-        active = routing && current.partition === p;
-      out += `<path d="M180 198 H225 V${y + 26} H300" fill="none" stroke="${active ? t.focus : t.border}" stroke-width="${active ? 2.5 : 1.2}"/><path d="M293 ${y + 21} L300 ${y + 26} L293 ${y + 31}" fill="none" stroke="${active ? t.focus : t.border}"/>`;
-      out +=
-        text(322, y + 26, `P${p}`, 16) +
-        rect(350, y - 8, 670, 80, t.storageFill, t.storage);
-      const local = list.filter((r) => r.partition === p);
-      local.forEach((r) => {
-        const x = 362 + r.offset * 72;
-        out +=
-          `<rect x="${x}" y="${y}" width="60" height="52" rx="6" fill="${t.surface}" stroke="${t.subtle}"/>` +
-          text(x + 30, y + 64, `${r.offset}`, 12, t.muted);
-      });
-      appended
-        .filter((r) => r.partition === p)
-        .forEach((r) => {
-          out += card(
-            r,
-            362 + r.offset * 72,
-            y,
-            current.id === r.id ? t.focus : t.storage,
-          );
-        });
+    if(current){
+      const style=keyStyle(current.key,t),end=endFor(current);
+      out+=`<path data-packet-route="[]" d="${curve(end)}" fill="none" stroke="${style.color}" stroke-width="2" ${routing?'':'stroke-dasharray="4 5"'}/>`;
+      if(routing)out+=`<g id="packet" transform="translate(${end[0]-17} ${end[1]-15})"><title>Record ${current.id}: ${current.key} → P${current.partition}</title>`+rect(17-blockW/2,15-blockH/2,blockW,blockH,style.fill,style.color)+text(17,15,current.id,16,style.ink)+'</g>';
     }
-    if (routing) {
-      const x = 362 + current.offset * 72,
-        y = laneY(current.partition);
-      out += `<g id="packet" transform="translate(${x} ${y})">${card(current, 0, 0, t.focus)}</g>`;
-    }
-    const formula = current
-      ? mode === "keyed"
-        ? `${current.hash} % ${count} = P${current.partition}`
-        : `${current.id - 1} % ${count} = P${current.partition}`
-      : mode === "keyed"
-        ? `positive(murmur2(UTF-8 key)) % ${count}`
-        : `producer counter % ${count}`;
-    out +=
-      text(30, height - 36, formula, 16, t.control, "start") +
-      text(
-        1020,
-        height - 36,
-        `${appended.length} / 9 appended`,
-        14,
-        t.muted,
-        "end",
-      );
-    svg.setAttribute("viewBox", `0 0 1060 ${height}`);
-    svg.setAttribute("font-family", "ui-monospace, monospace");
-    svg.innerHTML = out;
-    figure.dataset.state = JSON.stringify({ mode, count, step, appended });
-    document.querySelector("#status").textContent = current
-      ? `${routing ? "Routing" : "Appended"} record #${current.id} (${current.key}) → P${current.partition}, offset ${current.offset}.${step === 18 ? " All nine records are retained." : ""}`
-      : `Ready: ${count} ${count === 1 ? "partition" : "partitions"}. Step to route record #1; step again to append it.`;
-    document.querySelector('[data-action="step"]').disabled = step === 18;
-    if (routing && motion && !reduced.matches) {
-      const x = 362 + current.offset * 72,
-        y = laneY(current.partition);
-      animation = document
-        .querySelector("#packet")
-        .animate(
-          [
-            { transform: "translate(75px, 172px)" },
-            { transform: `translate(195px, 172px)`, offset: 0.25 },
-            { transform: `translate(195px, ${y}px)`, offset: 0.55 },
-            { transform: `translate(${x}px, ${y}px)` },
-          ],
-          { duration: 950 / speed, easing: "ease-in-out", fill: "forwards" },
-        );
-    }
+    svg.setAttribute('viewBox',`0 0 ${width} ${height}`);svg.setAttribute('font-family','system-ui,sans-serif');svg.innerHTML=out;
+    let points;
+    const route=svg.querySelector('[data-packet-route]');
+    if(route){const length=route.getTotalLength();points=Array.from({length:241},(_,i)=>{const p=route.getPointAtLength(length*i/240);return[p.x,p.y];});route.dataset.packetRoute=JSON.stringify(points);}
+    document.querySelector('#rule').textContent=current&&mode==='keyed'?`${current.hash} % ${count} = ${current.partition}`:`positive(murmur2(key)) % ${count}`;
+    document.querySelector('#routing-heading').textContent='Kafka partitions events into separate logs';
+    document.querySelector('#status').textContent=current?`${routing?'Record':'Appended'} ${current.id} · ${current.key} → P${current.partition} · ${appended.length}/9`:`One producer · ${count} partitions · nine records`;
+    figure.dataset.state=JSON.stringify({mode,count,step,appended});document.querySelector('[data-action=step]').disabled=step===18;
+    document.querySelectorAll('[data-mode]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.mode===mode)));
+    if(routing&&motion&&!reduced.matches){const frames=points.map(([x,y],i)=>({transform:`translate(${x-17}px, ${y-15}px)`,offset:i/(points.length-1)}));animation=svg.querySelector('#packet').animate(frames,{duration,easing:'linear',fill:'forwards'});}
   }
   function applyTheme() {
+    const position = animation?.currentTime;
+    const duration = animation?.effect.getTiming().duration;
+    const animationState = animation?.playState;
     document.documentElement.dataset.theme = theme;
     document.documentElement.style.colorScheme = theme;
     Object.entries(window.visualTokens[theme]).forEach(([k, v]) =>
@@ -228,8 +220,13 @@
         "aria-label",
         theme === "dark" ? "Switch to light theme" : "Switch to dark theme",
       );
-    render();
+    render(position != null, duration);
+    if (animation && position != null) {
+      animation.currentTime = position;
+      if (animationState !== "running") animation.pause();
+    }
   }
+  compact.addEventListener("change", applyTheme);
   document.querySelector("#theme").onclick = () => {
     theme = theme === "dark" ? "light" : "dark";
     localStorage.setItem("visual-lab-theme", theme);
@@ -238,12 +235,16 @@
   document.querySelector('[data-action="step"]').onclick = () => {
     stop();
     step = Math.min(18, step + 1);
-    render(true);
+    resetPhase();
+    render();
   };
   document.querySelector('[data-action="reset"]').onclick = () => {
     stop();
     step = 0;
+    resetPhase();
     render();
+    playing = !reduced.matches;
+    syncPlayback();
   };
   play.onclick = () => {
     if (playing) {
@@ -255,50 +256,48 @@
       render();
     }
     playing = true;
-    play.textContent = "Pause";
-    animation?.play();
-    schedule();
+    syncPlayback();
   };
-  document.querySelector("#routing").onchange = (e) => {
-    stop();
-    mode = e.target.value;
-    step = 0;
-    render();
-  };
-  document.querySelector("#partitions").onchange = (e) => {
+  document.querySelectorAll('[data-mode]').forEach(button=>button.onclick=()=>{
+    stop();mode=button.dataset.mode;step=0;resetPhase();render();
+  });
+  document.querySelector("#partitions").oninput = (e) => {
     stop();
     count = Number(e.target.value);
+    document.querySelector('#partition-count').value = count;
     step = 0;
+    resetPhase();
     render();
   };
   document.querySelector("#speed").onchange = (e) => {
+    const wasPlaying = playing;
+    stop();
+    const oldSpeed = speed;
     speed = Number(e.target.value);
-    if (playing) schedule();
-  };
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) stop();
-  });
-  reduced.addEventListener("change", () => {
-    if (reduced.matches) {
-      stop();
-      render();
+    remaining *= oldSpeed / speed;
+    if (animation) {
+      const progress =
+        animation.currentTime / animation.effect.getTiming().duration;
+      animation.effect.updateTiming({ duration: 1800 / speed });
+      animation.currentTime = (progress * 1800) / speed;
     }
-  });
-  document.querySelector("#export").onclick = () => {
-    const clone = svg.cloneNode(true);
-    clone.setAttribute("width", "1060");
-    clone.setAttribute("height", String(320 + count * 100));
-    const url = URL.createObjectURL(
-      new Blob([new XMLSerializer().serializeToString(clone)], {
-        type: "image/svg+xml",
-      }),
-    );
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `kafka-partitioning-${theme}.svg`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    playing = wasPlaying;
+    syncPlayback();
   };
+  document.addEventListener("visibilitychange", syncPlayback);
+  reduced.addEventListener("change", () => {
+    if (reduced.matches) stop();
+    syncPlayback();
+  });
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      visible = entry.isIntersecting;
+      syncPlayback();
+    },
+    { threshold: 0 },
+  );
+  observer.observe(svg);
   window.kafkaPartitioning = { murmur2, records };
   applyTheme();
+  syncPlayback();
 })();

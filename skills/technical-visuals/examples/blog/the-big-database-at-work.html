@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>The Big Database at Work · Visual lab</title>
-    <link rel="stylesheet" href="../style.css" />
-    <link rel="stylesheet" href="blog.css" />
-    <link rel="stylesheet" href="the-big-database-at-work.css" />
+    <link rel="stylesheet" href="../style.css?v=7845c8602e12" />
+    <link rel="stylesheet" href="blog.css?v=a2bf371124c7" />
+    <link rel="stylesheet" href="the-big-database-at-work.css?v=c2df76eea2b6" />
   </head>
   <body data-post="the-big-database-at-work">
     <main>
@@ -19,14 +19,27 @@
       </nav>
       <header>
         <div>
-          <p class="eyebrow">DATABASES / SEVEN VISUAL EXPLANATIONS</p>
-          <h1>Keep the history.<br />Cache the working set.</h1>
+          <h1>The Big Database at Work</h1>
           <p class="intro">
             Twenty billion rows across six tables. 14.8 TiB stored. Ordinary
             requests repeatedly touch a much smaller set of pages.
           </p>
         </div>
-        <button id="theme" aria-label="Toggle dark theme">☀ / ☾</button>
+        <button
+          id="theme"
+          class="theme-toggle"
+          aria-label="Dark theme"
+          aria-pressed="false"
+        >
+          <svg class="sun" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" />
+            <path
+              d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"
+            /></svg
+          ><svg class="moon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 15.5A8.5 8.5 0 0 1 8.5 4a8.5 8.5 0 1 0 11.5 11.5Z" />
+          </svg>
+        </button>
       </header>
       <div id="figures"></div>
       <footer>
@@ -37,7 +50,7 @@
         </p>
       </footer>
     </main>
-    <script src="../tokens.js"></script>
-    <script src="the-big-database-at-work.js"></script>
+    <script src="../tokens.js?v=debecdea2d99"></script>
+    <script src="the-big-database-at-work.js?v=48a1dd98b177"></script>
   </body>
 </html>

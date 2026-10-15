@@ -16,7 +16,7 @@ header .intro {
   max-width: 730px;
 }
 .result {
-  min-height: 100px;
+  min-height: 0;
 }
 @media (max-width: 720px) {
   header button {
@@ -24,7 +24,33 @@ header .intro {
   }
 }
 
-.gossip-scroll-hint { display: none; }
+.gossip-scroll-hint {
+  display: none;
+}
 @media (max-width: 720px) {
-  .gossip-scroll-hint { display: block; margin: 0; padding: 0 18px 14px; color: var(--muted); font-size: 12px; }
+  .gossip-scroll-hint {
+    display: block;
+    margin: 0;
+    padding: 0 18px 14px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .stage svg { min-width: 0; width: 100%; }
+  .stage { overflow: hidden; }
+  .controls { gap: 10px; align-items: end; }
+  .controls button, .controls select { min-height: 44px; font-size: 16px; }
+  .controls label { font-size: 14px; }
+  .gossip-scroll-hint { display: none; }
+  .visual-heading h2 { font-size: 21px; }
+  .result { min-height: 0; padding: 18px; }
+}
+
+.model-details { border-top: 1px solid var(--subtle); padding: 12px 28px; }
+.model-details summary { cursor: pointer; min-height: 44px; align-content: center; color: var(--muted); }
+.model-details p { max-width: 720px; color: var(--muted); }
+@media (max-width: 600px) {
+  .model-details { padding: 10px 18px; }
 }

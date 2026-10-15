@@ -20,8 +20,18 @@ owns explanatory figures, not a redesign of the surrounding application.
    Read [input contracts](references/inputs.md) for the supplied modality.
    When recreating a post or series, inventory every source figure and its
    meaningful states first. Map each to an output; do not silently substitute
-   a selected lesson for requested full coverage.
+   a selected lesson for requested full coverage. Merge overlapping lessons into one
+   coherent demo when the same model can teach both; retain every source mapping.
 2. Read the [design system](references/design-system.md). Read the [shape vocabulary](references/shapes.md) when selecting component symbols.
+   Start with a high-level view: fewer words, generous spacing, short actor labels,
+   and visual state. Move detailed metadata into captions or optional disclosures.
+   Keep the actors, boundaries, and intermediate states needed to understand the
+   relationship; simplification must not hide what makes the system work.
+   Use the [iteration examples](references/examples.md#lessons-from-the-blog-iterations)
+   for density, motion, state, and chart decisions learned from the visual lab.
+   Make phone readability a design goal for interactive HTML: reflow diagrams and
+   controls into compact layouts with little or no horizontal scrolling. Preserve
+   readable labels and essential state instead of shrinking a desktop canvas.
    Use 2D by default.
    Use 3D only on an explicit request, including isometric or spatial rendering.
 3. Select the smallest useful output: Mermaid for simple relationships; SVG for

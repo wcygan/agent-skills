@@ -29,7 +29,7 @@
   align-items: flex-end;
 }
 .stage svg {
-  min-width: 850px;
+  min-width: 680px;
 }
 .notes article {
   min-width: 0;
@@ -44,13 +44,83 @@
   }
 }
 /* Match the legend to the actual packet marks, with room around each glyph. */
-.raft-legend { align-items: center; gap: 12px 24px; }
-.raft-legend > span { display: inline-flex; align-items: center; gap: 8px; }
-.packet-key { display: inline-grid; place-items: center; width: 24px; height: 24px; border: 1.5px solid currentColor; border-radius: 5px; font-size: 14px; font-weight: 650; background: var(--surface); }
-.packet-key.heartbeat { color: var(--flow); }
-.packet-key.request { color: var(--control); }
-.packet-key.granted { color: var(--success); }
-.packet-key.denied { color: var(--failure); }
-.controls [data-action="play"] { border-color: var(--control); background: var(--controlFill); min-width: 74px; }
-.raft-meta { font-variant-numeric: tabular-nums; }
-.result { min-height: 106px; }
+.raft-legend {
+  align-items: center;
+  gap: 12px 24px;
+}
+.raft-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.packet-key {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 1.5px solid currentColor;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 650;
+  background: var(--surface);
+}
+.packet-key.heartbeat {
+  color: var(--failure);
+}
+.packet-key.request {
+  color: var(--control);
+}
+.packet-key.granted {
+  color: var(--success);
+}
+.packet-key.denied {
+  color: var(--failure);
+}
+.controls [data-action="play"] {
+  border-color: var(--control);
+  background: var(--controlFill);
+  min-width: 74px;
+}
+.raft-meta {
+  font-variant-numeric: tabular-nums;
+}
+.result {
+  min-height: 70px;
+}
+
+#playback-state {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+#protocol-details {
+  border-top: 1px solid var(--subtle);
+  padding: 20px 28px;
+  color: var(--muted);
+  font-size: 14px;
+}
+#protocol-details summary {
+  cursor: pointer;
+  color: var(--text);
+}
+#protocol-details p { max-width: 80ch; }
+.protocol-table { overflow-x: auto; }
+.protocol-table table { width: 100%; border-collapse: collapse; text-align: left; }
+.protocol-table th, .protocol-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--subtle);
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  #network svg { min-width: 0; width: 100%; }
+  .scroll-hint { display: none; }
+  .controls { gap: 10px; padding: 12px 16px 20px; }
+  .controls label { width: 100%; }
+  .controls select { width: 100%; }
+  .controls button, .controls select { min-height: 44px; font-size: 16px; }
+  .controls button { flex: 1 1 auto; }
+  #protocol-details { padding: 18px 16px; }
+  #protocol-details summary { min-height: 44px; display: list-item; align-content: center; font-size: 16px; }
+  .result { padding: 16px; gap: 12px; flex-wrap: wrap; }
+}

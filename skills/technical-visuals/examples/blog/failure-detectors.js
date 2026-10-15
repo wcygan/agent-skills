@@ -7,11 +7,17 @@
   let s,
     running = false,
     raf = 0,
-    previous = 0;
+    previous = 0,
+    visible = false,
+    wantsPlayback = !matchMedia("(prefers-reduced-motion: reduce)").matches,
+    motionNodes;
+  const compact = matchMedia('(max-width: 600px)');
+  const motionPreference = matchMedia("(prefers-reduced-motion: reduce)");
   let theme =
     localStorage.getItem("visual-lab-theme") ||
     (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
   if (!["light", "dark"].includes(theme)) theme = "light";
+  const identities = { A: "processing", B: "storage", C: "flow", D: "control", E: "warning" };
   const next = (n) => (Math.imul(n, 1664525) + 1013904223) >>> 0;
   const followers = () => ids.slice(0, s.count - 1);
   const settled = () => followers().some((id) => s.nodes[id].expired);
@@ -57,6 +63,7 @@
   }
   function reset() {
     pause();
+    wantsPlayback = !motionPreference.matches;
     const count = Number(document.querySelector("#nodes").value);
     s = {
       now: 0,
@@ -76,10 +83,12 @@
     followers().forEach(add);
     send();
     render();
+    syncPlayback();
   }
   function advance(amount) {
     if (settled()) return;
     const end = s.now + amount;
+    let changed = false;
     while (true) {
       const at = Math.min(
         s.crashed ? Infinity : s.lastSent + 650,
@@ -90,6 +99,7 @@
         s.now = end;
         break;
       }
+      changed = true;
       s.now = at;
       for (const p of s.packets.filter((p) => p.end <= at)) {
         const n = s.nodes[p.to];
@@ -108,7 +118,8 @@
       }
       if (!s.crashed && s.lastSent + 650 <= at) send();
     }
-    render();
+    if (changed) render();
+    else renderMotion();
   }
   function target() {
     const eligible = followers().filter((id) => !s.cut.includes(id));
@@ -120,6 +131,15 @@
     cancelAnimationFrame(raf);
     raf = 0;
   }
+  function syncPlayback() {
+    const active = wantsPlayback && visible && !document.hidden && !settled();
+    if (active && !running) {
+      running = true;
+      previous = performance.now();
+      raf = requestAnimationFrame(frame);
+    } else if (!active) pause();
+    render();
+  }
   function frame(time) {
     if (!running) return;
     advance(Math.min(100, time - previous) * 0.5);
@@ -130,60 +150,107 @@
   const text = (x, y, label, size = 14, role = "text", anchor = "middle") =>
     `<text x="${x}" y="${y}" text-anchor="${anchor}" dominant-baseline="middle" font-family="system-ui,sans-serif" font-size="${size}" fill="${t(role)}">${label}</text>`;
   const rect = (x, y, w, h, role = "processing") =>
-    `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="${t(role + "Fill")}" stroke="${t(role)}" stroke-width="1.5"/>`;
+    `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="${t(role + "Fill") ?? `color-mix(in srgb, ${t(role)} 12%, ${t("surface")})`}" stroke="${t(role)}" stroke-width="1.5"/>`;
+  function route(id) {
+    const index = ids.indexOf(id);
+    if (compact.matches) {
+      const lane = 18 + index * 12;
+      const y = 188 + index * 180;
+      return [[104, 69], [lane, 69], [lane, y], [80, y]];
+    }
+    const y = 96 + index * 118;
+    return [[198, 279], [290, 279], [295, y], [390, y]];
+  }
+  function routePoint(points, progress) {
+    const a = Math.max(0, Math.min(1, progress)), b = 1 - a;
+    return [0, 1].map(axis => b*b*b*points[0][axis] + 3*b*b*a*points[1][axis] + 3*b*a*a*points[2][axis] + a*a*a*points[3][axis]);
+  }
+  function routePath(points) {
+    return `M${points[0]} C${points[1]} ${points[2]} ${points[3]}`;
+  }
+  function compactMarkup(rows) {
+    const height = 160 + rows.length * 180 + 50;
+    svg.setAttribute('viewBox', `0 0 360 ${height}`);
+    let out = `<title id="svg-title">Leader B sends heartbeats to independent follower deadlines</title><desc>Red hearts follow each curved route. Only delivery restarts the receiving follower's clock.</desc><rect width="360" height="${height}" fill="${t('surface')}"/>`;
+    for (const id of rows) {
+      const cut = s.cut.includes(id), points = route(id);
+      out += `<path data-route="${id}" d="${routePath(points)}" fill="none" stroke="${t(cut ? 'failure' : identities[id])}" stroke-width="2" ${cut ? 'stroke-dasharray="6 6"' : ''}/>`;
+      const [x,y] = points[3];
+      out += cut ? text(x-12,y-18,'×',20,'failure') : `<path d="M${x-8} ${y-4} L${x-1} ${y} L${x-8} ${y+4}" fill="none" stroke="${t(identities[id])}" stroke-width="2"/>`;
+    }
+    out += rect(104,16,236,106,identities.B) + text(222,42,'B · Leader',21)
+      + text(222,70,s.crashed ? '× Crashed' : 'Broadcasting',16,s.crashed ? 'failure' : identities.B)
+      + text(222,98,`♥ ${s.sent} sent`,14,'failure');
+    rows.forEach((id,index) => {
+      const n=s.nodes[id], top=160+index*180, end=n.start+n.duration;
+      const left=Math.max(0,end-s.now);
+      out += rect(80,top,260,148,identities[id]).replace("<rect ", `<rect data-node="${id}" `)
+        + text(98,top+24,`${id} · Follower`,18,'text','start')
+        + text(322,top+51,n.expired ? 'Expired' : `${seconds(left)} left`,16,n.expired ? 'failure':identities[id],'end').replace('<text ',`<text data-timer="${id}" `)
+        + text(98,top+51,`♥ ${n.received}`,14,'failure','start')
+        + text(98,top+77,`Last arrival: ${n.last===null ? '—' : seconds(n.last)}`,14,'text','start')
+        + text(98,top+100,`Deadline: ${seconds(end)}`,14,'text','start')
+        + `<rect x="98" y="${top+115}" width="224" height="8" rx="4" fill="${t('raised')}"/><rect data-bar="${id}" x="98" y="${top+115}" width="${224*left/n.duration}" height="8" rx="4" fill="${t(identities[id])}"/>`;
+    });
+    for (const p of s.packets) {
+      const [x,y]=routePoint(route(p.to),(s.now-p.start)/700);
+      out += text(x,y,'♥',23,'failure').replace('<text ',`<text data-packet="${p.id}" `);
+    }
+    out += text(180,height-47,`t = ${seconds(s.now)} · ${settled()?'FIRST TIMEOUT':running?'RUNNING':'PAUSED'}`,16).replace('<text ','<text data-clock="" ')
+      + text(180,height-18,`♥ ${s.packets.length} in flight · ${s.dropped} dropped`,14,'failure');
+    return out;
+  }
   function render() {
     section.dataset.state = JSON.stringify(s);
     const rows = followers(),
       y = (id) => 96 + ids.indexOf(id) * 118;
-    let out = `<title id="svg-title">Heartbeats from leader B and each follower’s independent deadline</title><desc>Hearts move left to right. Only arrivals restart follower timers. The right-hand ledger shows local observations.</desc><rect width="1040" height="600" fill="${t("surface")}"/>`;
+    let out;
+    if (compact.matches) out = compactMarkup(rows);
+    else {
+    svg.setAttribute('viewBox', '0 0 1040 600');
+    out = `<title id="svg-title">Heartbeats from leader B and each follower’s independent deadline</title><desc>Hearts move left to right. Only arrivals restart follower timers. The right-hand ledger shows local observations.</desc><rect width="1040" height="600" fill="${t("surface")}"/>`;
     out +=
       text(36, 30, "TRANSPORT", 12, "muted", "start") +
       text(590, 30, "FOLLOWER’S LOCAL EVIDENCE", 12, "muted", "start");
     out +=
-      rect(38, 220, 160, 118) +
+      rect(38, 220, 160, 118, identities.B) +
       text(118, 249, "B · Leader", 19) +
       text(
         118,
         278,
         s.crashed ? "× Crashed" : "Broadcasting",
         14,
-        s.crashed ? "failure" : "processing",
+        s.crashed ? "failure" : identities.B,
       ) +
-      text(118, 307, `${s.sent} broadcast${s.sent === 1 ? "" : "s"}`, 12, "muted");
-    out +=
-      text(118, 377, "Every 650 ms", 13, "muted") +
-      text(118, 403, "Transit: 700 ms", 13, "muted");
+      text(
+        118,
+        307,
+        `♥ ${s.sent} sent`,
+        12,
+        "failure",
+      );
+
     for (const id of rows) {
       const n = s.nodes[id],
         cy = y(id),
         cut = s.cut.includes(id),
         end = n.start + n.duration,
         remaining = Math.max(0, end - s.now);
-      const path = `M198 279 C290 279 295 ${cy} 390 ${cy}`;
-      out += `<path d="${path}" fill="none" stroke="${t(cut ? "failure" : "flow")}" stroke-width="2" ${cut ? 'stroke-dasharray="6 6"' : ""}/>`;
+      const path = routePath(route(id));
+      out += `<path d="${path}" fill="none" stroke="${t(cut ? "failure" : identities[id])}" stroke-width="2" ${cut ? 'stroke-dasharray="6 6"' : ""}/>`;
       if (cut) out += text(331, cy - 18, "× cut", 12, "failure");
-      else out += `<path d="M378 ${cy-4} L386 ${cy} L378 ${cy+4}" fill="none" stroke="${t("flow")}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+      else
+        out += `<path d="M378 ${cy - 4} L386 ${cy} L378 ${cy + 4}" fill="none" stroke="${t(identities[id])}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
       for (const p of s.packets.filter((p) => p.to === id)) {
-        const a = (s.now - p.start) / 700,
-          b = 1 - a,
-          x =
-            b * b * b * 198 +
-            3 * b * b * a * 290 +
-            3 * b * a * a * 295 +
-            a * a * a * 390,
-          py =
-            b * b * b * 279 +
-            3 * b * b * a * 279 +
-            3 * b * a * a * cy +
-            a * a * a * cy;
-        out += text(x, py, "♥", 23, "flow");
+        const [x, py] = routePoint(route(id), (s.now - p.start) / 700);
+        out += text(x, py, "♥", 23, "failure").replace("<text ", `<text data-packet="${p.id}" `);
       }
       out +=
-        rect(390, cy - 36, 164, 72, "control") +
+        rect(390, cy - 36, 164, 72, identities[id]).replace("<rect ", `<rect data-node="${id}" `) +
         text(
           472,
           cy - 12,
-          `${id} · ${n.expired ? "Candidate" : "Follower"}`,
+          `${id} · Follower`,
           17,
         ) +
         text(
@@ -191,28 +258,20 @@
           cy + 14,
           n.expired ? "Timer expired" : `${seconds(remaining)} left`,
           14,
-          n.expired ? "failure" : "control",
-        );
+          n.expired ? "failure" : identities[id],
+        ).replace("<text ", `<text data-timer="${id}" `);
       out +=
         text(
           590,
           cy - 22,
-          `Last heard: ${n.last === null ? "not yet" : seconds(n.last)}`,
+          `Last arrival: ${n.last === null ? "—" : seconds(n.last)}`,
           14,
           "text",
           "start",
         ) +
         text(810, cy - 22, `Deadline: ${seconds(end)}`, 14, "text", "start");
-      out += `<rect x="590" y="${cy - 3}" width="398" height="9" rx="4" fill="${t("raised")}"/><rect x="590" y="${cy - 3}" width="${(398 * remaining) / n.duration}" height="9" rx="4" fill="${t(n.expired ? "failure" : "control")}"/>`;
-      out +=
-        text(
-          590,
-          cy + 27,
-          `${seconds(n.start)} + ${seconds(n.duration)} sampled timeout`,
-          13,
-          "muted",
-          "start",
-        ) + text(988, cy + 27, `${n.received} received`, 12, "muted", "end");
+      out += `<rect x="590" y="${cy - 3}" width="398" height="9" rx="4" fill="${t("raised")}"/><rect data-bar="${id}" x="590" y="${cy - 3}" width="${(398 * remaining) / n.duration}" height="9" rx="4" fill="${t(identities[id])}"/>`;
+      out += text(988, cy + 27, `♥ ${n.received}`, 14, "failure", "end");
     }
     out +=
       `<line x1="36" y1="548" x2="1004" y2="548" stroke="${t("subtle")}"/>` +
@@ -223,19 +282,33 @@
         14,
         "text",
         "start",
-      ) +
+      ).replace("<text ", '<text data-clock="" ') +
       text(
         1004,
         574,
-        `♥ heartbeat     ${s.packets.length} in flight · ${s.dropped} dropped`,
+        `♥ ${s.packets.length} in flight · ${s.dropped} dropped`,
         13,
-        "flow",
+        "failure",
         "end",
       );
+    }
     svg.innerHTML = out;
+    motionNodes = {
+      clock: svg.querySelector("[data-clock]"),
+      barWidth: compact.matches ? 224 : 398,
+      followers: rows.map((id) => ({
+        id,
+        timer: svg.querySelector(`[data-timer="${id}"]`),
+        bar: svg.querySelector(`[data-bar="${id}"]`),
+      })),
+      packets: s.packets.map((p) => ({
+        packet: p,
+        node: svg.querySelector(`[data-packet="${p.id}"]`),
+      })),
+    };
     const expired = rows.filter((id) => s.nodes[id].expired);
     document.querySelector("#status").textContent = [
-      s.crashed ? "Leader B crashed." : "Leader B is alive.",
+      s.crashed ? "B crashed." : "",
       s.cut.length
         ? `Cut links: ${s.cut.map((id) => "B–" + id).join(", ")}.`
         : "",
@@ -245,18 +318,25 @@
           ? `One heartbeat to ${s.lastDrop} dropped.`
           : "",
       expired.length
-        ? `${expired.join(", ")} suspects B: its election timer expired.`
-        : "No follower has timed out.",
+        ? `${expired.join(", ")} suspects B · timer expired.`
+        : "Each follower watches its own timer.",
     ]
       .filter(Boolean)
       .join(" ");
-    document.querySelector("#diagnostic").hidden = !settled();
+    const diagnostic = document.querySelector("#diagnostic");
     document.querySelector("#outcome").textContent = expired
       .map((id) => {
-        const n = s.nodes[id];
-        return `${id} heard ${n.last === null ? "no heartbeat" : `its last heartbeat at ${seconds(n.last)}`}. Its ${seconds(n.duration)} timer expired at ${seconds(s.now)}.`;
+        return `Leader B · heartbeat timer expired at ${seconds(s.now)}.`;
       })
-      .join(" ");
+      .join("\n");
+    if (expired.length) {
+      const id = expired[0];
+      diagnostic.style.setProperty("--node-color", t(identities[id]));
+      document.querySelector("#failure-node").textContent = `Follower ${id}`;
+      document.querySelector("#failure-node-badge").textContent = id;
+    }
+    if (settled() && !diagnostic.open) diagnostic.showModal();
+    else if (!settled() && diagnostic.open) diagnostic.close();
     const eligible = rows.some((id) => !s.cut.includes(id));
     section.querySelector('[data-action="play"]').textContent = running
       ? "Pause"
@@ -269,6 +349,23 @@
         (action === "drop" && !!s.drop);
     document.querySelector("#nodes").disabled = settled();
     document.querySelector("#count").value = s.count;
+  }
+  function renderMotion() {
+    section.dataset.state = JSON.stringify(s);
+    for (const { id, timer, bar } of motionNodes.followers) {
+      const n = s.nodes[id],
+        remaining = Math.max(0, n.start + n.duration - s.now);
+      const label = n.expired ? "Timer expired" : `${seconds(remaining)} left`;
+      if (timer.textContent !== label) timer.textContent = label;
+      bar.setAttribute("width", (motionNodes.barWidth * remaining) / n.duration);
+    }
+    for (const { packet: p, node } of motionNodes.packets) {
+      const [x, y] = routePoint(route(p.to), (s.now - p.start) / 700);
+      node.setAttribute('x', x);
+      node.setAttribute('y', y);
+    }
+    const label = `t = ${seconds(s.now)}  ·  ${settled() ? (compact.matches ? "FIRST TIMEOUT" : "FROZEN AT FIRST TIMEOUT") : running ? "RUNNING" : "PAUSED"}`;
+    if (motionNodes.clock.textContent !== label) motionNodes.clock.textContent = label;
   }
   function applyTheme() {
     document.documentElement.dataset.theme = theme;
@@ -290,34 +387,13 @@
   section.addEventListener("click", (event) => {
     const action = event.target.closest("button")?.dataset.action;
     if (!action) return;
-    if (action === "reset") return reset();
-    if (action === "export") {
-      const blob = new Blob(
-        [
-          svg.outerHTML.replace(
-            "<svg",
-            '<svg xmlns="http://www.w3.org/2000/svg"',
-          ),
-        ],
-        { type: "image/svg+xml" },
-      );
-      const url = URL.createObjectURL(blob),
-        a = document.createElement("a");
-      a.href = url;
-      a.download = `failure-detectors-${theme}.svg`;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-      return;
-    }
+    if (action === "reset" || action === "restart") return reset();
     if (action === "play") {
-      if (running) pause();
-      else {
-        running = true;
-        previous = performance.now();
-        raf = requestAnimationFrame(frame);
-      }
+      wantsPlayback = !wantsPlayback;
+      syncPlayback();
     }
     if (action === "step") {
+      wantsPlayback = false;
       pause();
       advance(100);
     }
@@ -356,19 +432,16 @@
     localStorage.setItem("visual-lab-theme", theme);
     applyTheme();
   });
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) {
-      pause();
-      render();
-    }
+  document.addEventListener("visibilitychange", syncPlayback);
+  motionPreference.addEventListener("change", () => {
+    if (motionPreference.matches) wantsPlayback = false;
+    syncPlayback();
   });
-  matchMedia("(prefers-reduced-motion: reduce)").addEventListener(
-    "change",
-    () => {
-      pause();
-      render();
-    },
-  );
+  new IntersectionObserver(([entry]) => {
+    visible = entry.isIntersecting;
+    syncPlayback();
+  }).observe(section.querySelector(".stage"));
+  compact.addEventListener('change', () => render());
   applyTheme();
-  reset(); // Explicit playback also leaves reduced-motion users initially paused.
+  reset();
 })();
