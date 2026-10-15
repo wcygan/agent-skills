@@ -6,7 +6,7 @@
     <title>Replication · Visual lab</title>
     <link rel="stylesheet" href="../style.css?v=7845c8602e12" />
     <link rel="stylesheet" href="blog.css?v=a2bf371124c7" />
-    <link rel="stylesheet" href="replication.css?v=3e2025b42e14" />
+    <link rel="stylesheet" href="replication.css?v=5276e91749bc" />
   </head>
   <body>
     <main>
@@ -35,110 +35,44 @@
           </svg>
         </button>
       </header>
-      <section
-        class="visual"
-        data-figure="database-log"
-        data-source-component="DatabaseLogDemo"
-      >
+      <section class="visual" data-figure="database-log" data-source-component="DatabaseLogDemo">
         <header class="visual-heading"><h2>Writes are recorded in order</h2></header>
-        <div class="controls"><button data-action="play">Play</button><button data-action="step">Step</button><button data-action="replay">Replay</button></div><details class="experiments"><summary>Explore writes and reads</summary><div class="controls advanced-controls">
-          <button data-action="write">Write next</button
-          ><button data-action="reset">Clear</button
-          ><label
-            >Read offset<select data-control="offset">
-              <option>0</option>
-              <option>1</option>
-              <option>2</option>
-              <option>3</option>
-              <option>4</option>
-              <option>5</option>
-            </select></label
-          ><button data-action="read">Read entry</button>
-        </div></details>
-        <p class="scroll-hint">
-          Scroll the diagram horizontally to see the full pipeline →
-        </p>
-        <div
-          class="stage"
-          tabindex="0"
-          aria-label="Database log diagram, horizontally scrollable"
-        ></div>
-        <div class="supporting-copy sr-only"><p data-summary></p><p role="status"></p></div>
-        <footer class="result"><p>Each write adds an entry to the database log. Offsets identify the entries in that log.</p></footer>
+        <div class="stage" tabindex="0" role="region" aria-label="Writes are recorded in order"></div>
+        <div class="controls">
+          <button data-action="play">Pause</button>
+          <button data-action="step">Step</button>
+          <button data-action="replay">Replay</button>
+          <progress value="0" aria-label="Demo progress"></progress>
+          <output aria-live="polite"></output>
+        </div>
+        <footer class="result"><p>Each write adds the next entry to the database log.</p></footer>
       </section>
-      <section
-        class="visual"
-        data-figure="log-replication"
-        data-source-component="DatabaseLogReplicationDemo"
-      >
-        <header class="visual-heading"><h2>Replicas receive and apply committed writes</h2></header>
-        <div class="controls"><button data-action="play">Play</button><button data-action="step">Step</button><button data-action="replay">Replay</button></div><details class="experiments"><summary>Explore writes and reads</summary><div class="controls advanced-controls">
-          <button data-action="write">Write next</button
-          ><button data-action="reset">Clear</button
-          ><button data-action="read">Read primary</button>
-        </div></details>
-        <p class="scroll-hint">
-          Scroll the diagram horizontally to see the full pipeline →
-        </p>
-        <div
-          class="stage"
-          tabindex="0"
-          aria-label="Replication pipeline, horizontally scrollable"
-        ></div>
-        <div class="supporting-copy sr-only"><p data-summary></p><p role="status"></p></div>
-        <footer class="result"><p>Committed writes travel to the replica in order. The replica applies each write before its updated value becomes visible to reads.</p></footer>
+      <section class="visual" data-figure="log-replication" data-source-component="DatabaseLogReplicationDemo">
+        <header class="visual-heading"><h2>A peer receives writes before applying them</h2></header>
+        <div class="stage" tabindex="0" role="region" aria-label="A peer receives writes before applying them"></div>
+        <div class="controls">
+          <button data-action="play">Pause</button>
+          <button data-action="step">Step</button>
+          <button data-action="replay">Replay</button>
+          <progress value="0" aria-label="Demo progress"></progress>
+          <output aria-live="polite"></output>
+        </div>
+        <footer class="result"><p>The peer buffers received entries and applies them one at a time. Its data version advances after each application.</p></footer>
       </section>
-      <section
-        class="visual"
-        data-figure="group-lag"
-        data-source-component="GroupReplicationLagDemo"
-      >
-        <header class="visual-heading"><h2>Receiving is not the same as applying</h2></header>
-        <div class="controls"><button data-action="play">Play</button><button data-action="step">Step</button><button data-action="replay">Replay</button></div><details class="experiments"><summary>Explore writes and reads</summary><div class="controls advanced-controls">
-          <button data-action="link">Interrupt Link 2</button><button data-action="write">Write update</button
-          ><button data-action="reset">Clear</button
-          ><button data-action="read">Read all</button
-          ><button data-action="catchup">Drain pending</button>
-        </div><div class="conditions">
-          <label
-            >Replica B apply time
-            <select data-control="apply">
-              <option value="1">1 tick / entry</option>
-              <option value="4">4 ticks / entry</option>
-              <option value="8" selected>8 ticks / entry</option>
-            </select></label
-          ><label
-            >Replica B delivery time
-            <select data-control="latency">
-              <option value="2" selected>2 ticks · 1.8 s</option>
-              <option value="4">4 ticks · 3.6 s</option>
-              <option value="8">8 ticks · 7.2 s</option>
-            </select></label
-          ><button data-action="speed">Speed up B</button
-          >
-        </div></details>
-
-        <p class="scroll-hint">
-          Scroll the diagram horizontally to see the full pipeline →
-        </p>
-        <div
-          class="stage"
-          tabindex="0"
-          aria-label="Group replication and recovery, horizontally scrollable"
-        ></div>
-        <div class="read-results" hidden></div>
-        <div class="supporting-copy sr-only"><p data-summary></p><p role="status"></p><p class="model-note">Illustrative ticks, not measured MySQL latency. All six writes update
-          one existing record. Group ordering and successful certification are
-          combined; “received” means admission to a local application queue. A
-          healthy majority remains available. Brief outages assume missed
-          messages remain in cache; removal after 10 illustrative ticks requires
-          rejoin and donor recovery. Stronger consistency settings may wait for
-          synchronization.</p></div>
-
-        <footer class="result"><p>A replica can buffer several writes while applying one at a time. Reads show the last applied value, so a replica can have received a write without showing it yet.</p></footer>
+      <section class="visual" data-figure="group-lag" data-source-component="GroupReplicationLagDemo">
+        <header class="visual-heading"><h2>A lagging peer catches up</h2></header>
+        <div class="stage" tabindex="0" role="region" aria-label="A lagging peer catches up"></div>
+        <div class="controls">
+          <button data-action="play">Pause</button>
+          <button data-action="step">Step</button>
+          <button data-action="replay">Replay</button>
+          <progress value="0" aria-label="Demo progress"></progress>
+          <output aria-live="polite"></output>
+        </div>
+        <footer class="result"><p>The peer applies buffered writes during the interruption, then receives and applies the missing entries after reconnecting.</p></footer>
       </section>
     </main>
     <script src="../tokens.js?v=debecdea2d99"></script>
-    <script src="replication.js?v=53961a7f628e"></script>
+    <script src="replication.js?v=51bed6fb6bfa"></script>
   </body>
 </html>

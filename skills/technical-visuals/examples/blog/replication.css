@@ -1,81 +1,23 @@
-.visual {
-  margin-bottom: 32px;
+.visual { margin-bottom: 32px; }
+.stage { overflow: hidden; }
+.stage svg { min-width: 0; max-width: 620px; margin: 0 auto; }
+.controls { padding-top: 16px; }
+.controls progress {
+  width: 140px;
+  height: 10px;
+  border: 0;
+  border-radius: 3px;
+  overflow: hidden;
+  appearance: none;
+  background: var(--raised);
+  color: var(--success);
+  accent-color: var(--success);
 }
-.visual-heading p:not(.eyebrow) {
-  color: var(--muted);
-  max-width: 800px;
-}
-.conditions {
-  display: flex;
-  align-items: end;
-  gap: 16px;
-  flex-wrap: wrap;
-  padding: 0 28px 24px;
-}
-.stage svg {
-  min-width: 800px;
-}
-.caveat {
-  padding: 0 28px 24px;
-  color: var(--muted);
-  font-size: 13px;
-}
-.read-results {
-  margin: 0 28px 20px;
-  padding: 20px;
-  border: 1px solid var(--control);
-  border-radius: 8px;
-  background: var(--controlFill);
-}
-.read-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
-.read-grid strong {
-  display: block;
-  font-size: 24px;
-}
-.read-grid p {
-  font-size: 13px;
-  margin: 0;
-}
-.read-results h3 {
-  margin: 0 0 12px;
-}
-.read-results button {
-  margin-top: 16px;
-}
-@media (max-width: 720px) {
-  .conditions {
-    padding: 0 18px 20px;
-  }
-  .read-grid {
-    grid-template-columns: 1fr;
-  }
-  .caveat {
-    padding: 0 18px 20px;
-  }
-}
-
-.experiments { margin: 0 28px 18px; border-top: 1px solid var(--subtle); padding-top: 12px; }
-.experiments summary { cursor: pointer; color: var(--muted); font-size: 14px; }
-.experiments .controls, .experiments .conditions { padding: 16px 0 0; margin: 0; }
-@media(max-width:720px) { .experiments { margin-inline: 18px; } }
-
-.model-note { font-size: 13px; color: var(--muted); max-width: 700px; line-height: 1.6; }
-
-@media(max-width:600px) {
-  .stage svg { min-width: 0; width: 100%; display: block; }
-  .stage { overflow-x: hidden; }
-  .controls button, .conditions button, .controls select, .conditions select { min-height: 44px; font-size: 16px; }
-  .controls label, .conditions label { max-width: 100%; }
-  .controls select, .conditions select { max-width: 100%; width: 100%; }
-  .read-results { margin-inline: 18px; padding: 16px; }
-  .result { flex-wrap: wrap; }
-  .result details { width: 100%; }
-}
-@media(max-width:600px) { .scroll-hint { display: none; } }
-@media(max-width:600px) {
-  .experiments summary, .result summary { min-height: 44px; box-sizing: border-box; padding-block: 12px; font-size: 16px; line-height: 20px; }
+.controls progress::-webkit-progress-bar { background: var(--raised); }
+.controls progress::-webkit-progress-value { background: var(--success); }
+.controls progress::-moz-progress-bar { background: var(--success); }
+.controls output { color: var(--muted); font: 13px ui-monospace, monospace; min-width: 64px; }
+@media (max-width: 600px) {
+  .controls progress { flex: 1 1 100px; }
+  .controls output { font-size: 14px; }
 }

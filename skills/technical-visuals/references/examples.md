@@ -42,7 +42,7 @@ Open each linked page to inspect its current states in both themes.
 | [Leader election](../examples/blog/leader-election.html) | Stable node colors, a gold leader star, candidate ballot icon, small term/vote metadata | Stripping all metadata makes roles and election decisions indistinguishable |
 | [Gossip and failure detection](../examples/blog/gossip-protocols.html) / [timers](../examples/blog/failure-detectors.html) | Infection on payload arrival; red heartbeats; independent local timer state | Coloring recipients early implies receipt; shared timers suggest a global failure verdict |
 | [Follower identity and timeout popup](../examples/blog/failure-detectors.html) | Distinct, stable node colors repeated in timers, connections, and the popup's node-ID badge; heartbeats remain red | One shared follower color obscures whose timer expired; a generic failure popup loses the connection to the node |
-| [Replication](../examples/blog/replication.html) | Compact sender; visible in-flight records, received buffer, and active apply state | Oversized transport machinery crowds out the receiving/applying distinction |
+| [Replication](../examples/blog/replication.html) | Horizontal logs; each database owns its history; copied entries buffer before applying; the same pair shows lag and recovery | Oversized transport machinery crowds out the receiving/applying distinction |
 | [Kafka partitioning](../examples/blog/kafka-partitioning.html) | Stable key colors, visible key-to-partition routing, compact partition-local logs | Fast decorative dots, off-path motion, or oversized empty logs hide the mapping |
 
 Keep the initial view concise: short actor labels, visual state, and breathing room.
