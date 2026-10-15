@@ -1,6 +1,6 @@
 ---
 name: technical-visuals
-description: "Create technical diagrams, charts, and interactive explanations with a consistent light/dark visual system. Use for architecture, data flow, before/after visuals, PR figures, or explicitly requested 3D explainers; default to 2D."
+description: "Create concise technical diagrams, charts, and animated explanations for teammates, architecture discussions, and PRs. Route through the shared light/dark design system and visual examples; default to 2D, with 3D only when requested."
 license: MIT
 metadata:
   author: William Cygan
@@ -10,47 +10,86 @@ metadata:
 
 # Technical visuals
 
-Explain one technical relationship or change with a visual the intended reader
-can interpret at its delivery size. Preserve the facts and the user's requested
-format. Product UI design belongs to an available UI design skill; this skill
-owns explanatory figures, not a redesign of the surrounding application.
+Help teammates understand a system or change at a higher level than its implementation.
+Show the actors, relationships, and state that explain the idea; leave out detail
+that does not help the reader answer their question. Preserve essential topology,
+causality, and verified facts. This skill owns explanatory visuals; product UI
+redesign belongs to an available UI design skill.
 
-1. Establish the reader's question, source of truth, delivery surface, and supported
-   themes. Distinguish observed behavior, conceptual models, and illustrative data.
-   Read [input contracts](references/inputs.md) for the supplied modality.
-   When recreating a post or series, inventory every source figure and its
-   meaningful states first. Map each to an output; do not silently substitute
-   a selected lesson for requested full coverage. Merge overlapping lessons into one
-   coherent demo when the same model can teach both; retain every source mapping.
-2. Read the [design system](references/design-system.md). Read the [shape vocabulary](references/shapes.md) when selecting component symbols.
-   Start with a high-level view: fewer words, generous spacing, short actor labels,
-   and visual state. Move detailed metadata into captions or optional disclosures.
-   Keep the actors, boundaries, and intermediate states needed to understand the
-   relationship; simplification must not hide what makes the system work.
-   Use the [iteration examples](references/examples.md#lessons-from-the-blog-iterations)
-   for density, motion, state, and chart decisions learned from the visual lab.
-   Make phone readability a design goal for interactive HTML: reflow diagrams and
-   controls into compact layouts with little or no horizontal scrolling. Preserve
-   readable labels and essential state instead of shrinking a desktop canvas.
-   Use 2D by default.
-   Use 3D only on an explicit request, including isometric or spatial rendering.
-3. Select the smallest useful output: Mermaid for simple relationships; SVG for
-   precise styled figures; HTML/SVG for meaningful interaction; a charting tool for
-   measured data; a real application screenshot for evidence of UI behavior.
-   Generated raster illustration may support a metaphor, but cannot establish
-   topology, exact text, measured data, or proof of an application state.
-4. Follow the [2D playbooks](references/2d.md), or the
-   [3D playbooks](references/3d.md) only when requested. Read the closest
-   [example and counterexample](references/examples.md); adapt its teaching
-   structure rather than copying unrelated domain assumptions.
-5. Apply [delivery and verification](references/delivery.md). Inspect the rendered
-   result and actual controls, retain editable source, and deliver the requested
-   artifact with a short caption and an accurate verification statement.
+## Visual approach
 
-Keep essentials in the figure, supporting facts in the caption, and deeper detail
-in a link. Use [write-clearly](../write-clearly/SKILL.md) when labels or prose need
-editing. A useful static figure is a complete outcome; do not build an application
-when a diagram answers the question.
+Use fewer words, generous spacing, familiar shapes, and visible state. Prefer a
+plain title and one factual caption to repeated section labels and explanations.
+Keep necessary roles, votes, locks, buffers, and intermediate states visible;
+simplification must not remove the mechanism being explained.
 
-The fresh examples preserve useful topics and visual preferences from the retired
-catalog, not its implementation. See [precedent](references/precedent.md).
+Use 2D by default. Use 3D, including isometric views, only when requested.
+A useful static diagram is a complete result; animate only when motion makes a
+sequence or state change easier to understand.
+
+Use the paired light/dark palette rather than inventing colors per figure:
+purple processing, blue storage, teal flow, and rose control; orange focus,
+green completion, amber waiting, and red failure. Give peer nodes stable identities
+and carry their colors into timers, connections, and identifying popups. Keep
+labels and symbols so meaning survives without color. In dark mode, colored
+interiors are restrained tints above a neutral charcoal stage; reserve stronger
+color for identity outlines, payloads, and state. Keep text and boundaries legible.
+Exact values live in the tokens, not in this entrypoint.
+
+## Find the right resource
+
+Read the design system, then load only the resources relevant to the task.
+
+| Need | Route |
+| --- | --- |
+| Color, typography, spacing, density, mobile sizing | [Design system](references/design-system.md); canonical [color tokens](examples/tokens.js) |
+| Infrastructure, data structures, decisions, streaming, and component symbols | [Shape vocabulary](references/shapes.md); rendered library in the [studio](examples/index.html#shape-library); reusable [SVG shape source](examples/shapes.js) |
+| Concise visual storytelling and animation precedent | [Blog visual lab](examples/blog/index.html); select a model below and inspect its same-named JavaScript source |
+| A supplied diagram, screenshot, dataset, codebase, or post series | [Input contracts](references/inputs.md) |
+| 2D architecture, flow, chart, or before/after figure | [2D playbooks](references/2d.md) |
+| Explicitly requested spatial explanation | [3D playbooks](references/3d.md) |
+| Good/bad comparisons, iteration lessons, and runnable checks | [Examples and review commands](references/examples.md) |
+| Theme checks, animation checks, exports, or final handoff | [Delivery and verification](references/delivery.md) |
+| Dark palette provenance or color adaptation | [PlanetScale precedent](references/dark-palette.md) |
+| Shorter titles, labels, and captions | [Write clearly](../write-clearly/SKILL.md) |
+
+## Learn from the blog visuals
+
+The blog demos are the primary precedent for concise, styled, teammate-facing
+explanations. Open a relevant page in both themes and inspect its implementation;
+the gallery works directly from local files without a running server.
+Choose by the relationship being taught, not merely by matching the topic.
+
+| Teaching problem | Start here |
+| --- | --- |
+| Ordered history, copying, buffering, lag, and recovery | [Replication](examples/blog/replication.html) |
+| Accumulating evidence, phases, local versus global agreement | [Distributed transactions](examples/blog/distributed-transactions.html) |
+| Information spreading and recipient state changing on arrival | [Gossip](examples/blog/gossip-protocols.html) |
+| Independent timers, heartbeats, and a clearly identified outcome | [Failure detectors](examples/blog/failure-detectors.html) |
+| Stable identities, roles, terms, and votes | [Leader election](examples/blog/leader-election.html) |
+| Stable record colors, routing, and ordered destination logs | [Kafka partitioning](examples/blog/kafka-partitioning.html) |
+| Capacity, free space, memory paths, locality, and measured versus illustrative charts | [The Big Database at Work](examples/blog/the-big-database-at-work.html) |
+
+Copy the useful teaching pattern and minimum source into the requested project;
+replace example assumptions with the task's facts. Do not create a runtime
+dependency on the skill directory or modify an installed copy. For a requested
+post series, inventory all source figures and meaningful states; merge overlapping
+lessons without losing their source coverage.
+
+## Build and verify
+
+Establish the reader's question, source facts, delivery width, themes, and output
+format. Choose the smallest useful artifact: Mermaid for simple relationships,
+SVG for precise figures, HTML/SVG for interaction, a plotting tool for measured
+charts, or an actual screenshot for application evidence.
+
+For animation, follow the blog patterns: payloads travel on their actual routes,
+recipients change on arrival, and completed progress remains visible. Autoplay
+while visible, with pause, step, and replay; respect reduced motion and suspend
+hidden work. Preserve state across theme and layout changes.
+
+Apply the delivery checks at the real reading width and on a phone. Inspect the
+rendered states and controls in both supported themes, not just the source or a
+contrast score. Retain editable source and report what was verified. Use the
+linked review commands when adapting a bundled demo; do not load every example
+or build an application when a small figure answers the question.

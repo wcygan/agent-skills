@@ -71,6 +71,26 @@ for (const [theme, t] of Object.entries(tokens)) {
     }
   }
 }
+const dark = tokens.dark;
+const chromaticFills = ["processingFill", "storageFill", "flowFill", "controlFill", "warningFill"];
+for (const name of chromaticFills) {
+  assert.ok(luminance(dark[name]) > luminance(dark.surface),
+    `${name}: colored interiors must be lighter than the slate stage`);
+  assert.ok(ratio(dark[name], dark.surface) >= 1.3,
+    `${name}: retain a visible lightness step from the slate stage`);
+  for (const role of ["text", "muted", "focus"]) {
+    assert.ok(ratio(dark[role], dark[name]) >= 4.5,
+      `dark ${role}/${name}: tinted-node text remains legible`);
+    contrastPairs++;
+  }
+  assert.ok(ratio(dark.border, dark[name]) >= 3, `${name}: meaningful neutral outline`);
+  contrastPairs++;
+}
+for (const role of ["processing", "storage", "flow", "control", "focus", "success", "warning", "failure"]) {
+  assert.ok(ratio(dark.canvas, dark[role]) >= 4.5,
+    `dark canvas ink/${role}: solid record labels remain legible`);
+  contrastPairs++;
+}
 const { chromium } = await import(pathToFileURL(path.resolve(modulePath)).href);
 const browser = await chromium.launch({ headless: true });
 const errors = [];

@@ -63,18 +63,48 @@ adapting an example; do not introduce a runtime dependency on the skill folder.
 
 | Role | Light | Dark | Meaning |
 | --- | --- | --- | --- |
-| Canvas | `#f7f7f5` | `#252b35` | Quiet surrounding space |
-| Surface | `#ffffff` | `#2d3541` | Nodes and local groups |
-| Raised surface | `#ecece8` | `#374151` | Secondary planes, slots |
-| Text | `#202020` | `#f3f5f7` | Main labels |
-| Muted text | `#595954` | `#c0c8d3` | Captions and metadata |
-| Border | `#777770` | `#a3afbf` | Meaningful outlines and neutral routes |
-| Subtle border | `#d6d6ce` | `#64748b` | Decorative separators only |
-| Focus | `#b43d08` | `#ffae80` | The teaching point or selected route |
-| Success | `#187636` | `#85e0a3` | Accepted or completed |
-| Warning | `#866100` | `#f5d478` | Waiting, pressure, caution |
-| Failure | `#c12e46` | `#ffa1b1` | Failed or rejected |
-| Information | `#076fa8` | `#8ad4ff` | Context or informational state |
+| Canvas | `#f7f7f5` | `#1c1e22` | Quiet surrounding space |
+| Surface | `#ffffff` | `#24262a` | Nodes and local groups |
+| Raised surface | `#ecece8` | `#303236` | Secondary planes, slots |
+| Text | `#202020` | `#f4f4f5` | Main labels |
+| Muted text | `#595954` | `#c4c6ca` | Captions and metadata |
+| Border | `#777770` | `#a5a9b0` | Meaningful outlines and neutral routes |
+| Subtle border | `#d6d6ce` | `#60646c` | Decorative separators only |
+| Focus | `#b43d08` | `#ffb27c` | The teaching point or selected route |
+| Success | `#187636` | `#7bd99a` | Accepted or completed |
+| Warning | `#866100` | `#e8cd83` | Waiting, pressure, caution |
+| Failure | `#c12e46` | `#ff9aa6` | Failed or rejected |
+| Information | `#076fa8` | `#8ac8f2` | Context or informational state |
+
+Dark mode uses a low-chroma charcoal foundation, inspired by PlanetScale's
+engineering explainers. Surface elevation supplies structure; color supplies
+identity and state. Keep large node bodies gently tinted and lighter than the
+stage. Reserve stronger color for outlines, payloads, progress, and state icons.
+Use neutral text for ordinary labels and colored text for identity or state.
+Do not increase every fill's saturation to make the diagram more colorful.
+
+| Family | Dark outline / identity | Dark interior |
+| --- | --- | --- |
+| Processing | `#c4b5fd` | `#44414e` |
+| Storage | `#8ac8f2` | `#394650` |
+| Flow | `#7dd3ba` | `#394a45` |
+| Control | `#f0a9ca` | `#4c4048` |
+| Waiting | `#e8cd83` | `#4b4638` |
+
+These are adaptations of PlanetScale's color hierarchy, not an exact brand palette.
+Keep neutral surfaces nearly achromatic, with a slight cool bias. All node families
+use comparable interior lightness so no family dominates merely through area.
+Keep solid record fills paired with dark ink, as in Kafka, rather than white text.
+Colored interiors must be lighter than the stage; the 1.3:1 fill/stage budget is
+an internal hierarchy check, not a WCAG threshold. Meaningful boundaries need
+3:1 and ordinary text 4.5:1. Inspect adjacent nodes, moving records, and buffered
+versus applied entries at phone size. Do not enforce minimum fill saturation or
+RGB distance: those checks encouraged competing colored surfaces in earlier passes.
+Retain IDs, symbols, and borders so color is never the only encoding.
+Light mode remains its own palette.
+
+Measured sources and the adaptation rationale are recorded in
+[dark palette precedent](dark-palette.md).
 
 Orange remains the signature emphasis; its value changes by theme for contrast.
 Do not use it as a generic fill on every node. These colors are semantic roles,

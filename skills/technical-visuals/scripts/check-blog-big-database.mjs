@@ -26,15 +26,15 @@ for (let i = 99; i > 0; i--) {
   const j = seed % (i + 1);
   [target[i], target[j]] = [target[j], target[i]];
 }
-const leafX = [130, 250, 370, 550, 670, 790];
+const leafX = [60,130,200,300,370,440];
 function arc(packet) {
   const points = [
-    [460, 78],
-    [460, 105],
-    [670, 105],
-    [670, 305],
-    [leafX[packet.leaf], 305],
-    [leafX[packet.leaf], 335],
+    [250,60],
+    [250,80],
+    [370,80],
+    [370,225],
+    [leafX[packet.leaf],225],
+    [leafX[packet.leaf],245],
   ];
   let sum = 0;
   for (let i = 1; i < points.length; i++) {
@@ -59,6 +59,9 @@ try {
   p.on("pageerror", (e) => errors.push(e.message));
   await p.goto(url);
   assert.equal(await p.locator("[data-action=export]").count(), 0);
+  const column=await p.locator('main').evaluate(main=>main.clientWidth-parseFloat(getComputedStyle(main).paddingLeft)-parseFloat(getComputedStyle(main).paddingRight));
+  assert.equal(column,644,'Match the measured blog content width');
+  assert.ok(await p.locator('.stage').evaluateAll(nodes=>nodes.every(n=>n.clientHeight<=445)), 'Desktop scenes have a bounded height');
   assert.equal(await p.locator("[data-action=play]").count(), 4);
   const tree = p.locator("[data-figure=increasing-ids]");
   assert.equal(
@@ -102,7 +105,7 @@ try {
           Math.abs(arc(n) - arc(old) - 120) < 0.001,
           "500ms must travel120 SVG units along the full polyline",
         );
-        if (n.duration < 2000) short++;
+        if (n.duration < 1400) short++;
         else long++;
       }
     }
@@ -110,7 +113,7 @@ try {
       found = new Set();
     for (let id = 0; id <= Math.floor(state.elapsed / 400); id++) {
       const leaf = target[id % 100],
-        duration = ((467 + Math.abs(leafX[leaf] - 670)) / 240) * 1000,
+        duration = ((305 + Math.abs(leafX[leaf] - 370)) / 240) * 1000,
         age = state.elapsed - id * 400;
       if (age >= duration) {
         expected[leaf - 3]++;
@@ -243,6 +246,15 @@ try {
     const budget = p.locator("[data-figure=working-set-budget]");
     assert.equal(await budget.locator("[data-slot]").count(), 100);
     assert.equal(await budget.locator("[data-disk-block]").count(), 152);
+    for (const used of [33,56]) {
+      await budget.locator('input').fill(String(used));
+      assert.equal(await budget.locator('[data-slot].occupied').count(),used);
+      assert.equal(await budget.locator('[data-used]').textContent(),`${used} GiB`);
+      assert.equal(await budget.locator('[data-free]').textContent(),`${100-used} GiB`);
+    }
+    const panels=await budget.locator('[data-resource-panel]').evaluateAll(nodes=>nodes.map(n=>[n.getAttribute('width'),n.getAttribute('height')]));
+    assert.deepEqual(panels[0],panels[1],'Disk and RAM panels keep equal square proportions');
+    await budget.locator('[data-action=reset]').click();
     assert((await budget.textContent()).includes("98.7%"));
     const gap = await p
       .locator("[data-figure=working-set] svg")
@@ -251,7 +263,7 @@ try {
             .querySelector("[data-hardware-icon=disk]")
             .getBoundingClientRect(),
           label = [...svg.querySelectorAll("text")]
-            .find((n) => n.textContent === "Disk / SSD")
+            .find((n) => n.textContent === "Disk")
             .getBoundingClientRect();
         return label.top - icon.bottom;
       });
@@ -305,6 +317,8 @@ try {
           };
         }),
       );
+      assert.ok(await p.locator('.stage').evaluateAll(nodes=>nodes.every(n=>n.clientHeight<=295)), 'Phone scenes remain compact');
+      assert.ok(await p.locator('[data-figure]').evaluateAll(nodes=>nodes.every(n=>n.clientHeight<=700)), 'A phone demo fits a reasonable reading area');
       for (const row of sizes) {
         assert(
           row.scroll <= row.width + 1,
@@ -361,31 +375,7 @@ try {
   await tree.locator("[data-action=reset]").click();
   let mobilePrevious = await snapshot(),
     mobileSpeedChecks = 0;
-  const mobileArc = (packet) => {
-    const xs = [25, 75, 125, 175, 235, 295],
-      pts = [
-        [160, 60],
-        [160, 80],
-        [235, 80],
-        [235, 200],
-        [xs[packet.leaf], 200],
-        [xs[packet.leaf], 218.5],
-      ];
-    let sum = 0;
-    for (let i = 1; i < pts.length; i++) {
-      const [ax, ay] = pts[i - 1],
-        [bx, by] = pts[i];
-      if (
-        packet.x >= Math.min(ax, bx) - 0.001 &&
-        packet.x <= Math.max(ax, bx) + 0.001 &&
-        packet.y >= Math.min(ay, by) - 0.001 &&
-        packet.y <= Math.max(ay, by) + 0.001
-      )
-        return sum + Math.hypot(packet.x - ax, packet.y - ay);
-      sum += Math.hypot(bx - ax, by - ay);
-    }
-    throw Error("Phone packet must follow compact route");
-  };
+  const mobileArc = arc;
   for (let i = 0; i < 20; i++) {
     await tree.locator("[data-action=step]").click();
     const current = await snapshot();
@@ -393,8 +383,8 @@ try {
       const prior = mobilePrevious.find((o) => o.id === n.id);
       if (prior) {
         assert(
-          Math.abs(mobileArc(n) - mobileArc(prior) - 60) < 0.001,
-          "Compact routes travel60units per500ms at one uniform speed",
+          Math.abs(mobileArc(n) - mobileArc(prior) - 120) < 0.001,
+          "Compact routes retain the same 240 units per second",
         );
         mobileSpeedChecks++;
       }

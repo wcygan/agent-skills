@@ -21,7 +21,7 @@
     return `<g data-hardware-icon="${kind}" transform="translate(${x} ${y}) scale(${scale})" fill="${color(role + "Fill")}" stroke="${color(role)}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${shapes}</g>`;
   }
   const path = (pts, role = "border", dash = false, arrows = false) =>
-    `<path d="${pts.map((p, i) => (i ? "L" : "M") + p.join(" ")).join(" ")}" fill="none" stroke="${color(role)}" stroke-width="1.8" ${dash ? 'stroke-dasharray="6 5"' : ""} ${arrows ? 'marker-end="url(#arrow)"' : ""}/>`;
+    `<path d="${pts.map((p, i) => (i ? "L" : "M") + p.join(" ")).join(" ")}" fill="none" stroke="${color(role)}" stroke-width="1.8" ${dash ? 'stroke-dasharray="6 5"' : ""} ${arrows ? `marker-end="url(#arrow-${role})"` : ""}/>`;
   const dot = (x, y, miss = false) =>
     `<circle cx="${x}" cy="${y}" r="${miss ? 7 : 4}" fill="${color(miss ? "focus" : "flow")}" stroke="${color("surface")}" stroke-width="1"/>`;
   function point(pts, p) {
@@ -38,263 +38,73 @@
     }
     return pts.at(-1);
   }
-  function regionLayout(compact = false) {
-    let s = text(compact ? 160 : 460, 25, "Primary ↔ primary", "small");
-    const centers = compact ? [180, 180, 180] : [170, 460, 750];
-    if (compact)
-      s += path(
-        [
-          [25, 98],
-          [25, 478],
-        ],
-        "control",
-        true,
-      );
-    else
-      s += path(
-        [
-          [170, 60],
-          [750, 60],
-        ],
-        "control",
-        true,
-      );
-    centers.forEach((x, i) => {
-      const y = compact ? 45 + i * 190 : 85;
-      const w = compact ? 260 : 240;
-      s += `<rect x="${x - w / 2}" y="${y}" width="${w}" height="170" rx="12" fill="${color("raised")}" stroke="${color("subtle")}" stroke-dasharray="5 5"/>`;
-      s += text(
-        compact ? x : x - 60,
-        y + 20,
-        "Region " + String.fromCharCode(65 + i),
-        "label",
-      );
-      s += compact
-        ? path(
-            [
-              [25, y + 53],
-              [x - 45, y + 53],
-            ],
-            "control",
-            true,
-          )
-        : path(
-            [
-              [x, 60],
-              [x, y + 38],
-            ],
-            "control",
-            true,
-          );
-      s += path(
-        [
-          [x, y + 83],
-          [x, y + 103],
-          [x - 58, y + 103],
-          [x - 58, y + 120],
-        ],
-        "flow",
-        false,
-        true,
-      );
-      s += path(
-        [
-          [x, y + 103],
-          [x + 58, y + 103],
-          [x + 58, y + 120],
-        ],
-        "flow",
-        false,
-        true,
-      );
-      s += database(x - 45, y + 38, 90, 45, "P");
-      s += database(x - 98, y + 120, 80, 35, "R");
-      s += database(x + 18, y + 120, 80, 35, "R");
+  function regionLayout() {
+    let s = path([[90,55],[410,55]], 'control', true);
+    [90,250,410].forEach((x,i)=>{
+      s += `<rect x="${x-70}" y="65" width="140" height="190" rx="10" fill="${color('raised')}" stroke="${color('subtle')}" stroke-dasharray="5 5"/>`;
+      s += text(x,25,'Region '+String.fromCharCode(65+i),'label');
+      s += path([[x,55],[x,110]],'control',true);
+      for(const dx of [-35,35]) s += path([[x,160],[x,185],[x+dx,185],[x+dx,205]],'flow',false,true);
+      s += database(x-40,110,80,50,'P');
+      s += database(x-65,205,60,35,'R') + database(x+5,205,60,35,'R');
     });
-    s += text(
-      compact ? 160 : 460,
-      compact ? 640 : 310,
-      "P · Primary     R · Replica",
-      "small",
-    );
-    return { svg: s, height: compact ? 670 : 345 };
+    return {svg:s,width:500,height:280};
   }
-  function capacityGeometry(compact = false) {
-    return compact
-      ? {
-          width: 320,
-          height: 800,
-          disk: { x: 15, y: 75, w: 290, h: 290 },
-          map: { x: 51, y: 145, step: 17, size: 14, cols: 13 },
-          ram: { x: 15, y: 480, w: 290, h: 290 },
-          bank: { x: 66.5, y: 545, step: 19, size: 16 },
-          route: [
-            [160, 365],
-            [160, 395],
-            [260, 395],
-            [260, 480],
-          ],
-        }
-      : {
-          width: 960,
-          height: 520,
-          disk: { x: 25, y: 90, w: 400, h: 400 },
-          map: { x: 71, y: 165, step: 24, size: 20, cols: 13 },
-          ram: { x: 535, y: 90, w: 400, h: 400 },
-          bank: { x: 597, y: 175, step: 28, size: 24 },
-          route: [
-            [425, 290],
-            [535, 290],
-          ],
-        };
+
+  function capacityGeometry() {
+    return { width:500, height:340,
+      disk:{x:18,y:65,w:210,h:210}, ram:{x:272,y:65,w:210,h:210},
+      map:{x:40,y:108,step:13,size:10,cols:13},
+      bank:{x:299,y:108,step:16,size:13},
+      route:[[228,170],[272,170]],
+    };
   }
-  function capacityLayout(compact = false) {
-    const g = capacityGeometry(compact),
-      d = g.disk,
-      r = g.ram;
-    let s = `<rect data-resource-panel="disk" x="${d.x}" y="${d.y}" width="${d.w}" height="${d.h}" rx="12" fill="${color("storageFill")}" stroke="${color("storage")}" stroke-width="2"/>`;
-    s +=
-      `<g data-resource-icon="disk">${hardwareIcon("disk", d.x + d.w / 2, d.y - 45, "storage")}</g>` +
-      `<g data-resource-icon="ram">${hardwareIcon("memory", r.x + r.w / 2, r.y - 45, "flow")}</g>`;
-    s +=
-      text(d.x + d.w / 2, d.y + 27, "14.8 TiB stored") +
-      text(d.x + d.w / 2, d.y + 52, "1 block = 100 GiB", "tiny muted");
-    for (let i = 0; i < 152; i++) {
-      const x = g.map.x + (i % g.map.cols) * g.map.step,
-        y = g.map.y + Math.floor(i / g.map.cols) * g.map.step;
-      s += `<rect data-disk-block="${i}" x="${x}" y="${y}" width="${g.map.size * (i === 151 ? 0.552 : 1)}" height="${g.map.size}" rx="2" fill="${color(i === 0 ? "focus" : "storageFill")}" stroke="${color(i === 0 ? "focus" : "storage")}" stroke-width="1"/>`;
+  function capacityLayout() {
+    const g=capacityGeometry(),d=g.disk,r=g.ram;
+    let s='';
+    for(const [name,panel,role,icon] of [['disk',d,'storage','disk'],['ram',r,'flow','memory']]) {
+      s += `<rect data-resource-panel="${name}" x="${panel.x}" y="${panel.y}" width="${panel.w}" height="${panel.h}" rx="10" fill="${color(role+'Fill')}" stroke="${color(role)}" stroke-width="2"/>`;
+      s += `<g data-resource-icon="${name}">${hardwareIcon(icon,panel.x+105,30,role,.8)}</g>`;
     }
-    if (!compact)
-      s += text(
-        d.x + d.w / 2,
-        d.y + d.h - 20,
-        "Highlighted block = entire pool",
-        "tiny",
-      );
-    s += `<path data-transfer-route d="${g.route.map((v, i) => (i ? "L" : "M") + v.join(" ")).join(" ")}" fill="none" stroke="${color("flow")}" stroke-width="2"/>`;
-    s += compact
-      ? text(75, 410, "Zoom", "tiny muted")
-      : text(480, 260, "Zoom", "tiny muted") +
-        text(480, 327, "1 GiB", "tiny muted");
-    s +=
-      `<rect data-resource-panel="ram" x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" rx="12" fill="${color("surface")}" stroke="${color("flow")}" stroke-width="2"/>` +
-      text(r.x + r.w / 2, r.y + 28, "100 GiB buffer pool") +
-      text(r.x + r.w / 2, r.y + 52, "1 slot = 1 GiB", "tiny muted");
-    for (let i = 0; i < 100; i++) {
-      const x = g.bank.x + (i % 10) * g.bank.step,
-        y = g.bank.y + Math.floor(i / 10) * g.bank.step;
-      s += `<rect data-slot="${i}" x="${x}" y="${y}" width="${g.bank.size}" height="${g.bank.size}" rx="3"/>`;
+    s += text(123,90,'14.8 TiB','label') + text(377,90,'100 GiB','label');
+    for(let i=0;i<152;i++) {
+      const x=g.map.x+(i%13)*13,y=g.map.y+Math.floor(i/13)*13;
+      s += `<rect data-disk-block="${i}" x="${x}" y="${y}" width="${10*(i===151?.552:1)}" height="10" rx="1" fill="${color(i===0?'focus':'storageFill')}" stroke="${color(i===0?'focus':'storage')}"/>`;
     }
-    const foot = r.y + r.h - 20;
-    s += text(
-      r.x + r.w / 2,
-      foot,
-      "Tinted = active · outlined = free",
-      "tiny muted",
-    );
-    s += `<rect data-budget-packet width="12" height="12" x="-6" y="-6" rx="3" class="pulse"/>`;
-    return { svg: s, width: g.width, height: g.height };
+    s += `<path data-transfer-route d="M228 170H272" fill="none" stroke="${color('flow')}" stroke-width="2"/>`;
+    for(let i=0;i<100;i++) s += `<rect data-slot="${i}" x="${g.bank.x+(i%10)*16}" y="${g.bank.y+Math.floor(i/10)*16}" width="13" height="13" rx="2"/>`;
+    s += text(123,306,'100 GiB / tile','small') + text(377,306,'1 GiB / slot','small');
+    s += `<rect data-budget-packet width="10" height="10" x="-5" y="-5" rx="2" class="pulse"/>`;
+    return {svg:s,width:500,height:340};
   }
-  function hardwareLayout(compact = false) {
-    let s = "";
-    const rows = [
-      {
-        icon: "cpu",
-        label: "CPU",
-        value: "32 cores",
-        role: "processing",
-        share: 0.05,
-        note: "5% utilized",
-      },
-      {
-        icon: "memory",
-        label: "RAM",
-        value: "238 GiB",
-        role: "flow",
-        share: 100 / 238,
-        note: "100 GiB pool",
-      },
-      {
-        icon: "disk",
-        label: "Disk",
-        value: "≈75% used",
-        role: "storage",
-        share: 0.75,
-        note: "≈6.1 TiB free",
-      },
+
+  function hardwareLayout() {
+    let s='';
+    const rows=[
+      {icon:'cpu',label:'CPU',value:'32 cores',role:'processing',share:.05,note:'5% busy'},
+      {icon:'memory',label:'RAM',value:'238 GiB',role:'flow',share:100/238,note:'100 GiB pool'},
+      {icon:'disk',label:'Disk',value:'≈75% used',role:'storage',share:.75,note:'≈6.1 TiB free'},
     ];
-    rows.forEach((r, i) => {
-      const x = compact ? 20 : 35 + i * 295,
-        y = compact ? 15 + i * 145 : 25,
-        w = compact ? 280 : 260;
-      s += `<rect x="${x}" y="${y}" width="${w}" height="${compact ? 125 : 230}" rx="10" fill="${color(r.role + "Fill")}" stroke="${color(r.role)}"/>`;
-      s += hardwareIcon(r.icon, x + 38, y + 34, r.role, 0.7);
-      s += text(x + 90, y + 34, r.label, "label");
-      s += text(
-        x + (compact ? 200 : w / 2),
-        y + (compact ? 34 : 94),
-        r.value,
-        compact ? "label" : "value",
-      );
-      const barY = y + (compact ? 65 : 137);
-      s += `<rect x="${x + 18}" y="${barY}" width="${w - 36}" height="16" rx="3" fill="${color("surface")}" stroke="${color(r.role)}"/><rect data-capacity="${r.icon}" x="${x + 18}" y="${barY}" width="${(w - 36) * r.share}" height="16" rx="3" fill="${color(r.role)}"/>`;
-      s += text(x + w / 2, y + (compact ? 103 : 191), r.note, "small");
+    rows.forEach((r,i)=>{
+      const y=15+i*100;
+      s += `<rect x="20" y="${y}" width="460" height="85" rx="8" fill="${color(r.role+'Fill')}" stroke="${color(r.role)}"/>`;
+      s += hardwareIcon(r.icon,52,y+27,r.role,.6) + text(112,y+27,r.label,'label') + text(370,y+27,r.value,'label');
+      s += text(108,y+63,r.note,'small');
+      s += `<rect x="210" y="${y+56}" width="250" height="14" rx="3" fill="${color('surface')}" stroke="${color(r.role)}"/><rect data-capacity="${r.icon}" x="210" y="${y+56}" width="${250*r.share}" height="14" rx="3" fill="${color(r.role)}"/>`;
     });
-    return { svg: s, width: compact ? 320 : 920, height: compact ? 455 : 285 };
+    return {svg:s,width:500,height:320};
   }
-  function queryFacts(compact = false) {
-    const x = compact ? 85 : 290,
-      other = compact ? 240 : 650,
-      y = compact ? 425 : 460,
-      w = compact ? 130 : 250;
-    return (
-      `<rect x="${x - w / 2}" y="${y - 30}" width="${w}" height="90" rx="8" fill="${color("flowFill")}" stroke="${color("flow")}"/>` +
-      text(x, y, "100 : 1", "value") +
-      text(x, y + 35, "reads / write", "small") +
-      `<rect x="${other - w / 2}" y="${y - 30}" width="${w}" height="90" rx="8" fill="${color("processingFill")}" stroke="${color("processing")}"/>` +
-      text(other, y, "0.48 ms", "value") +
-      text(other, y + 35, "average query", "small")
-    );
+  function queryFacts() {
+    return [[140,'100 : 1','reads / write','flow'],[360,'0.48 ms','average query','processing']].map(([x,value,label,role])=>
+      `<rect x="${x-100}" y="285" width="200" height="65" rx="8" fill="${color(role+'Fill')}" stroke="${color(role)}"/>`+text(x,305,value,'value')+text(x,334,label,'small')).join('');
   }
-  const phone = matchMedia("(max-width: 600px)");
-  const phoneLeaves = [25, 75, 125, 175, 235, 295];
-  function indexGeometry(compact) {
-    return compact
-      ? {
-          root: [160, 30, 70, 30],
-          branches: [75, 235],
-          routeY: 95,
-          rangeY: 155,
-          pageW: 100,
-          pageH: 25,
-          forkY: 80,
-          leafForkY: 200,
-          leafY: 218.5,
-          leafW: 44,
-          leafH: 55,
-          leaves: phoneLeaves,
-          width: 320,
-          height: 340,
-        }
-      : {
-          root: [460, 40, 140, 38],
-          branches: [250, 670],
-          routeY: 135,
-          rangeY: 230,
-          pageW: 140,
-          pageH: 38,
-          forkY: 105,
-          leafForkY: 305,
-          leafY: 335,
-          leafW: 96,
-          leafH: 60,
-          leaves: [130, 250, 370, 550, 670, 790],
-          width: 920,
-          height: 500,
-        };
+  function indexGeometry() {
+    return {root:[250,25,90,35],branches:[130,370],routeY:100,rangeY:165,pageW:110,pageH:30,
+      forkY:80,leafForkY:225,leafY:245,leafW:60,leafH:45,leaves:[60,130,200,300,370,440],width:500,height:370};
   }
-  function indexRoute(leaf, compact = false) {
-    const g = indexGeometry(compact),
+
+  function indexRoute(leaf) {
+    const g = indexGeometry(),
       branch = g.branches[leaf < 3 ? 0 : 1];
     return [
       [g.root[0], g.root[1] + g.root[3]],
@@ -305,10 +115,10 @@
       [g.leaves[leaf], g.leafY],
     ];
   }
-  function indexLayout(compact = false) {
-    const g = indexGeometry(compact),
+  function indexLayout() {
+    const g = indexGeometry(),
       [rx, ry, rw, rh] = g.root;
-    let s = `<rect x="${compact ? 15 : 110}" y="${compact ? 14 : 20}" width="${compact ? 290 : 740}" height="${compact ? 180 : 270}" rx="10" fill="none" stroke="${color("flow")}" stroke-dasharray="5 5"/>`;
+    let s = `<rect x="${30}" y="${10}" width="${440}" height="${210}" rx="10" fill="none" stroke="${color("flow")}" stroke-dasharray="5 5"/>`;
     g.branches.forEach((x, i) => {
       s += path([
         [rx, ry + rh],
@@ -382,113 +192,25 @@
           );
       s += `<rect data-found="${i}" x="${x - g.leafW / 2}" y="${g.leafY}" width="${g.leafW}" height="${g.leafH}" rx="6" fill="none" stroke="${color("success")}" stroke-width="3" display="none"/>`;
     });
-    if (!compact) {
-      [59, 154, 249, 365].forEach((y, i) => {
-        s += text(55, y, String(i + 1), "label");
+    {
+      [42, 115, 180, 267].forEach((y, i) => {
+        s += text(16, y, String(i + 1), "label");
       });
-      s += text(770, 42, "Cached routes", "small");
+      s += text(390, 42, "In RAM", "small");
     }
     s += text(
       g.width / 2,
-      compact ? 294 : 435,
+      320,
       "Older ← row IDs → Newer",
       "small",
     );
     s += text(
       g.width / 2,
-      compact ? 322 : 475,
-      compact
-        ? "4 levels · 1,000³ × 100 rows"
-        : "4 levels · 1,000³ × 100 = 100 billion rows",
+      350,
+      "4 levels → 100 billion rows",
       "label",
     );
     return { svg: s, width: g.width, height: g.height };
-  }
-  function phoneFigure(id, original) {
-    let s = "",
-      height = 400;
-    if (id === "regions") {
-      ({ svg: s, height } = regionLayout(true));
-    } else if (id === "hardware") {
-      return { ...original, ...hardwareLayout(true) };
-    } else if (id === "working-set-budget") {
-      return { ...original, ...capacityLayout(true) };
-    } else if (id === "increasing-ids") {
-      return { ...original, ...indexLayout(true) };
-    } else if (id === "working-set") {
-      height = 630;
-      s =
-        `<rect x="15" y="130" width="290" height="410" rx="8" fill="none" stroke="${color("subtle")}"/>` +
-        text(160, 520, "MYSQL INSTANCE", "small");
-      for (let lane = 0; lane < 8; lane++)
-        s += path(
-          [
-            [55 + lane * 30, 80],
-            [55 + lane * 30, 180],
-          ],
-          "flow",
-        );
-      s +=
-        path(
-          [
-            [160, 280],
-            [160, 390],
-          ],
-          "border",
-          false,
-          true,
-        ) +
-        text(230, 335, "1% → disk", "label") +
-        box(30, 20, 260, 60, "Application", "processing");
-      s +=
-        box(30, 180, 260, 100, "", "flow") +
-        hardwareIcon("memory", 160, 205, "flow", 0.65) +
-        text(82, 229, "99%", "value") +
-        text(205, 229, "Buffer pool", "label") +
-        text(160, 263, "100 GiB", "small");
-      s +=
-        box(80, 390, 160, 105, "", "storage") +
-        hardwareIcon("disk", 160, 410, "storage", 0.65) +
-        text(160, 444, "Disk / SSD", "label") +
-        text(160, 474, "14.8 TiB stored", "small");
-      s += `<g data-cache-summary>${text(160, 565, "", "label")}${text(160, 588, "", "small")}${text(160, 609, "", "small")}</g>`;
-    } else if (id === "traffic") {
-      height = 505;
-      s =
-        text(160, 25, "SELECTs / s · 3 primaries", "label") +
-        text(160, 48, "Illustrative day", "small");
-      for (let v = 0; v <= 12000; v += 4000) {
-        const y = 280 - (v / 12000) * 190;
-        s +=
-          path(
-            [
-              [55, y],
-              [300, y],
-            ],
-            "subtle",
-          ) + text(25, y, v === 0 ? "0" : v / 1000 + "k", "small");
-      }
-      for (let h = 0; h <= 24; h += 6)
-        s += text(
-          55 + (h / 24) * 245,
-          305,
-          String(h).padStart(2, "0"),
-          "small",
-        );
-      const pts = Array.from({ length: 97 }, (_, i) => [
-        55 + (i / 96) * 245,
-        280 -
-          ((10000 + 2000 * Math.cos(((i / 4 - 14) * Math.PI) / 12)) / 12000) *
-            190,
-      ]);
-      s +=
-        `<path d="M55 280 ${pts.map((p) => "L" + p.join(" ")).join(" ")} L300 280Z" fill="${color("flow")}" fill-opacity=".09"/>` +
-        path(pts, "flow") +
-        text(160, 334, "Hour", "small") +
-        `<g data-traffic-cursor><path d="M0 80V280" stroke="${color("border")}" stroke-dasharray="6 5"/><circle cx="0" cy="90" r="4" fill="${color("flow")}"/></g><g data-traffic-summary>${text(160, 367, "", "label")}</g>` +
-        queryFacts(true);
-    }
-    return { ...original, svg: s, width: 320, height };
   }
 
   let frame = null;
@@ -496,7 +218,6 @@
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
   const TREE_SPEED = 240;
   const treeRoute = (leaf) => indexRoute(leaf);
-  const phoneTreeRoute = (leaf) => indexRoute(leaf, true);
   function routeLength(route) {
     return route
       .slice(1)
@@ -506,7 +227,7 @@
       );
   }
   function treeSnapshot(elapsed) {
-    const maxDuration = (587 / TREE_SPEED) * 1000;
+    const maxDuration = Math.max(...[3,4,5].map(leaf=>routeLength(treeRoute(leaf)))) / TREE_SPEED * 1000;
     const wholeCycles = Math.floor(
       Math.max(0, Math.floor((elapsed - maxDuration) / 400) + 1) / 100,
     );
@@ -533,10 +254,10 @@
       } else {
         const distance = (age * TREE_SPEED) / 1000,
           [x, y] = point(
-            phone.matches ? phoneTreeRoute(leaf) : route,
+            route,
             distance / length,
           );
-        const g = indexGeometry(phone.matches),
+        const g = indexGeometry(),
           branch = leaf < 3 ? 0 : 1;
         let hidden = false;
         [g.routeY, g.rangeY].forEach((top, level) => {
@@ -564,7 +285,7 @@
           age = elapsed - id * 60;
         if (age < 0) continue;
         let lane = id % 8,
-          y = 120 + lane * 24,
+          y = 145 + lane * 12,
           phase,
           p;
         if (age >= (r.miss ? 7000 : 1500)) {
@@ -575,21 +296,21 @@
           phase = "lookup";
           p = point(
             [
-              [230, y],
-              [410, y],
+              [120, y],
+              [220, y],
             ],
             age / 450,
           );
         } else if (!r.miss) {
           if (age < 600) {
             phase = "memory";
-            p = [410, y];
+            p = [220, y];
           } else {
             phase = "return";
             p = point(
               [
-                [410, y],
-                [230, y],
+                [220, y],
+                [120, y],
               ],
               (age - 600) / 900,
             );
@@ -598,23 +319,23 @@
           phase = "disk";
           p = point(
             [
-              [630, 245],
-              [770, 245],
-              [770, 270],
+              [350, 215],
+              [425, 215],
+              [425, 255],
             ],
             (age - 450) / 1350,
           );
         } else if (age < 5000) {
           phase = "wait";
-          p = [770, 270];
+          p = [425, 255];
           waiting++;
         } else if (age < 6000) {
           phase = "fill";
           p = point(
             [
-              [770, 270],
-              [770, 245],
-              [630, 245],
+              [425, 255],
+              [425, 215],
+              [350, 215],
             ],
             (age - 5000) / 1000,
           );
@@ -622,19 +343,11 @@
           phase = "return";
           p = point(
             [
-              [410, y],
-              [230, y],
+              [220, y],
+              [120, y],
             ],
             (age - 6000) / 1000,
           );
-        }
-        if (phone.matches) {
-          if (phase === "lookup" || phase === "memory" || phase === "return")
-            p = [55 + lane * 30, 80 + ((p[0] - 230) / 180) * 100];
-          else {
-            const traveled = p[0] < 770 ? p[0] - 630 : 140 + p[1] - 245;
-            p = [160, 280 + (traveled / 165) * 110];
-          }
         }
         active.push({ id, phase, miss: r.miss, x: p[0], y: p[1] });
       }
@@ -775,14 +488,7 @@
         diskWaiting: snap.waiting,
         active: snap.active.map(({ id, phase, miss }) => ({ id, phase, miss })),
       };
-      const summary = `${snap.hits} memory return${snap.hits === 1 ? "" : "s"}   ·   ${snap.misses} disk return${snap.misses === 1 ? "" : "s"}   ·   ${snap.waiting} waiting on disk`;
-      const lines = phone.matches
-        ? [
-            `${snap.hits} memory returns`,
-            `${snap.misses} disk returns`,
-            `${snap.waiting} waiting on disk`,
-          ]
-        : [summary];
+      const lines=[`${snap.hits} RAM`,`${snap.misses} disk`];
       f.nodes.summaryParts.forEach((node, i) => {
         if (node.textContent !== lines[i]) node.textContent = lines[i];
       });
@@ -790,16 +496,12 @@
       const hour =
           f.time > 0 && f.time % 72000 === 0 ? 24 : (f.time / 3000) % 24,
         rate = 10000 + 2000 * Math.cos(((hour - 14) * Math.PI) / 12),
-        x = phone.matches ? 55 + (hour / 24) * 245 : 110 + (hour / 24) * 730,
-        y = phone.matches
-          ? 280 - (rate / 12000) * 190
-          : 300 - (rate / 12000) * 220;
+        x = 55+(hour/24)*415,
+        y = 215-(rate/12000)*155;
       f.nodes.cursor.setAttribute("transform", `translate(${x} 0)`);
       f.nodes.cursorDot.setAttribute("cy", y);
       f.nodes.hour.value = hour;
-      const label = phone.matches
-        ? `${hour.toFixed(2)} h · ${Math.round(rate).toLocaleString()} / s`
-        : `${hour.toFixed(2)} h · ${Math.round(rate).toLocaleString()} / s`;
+      const label=`${hour.toFixed(1)} h · ${Math.round(rate).toLocaleString()} / s`;
       if (f.nodes.trafficSummary.textContent !== label)
         f.nodes.trafficSummary.textContent = label;
       state = {
@@ -831,7 +533,7 @@
     if (component.includes(" ")) section.dataset.sourceComponents = component;
     else section.dataset.sourceComponent = component;
     section.dataset.evidence = kind;
-    section.innerHTML = `<header class="visual-heading"><h2>${title}</h2></header><div class="controls">${animated ? '<button data-action="play">Play</button><button data-action="step">Step</button><button data-action="reset">Replay</button>' : ""}${extra}</div>${id === "working-set-budget" ? '<div class="capacity-readouts"><div><strong data-used></strong><span>active estimate</span></div><div><strong data-free></strong><span>free capacity</span></div><div><strong>100 GiB</strong><span>buffer pool</span></div></div>' : ""}<div class="stage" tabindex="0" role="region" aria-label="${title}"></div><footer class="result"><p>${caption}</p></footer>`;
+    section.innerHTML = `<header class="visual-heading"><h2>${title}</h2></header><div class="stage" tabindex="0" role="region" aria-label="${title}"></div>${id==='working-set-budget'?'<div class="capacity-readouts"><div><strong data-used></strong><span>active estimate</span></div><div><strong data-free></strong><span>free capacity</span></div></div>':''}<div class="controls">${animated?'<button data-action="play">Play</button><button data-action="step">Step</button><button data-action="reset">Replay</button>':''}${extra}</div><footer class="result"><p>${caption}</p></footer>`;
     document.querySelector("#figures").append(section);
     const f = {
       id,
@@ -850,12 +552,11 @@
         return;
       }
       let r = render(f);
-      if (phone.matches) r = phoneFigure(id, r);
       section.dataset.state = JSON.stringify(
         r.state ?? { time: Math.round(f.time) },
       );
       section.querySelector(".stage").innerHTML =
-        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${r.width || 920} ${r.height || 390}" role="img" aria-label="${title}" aria-describedby="description-${id}"><title>${title}</title><desc id="description-${id}">${r.status || caption}</desc><rect width="${r.width || 920}" height="${r.height || 390}" fill="${color("surface")}"/><defs><marker id="arrow-${id}" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L8 4L0 8" fill="${color("border")}"/></marker></defs>${r.svg.replaceAll("url(#arrow)", `url(#arrow-${id})`)}</svg>`;
+        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${r.width || 920} ${r.height || 390}" role="img" aria-label="${title}" aria-describedby="description-${id}"><title>${title}</title><desc id="description-${id}">${r.status || caption}</desc><rect width="${r.width || 920}" height="${r.height || 390}" fill="${color("surface")}"/><defs>${['border','flow','storage'].map(role=>`<marker id="arrow-${id}-${role}" viewBox="0 0 8 8" refX="8" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L8 4L0 8Z" fill="${color(role)}"/></marker>`).join('')}</defs>${r.svg.replaceAll("url(#arrow-", `url(#arrow-${id}-`)}</svg>`;
       if (animated) {
         const svg = section.querySelector("svg");
         const layer = document.createElementNS(
@@ -935,7 +636,7 @@
     "BigDatabaseRegionsFigure",
     "Database topology",
     "REPORTED TOPOLOGY",
-    "Each region has one primary and two replicas. Primaries replicate to the primaries in the other regions.",
+    "Each region has one primary (P) and two replicas (R). Primaries replicate across regions.",
     () => {
       return {
         ...regionLayout(),
@@ -950,7 +651,7 @@
     "BigDatabaseHardwareFigure",
     "Each machine has powerful hardware",
     "REPORTED PER INSTANCE",
-    "Each instance has 32 CPU cores and about 238 GiB of RAM. The buffer pool uses 100 GiB of RAM. CPU utilization is about 5%, and disk usage is about 75%.",
+    "The buffer pool uses 100 GiB of RAM. CPU utilization is about 5%; disk usage is about 75%.",
     () => {
       return {
         ...hardwareLayout(),
@@ -971,7 +672,7 @@
     "BigDatabaseWorkingSetBudgetFigure",
     "The active dataset fits in memory",
     "REPORTED CAPACITY · ESTIMATED WORKING SET",
-    "The estimated active set uses 33–56 GiB of the 100 GiB pool, leaving at least 44 GiB free. The pool’s capacity is 0.66% of the stored data, and its reported page-hit rate is 98.7%. The filling animation is illustrative.",
+    "An estimated 33–56 GiB is active, leaving at least 44 GiB free. The pool holds 0.66% of stored data and serves 98.7% of page reads.",
     () => ({
       ...capacityLayout(),
       status:
@@ -994,7 +695,7 @@
     "BigDatabaseIncreasingIdsFigure BigDatabaseTreeDepthFigure",
     "New data tends to cluster in the same pages",
     "ILLUSTRATIVE INDEX · RECENT READS",
-    "Increasing primary keys place newer rows to the right. The read pattern and fan-out are illustrative. With the fan-out shown, four levels can address 100 billion rows; actual depth varies.",
+    "Increasing primary keys put newer rows on the right. Read destinations and the four-level capacity are illustrative; actual index depth varies.",
     (f) => ({
       ...indexLayout(),
       state: {
@@ -1018,66 +719,18 @@
   const cache = add(
     "working-set",
     "BigDatabaseWorkingSetFigure",
-    "Nearly all active-data reads are served from memory",
+    "Most page reads return from memory",
     "OBSERVED 98.7% HITS · ILLUSTRATIVE 99/1 ANIMATION",
-    "Most page reads return from the buffer pool. A miss reads disk and fills the pool before returning data. The animation uses 99% hits; the reported page-hit rate is 98.7%.",
+    "A miss reads disk and fills the buffer pool before returning. The animation uses 99% hits; the reported page-hit rate is 98.7%.",
     (f) => {
-      let s =
-        `<rect x="370" y="30" width="500" height="380" rx="10" fill="none" stroke="${color("subtle")}"/>` +
-        text(620, 55, "MYSQL INSTANCE", "small");
-      s +=
-        box(50, 100, 180, 210, "Application", "processing") +
-        box(410, 100, 220, 210, "", "flow") +
-        text(520, 205, "99%", "value") +
-        text(520, 245, "Buffer pool", "label") +
-        text(520, 280, "100 GiB", "small") +
-        box(700, 270, 140, 100, "", "storage") +
-        text(770, 316, "Disk / SSD", "label") +
-        text(770, 345, "14.8 TiB stored", "small") +
-        hardwareIcon("memory", 520, 150, "flow") +
-        hardwareIcon("disk", 770, 286, "storage", 0.65);
-      for (let lane = 0; lane < 8; lane++)
-        s += path(
-          [
-            [230, 120 + lane * 24],
-            [410, 120 + lane * 24],
-          ],
-          "flow",
-        );
-      s +=
-        path(
-          [
-            [630, 245],
-            [770, 245],
-            [770, 270],
-          ],
-          "border",
-          false,
-          true,
-        ) + text(752, 222, "1% → disk", "label");
-      const { hits, misses, waiting, active } = cacheSnapshot(f.time);
-      s +=
-        "<g data-cache-summary>" +
-        text(
-          460,
-          455,
-          `${hits} memory return${hits === 1 ? "" : "s"}   ·   ${misses} disk return${misses === 1 ? "" : "s"}   ·   ${waiting} waiting on disk`,
-          "label",
-        ) +
-        "</g>";
-      return {
-        svg: s,
-        height: 490,
-        state: {
-          elapsed: Math.round(f.time),
-          memoryReturns: hits,
-          diskReturns: misses,
-          diskWaiting: waiting,
-          active,
-        },
-        status:
-          "Teal circles: memory path. Orange circles: disk path; square: page fill; ring: disk wait. The animation rounds 98.7% to 99% hits. These are page accesses, not whole-query hit rates; timings are illustrative.",
-      };
+      let s=`<rect x="200" y="65" width="290" height="280" rx="10" fill="none" stroke="${color('subtle')}"/>`+text(345,85,'MySQL','small');
+      for(let lane=0;lane<8;lane++) s+=path([[120,145+lane*12],[220,145+lane*12]],'flow');
+      s+=path([[350,215],[425,215],[425,255]],'storage',false,true)+text(413,190,'1%','small');
+      s+=box(20,130,100,120,'App','processing');
+      s+=box(220,110,130,150,'','flow')+hardwareIcon('memory',285,136,'flow',.65)+text(285,178,'99%','value')+text(285,210,'Buffer pool','label')+text(285,240,'100 GiB','small');
+      s+=box(370,255,110,78,'','storage')+hardwareIcon('disk',425,275,'storage',.5)+text(425,310,'Disk','label');
+      s+='<g data-cache-summary>'+text(140,30,'','label')+text(360,30,'','label')+'</g>';
+      return {svg:s,width:500,height:365,status:'Teal circles return from RAM. Orange circles visit disk; a ring marks waiting and a square marks the page fill. These are page accesses, not whole-query hits. Timings and the rounded 99/1 ratio are illustrative.'};
     },
     true,
     '<button data-action="miss">Show a disk miss</button>',
@@ -1091,50 +744,20 @@
   const traffic = add(
     "traffic",
     "BigDatabaseTrafficFigure",
-    "Reads dominate the workload and fluctuate throughout the day",
+    "Reads dominate the daily workload",
     "ILLUSTRATIVE DAY · REPORTED QUERY MIX",
-    "Across three primaries, about 10,000 SELECTs run per second, with one write per 100 reads. Average query time is 0.48 ms. The daily curve and its 12,000/s peak are illustrative.",
+    "About 10,000 SELECTs/s run across three primaries. The daily curve is illustrative; the read/write mix and average query time are reported.",
     (f) => {
-      let hour = Number(f.section.querySelector("input")?.value || 14);
-      let value = (h) => 10000 + 2000 * Math.cos(((h - 14) * Math.PI) / 12),
-        s = "";
-      for (let v = 0; v <= 12000; v += 4000) {
-        let y = 300 - (v / 12000) * 220;
-        s +=
-          path(
-            [
-              [110, y],
-              [840, y],
-            ],
-            "subtle",
-          ) + text(62, y, v.toLocaleString(), "small");
+      let s='';
+      for(const v of [0,6000,12000]) {
+        const y=215-v/12000*155;
+        s+=path([[55,y],[470,y]],'subtle')+text(25,y,v===0?'0':v/1000+'k','small');
       }
-      for (let h = 0; h <= 24; h += 6)
-        s += text(
-          110 + (h / 24) * 730,
-          325,
-          String(h).padStart(2, "0"),
-          "small",
-        );
-      let pts = Array.from({ length: 97 }, (_, i) => [
-        110 + (i / 96) * 730,
-        300 - (value(i / 4) / 12000) * 220,
-      ]);
-      s +=
-        `<path d="M110 300 ${pts.map((p) => "L" + p.join(" ")).join(" ")} L840 300Z" fill="${color("flow")}" fill-opacity=".09"/>` +
-        path(pts, "flow") +
-        text(460, 35, "SELECTs / s · 3 primaries", "label") +
-        text(460, 357, "Hour", "small");
-      s +=
-        `<g data-traffic-cursor><path d="M0 70V300" stroke="${color("border")}" stroke-dasharray="6 5"/><circle cx="0" cy="80" r="4" fill="${color("flow")}"/></g><g data-traffic-summary>${text(460, 395, "", "label")}</g>` +
-        queryFacts();
-      return {
-        svg: s,
-        height: 540,
-        state: { hour, illustrativeSelectRate: value(hour) },
-        status:
-          "Most requests return few rows through a primary key or indexed column. The 0.48 ms average does not describe the slowest requests. The daily curve is a model, not telemetry.",
-      };
+      for(const h of [0,6,12,18,24]) s+=text(55+h/24*415,236,String(h).padStart(2,'0'),'small');
+      const pts=Array.from({length:97},(_,i)=>[55+i/96*415,215-(10000+2000*Math.cos((i/4-14)*Math.PI/12))/12000*155]);
+      s+=path(pts,'flow')+text(250,25,'SELECTs / s','label');
+      s+=`<g data-traffic-cursor><path d="M0 55V215" stroke="${color('border')}" stroke-dasharray="6 5"/><circle cx="0" cy="60" r="5" fill="${color('flow')}"/></g><g data-traffic-summary>${text(250,260,'','label')}</g>`+queryFacts();
+      return {svg:s,width:500,height:365,status:'The curve models one day, not measured telemetry. About 10,000 SELECTs/s is reported across all primaries; the 12,000/s peak is illustrative. The average query time does not describe tail latency.'};
     },
     true,
     '<label>Hour <input type="range" min="0" max="24" step="0.01" value="14" aria-label="Hour of day"></label>',
@@ -1162,13 +785,6 @@
     setTheme();
   };
   setTheme();
-  phone.addEventListener("change", () => {
-    for (const f of figures) {
-      f.previous = null;
-      f.draw(true);
-    }
-    wake();
-  });
   const observer = new IntersectionObserver(
     (entries) => {
       for (const e of entries) {
@@ -1208,7 +824,7 @@
         f.previous = null;
         continue;
       }
-      if (f.previous !== null) f.time += now - f.previous;
+      if (f.previous !== null) f.time += Math.min(80, now - f.previous);
       f.previous = now;
       updateMotion(f);
     }
