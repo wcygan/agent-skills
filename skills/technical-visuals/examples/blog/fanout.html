@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Fanout · Visual lab</title>
+    <link rel="stylesheet" href="../style.css?v=7845c8602e12" />
+    <link rel="stylesheet" href="blog.css?v=a2bf371124c7" />
+    <link rel="stylesheet" href="fanout.css?v=5276e91749bc" />
+  </head>
+  <body>
+    <main>
+      <nav>
+        <a href="index.html">← Blog visualizations</a
+        ><a href="../index.html">Design system</a
+        ><a href="https://wcygan.net/fanout/">Original post ↗</a>
+      </nav>
+      <header>
+        <div>
+          <h1>Fanout</h1>
+        </div>
+        <button
+          id="theme"
+          class="theme-toggle"
+          aria-label="Dark theme"
+          aria-pressed="false"
+        >
+          <svg class="sun" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" />
+            <path
+              d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"
+            /></svg
+          ><svg class="moon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 15.5A8.5 8.5 0 0 1 8.5 4a8.5 8.5 0 1 0 11.5 11.5Z" />
+          </svg>
+        </button>
+      </header>
+      <section
+        class="visual"
+        data-figure="service-graph"
+        data-source-component="FanoutGraphDemo"
+      >
+        <header class="visual-heading">
+          <h2>One request reaches many services</h2>
+        </header>
+        <div
+          class="stage"
+          role="region"
+          aria-label="One request reaches many services"
+        ></div>
+        <div class="controls">
+          <button data-action="play">Pause</button
+          ><button data-action="step">Step</button
+          ><button data-action="replay">Reset</button
+          ><progress aria-label="Demo progress" max="1" value="0"></progress
+          ><output aria-live="polite"></output>
+        </div>
+        <footer class="result">
+          <p>
+            Each middle service calls two back ends. Back end 3 receives five
+            calls for every one on the other paths in this illustrative burst.
+            Responses are omitted.
+          </p>
+        </footer>
+      </section>
+      <section
+        class="visual"
+        data-figure="amplification"
+        data-source-component="FanoutMultiplierDemo"
+      >
+        <header class="visual-heading">
+          <h2>One request creates six reads</h2>
+        </header>
+        <div
+          class="stage"
+          role="region"
+          aria-label="One request creates six reads"
+        ></div>
+        <div class="controls">
+          <button data-action="play">Pause</button
+          ><button data-action="step">Step</button
+          ><button data-action="replay">Reset</button
+          ><progress aria-label="Demo progress" max="1" value="0"></progress
+          ><output aria-live="polite"></output>
+        </div>
+        <footer class="result">
+          <p>
+            Each request creates three downstream calls, each with two reads. At
+            5 incoming requests/s, this model produces 15 calls/s and 30
+            reads/s; playback is slowed down.
+          </p>
+        </footer>
+      </section>
+      <section
+        class="visual"
+        data-figure="traffic"
+        data-source-component="FanoutWarStoryDemo"
+      >
+        <header class="visual-heading">
+          <h2>Removing unused calls removes work</h2>
+        </header>
+        <div
+          class="stage"
+          role="region"
+          aria-label="Removing unused calls removes work"
+        ></div>
+        <div class="controls">
+          <button data-action="play">Pause</button
+          ><button data-action="step">Step</button
+          ><button data-action="replay">Reset</button
+          ><progress aria-label="Demo progress" max="1" value="0"></progress
+          ><output aria-live="polite"></output>
+        </div>
+        <footer class="result">
+          <p>
+            The post reports a drop from roughly 8,000 to 10 downstream
+            queries/s after redundant calls were removed. This two-day curve and
+            deployment time are illustrative, not telemetry.
+          </p>
+        </footer>
+      </section>
+    </main>
+    <script src="../tokens.js?v=453ec03879f0"></script>
+    <script src="fanout.js?v=51bed6fb6bfa"></script>
+  </body>
+</html>

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>N+1 queries · Visual lab</title>
+    <link rel="stylesheet" href="../style.css?v=7845c8602e12" />
+    <link rel="stylesheet" href="blog.css?v=a2bf371124c7" />
+    <link rel="stylesheet" href="n-plus-one-sql-query.css" />
+  </head>
+  <body>
+    <main>
+      <nav>
+        <a href="index.html">← Blog visualizations</a
+        ><a href="../index.html">Design system</a
+        ><a href="https://wcygan.net/n-plus-one-sql-query/">Original post ↗</a>
+      </nav>
+      <header>
+        <div>
+          <h1>N+1 queries</h1><p class="intro">Fetch the same ten records with fewer database trips.</p>
+        </div>
+        <button
+          id="theme"
+          class="theme-toggle"
+          aria-label="Dark theme"
+          aria-pressed="false"
+        >
+          <svg class="sun" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" />
+            <path
+              d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"
+            /></svg
+          ><svg class="moon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 15.5A8.5 8.5 0 0 1 8.5 4a8.5 8.5 0 1 0 11.5 11.5Z" />
+          </svg>
+        </button>
+      </header>
+      <section class="visual" data-figure="query-race" data-source-component="NPlusOneQueryDemos">
+        <header class="visual-heading"><h2>Ten lookups or one batch</h2></header>
+        <div class="stage" role="region" aria-label="Sequential and batched database requests"></div>
+        <div class="controls">
+          <button data-action="play">Pause</button>
+          <button data-action="step">Step</button>
+          <button data-action="replay">Reset</button>
+          <output aria-live="polite"></output>
+        </div>
+        <footer class="result"><p>Both return orders 101–110. The model uses 25 ms per lookup and 35 ms per batch, played slowly. These IDs are already known: this is N versus 1. Classic N+1 also fetches a parent list first.</p></footer>
+      </section>
+    </main>
+    <script src="../tokens.js"></script>
+    <script src="n-plus-one-sql-query.js"></script>
+  </body>
+</html>

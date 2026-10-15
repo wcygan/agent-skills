@@ -1,0 +1,6 @@
+main { max-width: 760px; }
+.stage { overflow: hidden; }
+.stage svg { min-width: 0; max-width: 620px; margin: 0 auto; }
+.controls output { font: 14px ui-monospace, monospace; color: var(--muted); }
+.intro { font-size: 18px; max-width: 34ch; }
+@media (max-width: 600px) { .controls { gap: 10px; } }

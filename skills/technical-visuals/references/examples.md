@@ -106,8 +106,8 @@ and downloads and renders eight standalone SVG exports.
 
 ## Blog visual lab
 
-[Seven post pages](../examples/blog/index.html) reinterpret the complete diagram
-inventory of seven wcygan.net posts. The earlier system-design pages remain
+[Ten post pages](../examples/blog/index.html) reinterpret the complete diagram
+inventory of ten wcygan.net posts. The earlier system-design pages remain
 available through an archive link. These are original 2D renderings using the
 shared tokens, with per-figure controls for causal animation and manual steps.
 They open directly from disk without a build or external runtime.
@@ -121,8 +121,16 @@ They open directly from disk without a build or external runtime.
 | Leader Election | 1 | Election workbench and source scenarios |
 | Failure Detectors | 1 | Heartbeats, independent deadlines, failure and network controls |
 | Kafka Partitioning | 1 | Animated record routing and partition-local logs |
+| N+1 Query Problem | 1 | Known-ID sequential lookups versus a batch; equal records, fewer round trips |
+| Optimistic Locking | 1 | Shared read, successful guarded write, stale rejection, reread, and retry |
+| Fanout | 3 | Service graph, causal request amplification, and redundant downstream traffic removed |
 
-Source inspection: October 14, 2026. Local MDX and component models were read
+The three added posts were inspected on October 15, 2026 against their live pages
+and local MDX/component sources. The N+1 example begins with known IDs (N calls
+versus one batch); optimistic locking keeps the rejected row unchanged until a
+fresh read and retry; fanout distinguishes illustrative traffic from reported facts.
+
+Initial source inspection: October 14, 2026. Local MDX and component models were read
 from the user's `wcygan.net` checkout at HEAD
 `886952b6dfba627def184e436a6941bc46a0218c`. The checkout contains uncommitted work;
 this is not a claim that all inspected content is in that revision. In particular,
@@ -133,9 +141,9 @@ The source blog checkout is unchanged by this work.
 Each page owns its rendering and teaching model in a same-named JavaScript file.
 The `data-source-component` attribute maps each figure back to its source
 component; merged renditions use `data-source-components` to retain each source
-mapping. The 18 source figures are covered by 16 rendered diagrams: the transaction
-prepare and decision figures share one continuous demo, as do the database
-index-depth and recent-read figures. `data-figure` provides a
+mapping. The source inventory includes 23 figures. Related lessons can share a rendered
+diagram: transaction prepare and decision share one continuous demo, as do the
+database index-depth and recent-read figures. `data-figure` provides a
 stable identifier. Models distinguish article
 observations, illustrative quantities, and protocol simplifications. Animation
 starts automatically when a figure is visible. Pause and step preserve manual
@@ -148,10 +156,11 @@ refresh rate without speeding up the teaching sequence. A 120 Hz display provide
 about 8.33 ms per frame, but callback timing alone does not prove rendered frame rate.
 
 Run `scripts/check-blog.mjs` with `PLAYWRIGHT_MODULE` and an external output path
-as above. It checks the full source inventory, all seven pages in both themes,
+as above. It checks the full source inventory, all ten pages in both themes,
 manual steps and theme preservation, keyboard theme switching, narrow layout,
 text bounds, and the absence of SVG download controls in both themes. Post-specific `check-blog-<slug>.mjs` checks, where provided,
-exercise deeper model behavior. `check-blog-working-set-budget.mjs` checks the
+exercise deeper model behavior. `check-blog-fanout.mjs` verifies arrival-derived
+launches, concurrent payloads on distinct branches, route alignment, and final 1/3/6 counts. `check-blog-working-set-budget.mjs` checks the
 integrated disk-scale map and animated occupancy, matching panel geometry, icons,
 and used/free counters through every arrival and responsive redraw. Inspect screenshots separately for causal clarity,
 route collisions, and legibility; automated coverage does not judge visual quality.

@@ -1,0 +1,8 @@
+main { max-width: 800px; box-sizing: border-box; }
+.stage { overflow: hidden; }
+.stage svg { min-width: 0; max-width: 540px; margin: 0 auto; }
+.controls progress { flex: 1 1 100px; max-width: 160px; height: 10px; accent-color: var(--success); }
+.result details { margin-top: 16px; }
+.result summary { cursor: pointer; min-height: 44px; align-content: center; color: var(--muted); }
+.result pre { overflow-x: auto; font-size: 13px; padding: 16px; background: var(--canvas); border-radius: 6px; }
+.result details p { margin-top: 12px; color: var(--muted); }

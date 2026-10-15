@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Optimistic locking · Visual lab</title>
+    <link rel="stylesheet" href="../style.css?v=7845c8602e12" />
+    <link rel="stylesheet" href="blog.css?v=a2bf371124c7" />
+    <link rel="stylesheet" href="optimistic-locking.css" />
+  </head>
+  <body>
+    <main>
+      <nav>
+        <a href="index.html">← Blog visualizations</a
+        ><a href="../index.html">Design system</a
+        ><a href="https://wcygan.net/optimistic-locking/">Original post ↗</a>
+      </nav>
+      <header>
+        <div>
+          <h1>Optimistic locking</h1>
+        </div>
+        <button
+          id="theme"
+          class="theme-toggle"
+          aria-label="Dark theme"
+          aria-pressed="false"
+        >
+          <svg class="sun" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" />
+            <path
+              d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"
+            /></svg
+          ><svg class="moon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 15.5A8.5 8.5 0 0 1 8.5 4a8.5 8.5 0 1 0 11.5 11.5Z" />
+          </svg>
+        </button>
+      </header>
+      <section class="visual" data-figure="optimistic-locking" data-source-component="OptimisticLockingRaceDemo">
+        <header class="visual-heading"><h2>A stale version cannot change the row</h2></header>
+        <div class="stage"></div>
+        <div class="controls">
+          <button data-action="play">Pause</button>
+          <button data-action="step">Step</button>
+          <button data-action="reset">Reset</button>
+          <progress max="10" value="0" aria-label="Demo progress"></progress>
+        </div>
+        <footer class="result"><p>Each update checks the version it read. A stale attempt changes zero rows; rereading lets the worker retry with the current version.</p>
+          <details><summary>SQL and transaction details</summary>
+            <pre><code>UPDATE inventory_items
+SET available = available - 1,
+    version = version + 1
+WHERE sku = 'SKU-42'
+  AND available &gt; 0
+  AND version = :read_version;</code></pre>
+            <p>The SKU is unique. Reads and writes use separate short transactions. No lock spans the worker’s checkout; each guarded write still takes an ordinary row lock. A commits before B submits its stale write. A zero affected-row count can also mean no stock or a missing row. The worker rereads and recomputes before retrying.</p>
+          </details>
+        </footer>
+      </section>
+    </main>
+    <script src="../tokens.js"></script>
+    <script src="optimistic-locking.js"></script>
+  </body>
+</html>

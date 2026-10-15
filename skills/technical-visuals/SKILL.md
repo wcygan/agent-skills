@@ -96,6 +96,9 @@ Choose by the relationship being taught, not merely by matching the topic.
 
 | Teaching problem | Start here |
 | --- | --- |
+| Repeated database round trips versus batching | [N+1 queries](examples/blog/n-plus-one-sql-query.html) |
+| Concurrent updates, stale versions, and guarded retries | [Optimistic locking](examples/blog/optimistic-locking.html) |
+| Request amplification and redundant downstream work | [Fanout](examples/blog/fanout.html) |
 | Ordered history, copying, buffering, lag, and recovery | [Replication](examples/blog/replication.html) |
 | Accumulating evidence, phases, local versus global agreement | [Distributed transactions](examples/blog/distributed-transactions.html) |
 | Information spreading and recipient state changing on arrival | [Gossip](examples/blog/gossip-protocols.html) |

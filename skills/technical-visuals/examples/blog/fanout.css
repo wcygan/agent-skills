@@ -1,0 +1,24 @@
+main {
+  max-width: 800px;
+}
+.visual {
+  margin-bottom: 32px;
+}
+.stage {
+  overflow: hidden;
+}
+.stage svg {
+  min-width: 0;
+  max-width: 580px;
+  margin: auto;
+}
+.controls progress {
+  flex: 1;
+  min-width: 64px;
+  height: 8px;
+  accent-color: var(--success);
+}
+.controls output {
+  color: var(--muted);
+  font-size: 14px;
+}

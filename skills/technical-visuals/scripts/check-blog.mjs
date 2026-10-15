@@ -8,6 +8,9 @@ const output = path.resolve(process.argv[2]);
 assert.ok(output !== root && !output.startsWith(root + path.sep));
 await fs.mkdir(output, { recursive: true });
 const expected = {
+  "n-plus-one-sql-query": ["NPlusOneQueryDemos"],
+  "optimistic-locking": ["OptimisticLockingRaceDemo"],
+  fanout: ["FanoutGraphDemo", "FanoutMultiplierDemo", "FanoutWarStoryDemo"],
   "the-big-database-at-work": [
     "BigDatabaseHardwareFigure",
     "BigDatabaseTrafficFigure",
