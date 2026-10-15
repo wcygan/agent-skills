@@ -22,9 +22,9 @@
     "tools/check_principle_parity.py": "78f1237444bf4cc893750bbe4b7b44a4a033a1d206f92d160408c9053d893008",
     "tools/sync_skills.py": "4726c4e7702a586522031e2684aea035d921ec90a1ba83d49a4daac01b564dab",
     "uv.lock": "b8088892e84e2a71c92df67f4b74ec1b7b9b3d7f6fffa4eebbec26fd22be8f9d",
-    "vendor/ATTRIBUTIONS.md": "f6cfe9a5f99f6dc6b06bb823016bb256468627682e21a56db20b52a9bf3ac8fb",
+    "vendor/ATTRIBUTIONS.md": "1de9452782c2490f542bd3f119e390197f541d20fca8f6791fa85b060dd835ea",
     "vendor/LOCAL-ATTRIBUTIONS.md": "8d03c361fc2276d032b40b36d828bd37d61f7804349c2609f6b769376a32c417",
-    "vendor/skills-lock.json": "28696579e93277dc33a99acfa4cedd145699c8f2ef2863ad7606d157b6c5c3c0"
+    "vendor/skills-lock.json": "03b58852eacfb32c5281c1f98125fac595d2de8e28f2060d301cd6e47dee4ff0"
   },
   "schema": 1,
   "skills": {
@@ -47,8 +47,10 @@
     "maintain-outcome": "697d47453b551e63336264352c7cf5bc1ed82b2757f71f389156653ef3e14e2e",
     "maintain-verification-skill": "ea6104cadd9a8565b76f2d9265aef994394c09d2679d060a9572fc540809e492",
     "measure-performance": "e4f7b1e568d7bb46b5440cdfeccbff9996659fa4fcc068cc6748f95a8f6e8cd9",
+    "mysql": "2e10daca6005bd2f57b3324b57fa3b47112d0ba0af6bc29c6250ae48b550dec8",
     "no-comments": "2ddf31d5224115b9333275cbdec2c05db2357c41111bd2783814dca214e96cc7",
     "personalize-workflow": "220ad35a1087fb2a9e7c309d71e3f97d01f5199e884a1881394ef1de35fbfd9a",
+    "postgres": "0fe4c879bee6feb19b9a557d6139bb205ce920ecadbc260b4045252025ff8572",
     "prepare-agent-objective": "a036b97f8defdf6c3dc3cdb7ef2d2b3dc0492123bab2efc4875a85ecc62f16a5",
     "prepare-pull-request": "8164846027b30d09f2edff2d54437816e182077e72788a7ef8a03f2a0811d7fe",
     "prevent-recurrence": "2c0a272990e5b2a68afb55f19a6bc14f0ac17720df31e196d6b5fe1272041f08",

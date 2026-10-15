@@ -1,3 +1,17 @@
 {
-  "sources": []
+  "sources": [
+    {
+      "repository": "https://github.com/planetscale/database-skills.git",
+      "ref": "f6ed002d03084cb39c01d1d58904d47a36f5322a",
+      "license": "MIT",
+      "skills_root": "skills",
+      "skills": {
+        "postgres": "postgres",
+        "mysql": "mysql"
+      },
+      "license_files": {
+        "LICENSE": "references/LICENSE.txt"
+      }
+    }
+  ]
 }

@@ -1,0 +1,3 @@
+source=https://github.com/planetscale/database-skills.git
+upstream_skill=postgres
+revision=f6ed002d03084cb39c01d1d58904d47a36f5322a
