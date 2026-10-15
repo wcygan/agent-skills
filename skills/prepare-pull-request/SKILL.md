@@ -12,7 +12,7 @@ metadata:
 
 Help a reviewer understand the problem, the resulting behavior, and the evidence
 without reconstructing the conversation. Prefer a small change with one useful
-visual and a few precise sentences. Follow the repository's PR template and title
+overview visual and a few precise sentences. Follow the repository's PR template and title
 conventions; brevity must not erase required information or material risks.
 
 Use linked skills when available; the criteria here remain the fallback when a
@@ -27,11 +27,20 @@ component is installed alone. Report missing rendering or publication capabiliti
    [write-clearly](../write-clearly/SKILL.md) for prose and captions. Explain a
    concrete trigger when useful; omit the transcript, abandoned attempts, and
    file-by-file narration unless they explain a material tradeoff.
-3. Select one visual that answers the main reviewer question. Use
+3. Synthesize the code into the smallest useful model of actors, state, and outcomes;
+   do not mirror the call graph or list changed files. Select one overview visual
+   that answers the main reviewer question. Use
    [technical-visuals](../technical-visuals/SKILL.md) when creating a figure.
    Default to 2D; use 3D only when requested. For format and evidence choices,
    read [review package](references/review-package.md).
-4. State verification for the current revision, reproducible commands when useful,
+4. Unless a required repository template overrides it, use exactly
+   `## Problem & Solution Overview` and `## Testing Done`. Put any additional headings
+   beneath them. For meaningful testing scenarios, keep a scenario diagram visible
+   and collapse commands, responses, and logs in “Commands and results.” Choose from
+   the [cache, form retry, and queue examples](../technical-visuals/examples/pull-requests/index.html);
+   borrow their presentation, never their fictional results. Do not require a fixed
+   scenario count or add a diagram that conveys no useful information.
+   State verification for the current revision, reproducible commands when useful,
    and material compatibility, rollout, or rollback concerns. Keep uncertainty
    visible. A conceptual diagram is explanation, not execution evidence.
 5. Inspect the completed description and rendered assets as a reviewer. Confirm

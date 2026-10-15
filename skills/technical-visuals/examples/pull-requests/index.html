@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pull requests · Technical visuals</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="../tokens.js" defer></script>
+    <script src="rendered.js" defer></script>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <a href="../index.html">← Visual studio</a
+      ><button id="theme" aria-label="Switch color theme">◐</button>
+    </header>
+    <main>
+      <div class="intro">
+        <p class="eyebrow">THE PULL REQUEST LAB</p>
+        <h1>One change.<br />Easy to review.</h1>
+        <p>
+          Explain the problem, show the change, and make the evidence easy to
+          check.
+        </p>
+      </div>
+      <div class="principles">
+        <span><b>01</b> One focused change</span
+        ><span><b>02</b> One useful visual</span
+        ><span><b>03</b> Real behavior, verified</span>
+      </div>
+      <p class="size-note">
+        Aim for ≤300 added + deleted lines, including tests and docs. Report the
+        raw total; disclose generated churn separately. A local reviewability
+        guideline, not a guarantee of safety; split by behavior, not an
+        arbitrary line count.
+      </p>
+      <nav aria-label="Fictional PR specimens" id="specimens">
+        <button data-example="cache" aria-pressed="true">01 · Cache miss</button
+        ><button data-example="retry" aria-pressed="false">
+          02 · Retry a form</button
+        ><button data-example="queue" aria-pressed="false">
+          03 · Queue overload
+        </button>
+      </nav>
+      <article aria-labelledby="pr-title">
+        <div class="pr-head">
+          <p class="eyebrow">FICTIONAL SPECIMEN · NOT A REAL PULL REQUEST</p>
+          <h2 id="pr-title"></h2>
+          <div class="meta">
+            <span class="open">◇ Open</span><span id="scope"></span>
+          </div>
+        </div>
+        <div class="body markdown-body" id="pr-body"></div>
+      </article>
+      <section class="handoff">
+        <div>
+          <p class="eyebrow">TAKE THE PATTERN</p>
+          <h2>Markdown plus one static image.</h2>
+          <p>
+            GitHub renders Mermaid diagrams. The specimen body is rendered by
+            GitHub’s Markdown API. This page’s JavaScript controls stay local;
+            they do not become interactive inside a PR. Attach a stable SVG/PNG,
+            screenshot, or short recording with a caption. Keep editable source
+            in the repository.
+          </p>
+        </div>
+        <div class="actions">
+          <button id="copy">Copy this PR body</button
+          ><button id="download">Download this PR .md</button>
+          <a id="asset" href="assets/cache.svg" download
+            >Download this diagram (SVG)</a
+          >
+          <p id="copy-status" role="status"></p>
+          <p>
+            For a GitHub PR, upload the SVG and replace the relative image path
+            with its attachment URL. The checked-in .md files render with their
+            adjacent assets.
+          </p>
+        </div>
+      </section>
+      <details class="template">
+        <summary>View this PR’s Markdown source</summary>
+        <pre id="template"></pre>
+      </details>
+      <section class="sources">
+        <h3>Read the guidance</h3>
+        <p>
+          <a href="../../references/pull-requests.md">Full PR guide</a> ·
+          <a
+            href="https://google.github.io/eng-practices/review/developer/small-cls.html"
+            >Small changes</a
+          >
+          ·
+          <a
+            href="https://google.github.io/eng-practices/review/developer/cl-descriptions.html"
+            >Change descriptions</a
+          >
+          ·
+          <a
+            href="https://docs.github.com/en/pull-requests/concepts/helping-others-review-your-changes"
+            >Help reviewers</a
+          >
+          ·
+          <a
+            href="https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams"
+            >GitHub diagrams</a
+          >
+          ·
+          <a href="https://playwright.dev/docs/trace-viewer">Trace evidence</a>
+        </p>
+      </section>
+      <footer>
+        Every scenario and result on this page is fictional. Replace
+        placeholders with evidence from the actual app and reviewed revision.
+      </footer>
+    </main>
+  </body>
+</html>

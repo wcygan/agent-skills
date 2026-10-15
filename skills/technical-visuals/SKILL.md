@@ -44,6 +44,7 @@ Read the design system, then load only the resources relevant to the task.
 | --- | --- |
 | Color, typography, spacing, density, mobile sizing | [Design system](references/design-system.md); canonical [color tokens](examples/tokens.js) |
 | Infrastructure, data structures, decisions, streaming, and component symbols | [Shape vocabulary](references/shapes.md); rendered library in the [studio](examples/index.html#shape-library); reusable [SVG shape source](examples/shapes.js) |
+| A small, visual GitHub pull request with reproducible evidence | [Pull request design system](references/pull-requests.md); [PR examples](examples/pull-requests/index.html) |
 | Concise visual storytelling and animation precedent | [Blog visual lab](examples/blog/index.html); select a model below and inspect its same-named JavaScript source |
 | A supplied diagram, screenshot, dataset, codebase, or post series | [Input contracts](references/inputs.md) |
 | 2D architecture, flow, chart, or before/after figure | [2D playbooks](references/2d.md) |
@@ -52,6 +53,39 @@ Read the design system, then load only the resources relevant to the task.
 | Theme checks, animation checks, exports, or final handoff | [Delivery and verification](references/delivery.md) |
 | Dark palette provenance or color adaptation | [PlanetScale precedent](references/dark-palette.md) |
 | Shorter titles, labels, and captions | [Write clearly](../write-clearly/SKILL.md) |
+
+## Turn a code change into a clear pull request
+
+For PR descriptions, use the [pull request design system](references/pull-requests.md)
+and [prepare-pull-request](../prepare-pull-request/SKILL.md). Start from the final
+diff and actual verification: identify the trigger, old behavior, new behavior,
+and the few actors or states that explain the change. Synthesize that into a short
+problem/solution paragraph and a high-level overview; do not diagram every function
+or narrate files in diff order.
+
+Use `## Problem & Solution Overview` and `## Testing Done` as the two body sections,
+unless a required repository template overrides them. Place supporting headings
+under these. Keep one compact overview diagram visible; under Testing Done, start
+each meaningful scenario with its diagram and collapse commands, responses, and
+logs in “Commands and results.” Preserve visible material limits. Omit diagrams
+that add no information, and do not force three scenarios onto every change.
+
+Choose a precedent by what the reviewer needs to understand:
+
+| Pattern | Editable PR body | What to borrow |
+| --- | --- | --- |
+| Service orchestration and terminal outcomes | [Cache lookup](examples/pull-requests/cache.md) | Client/API/cache/store overview; cold, warm, and missing-record paths with responses and cache-fill evidence |
+| User-visible state and recovery | [Form retry](examples/pull-requests/retry.md) | Visible draft state; success, retained input after failure, and retry with persisted-result evidence |
+| Capacity boundaries and backpressure | [Bounded queue](examples/pull-requests/queue.md) | Occupied slots; acceptance, rejection at capacity, and recovery after draining |
+
+Preview these in the [PR gallery](examples/pull-requests/index.html). Reuse their
+structure and visual vocabulary, not their fictional commands or outputs. Use
+GitHub-renderable Markdown, static images or Mermaid, and native disclosures;
+no custom page runtime in a PR. Prefer shallow horizontal figures with explicit
+widths (the examples use 448px), readable phone labels, and consistent component
+shapes across overview and scenarios. A diagram explains behavior; only observed
+execution supports a testing claim. Replace illustrative transcripts with evidence
+from the reviewed revision, or explicitly say what was not run.
 
 ## Learn from the blog visuals
 

@@ -1,5 +1,10 @@
 # Assemble the review package
 
+For the 300-line house target, visual examples, and compact execution evidence,
+use the [pull request design system](../../technical-visuals/references/pull-requests.md)
+and its [gallery](../../technical-visuals/examples/pull-requests/index.html).
+The target is a review prompt, not a safety guarantee; keep related tests with the change.
+
 ## Choose the visual by the reviewer question
 
 | Question | Evidence or explanation |
@@ -55,10 +60,15 @@ A diagram would add no useful relationship. Keep the text concise and accurate.
 
 ## Compact structure when no template exists
 
-- Problem and resulting behavior: one short paragraph.
-- Visual plus caption: what the reviewer should notice, with its evidence category.
-- Validation: what ran and what it established; exact commands where useful.
-- Material risks or rollout: only when relevant.
+Use exactly two top-level sections:
+
+- `## Problem & Solution Overview`: problem and resulting behavior, followed by a
+  compact visual when useful. Put scope or design details in subsections here.
+- `## Testing Done`: actual interactions, observed results, commands, and material
+  verification limits. Put reproduction details in subsections or disclosures here.
+
+Any additional headings belong beneath these as `###` subsections. Keep the PR
+concise and size images explicitly so they support the explanation.
 
 Do not hide failed checks behind a summary of passing ones. If the code changes after
 verification, renew affected evidence. If a PR exists already, update its explanation
