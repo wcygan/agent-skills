@@ -197,9 +197,12 @@ just reinstall --apply --dotfiles /path/to/dotfiles
 
 Without `--apply` the script changes nothing. Both repositories must be on their
 default branch, so unreviewed branches cannot reach the pin. The dotfiles path
-defaults to a sibling of the main checkout, including from a worktree. Do not
-copy skills into `~/.agents/skills` or `~/.claude/skills` by hand; the pinned
-check cannot see hand copies. With `--apply`, the script refreshes the snapshot, runs `just check-full`, commits and pushes
+defaults to a sibling of the main checkout, including from a worktree. Run it
+from clean clones of both repositories when either checkout has unrelated
+edits. Claude Code's `~/.claude/skills` holds symlinks to the pinned copies that
+no installer manages yet; [AGENTS.md](AGENTS.md#distribution) gives the exact
+post-install steps. Never copy skill content into either directory by hand.
+With `--apply`, the script refreshes the snapshot, runs `just check-full`, commits and pushes
 provider changes, advances the consumer pin, installs and verifies through
 `./bootstrap.sh agent-skills`, then commits and pushes the pin. Standard refresh
 archives retired provider-owned copies through `--prune`. `--reset-global`

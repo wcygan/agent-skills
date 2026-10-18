@@ -17,7 +17,11 @@ just reinstall --apply --reset-global
 Run the dry run first and report its plan. The script refuses unless both
 repositories are on their default branch, so land the reviewed change on the
 default branch before `--apply`; never hand-copy skills into global directories
-as a substitute.
+as a substitute. Run from clean clones of both repositories when either
+checkout has unrelated edits, because `--apply` publishes every uncommitted
+path; the dry run must report 0 uncommitted paths unless they were requested.
+After `--apply`, reconcile `~/.claude/skills` symlinks to the pinned copies as
+described in the repository's AGENTS.md Distribution section.
 
 Use `--dotfiles /path/to/dotfiles` to override the default, a `dotfiles`
 checkout beside the main repository checkout (worktrees resolve to the same).

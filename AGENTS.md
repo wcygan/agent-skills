@@ -3,11 +3,9 @@
 ## Purpose of this repository
 
 This is a **public GitHub repository that stores all of my agent skills** and
-distributes them through the GitHub CLI:
-
-```bash
-gh skill install OWNER/agent-skills --agent codex --scope user --all
-```
+distributes them through the GitHub CLI. To install skills, read
+[Distribution](#distribution) first; this machine uses a different path from
+other machines.
 
 Skills in this repository follow the **Agent Skills** specification, which is
 the format `gh skill install` discovers, validates, and installs. Every skill
@@ -17,6 +15,18 @@ and `assets/` directories).
 This repo deliberately uses the layout that **Agent Plugins** also defines for
 its `skills/` component, so the same tree can be packaged as an Agent Plugin
 (optional `plugin.json`) for plugin-capable clients without restructuring.
+
+## Follow these instructions exactly
+
+- Follow the documented procedure for the task. Do not substitute an
+  improvised alternative, such as `cp`, `ln`, `gh skill install --from-local`,
+  or editing global skill directories, for a documented command.
+- If a documented step fails or refuses, stop and report the exact output.
+  Do not work around a guard; guards encode past mistakes.
+- Before any task that publishes, pins, or installs, read the project-local
+  skill that owns it (`.agents/skills/<name>/SKILL.md`) and follow it.
+- If instructions conflict or do not cover the situation, ask the user rather
+  than choosing for them.
 
 ## Core paths
 
@@ -84,16 +94,38 @@ just check-full
 
 ## Distribution
 
-**This machine's global skills** come only from the dotfiles pin, refreshed by
-the project-local `.agents/skills/reinstall-agent-skills` workflow. Run
-`just reinstall` (a read-only dry run), then `just reinstall --apply` from the
-default branch after the change is reviewed and merged. The script refuses
-other branches. Never copy or symlink skills into `~/.agents/skills` or
-`~/.claude/skills` by hand: the dotfiles check does not see hand copies, and
-the next pinned install can collide with them.
+### This machine: dotfiles pin only
 
-**Machines without the dotfiles pin** (other users, CI, fresh hosts) install
-with GitHub CLI as below. On this machine, use `just reinstall` instead.
+Global skills on this machine come only from the dotfiles pin. Follow
+`.agents/skills/reinstall-agent-skills/SKILL.md`; in short:
+
+1. Land the reviewed change on `main`. The script refuses any other branch.
+2. Run from **clean** checkouts of both repositories on `main`, side by side
+   (for example fresh clones of `agent-skills` and `dotfiles` in one
+   directory). `--apply` commits every uncommitted path with `git add .`, so a
+   checkout with unrelated edits would publish them. Never stash, commit, or
+   discard the user's edits to make a checkout clean.
+3. `just reinstall` is a read-only dry run. Show the user its plan. It must
+   report `0 uncommitted path(s)` unless publishing those paths was requested.
+4. `just reinstall --apply` publishes the provider, advances and pushes the
+   dotfiles pin, and installs into `~/.agents/skills`.
+5. Claude Code reads `~/.claude/skills`, which no installer manages yet. Each
+   entry there is a symlink to the pinned copy:
+   `~/.claude/skills/<name> -> ~/.agents/skills/<name>`. After `--apply`, add a
+   link for each added skill and remove the link for each retired one, then
+   confirm both directories list the same catalog skills. Leave non-catalog
+   entries (such as `synced`) alone.
+
+Never copy skill content into `~/.agents/skills` or `~/.claude/skills`, and
+never link to anything other than a pinned copy. `just reinstall --apply` and
+the dotfiles check ignore hand copies, and the next pinned install can
+collide with them. Afterwards, the user's own `main` checkouts are behind
+`origin`; report that rather than pulling over their uncommitted edits.
+
+### Other machines: GitHub CLI
+
+Machines without the dotfiles pin (other users, CI, fresh hosts) install with
+GitHub CLI. On this machine, use the dotfiles pin above instead.
 
 - Installation: `gh skill install OWNER/agent-skills --agent <agent> --scope <scope>` (`--all` to install every skill; a trailing skill name selects one).
 - Prefer the shared Agent Skills directory `~/.agents/skills` for user-level
@@ -104,8 +136,11 @@ with GitHub CLI as below. On this machine, use `just reinstall` instead.
   For example, install all skills for Codex:
 
   ```bash
-  gh skill install OWNER/agent-skills --agent codex --scope user --all
+  gh skill install OWNER/agent-skills --agent codex --scope user --all --dir ~/.agents/skills
   ```
+
+- `gh skill install . --from-local` opens an interactive picker and fails
+  without a terminal; pass `--all` and a scratch `--dir` when testing locally.
 
 - **Versioning:** Unpinned installs use the latest release, then default-branch
   HEAD. Pins accept a tag or commit SHA.
