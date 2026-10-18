@@ -9,7 +9,7 @@
     "archive/2026-10-14/skill-inventory.md": "7dcc2667454f0be41346618812a0600492fe103276f3bb80d24b6537f7e3a320",
     "catalog-projection.json": "58a748ebafbad388263c13ea6e6306a672f098faf90b2c13e6043fb6ad7c3785",
     "docs/catalog-inheritance.md": "495498e2c530405b183a65d4110ebdb0fd96e68aab481e6a372e28c85706aef8",
-    "justfile": "7aa7284aacc2004671822777e9d748e3005cf421eea6a0e55e4db9a1d5d3de56",
+    "justfile": "f24d7fc209e78722ba1acab1e0925298585507ec197494f537b01da64f189cfc",
     "pyproject.toml": "ccfaff36a9f21dcbd43b4056e065714d929c53628414c9a603e195ce139dd3b4",
     "skill_catalog/__init__.py": "65f33b1e55e7bbac6fcb0722e89d581d29ab4ce26266ac6d24d92fc9958cb513",
     "skill_catalog/catalog.py": "6d7a8ba3e50af1791b8c559a1ea600e1e3b5d40f5564d3e7b80144f374ff7bf1",

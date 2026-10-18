@@ -37,12 +37,14 @@ class PinTests(unittest.TestCase):
 
 
 class PublicationTests(unittest.TestCase):
-    def exercise_workflow(self, failed_gate=None, *, reset_global=False, check_returncode=0):
+    def exercise_workflow(self, failed_gate=None, *, reset_global=False, check_returncode=0,
+                          apply=True):
         with tempfile.TemporaryDirectory() as directory:
             provider = Path(directory).resolve() / "provider"
             consumer = Path(directory).resolve() / "consumer"
             provider.mkdir()
             consumer.mkdir()
+            (consumer / "agent-skills.lock.toml").write_text(f'commit = "{"b" * 40}"\n')
             sha = "a" * 40
 
             def git_result(root, *args):
@@ -59,15 +61,17 @@ class PublicationTests(unittest.TestCase):
             events = Mock()
             with patch.object(reinstall, "__file__", str(provider / "tools" / "reinstall.py")), \
                     patch.object(reinstall.sys, "argv", ["reinstall.py", "--dotfiles", str(consumer)]
-                                 + (["--reset-global"] if reset_global else [])), \
+                                 + (["--reset-global"] if reset_global else [])
+                                 + (["--apply"] if apply else [])), \
                     patch.object(reinstall, "preflight", return_value="main"), \
                     patch.object(reinstall, "git", side_effect=git_result), \
                     patch.object(reinstall, "run", side_effect=command_result) as run, \
                     patch.object(reinstall, "commit_if_changed") as commit, \
                     patch.object(reinstall, "update_pin") as pin, \
                     patch.object(reinstall.subprocess, "run",
-                                 return_value=subprocess.CompletedProcess([], check_returncode)), \
+                                 return_value=subprocess.CompletedProcess([], check_returncode)) as raw, \
                     patch("builtins.print"):
+                events.attach_mock(raw, "raw")
                 events.attach_mock(run, "run")
                 events.attach_mock(commit, "commit")
                 events.attach_mock(pin, "pin")
@@ -109,3 +113,57 @@ class PublicationTests(unittest.TestCase):
         self.assertIn(call.run(consumer, "./bootstrap.sh", "agent-skills", "--prune"), events)
         self.assertNotIn(call.run(consumer, "./bootstrap.sh", "agent-skills", "--reset", "--yes"),
                          events)
+
+    def test_dry_run_is_the_default_and_changes_nothing(self):
+        provider, consumer, _, events = self.exercise_workflow(apply=False)
+        self.assertEqual(events, [
+            call.raw(["./bootstrap.sh", "agent-skills", "--check"], cwd=consumer),
+        ])
+
+
+class PreflightTests(unittest.TestCase):
+    def preflight_on(self, branch):
+        root = Path("/repo")
+        answers = {
+            ("rev-parse", "--show-toplevel"): "/repo",
+            ("symbolic-ref", "--short", "HEAD"): branch,
+            ("symbolic-ref", "--short", "refs/remotes/origin/HEAD"): "origin/main",
+            ("rev-parse", "--abbrev-ref", "@{upstream}"): f"origin/{branch}",
+        }
+        with patch.object(reinstall, "git",
+                          side_effect=lambda _, *args: answers.get(args, "/missing/marker")), \
+                patch.object(reinstall.Path, "resolve", lambda self: self):
+            return reinstall.preflight(root)
+
+    def test_default_branch_passes(self):
+        self.assertEqual("main", self.preflight_on("main"))
+
+    def test_feature_branch_is_refused(self):
+        with self.assertRaisesRegex(ValueError, "on feature; publish only from main"):
+            self.preflight_on("feature")
+
+
+class ConsumerPathTests(unittest.TestCase):
+    def test_worktree_defaults_to_dotfiles_beside_main_checkout(self):
+        with tempfile.TemporaryDirectory() as directory:
+            development = Path(directory).resolve()
+            provider = development / "agent-skills" / ".claude" / "worktrees" / "w"
+            consumer = development / "dotfiles"
+            seen = []
+
+            def git_result(root, *args):
+                if args == ("rev-parse", "--path-format=absolute", "--git-common-dir"):
+                    return str(development / "agent-skills" / ".git")
+                if args == ("rev-parse", "--git-path", "reinstall-agent-skills.lock"):
+                    return str(development / "lock")
+                raise ValueError("stop")
+
+            with patch.object(reinstall, "__file__", str(provider / "tools" / "reinstall.py")), \
+                    patch.object(reinstall.sys, "argv", ["reinstall.py"]), \
+                    patch.object(reinstall, "git", side_effect=git_result), \
+                    patch.object(reinstall, "preflight",
+                                 side_effect=lambda root: seen.append(root) or "main"), \
+                    patch("builtins.print"):
+                with self.assertRaisesRegex(ValueError, "stop"):
+                    reinstall.main()
+            self.assertEqual([provider, consumer], seen)

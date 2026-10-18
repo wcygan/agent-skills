@@ -84,6 +84,16 @@ just check-full
 
 ## Distribution
 
+**This machine's global skills** come only from the dotfiles pin, refreshed by
+the project-local `.agents/skills/reinstall-agent-skills` workflow. Run
+`just reinstall` (a read-only dry run), then `just reinstall --apply` from the
+default branch after the change is reviewed and merged. The script refuses
+other branches. Never copy or symlink skills into `~/.agents/skills` or
+`~/.claude/skills` by hand: the dotfiles check does not see hand copies, and
+the next pinned install can collide with them.
+
+**Other machines and users** install with GitHub CLI as below.
+
 - Installation: `gh skill install OWNER/agent-skills --agent <agent> --scope <scope>` (`--all` to install every skill; a trailing skill name selects one).
 - Prefer the shared Agent Skills directory `~/.agents/skills` for user-level
   installations. When using `gh skill install`, pass `--dir ~/.agents/skills`

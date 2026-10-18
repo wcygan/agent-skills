@@ -30,6 +30,9 @@ def preflight(root: Path) -> str:
     if Path(git(root, "rev-parse", "--show-toplevel")).resolve() != root:
         raise ValueError(f"Not a repository root: {root}")
     branch = git(root, "symbolic-ref", "--short", "HEAD")
+    default = git(root, "symbolic-ref", "--short", "refs/remotes/origin/HEAD").removeprefix("origin/")
+    if branch != default:
+        raise ValueError(f"{root} is on {branch}; publish only from {default} after review")
     upstream = git(root, "rev-parse", "--abbrev-ref", "@{upstream}")
     if upstream != f"origin/{branch}":
         raise ValueError(f"Expected origin/{branch} upstream in {root}")
@@ -63,14 +66,32 @@ def update_pin(path: Path, sha: str) -> None:
         temporary.replace(path)
 
 
+def report_plan(provider: Path, consumer: Path, provider_branch: str,
+                consumer_branch: str, reset_global: bool) -> None:
+    pending = git(provider, "status", "--porcelain")
+    pin = tomllib.loads((consumer / "agent-skills.lock.toml").read_text()).get("commit")
+    check = subprocess.run(["./bootstrap.sh", "agent-skills", "--check"], cwd=consumer)
+    print(f"Dry run: no commits, pushes, pin updates, or installs.\n"
+          f"Provider {provider} on {provider_branch} at {git(provider, 'rev-parse', 'HEAD')}; "
+          f"{len(pending.splitlines())} uncommitted path(s) would be published.\n"
+          f"Consumer {consumer} on {consumer_branch}; current pin {pin}; "
+          f"catalog check {'passes' if check.returncode == 0 else 'fails'}.\n"
+          f"Install mode: {'--reset --yes' if reset_global else '--prune when the check fails'}.\n"
+          f"Rerun with --apply to publish and install.")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--dotfiles", type=Path, default=Path(__file__).resolve().parents[2] / "dotfiles")
+    parser.add_argument("--dotfiles", type=Path,
+                        help="Consumer checkout (default: dotfiles beside the main checkout)")
+    parser.add_argument("--apply", action="store_true",
+                        help="Commit, push, pin, and install; without it, only preflight and report")
     parser.add_argument("--reset-global", action="store_true",
                         help="Archive every shared user skill outside this catalog")
     args = parser.parse_args()
     provider = Path(__file__).resolve().parents[1]
-    consumer = args.dotfiles.resolve()
+    common = Path(git(provider, "rev-parse", "--path-format=absolute", "--git-common-dir"))
+    consumer = (args.dotfiles or common.parent.parent / "dotfiles").resolve()
     # Fail fast on overlapping invocations; the installer also owns its user lock.
     lock_path = Path(git(provider, "rev-parse", "--git-path", "reinstall-agent-skills.lock"))
     if not lock_path.is_absolute():
@@ -90,6 +111,9 @@ def main() -> None:
         git(provider, "fetch", "origin", provider_branch)
         if git(provider, "merge-base", "HEAD", f"origin/{provider_branch}") != git(provider, "rev-parse", f"origin/{provider_branch}"):
             raise ValueError("Provider is behind or diverged; reconcile it before publishing")
+        if not args.apply:
+            report_plan(provider, consumer, provider_branch, consumer_branch, args.reset_global)
+            return
         run(provider, "just", "catalog-snapshot")
         run(provider, "just", "check-full")
         commit_if_changed(provider, "chore(skills): publish current catalog", ".")

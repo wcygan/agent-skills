@@ -1,7 +1,7 @@
 # agent-skills
 
-A public Agent Skills catalog with one orchestrator, 24 engineering principles,
-30 focused components, nine procedural skills, and three specialist skills.
+A public Agent Skills catalog with 1 orchestrator, 24 engineering principles,
+32 focused components, 9 procedural skills, and 6 specialist skills.
 Components work independently. Procedures load only
 the components needed for the task, using relative links within the catalog.
 
@@ -78,6 +78,7 @@ providers. Independent execution is optional and its absence is stated honestly.
 | [assess-impact](skills/assess-impact/SKILL.md) | Trace what a change could break beyond its immediate diff. |
 | [verify-behavior](skills/verify-behavior/SKILL.md) | Check actual results against acceptance criteria. |
 | [measure-performance](skills/measure-performance/SKILL.md) | Measure a performance claim fairly and repeatably. |
+| [model-state-transitions](skills/model-state-transitions/SKILL.md) | Model and verify lifecycle rules as explicit states, events, and transitions. |
 | [coordinate-work](skills/coordinate-work/SKILL.md) | Assign independent units, control shared writes, and reconcile results. |
 | [decision-log](skills/decision-log/SKILL.md) | Keep an auditable record of consequential choices and evidence. |
 | [progress-report](skills/progress-report/SKILL.md) | Catch the user up on changes, status, and decisions awaiting them. |
@@ -124,6 +125,9 @@ browser validation and export checks.
 | [uv-python](skills/uv-python/SKILL.md) | Python development and dependency workflows with uv. |
 | [just](skills/just/SKILL.md) | Maintain clear, reusable justfile commands. |
 | [design-loop](skills/design-loop/SKILL.md) | Design, implement and verify a bounded UI outcome. |
+| [typescript-app-stack](skills/typescript-app-stack/SKILL.md) | Orient in a TypeScript application stack and locate component documentation. |
+| [postgres](skills/postgres/SKILL.md) | PostgreSQL schema, queries, connections, and performance (vendored from PlanetScale). |
+| [mysql](skills/mysql/SKILL.md) | MySQL/InnoDB schema, indexing, queries, and operations (vendored from PlanetScale). |
 
 ## Install
 
@@ -183,14 +187,19 @@ The repository-local [reinstall-agent-skills](.agents/skills/reinstall-agent-ski
 workflow owns provider publication, the exact dotfiles pin and global refresh:
 
 ```sh
-uv run --script tools/reinstall_agent_skills.py
+just reinstall              # dry run: preflight, plan, read-only catalog check
+just reinstall --apply      # publish and install from the reviewed default branch
 # Explicitly reset the entire shared user catalog:
-uv run --script tools/reinstall_agent_skills.py --reset-global
+just reinstall --apply --reset-global
 # Use a clean alternate consumer checkout when preserving unrelated edits:
-uv run --script tools/reinstall_agent_skills.py --dotfiles /path/to/dotfiles --reset-global
+just reinstall --apply --dotfiles /path/to/dotfiles
 ```
 
-The script refreshes the snapshot, runs `just check-full`, commits and pushes
+Without `--apply` the script changes nothing. Both repositories must be on their
+default branch, so unreviewed branches cannot reach the pin. The dotfiles path
+defaults to a sibling of the main checkout, including from a worktree. Do not
+copy skills into `~/.agents/skills` or `~/.claude/skills` by hand; the pinned
+check cannot see hand copies. With `--apply`, the script refreshes the snapshot, runs `just check-full`, commits and pushes
 provider changes, advances the consumer pin, installs and verifies through
 `./bootstrap.sh agent-skills`, then commits and pushes the pin. Standard refresh
 archives retired provider-owned copies through `--prune`. `--reset-global`
@@ -204,7 +213,7 @@ Skills remain immediate children of `skills/`, following the
 [Agent Skills specification](https://agentskills.io/specification). The layout
 also supports Agent Plugins packaging. Source ownership for future vendors is
 recorded in `vendor/skills-lock.json`; adapted upstream work must preserve its
-provenance and license. The active vendor lock is empty after this reset.
+provenance and license. The vendor lock currently tracks `postgres` and `mysql` from PlanetScale.
 
 ```sh
 uv tool run --from skills-ref agentskills validate ./skills/<name>

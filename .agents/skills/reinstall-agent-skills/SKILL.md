@@ -8,16 +8,23 @@ description: Publish this catalog, advance the dotfiles commit pin, and reinstal
 Run the repository-owned script from the repository root:
 
 ```sh
-uv run --script tools/reinstall_agent_skills.py
+just reinstall                         # dry run; changes nothing
+just reinstall --apply                 # publish, pin, and install
 # For an explicitly requested full shared-user reset:
-uv run --script tools/reinstall_agent_skills.py --reset-global
+just reinstall --apply --reset-global
 ```
 
-Use `--dotfiles /path/to/dotfiles` to override the sibling checkout default.
+Run the dry run first and report its plan. The script refuses unless both
+repositories are on their default branch, so land the reviewed change on the
+default branch before `--apply`; never hand-copy skills into global directories
+as a substitute.
+
+Use `--dotfiles /path/to/dotfiles` to override the default, a `dotfiles`
+checkout beside the main repository checkout (worktrees resolve to the same).
 Read the dotfiles repository instructions and its `dotfiles-operations` and
 `agent-skills-integration` skills before execution.
 
-The script regenerates `catalog-snapshot.json` with `just catalog-snapshot`,
+With `--apply`, the script regenerates `catalog-snapshot.json` with `just catalog-snapshot`,
 then validates with `just check-full`, commits all current provider changes,
 pushes them, fast-forwards dotfiles, advances `agent-skills.lock.toml` to the exact provider
 commit, verifies or installs through `./bootstrap.sh agent-skills`, runs the
