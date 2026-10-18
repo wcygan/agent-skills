@@ -92,7 +92,8 @@ other branches. Never copy or symlink skills into `~/.agents/skills` or
 `~/.claude/skills` by hand: the dotfiles check does not see hand copies, and
 the next pinned install can collide with them.
 
-**Other machines and users** install with GitHub CLI as below.
+**Machines without the dotfiles pin** (other users, CI, fresh hosts) install
+with GitHub CLI as below. On this machine, use `just reinstall` instead.
 
 - Installation: `gh skill install OWNER/agent-skills --agent <agent> --scope <scope>` (`--all` to install every skill; a trailing skill name selects one).
 - Prefer the shared Agent Skills directory `~/.agents/skills` for user-level
