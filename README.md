@@ -86,6 +86,7 @@ providers. Independent execution is optional and its absence is stated honestly.
 | [prevent-recurrence](skills/prevent-recurrence/SKILL.md) | Prevent a demonstrated class of repeated mistakes through structure or checks. |
 | [personalize-workflow](skills/personalize-workflow/SKILL.md) | Capture a user’s established working preferences in a concise skill. |
 | [create-verification-skill](skills/create-verification-skill/SKILL.md) | Create a project skill that launches, exercises, and verifies real application behavior. |
+| [create-formal-verification-skill](skills/create-formal-verification-skill/SKILL.md) | Generate a project skill that formally verifies one high-risk property with a fitting tool. |
 | [maintain-verification-skill](skills/maintain-verification-skill/SKILL.md) | Check and repair a project verification skill against source and live behavior. |
 | [deliver-change](skills/deliver-change/SKILL.md) | Present or publish a verified result within authorized scope. |
 | [write-clearly](skills/write-clearly/SKILL.md) | Make technical prose, captions, and labels concise, concrete, and accurate. |
@@ -103,6 +104,8 @@ mapping, procedure composition, and adaptation scope.
 `create-verification-skill` produces executable project-specific guidance and a
 feature map. `maintain-verification-skill` checks that map against source and live
 behavior, keeping product regressions distinct from documentation drift.
+`create-formal-verification-skill` checks one property across every case in a stated
+scope with a model checker, code verifier, or proof, and leaves a rerunnable check.
 
 The communication components connect planning to review: `slice-changes` establishes
 small review boundaries, `technical-visuals` supplies a useful explanation, and

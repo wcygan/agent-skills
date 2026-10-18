@@ -26,6 +26,9 @@ each principle that changed a decision with the specific choice it shaped.
    use [create-verification-skill](../create-verification-skill/SKILL.md) when absent.
    Use [maintain-verification-skill](../maintain-verification-skill/SKILL.md) when an
    existing skill is stale or its audit was requested. A one-off check needs neither.
+   When a property must hold across every case in a stated scope, such as a race,
+   retry, state machine, parser, or unsafe code, and formal verification is requested,
+   use [create-formal-verification-skill](../create-formal-verification-skill/SKILL.md).
 3. Use [verify-behavior](../verify-behavior/SKILL.md), following applicable project
    instructions. Preserve evidence from skill creation or maintenance as coverage
    only when it matches the same artifact, environment, and acceptance criteria.

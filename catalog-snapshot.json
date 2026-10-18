@@ -23,7 +23,7 @@
     "tools/sync_skills.py": "4726c4e7702a586522031e2684aea035d921ec90a1ba83d49a4daac01b564dab",
     "uv.lock": "b8088892e84e2a71c92df67f4b74ec1b7b9b3d7f6fffa4eebbec26fd22be8f9d",
     "vendor/ATTRIBUTIONS.md": "1de9452782c2490f542bd3f119e390197f541d20fca8f6791fa85b060dd835ea",
-    "vendor/LOCAL-ATTRIBUTIONS.md": "8d03c361fc2276d032b40b36d828bd37d61f7804349c2609f6b769376a32c417",
+    "vendor/LOCAL-ATTRIBUTIONS.md": "9bbad2c6eaf26f05f9465802ba4dad7dd25672673ceca70c5f4d6854b62ff141",
     "vendor/skills-lock.json": "03b58852eacfb32c5281c1f98125fac595d2de8e28f2060d301cd6e47dee4ff0"
   },
   "schema": 1,
@@ -32,6 +32,7 @@
     "clarify-task": "4d107cbc1f12ba1b66b0e5b508fa28ab94c9e56341d5d03045f8d91f0d9ffda9",
     "compare-solutions": "2483b90739f5b75eadd8ac075403aa178a72c6192ec69d02ff3f67499bf02a59",
     "coordinate-work": "1e2e51086b5802e27cc97a1fe4c49ab0ee925deadfa4159c6d462b0872730091",
+    "create-formal-verification-skill": "021e1990375283f776f9c6a736b29c0690a4a899b01c0cf36c282e56d21f6e26",
     "create-verification-skill": "09c2bc70044f2aa7e8d60f96411dd4826f52147b152344982a83c4f4162586a5",
     "decision-log": "08dd3eed6d4b1931c5b06d5c48affa437b534c641153aaf1d9a94fbb258aba79",
     "deliver-change": "32dbc7fb8abbb4767c1cd90378ebd500c2c911a51fb8bcb5a211096cafe201dd",
@@ -94,10 +95,10 @@
     "wcygan-experiment": "413ec7c191f92d3ddf9a9a1d934fd39973dcf083f7a208dcce5e24d4bd5832ba",
     "wcygan-implement": "3af8d86f55ea83e61ad5d7b6498262bcdd0b813a782aeb46644aa4b5ff2ef62d",
     "wcygan-investigate": "fa13f8a782af3fa5dc8ebd19ffb0aa3b01fc248dfc3811acb7765d6081cf81c4",
-    "wcygan-mode": "3921997b3fe68c8dcc54260d0ad2b92fad21d4fd4b00522a45ff0a0ab37cf64a",
+    "wcygan-mode": "47f00169cc2aad8811dcfccef2315e0413c5a65fa8ba0f5f1b1a22f15728c148",
     "wcygan-record": "9a2f664805f1b2d96a6cdc56cf8ba55d9d5beb666d5b629ac16f938b1480c423",
     "wcygan-review": "715009d236122575c52e3d435b9f5d902b5566cb103f578de4d3a9cfaabe8400",
-    "wcygan-verify": "7416a024970a097253291099f5f2c393590a255ae963cac1d4dc69f27ba3da23",
+    "wcygan-verify": "fad151d4d0d0bbd2cf3c9dc35dd9a8d2f7e81bd5d687764f068ab41fcb981cf7",
     "write-clearly": "e9c7c22204674ad245c458e416b7e9a937aca4d4844b24513acb2e71acd74878"
   }
 }

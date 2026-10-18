@@ -83,6 +83,21 @@ covers core engineering work; it does not promise those additional capabilities.
 Historical provenance and licenses for the retired catalog remain preserved in
 [the dated archive](../archive/2026-10-14/README.md).
 
+## Formal verification
+
+[create-formal-verification-skill](../skills/create-formal-verification-skill/SKILL.md)
+is a locally maintained adaptation of Lauren Tan's pstack
+`skills/create-formal-verification-skill`, added in
+<https://github.com/cursor/plugins/pull/709> and pinned at merge commit
+`4382e687a50b8d2c5ce4d141d001186589cff8d5`. It includes the upstream MIT notice in
+`references/LICENSE.txt`, and its frontmatter records that revision and path.
+
+The body keeps the upstream text. Changes: the Claude Code and Cursor-specific
+`disable-model-invocation` setting is omitted and the description asks for explicit
+requests instead of naming a slash command; one sentence places the generated skill
+in the project's existing skill location, or `.agents/skills/` by default; and the
+attribution footer is added. It has no `.vendored` marker or synchronization lock entry.
+
 ## Engineering principles
 
 All 24 standalone `principle-*` skills are locally maintained adaptations of
