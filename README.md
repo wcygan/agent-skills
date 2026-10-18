@@ -91,6 +91,7 @@ providers. Independent execution is optional and its absence is stated honestly.
 | [write-clearly](skills/write-clearly/SKILL.md) | Make technical prose, captions, and labels concise, concrete, and accurate. |
 | [slice-changes](skills/slice-changes/SKILL.md) | Plan coherent PRs with verifiable intermediate states. |
 | [technical-visuals](skills/technical-visuals/SKILL.md) | Explain technical relationships in 2D, or explicitly requested 3D, with paired light/dark themes. |
+| [build-intuition](skills/build-intuition/SKILL.md) | Teach a concept bottom-up as a step-by-step HTML lesson saved to `~/Downloads`. |
 | [prepare-pull-request](skills/prepare-pull-request/SKILL.md) | Assemble a concise visual review package from the actual diff and evidence. |
 
 The initial names `how`, `architect`, `arena`, and `interrogate` are now
