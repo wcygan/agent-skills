@@ -48,6 +48,12 @@ buttons, fields, selection, lists/tables, feedback, and dialogs as needed. Cover
 default, hover, focus, selected, disabled, invalid, and pending states where relevant.
 Match visual emphasis to task priority; decorative styling must support the content.
 
+Make the concise hierarchy part of shared components. Avoid default tagline,
+subtitle, or helper-text slots unless the task requires that content. Use semantic
+elements, accessible control names, and explicit pending, success, and error states
+so users and agents can operate the same interface. Prefer improving the shared
+component over adding per-screen copy, style exceptions, or agent-only controls.
+
 ## Apply and retire the old system
 
 Map every in-scope screen and state to the shared tokens and components. Replace

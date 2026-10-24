@@ -14,6 +14,24 @@ Prefer one obvious primary action per task context. Give secondary actions less
 emphasis and place them near their context. Use familiar, consistent labels that
 describe the outcome. Distinguish navigation from commands.
 
+## Remove copy that compensates for layout
+
+Apply the design priorities in SKILL.md while structuring the screen. Remove
+taglines, helper sentences that restate controls, repeated subtitles, decorative
+eyebrows, and secondary labels that duplicate nearby content. If removing them
+makes the task unclear, revise grouping, hierarchy, control placement, or action
+names before adding explanation back.
+
+For example, a Members screen can show the member list and an **Invite member**
+action without a "Manage your team members here" subtitle. A payment form can
+drop "Enter your details below" while retaining **Amount (USD)**, input limits,
+and actionable validation errors.
+
+Keep information needed to choose and act correctly: visible field labels,
+record identity, meaningful status, constraints, consequences, and recovery.
+Place necessary guidance at the relevant decision or state. Do not hide it in
+tooltips or remove accessible names to achieve a sparse appearance.
+
 ## Choose the simplest fitting layout
 
 | Task | Starting structure | Check before choosing |

@@ -4,7 +4,7 @@ description: "Design, style, or redesign websites and apps through investigation
 license: MIT
 metadata:
   author: William Cygan
-  version: "0.3.0"
+  version: "0.4.0"
 ---
 
 # Design Loop
@@ -17,6 +17,32 @@ Run the whole authorized flow independently. Make routine layout and implementat
 decisions, recommend an approach, build it, verify it, and correct failures.
 Honor requests limited to a brief, wireframe, prototype, or review. A request to
 design a UI does not itself authorize a production deployment.
+
+## Design priorities
+
+**Cut taglines, helper text and secondary labels. If a screen needs them to make sense, fix the layout.**
+
+Make purpose and the next action clear through hierarchy, grouping, placement,
+and direct action names. Remove decorative taglines, repeated subtitles, and
+explanations that merely narrate the controls. Keep essential field labels,
+constraints, units, consequences, status, and recovery guidance; replacing them
+with placeholders, unexplained icons, or hover-only help weakens the task.
+
+**Make the best decision that will elevate all three: the user experience (UX), developer experience (DX), and agent experience (AX) always, without breaking anything.**
+
+Evaluate design and implementation choices together:
+
+- **UX:** make the primary task obvious, accessible, and easy to complete and recover.
+- **DX:** use clear ownership, shared tokens and components, and the smallest
+  maintainable implementation with meaningful behavior checks.
+- **AX:** use semantic controls with accessible names, observable states and results,
+  and repeatable setup and verification commands so agents can inspect, operate,
+  and safely change the application.
+
+Prefer choices that improve all three. Simplify the approach when a gain relies
+on confusing users, adding maintenance burden, or making behavior hard to inspect.
+Preserve required capabilities, data, contracts, and accessibility. Expose any
+unavoidable tradeoff against the brief; do not claim an unverified improvement.
 
 ## 1. Investigate and frame
 
@@ -49,6 +75,7 @@ Scope and preserved behavior:
 Content, actions, and business rules:
 Existing components and design conventions:
 Acceptance criteria and verification method:
+UX, DX, and AX outcomes and regression checks:
 Assumptions and unresolved decisions:
 Authorized delivery: artifact | implementation | PR | deployment
 ```
@@ -122,9 +149,10 @@ uncertain. Keep the task and content constant; vary navigation, grouping, densit
 action placement, or task sequencing. For standalone wireframes, prefer one
 self-contained responsive HTML file with useful click-through behavior.
 
-Compare directions against the brief. Recommend one and explain its material
-tradeoff. Continue with the recommendation when within the agreed scope; routine
-phase transitions do not require renewed approval.
+Compare directions against the brief and the design priorities above, including
+the copy each layout still needs and its UX, DX, and AX effects. Recommend one
+and explain its material tradeoff. Continue with the recommendation when within
+the agreed scope; routine phase transitions do not require renewed approval.
 
 **Done:** one approach is selected with a task-based rationale, reference evidence
 or clearly labeled inference, and any unresolved consequential decision exposed.
@@ -151,6 +179,8 @@ are represented, and each change supports the agreed task.
 Read [references/validation.md](references/validation.md) before checking the
 candidate. Exercise the primary task, recovery paths, keyboard operation, and
 desktop/mobile layouts. Run repository checks appropriate to the changed behavior.
+Review redundant copy and record concrete UX, DX, and AX evidence from the rendered
+interface, implementation, and repeatable interaction checks.
 
 Compare the candidate with the baseline and acceptance criteria. Fix demonstrated
 failures, then repeat affected checks. Keep criteria stable; record any justified

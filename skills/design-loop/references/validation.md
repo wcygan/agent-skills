@@ -15,6 +15,9 @@ location. Use criteria grounded in the brief, for example:
 | Keyboard users can complete the task | Traverse controls, activate actions, and check focus after transitions |
 | Failed submissions preserve work | Trigger the relevant failure and verify input plus recovery |
 | Interface follows the selected design system | Compare tokens, components, labels, states, and navigation across in-scope screens; use existing screens as the reference only in improve mode |
+| UX: layout communicates the task with concise copy | Inspect hierarchy and actions after removing redundant copy; exercise the task with essential labels, constraints, and recovery intact |
+| DX: the design remains straightforward to change | Inspect shared component and token usage, ownership, and removed exceptions; run checks for preserved behavior |
+| AX: interactions and outcomes are inspectable | Use semantic control names to exercise the task with representative data; verify pending, completion, and failure states through repeatable commands or browser steps |
 
 ## Inspect the rendered artifact
 
@@ -39,6 +42,14 @@ Can a user identify the next action, understand its consequence, recover from a
 mistake, and tell when the task is complete? Check competing actions, unexplained
 terms, repeated input, unnecessary confirmation, hidden essential controls, and
 context lost between screens. Rank findings by impact on the primary task.
+
+Inspect every tagline, helper sentence, repeated caption, and secondary label.
+Remove copy that restates the heading, narrates an obvious control, or decorates
+the screen without informing a decision. When comprehension depends on that copy,
+revise the layout and action names, then repeat the task check. Retain essential
+labels, constraints, state, consequences, and recovery guidance; check that the
+result has not introduced placeholder-only fields or unexplained icon actions.
+Judge task clarity and preserved behavior, not word counts or visual sparseness.
 
 Fix task blockers first, then meaningful consistency and readability problems.
 Revise the structure when cosmetic changes cannot address the failure. Follow the
