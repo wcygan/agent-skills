@@ -1,7 +1,7 @@
 # agent-skills
 
 A public Agent Skills catalog with 1 orchestrator, 24 engineering principles,
-32 focused components, 9 procedural skills, and 6 specialist skills.
+32 focused components, 9 procedural skills, and 7 specialist skills.
 Components work independently. Procedures load only
 the components needed for the task, using relative links within the catalog.
 
@@ -128,6 +128,7 @@ browser validation and export checks.
 | [typescript-app-stack](skills/typescript-app-stack/SKILL.md) | Orient in a TypeScript application stack and locate component documentation. |
 | [postgres](skills/postgres/SKILL.md) | PostgreSQL schema, queries, connections, and performance (vendored from PlanetScale). |
 | [mysql](skills/mysql/SKILL.md) | MySQL/InnoDB schema, indexing, queries, and operations (vendored from PlanetScale). |
+| [rex-workflow](skills/rex-workflow/SKILL.md) | Organize projects and parallel agents in Rex sessions on an always-on host. |
 
 ## Install
 
