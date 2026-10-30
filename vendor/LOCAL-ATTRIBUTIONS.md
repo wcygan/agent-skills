@@ -108,8 +108,9 @@ Lauren Tan's pstack `skills/statechart`, pstack 0.15.36, pinned at revision
 The body, references, scripts, and tests keep the upstream content. Changes: the
 `disable-model-invocation` setting and the slash-command trigger are omitted from the
 description; a `compatibility` field states the runtime and mise requirements; the
-script package name drops its Cursor scope; one aside about a previous skill's
-colors is removed; and the attribution footer is added. It has no `.vendored`
+script package name drops its Cursor scope; the run command calls the launcher
+with `sh`, because installed copies can lose the executable bit; one aside about a
+previous skill's colors is removed; and the attribution footer is added. It has no `.vendored`
 marker or synchronization lock entry.
 
 ## Engineering principles
