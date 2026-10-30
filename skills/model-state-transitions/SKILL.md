@@ -23,5 +23,6 @@ Then load only the references relevant to the task:
 | Implement enums, exhaustive transitions, or ownership-based typestate in Rust | [Rust](references/rust.md) |
 | Implement sealed variants, records, and exhaustive transitions in Java | [Java](references/java.md) |
 | Verify a model or implementation, or evaluate this skill | [Verification](references/verification.md) |
+| Model-check a TLA+ spec with TLC and show its bug paths as a Mermaid statechart | [statechart](../statechart/SKILL.md) |
 
 Before reporting a completed implementation, read the verification reference.

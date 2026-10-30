@@ -1,7 +1,7 @@
 # agent-skills
 
 A public Agent Skills catalog with 1 orchestrator, 24 engineering principles,
-32 focused components, 9 procedural skills, and 7 specialist skills.
+33 focused components, 9 procedural skills, and 7 specialist skills.
 Components work independently. Procedures load only
 the components needed for the task, using relative links within the catalog.
 
@@ -79,6 +79,7 @@ providers. Independent execution is optional and its absence is stated honestly.
 | [verify-behavior](skills/verify-behavior/SKILL.md) | Check actual results against acceptance criteria. |
 | [measure-performance](skills/measure-performance/SKILL.md) | Measure a performance claim fairly and repeatably. |
 | [model-state-transitions](skills/model-state-transitions/SKILL.md) | Model and verify lifecycle rules as explicit states, events, and transitions. |
+| [statechart](skills/statechart/SKILL.md) | Model-check a TLA+ spec with TLC and draw it as a Mermaid statechart with bug paths. |
 | [coordinate-work](skills/coordinate-work/SKILL.md) | Assign independent units, control shared writes, and reconcile results. |
 | [decision-log](skills/decision-log/SKILL.md) | Keep an auditable record of consequential choices and evidence. |
 | [progress-report](skills/progress-report/SKILL.md) | Catch the user up on changes, status, and decisions awaiting them. |

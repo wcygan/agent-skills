@@ -148,6 +148,7 @@ than a standalone upstream skill. Local names link to the implemented instructio
 | reflect | [improve-workflow](../skills/improve-workflow/SKILL.md) | Propose or apply scoped process improvements grounded in observed failures. |
 | correct | [prevent-recurrence](../skills/prevent-recurrence/SKILL.md) | Prefer structural prevention and prove guards reject a real past mistake. |
 | automate-me | [personalize-workflow](../skills/personalize-workflow/SKILL.md) | Capture explicit and repeated preferences without turning one-off requests into rules. |
+| statechart | [statechart](../skills/statechart/SKILL.md) | Check reader-agreed rules with TLC; label states and steps in the reader's words; mark breaking states and replay each bug path against real code. |
 | create-formal-verification-skill | [create-formal-verification-skill](../skills/create-formal-verification-skill/SKILL.md) | Choose the highest-value target and a fitting verification tool; show each property fail on a broken variant; generate and exercise a rerunnable project skill. |
 | create-verification-skill | [create-verification-skill](../skills/create-verification-skill/SKILL.md) | Create project-specific launch, drive, evidence, cleanup, and feature-map instructions; exercise a full journey. |
 | maintain-verification-skill | [maintain-verification-skill](../skills/maintain-verification-skill/SKILL.md) | Check every mapped feature against source and live behavior; separate drift from product regressions. |

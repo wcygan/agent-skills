@@ -98,6 +98,20 @@ requests instead of naming a slash command; one sentence places the generated sk
 in the project's existing skill location, or `.agents/skills/` by default; and the
 attribution footer is added. It has no `.vendored` marker or synchronization lock entry.
 
+## Statechart
+
+[statechart](../skills/statechart/SKILL.md) is a locally maintained adaptation of
+Lauren Tan's pstack `skills/statechart`, pstack 0.15.36, pinned at revision
+`4dd1d05818d19792e7cd6e818f1667f95f7e1dbe`. It includes the upstream MIT notice in
+`references/LICENSE.txt`, and its frontmatter records that revision and path.
+
+The body, references, scripts, and tests keep the upstream content. Changes: the
+`disable-model-invocation` setting and the slash-command trigger are omitted from the
+description; a `compatibility` field states the runtime and mise requirements; the
+script package name drops its Cursor scope; one aside about a previous skill's
+colors is removed; and the attribution footer is added. It has no `.vendored`
+marker or synchronization lock entry.
+
 ## Engineering principles
 
 All 24 standalone `principle-*` skills are locally maintained adaptations of
