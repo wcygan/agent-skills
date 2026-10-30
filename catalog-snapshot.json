@@ -36,7 +36,7 @@
     "create-verification-skill": "09c2bc70044f2aa7e8d60f96411dd4826f52147b152344982a83c4f4162586a5",
     "decision-log": "08dd3eed6d4b1931c5b06d5c48affa437b534c641153aaf1d9a94fbb258aba79",
     "deliver-change": "32dbc7fb8abbb4767c1cd90378ebd500c2c911a51fb8bcb5a211096cafe201dd",
-    "design-loop": "7b99a39c34b0e54b9ac70f23ece124d5a45ee6ef903d71168b64bc772d90a7e6",
+    "design-loop": "1d0aae41509e6d8a2795b9ec6e7d01dd88a5f46fbb2d1ce46b6d1dbcb5966701",
     "design-options": "1d8e4df571e9cfca4e17fd1d6ea195d17d2d479291052c729e93a0cc857c935e",
     "discover-ambitious-goals": "1e1cd2f822be312471e4481e5964a0e892abe5b1d889eb1cec5d9b752382eb31",
     "explain-code": "ced12b46e19fd326760a75203fca32025751223af3849e4e13583e97421bd677",
@@ -85,7 +85,7 @@
     "reproduce-bug": "c0ce07e2af56ee9f6daac8621c09e29e803266dd8c7c03631affb8449d192c3f",
     "review-changes": "549e183cad7f0c619ede48f6250163e41196ded917da4822b0e5161bcd4c5cd6",
     "slice-changes": "a4e948e747e3f44d45897971acd4cd81d57365293d8be3aa4851edb0e70296d7",
-    "technical-visuals": "2736cd633b9cac16c370f06ca304e2125a01477acd5d88452f2566b570c4c35d",
+    "technical-visuals": "1427f187d2f2df4a6ada77c1e57a48386ad853817011d2dcae876ed2b846bf7b",
     "typescript-app-stack": "7446823cfa51237f3068c124903f42566aab74368f20a708c22c692d899bf1b6",
     "uv-python": "6b407143001dc160d883edf3e2e1338fcbe484ca013877c4082cc4e86a6009a1",
     "verify-behavior": "d4a7ac78f0f7e68a81da49917026ce2879f8438934673ef7751480d7dfae7153",
@@ -99,6 +99,6 @@
     "wcygan-record": "9a2f664805f1b2d96a6cdc56cf8ba55d9d5beb666d5b629ac16f938b1480c423",
     "wcygan-review": "715009d236122575c52e3d435b9f5d902b5566cb103f578de4d3a9cfaabe8400",
     "wcygan-verify": "fad151d4d0d0bbd2cf3c9dc35dd9a8d2f7e81bd5d687764f068ab41fcb981cf7",
-    "write-clearly": "e9c7c22204674ad245c458e416b7e9a937aca4d4844b24513acb2e71acd74878"
+    "write-clearly": "567ff1b14a4c4d637c51e4797b26ead5b0080d871fc2591214edd058c32fd781"
   }
 }

@@ -100,6 +100,10 @@ that serve no user need while preserving necessary review and safeguards.
 **Done:** every required piece of content and action has a place, the task has a
 complete path, and responsive behavior preserves access to essential actions.
 
+For feeds, cards, notifications, or table summaries, use the available
+[write-clearly guidance](../write-clearly/SKILL.md) to review repeated text as a
+collection, including factual status and what remains visible after truncation.
+
 ## 3. Inspect references and explore
 
 Read [references/product-patterns.md](references/product-patterns.md) when selecting

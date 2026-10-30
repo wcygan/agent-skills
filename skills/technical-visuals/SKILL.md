@@ -52,7 +52,7 @@ Read the design system, then load only the resources relevant to the task.
 | Good/bad comparisons, iteration lessons, and runnable checks | [Examples and review commands](references/examples.md) |
 | Theme checks, animation checks, exports, or final handoff | [Delivery and verification](references/delivery.md) |
 | Dark palette provenance or color adaptation | [PlanetScale precedent](references/dark-palette.md) |
-| Shorter titles, labels, and captions | [Write clearly](../write-clearly/SKILL.md) |
+| Titles, labels, captions, or comparable text items in a chart or dashboard | [Write clearly](../write-clearly/SKILL.md) |
 
 ## Turn a code change into a clear pull request
 

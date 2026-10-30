@@ -1,6 +1,6 @@
 ---
 name: write-clearly
-description: "Make technical prose concise, concrete, and accurate. Use for documentation, explanations, or editing unclear writing."
+description: "Make technical prose and repeated UI text concise, concrete, and accurate. Use for documentation, explanations, feeds, summaries, labels, or editing unclear writing."
 license: MIT
 metadata:
   kind: component
@@ -27,6 +27,10 @@ metadata:
    [examples and editing checks](references/examples.md) when useful.
 6. Read the result as a newcomer. Resolve missing prerequisites and ambiguous
    references; link deeper detail where it changes a decision.
+
+For feeds, repeated cards, table summaries, notifications, or session titles, read
+[repeated-item writing](references/repeated-items.md). Review the collection together:
+consistent individual sentences can still hide the differences readers need to find.
 
 For a relationship that is clearer visually, use an available technical-visuals
 skill and keep prose for the takeaway, evidence, and qualifications. Do not force a
