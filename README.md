@@ -1,7 +1,7 @@
 # agent-skills
 
 A public Agent Skills catalog with 1 orchestrator, 24 engineering principles,
-33 focused components, 9 procedural skills, and 7 specialist skills.
+33 focused components, 9 procedural skills, and 8 specialist skills.
 Components work independently. Procedures load only
 the components needed for the task, using relative links within the catalog.
 
@@ -127,6 +127,7 @@ browser validation and export checks.
 | [just](skills/just/SKILL.md) | Maintain clear, reusable justfile commands. |
 | [design-loop](skills/design-loop/SKILL.md) | Design, implement and verify a bounded UI outcome. |
 | [typescript-app-stack](skills/typescript-app-stack/SKILL.md) | Orient in a TypeScript application stack and locate component documentation. |
+| [agent-desktop](skills/agent-desktop/SKILL.md) | Operate desktop applications through the agent-desktop CLI (vendored from Vercel). |
 | [postgres](skills/postgres/SKILL.md) | PostgreSQL schema, queries, connections, and performance (vendored from PlanetScale). |
 | [mysql](skills/mysql/SKILL.md) | MySQL/InnoDB schema, indexing, queries, and operations (vendored from PlanetScale). |
 | [rex-workflow](skills/rex-workflow/SKILL.md) | Organize projects and parallel agents in Rex sessions on an always-on host. |
@@ -218,7 +219,7 @@ Skills remain immediate children of `skills/`, following the
 [Agent Skills specification](https://agentskills.io/specification). The layout
 also supports Agent Plugins packaging. Source ownership for future vendors is
 recorded in `vendor/skills-lock.json`; adapted upstream work must preserve its
-provenance and license. The vendor lock currently tracks `postgres` and `mysql` from PlanetScale.
+provenance and license. The vendor lock tracks `postgres` and `mysql` from PlanetScale and `agent-desktop` from Vercel.
 
 ```sh
 uv tool run --from skills-ref agentskills validate ./skills/<name>

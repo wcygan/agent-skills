@@ -12,6 +12,22 @@
       "license_files": {
         "LICENSE": "references/LICENSE.txt"
       }
+    },
+    {
+      "repository": "https://github.com/vercel-labs/agent-desktop.git",
+      "ref": "5261b5287b5208e7c4bf3713df6f66faaaf2c4cc",
+      "license": "Apache-2.0",
+      "skills_root": "skills",
+      "remove_frontmatter": [
+        "tags",
+        "requirements"
+      ],
+      "skills": {
+        "agent-desktop": "agent-desktop"
+      },
+      "license_files": {
+        "LICENSE": "references/LICENSE.txt"
+      }
     }
   ]
 }

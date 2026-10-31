@@ -81,11 +81,13 @@ def normalize_frontmatter(skill_text: str, source: dict) -> str:
     frontmatter, separator, body = skill_text.removeprefix("---\n").partition("\n---")
     if not separator:
         raise RuntimeError("skill file has unterminated YAML frontmatter")
-    lines = [
-        line
-        for line in frontmatter.splitlines()
-        if line[:1].isspace() or line.partition(":")[0] not in fields
-    ]
+    lines = []
+    removing = False
+    for line in frontmatter.splitlines():
+        if line and not line[0].isspace():
+            removing = line.partition(":")[0] in fields
+        if not removing:
+            lines.append(line)
     return "---\n" + "\n".join(lines) + separator + body
 
 

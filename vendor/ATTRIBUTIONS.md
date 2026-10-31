@@ -9,3 +9,10 @@ These skills are copied from their upstream repositories.
 
 - `postgres` from `skills/postgres`
 - `mysql` from `skills/mysql`
+
+## https://github.com/vercel-labs/agent-desktop.git
+
+- License: Apache-2.0
+- Revision: `5261b5287b5208e7c4bf3713df6f66faaaf2c4cc`
+
+- `agent-desktop` from `skills/agent-desktop`

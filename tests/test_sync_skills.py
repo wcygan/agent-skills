@@ -46,6 +46,16 @@ class SyncSkillsCharacterizationTests(unittest.TestCase):
             "---\nname: demo\nmetadata:\n  model: nested\n---\nBody\n",
         )
 
+    def test_frontmatter_normalization_removes_multiline_fields(self) -> None:
+        text = (
+            "---\nname: demo\ntags: desktop\nrequirements:\n  - agent-desktop\n"
+            "description: >\n  Desktop automation\nmetadata:\n  tags: retained\n---\nBody\n"
+        )
+        self.assertEqual(
+            sync_skills.normalize_frontmatter(text, {"remove_frontmatter": ["tags", "requirements"]}),
+            "---\nname: demo\ndescription: >\n  Desktop automation\nmetadata:\n  tags: retained\n---\nBody\n",
+        )
+
     def test_check_output_keeps_current_text_without_color(self) -> None:
         self.assertEqual(
             sync_skills.format_check_result("example/repo", "abc", "def", False),
