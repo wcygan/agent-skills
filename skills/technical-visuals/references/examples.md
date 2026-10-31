@@ -106,8 +106,8 @@ and downloads and renders eight standalone SVG exports.
 
 ## Blog visual lab
 
-[Ten post pages](../examples/blog/index.html) reinterpret the complete diagram
-inventory of ten wcygan.net posts. The earlier system-design pages remain
+[Twelve post pages](../examples/blog/index.html) reinterpret the complete diagram
+inventory of twelve wcygan.net posts. The earlier system-design pages remain
 available through an archive link. These are original 2D renderings using the
 shared tokens, with per-figure controls for causal animation and manual steps.
 They open directly from disk without a build or external runtime.
@@ -124,11 +124,18 @@ They open directly from disk without a build or external runtime.
 | N+1 Query Problem | 1 | Known-ID sequential lookups versus a batch; equal records, fewer round trips |
 | Optimistic Locking | 1 | Shared read, successful guarded write, stale rejection, reread, and retry |
 | Fanout | 3 | Service graph, causal request amplification, and redundant downstream traffic removed |
+| Durable Execution | 4 | Four demos: sample workflow, visible task buffering and worker polling, history-first replay, and idempotent payments |
+| Change Data Capture | 4 | MySQL binlog capture, Kafka offsets, Flink processing, Redis convergence, and deletes |
 
 The three added posts were inspected on October 15, 2026 against their live pages
 and local MDX/component sources. The N+1 example begins with known IDs (N calls
 versus one batch); optimistic locking keeps the rejected row unchanged until a
 fresh read and retry; fanout distinguishes illustrative traffic from reported facts.
+
+The durable-execution and CDC posts were inspected on October 15, 2026.
+Durable execution uses Temporal with MySQL persistence. CDC adapts the original
+PostgreSQL and analytical-store examples to MySQL → Debezium → Kafka → Flink →
+Redis; its page names the projection-cleanup adaptation and sink replay assumptions.
 
 Initial source inspection: October 14, 2026. Local MDX and component models were read
 from the user's `wcygan.net` checkout at HEAD
@@ -141,7 +148,7 @@ The source blog checkout is unchanged by this work.
 Each page owns its rendering and teaching model in a same-named JavaScript file.
 The `data-source-component` attribute maps each figure back to its source
 component; merged renditions use `data-source-components` to retain each source
-mapping. The source inventory includes 23 figures. Related lessons can share a rendered
+mapping. The source inventory includes 31 figures. Related lessons can share a rendered
 diagram: transaction prepare and decision share one continuous demo, as do the
 database index-depth and recent-read figures. `data-figure` provides a
 stable identifier. Models distinguish article
@@ -156,10 +163,13 @@ refresh rate without speeding up the teaching sequence. A 120 Hz display provide
 about 8.33 ms per frame, but callback timing alone does not prove rendered frame rate.
 
 Run `scripts/check-blog.mjs` with `PLAYWRIGHT_MODULE` and an external output path
-as above. It checks the full source inventory, all ten pages in both themes,
+as above. It checks the full source inventory, all twelve pages in both themes,
 manual steps and theme preservation, keyboard theme switching, narrow layout,
 text bounds, and the absence of SVG download controls in both themes. Post-specific `check-blog-<slug>.mjs` checks, where provided,
-exercise deeper model behavior. `check-blog-fanout.mjs` verifies arrival-derived
+exercise deeper model behavior. `check-blog-durable-execution.mjs` checks retained
+results, replay, activity retries, idempotent effects, and payload alignment.
+`check-blog-change-data-capture.mjs` checks commit-before-cache ordering, retained
+Kafka records, ordered catch-up, sink replay protection, and service-owned cleanup. `check-blog-fanout.mjs` verifies arrival-derived
 launches, concurrent payloads on distinct branches, route alignment, and final 1/3/6 counts. `check-blog-working-set-budget.mjs` checks the
 integrated disk-scale map and animated occupancy, matching panel geometry, icons,
 and used/free counters through every arrival and responsive redraw. Inspect screenshots separately for causal clarity,

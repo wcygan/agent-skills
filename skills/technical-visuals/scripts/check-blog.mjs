@@ -8,6 +8,8 @@ const output = path.resolve(process.argv[2]);
 assert.ok(output !== root && !output.startsWith(root + path.sep));
 await fs.mkdir(output, { recursive: true });
 const expected = {
+  "durable-execution": ["WorkflowActivitiesDemo", "DurableTaskLoopDemo", "RetryIdempotencyDemo", "WorkerCrashModesDemo"],
+  "change-data-capture": ["CdcPropagationAnimation", "CdcWalKafkaDemo", "DataRetentionCascadeDemo", "IncrementalEtlFlowDemo"],
   "n-plus-one-sql-query": ["NPlusOneQueryDemos"],
   "optimistic-locking": ["OptimisticLockingRaceDemo"],
   fanout: ["FanoutGraphDemo", "FanoutMultiplierDemo", "FanoutWarStoryDemo"],

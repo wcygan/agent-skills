@@ -96,6 +96,8 @@ Choose by the relationship being taught, not merely by matching the topic.
 
 | Teaching problem | Start here |
 | --- | --- |
+| Durable progress, workflow replay, and safe activity retries | [Durable execution](examples/blog/durable-execution.html) |
+| Committed changes, stream offsets, and derived-store convergence | [Change data capture](examples/blog/change-data-capture.html) |
 | Repeated database round trips versus batching | [N+1 queries](examples/blog/n-plus-one-sql-query.html) |
 | Concurrent updates, stale versions, and guarded retries | [Optimistic locking](examples/blog/optimistic-locking.html) |
 | Request amplification and redundant downstream work | [Fanout](examples/blog/fanout.html) |
