@@ -33,10 +33,14 @@ component is installed alone. Report missing rendering or publication capabiliti
    [technical-visuals](../technical-visuals/SKILL.md) when creating a figure.
    Default to 2D; use 3D only when requested. For format and evidence choices,
    read [review package](references/review-package.md).
-4. Unless a required repository template overrides it, use exactly
-   `## Problem & Solution Overview` and `## Testing Done`. Put any additional headings
-   beneath them. For meaningful testing scenarios, keep a scenario diagram visible
-   and collapse commands, responses, and logs in “Commands and results.” Choose from
+4. Unless a required repository template overrides it, lead with a concise visible
+   overview and a useful visual or image table, then put the full description in a
+   collapsed “Full description and validation” section. Inside it, use exactly
+   `## Problem & Solution Overview` and `## Testing Done`; put additional headings
+   beneath them. Keep material failures and risks visible above the disclosure. Check
+   whether required PR checks accept headings inside a disclosure; if not, keep the
+   required headings outside it and collapse details beneath them. For meaningful
+   testing scenarios, keep a scenario diagram visible when it helps. Choose from
    the [cache, form retry, and queue examples](../technical-visuals/examples/pull-requests/index.html);
    borrow their presentation, never their fictional results. Do not require a fixed
    scenario count or add a diagram that conveys no useful information.

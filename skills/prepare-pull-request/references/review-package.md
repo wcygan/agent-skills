@@ -58,17 +58,34 @@ trigger/result and reporting the actual check or the exact gap.
 
 A diagram would add no useful relationship. Keep the text concise and accurate.
 
-## Compact structure when no template exists
+## Default structure when no template exists
 
-Use exactly two top-level sections:
+Lead with a few sentences describing the problem and resulting behavior. Follow
+with a visual and a short explanation of what it shows when that helps review.
+Use an image table for a meaningful before-and-after comparison, or one image when
+that is clearer. Omit decorative visuals. Keep material failures and risks visible.
 
-- `## Problem & Solution Overview`: problem and resulting behavior, followed by a
-  compact visual when useful. Put scope or design details in subsections here.
-- `## Testing Done`: actual interactions, observed results, commands, and material
-  verification limits. Put reproduction details in subsections or disclosures here.
+Put the full description in a collapsed section with two H2 headings:
 
-Any additional headings belong beneath these as `###` subsections. Keep the PR
-concise and size images explicitly so they support the explanation.
+```markdown
+<details>
+<summary>Full description and validation</summary>
+
+## Problem & Solution Overview
+
+Scope, behavior, and relevant tradeoffs.
+
+## Testing Done
+
+Actual checks, results, and verification limits.
+
+</details>
+```
+
+Put additional headings beneath these as `###` subsections. Confirm required PR
+checks accept headings inside a disclosure; otherwise keep required headings visible
+and collapse their supporting details. Follow any required repository template. Keep
+the PR concise and size images explicitly so they support the explanation.
 
 Do not hide failed checks behind a summary of passing ones. If the code changes after
 verification, renew affected evidence. If a PR exists already, update its explanation
