@@ -1,6 +1,6 @@
 ---
 name: principle-outcome-oriented-execution
-description: "Apply during planned rewrites and migrations with explicit phase boundaries. Converge on the target architecture; don't preserve smooth intermediate states with throwaway compatibility code."
+description: "Apply during planned rewrites and migrations with explicit phase boundaries. Converge on the target architecture instead of preserving smooth intermediate states with throwaway compatibility code, because that code becomes long-lived debt."
 license: MIT
 metadata:
   kind: principle
@@ -23,8 +23,12 @@ Optimize for the intended, verifiable end state rather than preserving smooth in
 
 **Guardrails:**
 - Use this for planned rewrites and migrations with explicit phase boundaries
-- Declare where temporary breakage is acceptable
+- State where temporary breakage is acceptable in the plan, and repeat it in the progress update at each phase boundary, so the user can object before the break lands
 - Keep high-signal checks for actively touched areas while migrating
 - Require full static and runtime verification at plan completion
+
+**How this fits with sequencing verifiable units:** the sequence-verifiable-units principle skill still applies. Per-unit checks run on every touched area at every step. The only thing allowed to break is a compatibility shim (throwaway code that keeps old callers working during the migration), because the shim is deleted at plan completion and its breakage is planned in advance.
+
+For a multi-phase migration, post a progress update at each phase boundary and end with a self-contained recap that leads with the outcome: what converged, what is still broken by plan, and what verification ran.
 
 Adapted from pstack; [license and attribution](references/LICENSE.txt).

@@ -1,6 +1,6 @@
 ---
 name: clarify-task
-description: "Turn an ambiguous task into an observable outcome and bounded scope. Use before work whose requirements or success criteria are unclear."
+description: "Turn an ambiguous task into an observable outcome and bounded scope. Use before work whose requirements, acceptance criteria, or success criteria are unclear, or when a request needs scoping before implementation."
 license: MIT
 metadata:
   kind: component
@@ -20,11 +20,13 @@ metadata:
 3. Separate required behavior from suggested implementation. Question constraints
    that obstruct the goal, while leaving product decisions with the user.
 4. Resolve routine details from the project. Ask only for missing decisions that
-   change scope or block progress; continue independent work where possible.
+   change scope or block progress, and batch all such questions into one message
+   so the user answers once. Continue independent work while waiting.
 5. Set a bounded first step and proportionate verification. For lengthy work,
    record the phases, resource limits, and stopping conditions before executing.
 
 Done when scope, success criteria, assumptions, and the next action are concrete.
-Continue the authorized task rather than returning only a rewritten request.
+Continue into the task the request asked for rather than returning only a
+rewritten request.
 
 Adapted from pstack; [license and attribution](references/LICENSE.txt).

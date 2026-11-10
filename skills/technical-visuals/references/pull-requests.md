@@ -2,7 +2,7 @@
 
 Make the review decision easy: what changes, why it matters, and what was observed.
 Use the [example gallery](../examples/pull-requests/index.html) for the presentation
-pattern and [prepare-pull-request](../../prepare-pull-request/SKILL.md) for the
+pattern and the prepare-pull-request skill, when available, for the
 publication workflow. The examples are fictional; their evidence is not a test result.
 
 ## Synthesize the change before drawing

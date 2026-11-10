@@ -25,17 +25,27 @@ is a pane. One Rex server owns sessions; apps on each device are clients.
   tells agents to rename their session for the task; expect labels to change.
 - Put long-lived processes in their own tabs (`rex window new -s S NAME -- CMD`)
   and short checks in splits beside the agent (`rex split -s S -b B --split=below`).
-- Background work should not steal focus: pass `--focus=false`. Keep output a
-  human should read with `--keep-open`.
+- Pass `--focus=false` for background work so it does not steal the human's
+  focus. Keep output a human should read with `--keep-open`.
 - After a server restart Rex restores sessions, tabs, pane layouts and labels
   with a fresh shell in each pane. Running programs and scrollback are lost, so
   record how to restart a pane's program (a custom action, below).
 
 ## 2. Several agents in parallel
 
+- A second agent starts cold and re-derives the project context, so parallel
+  agents pay off only when the work splits into pieces that do not depend on
+  each other: independent edits in separate files or worktrees, or a bounded
+  bulk read with one clear question (sweep these logs, run this suite on each
+  package). Work that shares files or needs the same discoveries belongs to one
+  agent.
 - Run one agent per pane. Agents in the same session share the project
   directory, so give them non-overlapping work, or separate git worktrees for
   edits that could collide.
+- Give each agent a brief that names its session and pane, the goal, the files
+  or worktree it owns and the ones it must not touch, the evidence to return
+  (test output, diff, pane name), and how to report back: in its pane's final
+  output, with `--keep-open`, or in a file at a named path.
 - Phrase requests relative to the agent's own pane: "run the tests beside you",
   "start the dev server in another tab and tell me when it's listening",
   "close what you opened". An explicit session, tab or pane name always wins
@@ -108,8 +118,8 @@ is a pane. One Rex server owns sessions; apps on each device are clients.
   The app's built-in Tailscale gives the server its own tailnet device;
   `rex hosts add LABEL URL` saves it for `rex -S LABEL`, and `rex home set URL`
   makes it the home whose hosts and shortcuts every device follows.
-- Any connection can do everything the server's account can. Keep "limit access
-  to your Tailscale account" on and never use `--allow-anonymous`.
+- Any connection can do everything the server's account can, so keep "limit
+  access to your Tailscale account" on and do not use `--allow-anonymous`.
 - Devices signed in as the same Tailscale user are indistinguishable to Rex:
   an agent on the host can reach any other Rex server you expose on the tailnet,
   such as a laptop's. Decide deliberately which machines serve Rex over

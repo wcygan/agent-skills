@@ -1,6 +1,6 @@
 ---
 name: technical-visuals
-description: "Create concise technical diagrams, charts, and animated explanations for teammates, architecture discussions, and PRs. Route through the shared light/dark design system and visual examples; default to 2D, with 3D only when requested."
+description: "Create concise technical diagrams, charts, and animated explanations for teammates, architecture discussions, and PRs, as Mermaid, SVG, or interactive HTML. Use for an architecture diagram, sequence or state figure, measured chart, PR overview figure, or blog-style animated explanation. Route styled SVG and HTML through the shared light/dark design system; default to 2D, with 3D only when requested."
 license: MIT
 metadata:
   author: William Cygan
@@ -38,11 +38,14 @@ Exact values live in the tokens, not in this entrypoint.
 
 ## Find the right resource
 
-Read the design system, then load only the resources relevant to the task.
+Read the design system only for styled SVG or HTML, because its tokens apply
+to colors and spacing you set yourself; a plain Mermaid figure uses the host's
+theme and skips it. Load only the other resources relevant to the task.
 
 | Need | Route |
 | --- | --- |
-| Color, typography, spacing, density, mobile sizing | [Design system](references/design-system.md); canonical [color tokens](examples/tokens.js) |
+| Color, typography, spacing, density, mobile sizing for SVG or HTML | [Design system](references/design-system.md); canonical [color tokens](examples/tokens.js) |
+| A native Markdown figure for a PR or doc, with a good/bad example | [Mermaid for a small review figure](references/mermaid.md) |
 | Infrastructure, data structures, decisions, streaming, and component symbols | [Shape vocabulary](references/shapes.md); rendered library in the [studio](examples/index.html#shape-library); reusable [SVG shape source](examples/shapes.js) |
 | A small, visual GitHub pull request with reproducible evidence | [Pull request design system](references/pull-requests.md); [PR examples](examples/pull-requests/index.html) |
 | Concise visual storytelling and animation precedent | [Blog visual lab](examples/blog/index.html); select a model below and inspect its same-named JavaScript source |
@@ -52,12 +55,13 @@ Read the design system, then load only the resources relevant to the task.
 | Good/bad comparisons, iteration lessons, and runnable checks | [Examples and review commands](references/examples.md) |
 | Theme checks, animation checks, exports, or final handoff | [Delivery and verification](references/delivery.md) |
 | Dark palette provenance or color adaptation | [PlanetScale precedent](references/dark-palette.md) |
-| Titles, labels, captions, or comparable text items in a chart or dashboard | [Write clearly](../write-clearly/SKILL.md) |
+| Where this skill's style came from, what the examples claim, and external format and accessibility references | [Precedent and scope](references/precedent.md) |
+| Titles, labels, captions, or comparable text items in a chart or dashboard | The write-clearly skill, when available |
 
 ## Turn a code change into a clear pull request
 
 For PR descriptions, use the [pull request design system](references/pull-requests.md)
-and [prepare-pull-request](../prepare-pull-request/SKILL.md). Start from the final
+and the prepare-pull-request skill when available. Start from the final
 diff and actual verification: identify the trigger, old behavior, new behavior,
 and the few actors or states that explain the change. Synthesize that into a short
 problem/solution paragraph and a high-level overview; do not diagram every function
@@ -111,7 +115,8 @@ Choose by the relationship being taught, not merely by matching the topic.
 
 Copy the useful teaching pattern and minimum source into the requested project;
 replace example assumptions with the task's facts. Do not create a runtime
-dependency on the skill directory or modify an installed copy. For a requested
+dependency on the skill directory or modify an installed copy, because an
+installed skill is pinned and replaced on update. For a requested
 post series, inventory all source figures and meaningful states; merge overlapping
 lessons without losing their source coverage.
 
@@ -129,6 +134,9 @@ hidden work. Preserve state across theme and layout changes.
 
 Apply the delivery checks at the real reading width and on a phone. Inspect the
 rendered states and controls in both supported themes, not just the source or a
-contrast score. Retain editable source and report what was verified. Use the
-linked review commands when adapting a bundled demo; do not load every example
-or build an application when a small figure answers the question.
+contrast score. Retain editable source. Use the linked review commands when
+adapting a bundled demo; do not load every example or build an application when
+a small figure answers the question. End with the figure or its location, what
+was verified (themes, widths, states), what was not, and any open question.
+Posting the figure to a PR or page in the user's name needs an explicit
+go-ahead; rendering, screenshots, and local checks need none.

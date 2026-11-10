@@ -18,7 +18,7 @@ The chart shows how a system moves between states, in the words of the person wh
 
 ## Run
 
-Work in a scratch folder outside the repo. Write a TLA+ spec and its config. Then run:
+Work in a scratch folder outside the repo, so that the spec, TLC output, and chart files stay out of the project tree. Write a TLA+ spec and its config. Then run:
 
 ```sh
 sh <skill dir>/scripts/statechart SPEC.tla [--config FILE] [--view FILE] [--out DIR]
@@ -26,11 +26,11 @@ sh <skill dir>/scripts/statechart SPEC.tla [--config FILE] [--view FILE] [--out 
 
 `scripts/statechart.ts` is TypeScript, so run it with a runtime that can execute TypeScript. Run the launcher with `sh`, because an installed copy can lose its executable bit.
 
-The first run installs TLC and Java with mise and needs the network.
+The first run installs TLC and Java with mise and needs the network. That install changes the user's machine, so ask for a go-ahead first unless the request explicitly asked for a model check; a run with the tools already installed needs no go-ahead, and reruns are safe to repeat.
 
 ## Write the spec
 
-- Write each rule that the reader agrees to as an INVARIANT. A rule can be about a screen, a result, a stored value, or a message. If the model has no variable for a rule, add the variable. Never weaken a rule to make it hold.
+- Write each rule that the reader agrees to as an INVARIANT. A rule can be about a screen, a result, a stored value, or a message. If the model has no variable for a rule, add the variable. Do not weaken a rule to make it hold, because a weakened rule hides the bug it was meant to catch.
 - Write `Next` as a disjunction of the actions, such as `YouPressPlay \/ YouPressStop`. If you do not, TLC names every step `Next`.
 - A state with no step out breaks `NoDeadlock`, also when it is a correct end state. When an INVARIANT or a PROPERTY already has that name, the rule is `CHECK_DEADLOCK`. Add to `Next` an action that is true only in the end states and changes nothing, such as `Done == phase \in {"paid", "failed"} /\ UNCHANGED vars`, and give it a label in `step()`.
 
@@ -44,9 +44,9 @@ To show the reader's words, the view exports `state(vars)`. The value that `stat
 - An array gives parent states: `export const state = (v) => v.main.split(".");`
 - An object gives one parallel region for each key: `export const state = (v) => ({ Playback: v.playback, Volume: v.volume });`
 
-Label each state with what the reader can see or cares about, such as "Paying" or "Lease held, write pending". Keep variable names out of labels. In `vars`, a TLA+ sequence is an object with keys from 1, so `v.pc[1]` is `pc[1]`. A set is an array.
+Label each state with what the reader can see or cares about, such as "Paying" or "Lease held, write pending". Keep variable names out of labels, because the reader does not read the spec. In `vars`, a TLA+ sequence is an object with keys from 1, so `v.pc[1]` is `pc[1]`. A set is an array.
 
-The view can also export `step(action, from, to)`. It gets the TLC action name and the values before and after the step, and it returns the label of the arrow. Write each step label as the user sees it happen, such as "you press play" or "the connect fails". Do not name the code or the TLA+ action. Two actions that end the same in the chart get the same label, so that they share one arrow.
+The view can also export `step(action, from, to)`. It gets the TLC action name and the values before and after the step, and it returns the label of the arrow. Write each step label as the user sees it happen, such as "you press play" or "the connect fails", not as the code or the TLA+ action, for the same reason. Two actions that end the same in the chart get the same label, so that they share one arrow.
 
 When a step can occur only in some conditions, end its label with the condition in brackets, in the reader's words, such as `you press play [while the file loads]`. In a regions chart, the command writes the condition on the other regions on the arrow, in the words of their labels, such as `[when Offline]`. Your brackets replace it, and two arrows from one state can then look the same. So in a regions chart, do not write brackets for a condition on another region. When a value that no label shows decides where a step goes, name the result in the label, such as "the roster read fails".
 
@@ -81,11 +81,11 @@ Aim for about 20 arrows or fewer, because a busier chart is hard to read. First 
 
 Show `chart.mmd` to the user as a `mermaid` code block. The chart has a budget of 500 states, counted by TLC on the config as written. Above that, the chart draws only the paths to the rules that break, and when no rule breaks, the command writes no `chart.mmd`. It still checks each rule, and the report gives the state count and each bug path. To see the whole graph, make the model smaller.
 
-Render charts with Pele. When the user asks for an image, or a chart is too large to read as text, follow `references/render.md`. Do not use a different renderer unless the user asks for it.
+When the user asks for an image, or a chart is too large to read as text, render it with Pele as `references/render.md` describes. Pele keeps the group colors and the `bugPath` and `repeats` marks, which are CSS classes on each node; another renderer shows only the `breaks` and `mayBreak` marks, so use one only when the user asks for it.
 
 ## Hand off
 
-Give each chart and its Mermaid text to the person who must decide. Add one line for each bug: the rule, the reader's sentence for that rule, and the path as the report numbers it. Say what the model leaves out. Give the command that makes the files again, with a new `--out` folder.
+Post a short progress update when the spec runs clean and when the chart is drawn, because a model check can take several rounds. Give each chart and its Mermaid text to the person who must decide. Lead with the outcome: which rules hold and which break. Add one line for each bug: the rule, the reader's sentence for that rule, and the path as the report numbers it. Say what the model leaves out and which rules were not checked. Give the command that makes the files again, with a new `--out` folder.
 
 When the model describes code, replay each bug path against the real code, as a test or a live repro, one step for each action. If a bug does not occur, think that the model is wrong until you show that it is not.
 

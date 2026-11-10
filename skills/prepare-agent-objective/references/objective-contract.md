@@ -1,8 +1,9 @@
 # Objective contract
 
 Keep this with the project's durable task records, outside the installed skill.
-Use existing records where possible. Mark unknowns explicitly; do not invent a
-baseline, permission, schedule, or completed check to fill a field.
+Use existing records where possible. Mark unknowns explicitly. Do not invent a
+baseline, permission, schedule, or completed check to fill a field, because a
+filled field reads as verified.
 
 | Field | Record |
 | --- | --- |
@@ -14,7 +15,7 @@ baseline, permission, schedule, or completed check to fill a field.
 | Identity | Release-to-commit mapping, configuration, platform, and dataset versions |
 | Execution | Build/start commands, fixtures, accounts, isolation, and cleanup |
 | Judge | Regression check, benchmark, held-out cases, or independent observation; negative control |
-| Action boundary | Current authority for edits, PRs, merges, deployment, rollback, and external messages |
+| Action boundary | Which of edits, PRs, merges, deployment, rollback, and external messages have a go-ahead |
 | Budget | Time, compute/spend, concurrent work, attempts, and escalation conditions |
 | Observation window | Minimum usage/exposure, cohorts, interval, and collateral metrics |
 | Continuity | Checkpoint location, case identities, owner, restart reconciliation, trigger and stop mechanism |
@@ -27,7 +28,8 @@ by release/platform, signal delay, minimum exposure, and the source-health check
 Reproduce a representative crash on its mapped source revision, verify the fix,
 and observe the released version before calling the incident resolved in production.
 Record unsupported platforms as gaps. Do not improve the metric by suppressing
-reports or excluding the users experiencing failures.
+reports or excluding the users experiencing failures, because that hides the
+failures the objective exists to fix.
 
 ## Performance example
 
@@ -38,6 +40,7 @@ Use separate development and held-out workloads where tuning could overfit.
 Freeze acceptance before experimentation; independently inspect changes to the
 measurement method and rerun baseline and candidate if the method was defective.
 
-Record whether reaching the required target ends the run or whether authorized
-exploration continues toward the stretch target within the remaining budget.
-A useful improvement can be retained while the stretch target remains unmet.
+Record whether reaching the required target ends the run or whether the
+exploration the user requested continues toward the stretch target within the
+remaining budget. A useful improvement can be retained while the stretch target
+remains unmet.

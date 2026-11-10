@@ -42,7 +42,8 @@ is created merely because the agent noticed adjacent imperfections.
 ## Already implemented changes
 
 First map hunks to behaviors and dependencies. Preserve an exact recoverable copy
-through the project's supported workflow before an authorized extraction. Verify
+through the project's supported workflow before extracting, because a mistaken
+split is otherwise unrecoverable. Verify
 that the reconstructed integrated tree retains the intended changes. Do not use
 file size or staged status as a proxy for ownership.
 

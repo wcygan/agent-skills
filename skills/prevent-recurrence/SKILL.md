@@ -1,6 +1,6 @@
 ---
 name: prevent-recurrence
-description: "Prevent a demonstrated class of repeated mistakes through structure or checks. Use when the same correction has been needed more than once."
+description: "Prevent a demonstrated class of repeated mistakes through structure, types, a lint or automated check, or a test. Use when the same correction has been needed more than once or a recurring bug keeps coming back."
 license: MIT
 metadata:
   kind: component

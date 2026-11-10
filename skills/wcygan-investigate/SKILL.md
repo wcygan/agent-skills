@@ -1,6 +1,6 @@
 ---
 name: wcygan-investigate
-description: "Understand current behavior and historical constraints. Use for subsystem investigation or preparing evidence for a change."
+description: "Understand how a subsystem behaves now and why it was built that way, from code and history. Use to investigate a subsystem, explain code, trace a bug's cause, or gather evidence before a change."
 license: MIT
 metadata:
   kind: procedure
@@ -13,25 +13,24 @@ metadata:
 
 # Investigate
 
-Read linked components only when their stated condition applies. Use available
-tools and preserve the task's scope, prior authorization, and explicit checkpoints.
-Read the shared [principle index](../wcygan-mode/references/principles.md)
-and relevant leaves at entry; reconsider them as the work changes and report
-each principle that changed a decision with the specific choice it shaped.
+Read the shared [principle index](../wcygan-mode/references/principles.md) at entry and reconsider it as the work changes. Report each principle that changed a decision, with the specific choice it shaped.
 
+Read linked components only when their stated condition applies, so the context
+stays small. Keep the task's scope and any checkpoint the user set.
 
-1. Bound the question and scope; use [clarify-task](../clarify-task/SKILL.md) when
-   the requested outcome is ambiguous.
-2. For resumed work, use [recover-context](../recover-context/SKILL.md) to establish
-   current state before repeating prior investigation.
-3. Use [explain-code](../explain-code/SKILL.md) for behavior and ownership. When
-   rationale, regressions, or prior attempts matter, also use
-   [explain-history](../explain-history/SKILL.md).
+1. Bound the question and scope; use `clarify-task` when the requested outcome
+   is ambiguous.
+2. For resumed work, use `recover-context` to establish current state before
+   repeating prior investigation.
+3. Use `explain-code` for behavior and ownership. When rationale, regressions, or
+   prior attempts matter, also use `explain-history`.
 4. Combine the evidence into current behavior, constraints, uncertainties, and the
-   next useful action. Use [assess-impact](../assess-impact/SKILL.md) when evaluating
-   a proposed change's downstream consequences.
+   next useful action. Use `assess-impact` when evaluating a proposed change's
+   downstream consequences.
 
 Done when the question has a supported answer or explicit evidence gaps. Continue
-already-authorized work from those findings; investigation alone does not authorize edits.
+into already-requested work from those findings without asking again. When the
+request was for an answer only, stop there, because the user asked for an answer,
+not a change.
 
 Adapted from pstack; [license and attribution](references/LICENSE.txt).

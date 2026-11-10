@@ -20,8 +20,15 @@ Make simplification a continual investment. Leave the design slightly simpler an
 - Sequence removal before construction
 - Cut before you polish (get to the minimum before investing in quality)
 - Design for observed usage, not speculative edge cases
-- No speculative validators, parsers, or guards beyond what the spec demands
-- Simplify prompts (remove redundant instructions, excessive templates)
-- When a reference has no novel content, delete it rather than leaving a stub
+- Add no speculative validators, parsers, or guards beyond what the spec demands, because each one is code to maintain for a case nobody has seen
+
+**Scope the deletion to the task.** Dead code inside the task's area goes first. Dead code outside the task is an expansion: delete it and say so in the recap, or note it in the recap and leave it, so the diff does not widen silently.
+
+## When the artifact is a prompt or skill
+
+The same rule applies to instructions:
+
+- Simplify prompts: remove redundant instructions and excessive templates
+- When a reference file has no novel content, delete it rather than leaving a stub
 
 Adapted from pstack; [license and attribution](references/LICENSE.txt).

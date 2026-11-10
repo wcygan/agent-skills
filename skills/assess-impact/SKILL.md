@@ -1,6 +1,6 @@
 ---
 name: assess-impact
-description: "Trace what a change could break beyond its immediate diff. Use for compatibility, boundary changes, or uncertain downstream effects."
+description: "Trace what a change could break beyond its immediate diff: its blast radius across downstream callers, stored data, and external consumers. Use for a breaking change, compatibility questions, boundary changes, or uncertain downstream effects."
 license: MIT
 metadata:
   kind: component
@@ -20,7 +20,8 @@ metadata:
    demonstrated risks, cleared risks, and hypotheses still needing evidence.
 4. Prove the crucial safety assumption with the smallest meaningful check against
    actual code or behavior. Inspect dependency implementations when their semantics
-   determine the answer; function names and search results are insufficient.
+   determine the answer, because a function name or a search hit shows that a
+   symbol exists, not what it does.
 5. Report the level reached: source evidence, traced impossibility, executable
    proof, or observation in the running system. Mark an unproven assumption as such.
 

@@ -1,7 +1,7 @@
 # Model valid states and valid histories
 
 Use this procedure when lifecycle rules are scattered or ambiguous. Preserve the
-requested scope, existing behavior unless a change is authorized, and project
+requested scope, existing behavior unless the request changes it, and project
 conventions. A model is useful when it eliminates contradictory data, duplicated
 rules, or unclear ownership. Keep a simple synchronous toggle as a boolean when
 it already expresses the domain correctly.
@@ -41,8 +41,9 @@ Use variants for mutually exclusive lifecycle modes and attach the data each mod
 requires. Prefer `Succeeded(result)` over `done: boolean` plus optional `result`.
 Derive redundant flags such as `isLoading` from the authoritative state.
 
-Keep request IDs, timestamps, result lists, and progress values as payloads; do
-not create a state for every value. Refine or validate values when the domain
+Keep request IDs, timestamps, result lists, and progress values as payloads; a
+state names a mode, so a state per value multiplies transitions without adding
+a rule. Refine or validate values when the domain
 requires constraints such as a positive quantity. A sum type alone does not prove
 an arbitrary numeric relationship.
 

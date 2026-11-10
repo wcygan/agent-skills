@@ -72,17 +72,19 @@ descriptions, and rules at revision `afd51cf66a3100a95f878d6c4b93a01f6508e3b0`.
 This later source applies to the principles only; the playbooks and tools retain
 their original revision. Each leaf records its own source and MIT notice.
 
-Seventeen bodies are unchanged apart from the attribution footer. Seven have
-only the following targeted adaptations:
+Type System Discipline keeps its pinned body except for two references to a
+TypeScript specialist that is not in this catalog; those now name language idioms.
+The other 23 principles are locally revised. Their bodies state the trigger and
+rule first, give concrete tests, and carry the catalog's approval and delegation
+rules with each absolute's reason. Encode Lessons in Structure, Exhaust the Design
+Space, Guard the Context Window, and Laziness Protocol were pinned fragments or
+stubs and are now complete local bodies. The checker lists these principles in
+`LOCALLY_REVISED` in `tools/check_principle_parity.py`; for them it verifies only
+the name, upstream provenance, and attribution footer, so body changes are
+intentional and reviewable here.
 
 | Principle | Local adaptation |
 | --- | --- |
-| Build the Lever | Delegation and commits preserve the executing environment's authorization; retain the lever even when committing is outside scope. |
-| Explain the Number | Replace the unavailable benchmark-checklist dependency with inline matched-workload, repeated-run, raw-result, and actual-work checks. |
-| Guard the Context Window | Make the routing rule explicit in the body; allow bounded local reads when delegation is unavailable or unauthorized. |
-| Never Block on the Human | Proceed within authorized scope; preserve prior authorization and checkpoints rather than demanding repeated confirmation. |
-| Prove It Works | Replace show-me-your-work with an inline decision log and evidence pointers; preserve commit authority. |
-| Sequence Work into Verifiable Units | Use a known starting revision and preserve unrelated edits; do not implicitly rebase onto trunk. |
 | Type System Discipline | Replace the unavailable TypeScript specialist dependency with language idioms; retain all original examples and type-design rules. |
 
 All leaves use portable Agent Skills frontmatter with source metadata, omitting

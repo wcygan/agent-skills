@@ -55,9 +55,10 @@ rather than a miniature screenshot of the full interface.
 
 The browser test uses a caller-supplied Playwright installation. Resolve these paths
 from the loaded skill directory. It writes screenshots and exports to the specified
-output directory, never to the installed skill. Use an existing environment or
-install Playwright in a disposable tooling directory when authorized; do not add
-packages or a lockfile to a target project merely to inspect a figure.
+output directory, never to the installed skill, because installed skills are
+pinned. Use an existing environment or install Playwright in a disposable tooling
+directory outside the project; do not add packages or a lockfile to a target
+project merely to inspect a figure.
 
 ```sh
 PLAYWRIGHT_MODULE=/absolute/path/to/playwright/index.mjs \

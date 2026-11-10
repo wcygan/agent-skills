@@ -1,33 +1,3 @@
 {
-  "sources": [
-    {
-      "repository": "https://github.com/planetscale/database-skills.git",
-      "ref": "f6ed002d03084cb39c01d1d58904d47a36f5322a",
-      "license": "MIT",
-      "skills_root": "skills",
-      "skills": {
-        "postgres": "postgres",
-        "mysql": "mysql"
-      },
-      "license_files": {
-        "LICENSE": "references/LICENSE.txt"
-      }
-    },
-    {
-      "repository": "https://github.com/vercel-labs/agent-desktop.git",
-      "ref": "5261b5287b5208e7c4bf3713df6f66faaaf2c4cc",
-      "license": "Apache-2.0",
-      "skills_root": "skills",
-      "remove_frontmatter": [
-        "tags",
-        "requirements"
-      ],
-      "skills": {
-        "agent-desktop": "agent-desktop"
-      },
-      "license_files": {
-        "LICENSE": "references/LICENSE.txt"
-      }
-    }
-  ]
+  "sources": []
 }

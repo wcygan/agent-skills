@@ -61,7 +61,7 @@ Agent inspection supports functional and heuristic findings. It does not prove
 real-user comprehension, satisfaction, task speed, or conversion. Report those
 claims only with appropriate user-study or usage evidence. When research is in
 scope, use a representative task with participants and record observations;
-obtain any required outreach authorization before recruiting or messaging.
+get an explicit go-ahead before recruiting or messaging anyone in the user's name.
 
 When a required environment or tool is unavailable, report the exact unverified
 criterion and finish checks that remain possible. Preserve failures and uncertainty

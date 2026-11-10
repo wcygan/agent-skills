@@ -49,5 +49,5 @@ Do not label a detailed diagram universally bad; judge it against its intended q
 Render with the destination's supported Mermaid version. Check both supported themes,
 label wrapping, branch meaning, and embedded width. A syntactically valid graph can
 still communicate the wrong thing. For GitHub, keep the Mermaid block in the PR body
-and inspect the published rendering when publication is authorized. The format reference
+and inspect the published rendering once the PR is posted. The format reference
 is [GitHub diagrams](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams).

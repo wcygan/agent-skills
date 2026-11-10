@@ -10,42 +10,61 @@ metadata:
 
 # Prepare an agent objective
 
-Turn a chosen outcome into a tested operating contract. Reuse working project
-infrastructure and establish missing capabilities within the authorized scope.
-The user supplies priorities and boundaries; discover commands and integration
-facts from the project instead of asking the user to design the machinery.
+Turn a chosen outcome into a tested operating contract: the record of what the
+work must achieve, what it may touch, and how success is checked. Reuse working
+project infrastructure and set up what is missing within the requested scope. The
+user supplies priorities and boundaries; discover commands and integration facts
+from the project instead of asking the user to design the machinery.
 
-1. Identify the outcome, beneficiaries, scope, required target, stretch target,
-   and invariants. Read [the objective contract](references/objective-contract.md)
-   and record it in the project's existing task or operational record. Scale its
-   detail to the task; reuse a current contract rather than creating a duplicate.
-2. Inspect the raw evidence and establish identity: timestamps, release-to-commit
-   mapping, environment, configuration, workload, and relevant population. Test
-   access by retrieving a real representative signal. Distinguish missing data,
-   healthy zero results, and broken collection. Keep secrets out of the record.
-3. Establish a reproducible environment, representative fixtures, real entry points,
-   and owned resources. Locate an existing project verification skill. Use available
-   create-verification-skill or maintain-verification-skill capabilities when reusable
+Skip any step whose answer is already recorded in the project's task or
+operational record. Run the pilot (step 6) before asking the user anything,
+because the pilot answers most questions itself and shows which gaps are real.
+
+1. Name the outcome, who benefits, the scope, the required target, the stretch
+   target, and the invariants (facts that must stay true throughout). Read
+   [the objective contract](references/objective-contract.md) and record it in
+   the project's existing task or operational record. Scale its detail to the
+   task; reuse a current contract rather than creating a duplicate.
+2. Inspect the raw evidence and pin down what it describes: timestamps, which
+   commit each release maps to, environment, configuration, workload, and which
+   users or systems are in the population. Test access by retrieving one real
+   signal. Tell apart missing data, a healthy zero result, and broken collection.
+   Keep secrets out of the record.
+3. Set up a reproducible environment, representative fixtures, real entry points,
+   and the resources the agent owns and cleans up (scratch directories, test
+   accounts, temporary branches). Locate an existing project verification skill.
+   Use create-verification-skill or maintain-verification-skill when reusable
    guidance is needed; record exact commands directly if those skills are absent.
-4. Establish an external success check: executable regression, measured output,
-   independent observation, or held-out evaluation. The agent's narrative is not
-   proof. Capture the baseline and negative control; show that a known failure is
-   detectable. Define which checks the implementation may not weaken to claim success.
-5. Verify the action boundary and resource budget. Record what may be edited,
-   submitted, merged, deployed, and rolled back under existing authorization. Resolve
-   missing product decisions with the user; continue independent preparation.
-   Missing access blocks dependent actions, not all useful investigation.
+4. Set up a success check that does not depend on the agent's own narrative: a
+   regression test that runs, a measured output, an independent observation, or
+   an evaluation set kept apart from the data used while tuning. Capture the
+   baseline and a negative control (a known failure the check must catch) and
+   show that it is caught. Say which checks the implementation may not weaken to
+   claim success.
+5. Record the action boundary: what may be edited, submitted, merged, deployed,
+   and rolled back, and which of those actions already have the user's go-ahead.
+   Record a resource budget only when the user set one. Keep two lists:
+   - What the agent sets up itself: fixtures, scripts, local environment,
+     verification scripts, scratch resources. A missing item here is work, not a
+     blocker.
+   - What only the user can supply: credentials, external access, product
+     decisions. This list alone blocks, because everything on the first list the
+     agent can build. It blocks only the actions that depend on it; continue every
+     other preparation and report the blocker when it stops you.
 6. Pilot one complete path: retrieve a signal, identify the artifact, reproduce or
-   measure it, exercise the proposed verification, retain proof, and clean up owned
-   resources. If changes are authorized and a suitable case exists, carry one through
-   the permitted delivery boundary. Do not fabricate a defect or deploy merely to
-   complete a pilot. Label unexercised stages and environments explicitly.
-7. For ongoing work, test durable checkpoint/restart behavior and identify the actual
-   event source or scheduler, its execution environment, and how it will be stopped.
-   Configure it only within the user's requested scope. A skill file supplies no
-   background runtime. Without an active trigger, report readiness for manual runs.
+   measure it, exercise the proposed verification, keep the proof, and clean up
+   owned resources. If changes are in scope and a suitable case exists, carry one
+   through the delivery boundary the request allows. Do not fabricate a defect or
+   deploy just to complete a pilot, because a faked pilot proves nothing about the
+   real path. Label the stages and environments the pilot did not exercise.
+7. For ongoing work, test that the work can checkpoint and restart, and identify
+   the actual event source or scheduler, its execution environment, and how it
+   will be stopped. Configure it within the user's requested scope. A skill file
+   supplies no background runtime, so without an active trigger, report readiness
+   for manual runs.
 
-Return the contract, pilot evidence, verified capabilities, and gaps with their next
-resolving action. State ready for the tested scope, partially ready, or blocked.
-Readiness is specific to an artifact, environment, and action boundary; it is not a
-claim that the outcome has already been achieved or can be guaranteed indefinitely.
+When the preparation is long, post a progress update at each step boundary. End
+with a self-contained recap that leads with the readiness state (ready for the
+tested scope, partially ready, or blocked) and then gives the contract, pilot
+evidence, verified capabilities, and each gap with the action that resolves it and
+who takes it.

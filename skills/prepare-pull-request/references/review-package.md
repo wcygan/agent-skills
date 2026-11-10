@@ -1,9 +1,10 @@
 # Assemble the review package
 
 For the 300-line house target, visual examples, and compact execution evidence,
-use the [pull request design system](../../technical-visuals/references/pull-requests.md)
-and its [gallery](../../technical-visuals/examples/pull-requests/index.html).
-The target is a review prompt, not a safety guarantee; keep related tests with the change.
+use the technical-visuals skill's pull-request design system and its gallery of
+pull-request examples (cache, form retry, and queue). Treat the 300-line target as
+a prompt to split; keep related tests with the change even when they push past it,
+because a change without its tests is harder to review.
 
 ## Choose the visual by the reviewer question
 
@@ -17,14 +18,25 @@ The target is a review prompt, not a safety guarantee; keep related tests with t
 
 GitHub Markdown supports Mermaid; other destinations may require an exported image.
 Use repository conventions for assets. Do not put a local absolute path in a remote
-PR body. Prefer durable repository or authorized hosted assets, and inspect the
-actual rendering/access after publication. Avoid temporary preview URLs that expire
-before review. If hosting is unavailable, prepare the asset locally and report the
-remaining publishing step; do not claim that an image is visible remotely.
+PR body, because reviewers cannot open it. Prefer durable repository or hosted
+assets the user has approved, and inspect the actual rendering and access after
+publication. Avoid temporary preview URLs that expire before review. If hosting is
+unavailable, prepare the asset locally and report the remaining publishing step
+instead of claiming the image is visible remotely.
 
-A screenshot of an HTML explanation is a legitimate illustration. It is not an
-application screenshot unless it depicts the actual application under test. Generated
-raster art cannot substitute for a tested UI state or measured result.
+A screenshot of an HTML explanation is a legitimate illustration. Label it as an
+illustration unless it depicts the actual application under test, because a
+reviewer reads an unlabeled screenshot as evidence. Generated raster art cannot
+substitute for a tested UI state or measured result for the same reason.
+
+## Scenario diagrams
+
+For meaningful testing scenarios, keep a scenario diagram visible when it helps
+the reviewer follow the path under test. Borrow the presentation of the
+technical-visuals pull-request examples, never their fictional results, because
+results in a PR must be real. Use no fixed scenario count, and add no diagram
+that conveys no useful information. A conceptual diagram is explanation; label
+it so a reviewer does not mistake it for execution evidence.
 
 ## Good example: a bounded behavioral change
 
@@ -63,7 +75,8 @@ A diagram would add no useful relationship. Keep the text concise and accurate.
 Lead with a few sentences describing the problem and resulting behavior. Follow
 with a visual and a short explanation of what it shows when that helps review.
 Use an image table for a meaningful before-and-after comparison, or one image when
-that is clearer. Omit decorative visuals. Keep material failures and risks visible.
+that is clearer. Omit decorative visuals. Keep material failures and risks visible
+above the collapsed section.
 
 Put the full description in a collapsed section with two H2 headings:
 
@@ -84,9 +97,11 @@ Actual checks, results, and verification limits.
 
 Put additional headings beneath these as `###` subsections. Confirm required PR
 checks accept headings inside a disclosure; otherwise keep required headings visible
-and collapse their supporting details. Follow any required repository template. Keep
-the PR concise and size images explicitly so they support the explanation.
+and collapse their supporting details. A required repository template overrides
+this structure. Keep the PR concise and size images explicitly so they support the
+explanation.
 
-Do not hide failed checks behind a summary of passing ones. If the code changes after
-verification, renew affected evidence. If a PR exists already, update its explanation
-around the final scope rather than appending a chronology of revisions.
+Do not hide failed checks behind a summary of passing ones, because the reviewer
+decides on the failures. If the code changes after verification, renew affected
+evidence. If a PR exists already, update its explanation around the final scope
+rather than appending a chronology of revisions.

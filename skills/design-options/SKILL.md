@@ -1,6 +1,6 @@
 ---
 name: design-options
-description: "Compare designs and sketch interfaces before implementation. Use for nontrivial architecture, ownership, or module-boundary decisions."
+description: "Compare designs and sketch interfaces before implementation. Use for nontrivial architecture, API design, ownership, or module-boundary decisions where two structures could work."
 license: MIT
 metadata:
   kind: component
@@ -19,7 +19,8 @@ Choose a structure that makes correct changes easy for the next maintainer.
 
 1. Ground the design in current behavior, integration boundaries, and constraints.
    When changing ownership, establish the existing rationale from evidence.
-   Skip existing-system investigation only for genuinely isolated greenfield work.
+   Skip existing-system investigation only for genuinely isolated greenfield work,
+   because anything that touches existing code inherits its constraints.
 2. Write representative caller usage first. Derive types, signatures, ownership,
    and module boundaries from it; use sketches rather than full implementations.
 3. Produce at least two structurally different designs under the same requirements.
@@ -29,8 +30,9 @@ Choose a structure that makes correct changes easy for the next maintainer.
    stages, duplicate mutable state, or maintain the same list in several places.
    Prefer enforceable boundaries and one coherent way to perform an operation.
 5. Select a design and record its tradeoffs and rejected alternatives. Hand back
-   the sketch and acceptance criteria for implementation; honor any requested
-   checkpoint before continuing the larger task.
+   the sketch and acceptance criteria for implementation. Stop at a checkpoint the
+   user requested. Without one, return the sketch and a recommendation; continue
+   into implementation only if the request asked for it.
 6. During implementation, treat deviations as evidence. Repeated workarounds,
    type escape hatches, or two independent deviations with the same cause warrant
    re-grounding and new alternatives. Replace the flawed structure rather than

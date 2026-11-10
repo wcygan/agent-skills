@@ -1,6 +1,6 @@
 ---
 name: design-loop
-description: "Design, style, or redesign websites and apps through investigation, layout, design-system creation, implementation, validation, and delivery. Use for an autonomous UI design loop, including from-scratch builds and replacement of poorly designed interfaces."
+description: "Design, style, or redesign websites and apps through investigation, layout, design-system creation, implementation, validation, and delivery. Use for an autonomous UI design loop, including from-scratch builds, wireframes, restyling, and replacement of poorly designed interfaces."
 license: MIT
 metadata:
   author: William Cygan
@@ -13,10 +13,20 @@ Own one integrated result: a consistent, easy-to-use interface that helps a user
 complete a specific task with fewer unnecessary steps. Carry the same brief and
 acceptance criteria from investigation through delivery; advance on evidence.
 
-Run the whole authorized flow independently. Make routine layout and implementation
+Run the whole flow independently. Make routine layout and implementation
 decisions, recommend an approach, build it, verify it, and correct failures.
-Honor requests limited to a brief, wireframe, prototype, or review. A request to
-design a UI does not itself authorize a production deployment.
+Honor requests limited to a brief, wireframe, prototype, or review. In a
+from-scratch build the new code is yours: how it is structured is your call, so
+merge repeated code and fix related problems as you build. In an existing
+codebase, change what the brief needs and report the rest. Get an
+explicit go-ahead before committing, pushing, opening or merging a pull request,
+deploying, publishing a package, or posting in the user's name; a go-ahead given
+with the request covers the action it names. Reads, searches, tests, builds,
+linters, safe-to-repeat reruns, and local scratch work need no go-ahead.
+
+Post a short progress update at each **Done** checkpoint below. End with a
+self-contained recap that leads with the outcome, then what was verified, what
+was not, and what is next.
 
 ## Design priorities
 
@@ -42,7 +52,7 @@ Evaluate design and implementation choices together:
 Prefer choices that improve all three. Simplify the approach when a gain relies
 on confusing users, adding maintenance burden, or making behavior hard to inspect.
 Preserve required capabilities, data, contracts, and accessibility. Expose any
-unavoidable tradeoff against the brief; do not claim an unverified improvement.
+unavoidable tradeoff against the brief, and claim only improvements you verified.
 
 ## 1. Investigate and frame
 
@@ -57,7 +67,7 @@ Choose the design mode from the request:
   language from the user task. Existing design has no privileged status.
 - **From scratch:** establish the task structure and a coherent design system together.
 
-A request to redesign a poorly styled product authorizes replacing its design
+A request to redesign a poorly styled product covers replacing its design
 within the requested scope. Treat the current UI as evidence of capabilities and
 friction, not as a specification to preserve. Retain required business behavior,
 data contracts, user content, and explicit brand constraints; retain visual or
@@ -77,15 +87,16 @@ Existing components and design conventions:
 Acceptance criteria and verification method:
 UX, DX, and AX outcomes and regression checks:
 Assumptions and unresolved decisions:
-Authorized delivery: artifact | implementation | PR | deployment
+Requested delivery: artifact | implementation | PR | deployment
 ```
 
 Separate observations from hypotheses. Infer reversible details from the project;
-ask when missing information changes the user goal, business rule, scope, or
-authorized external action. Continue independent work while awaiting answers.
+ask when missing information changes the user goal, business rule, scope, or an
+action that needs a go-ahead. Continue independent work while awaiting answers.
 
 **Done:** the primary task, bounded change, and observable success criteria are
 clear. If evidence is unavailable, record the assumption and its verification gap.
+Post a progress update: the brief in two lines and what comes next.
 
 ## 2. Structure the task
 
@@ -99,10 +110,11 @@ that serve no user need while preserving necessary review and safeguards.
 
 **Done:** every required piece of content and action has a place, the task has a
 complete path, and responsive behavior preserves access to essential actions.
+Post a progress update.
 
-For feeds, cards, notifications, or table summaries, use the available
-[write-clearly guidance](../write-clearly/SKILL.md) to review repeated text as a
-collection, including factual status and what remains visible after truncation.
+For feeds, cards, notifications, or table summaries, use the write-clearly skill
+when available to review repeated text as a collection, including factual status
+and what remains visible after truncation.
 
 ## 3. Inspect references and explore
 
@@ -149,9 +161,10 @@ design, styling, restyling, or replacement of an existing design system. Select 
 visual direction and build a representative styled slice before propagating it.
 
 Create two or three directions only when a meaningful structural decision remains
-uncertain. Keep the task and content constant; vary navigation, grouping, density,
-action placement, or task sequencing. For standalone wireframes, prefer one
-self-contained responsive HTML file with useful click-through behavior.
+uncertain, because each extra direction costs a build and a comparison. Keep the
+task and content constant; vary navigation, grouping, density, action placement,
+or task sequencing. For standalone wireframes, prefer one self-contained
+responsive HTML file with useful click-through behavior.
 
 Compare directions against the brief and the design priorities above, including
 the copy each layout still needs and its UX, DX, and AX effects. Recommend one
@@ -160,6 +173,7 @@ the agreed scope; routine phase transitions do not require renewed approval.
 
 **Done:** one approach is selected with a task-based rationale, reference evidence
 or clearly labeled inference, and any unresolved consequential decision exposed.
+Post a progress update naming the chosen direction and its tradeoff.
 
 ## 4. Build the recommended approach
 
@@ -176,7 +190,7 @@ For styling requests, deliver the complete selected visual language, including
 typography, color, spacing, surfaces, controls, and interaction states.
 
 **Done:** the selected approach works at the requested fidelity, required states
-are represented, and each change supports the agreed task.
+are represented, and each change supports the agreed task. Post a progress update.
 
 ## 5. Validate and revise
 
@@ -190,35 +204,45 @@ Compare the candidate with the baseline and acceptance criteria. Fix demonstrate
 failures, then repeat affected checks. Keep criteria stable; record any justified
 change to the verification method. Separate agent inspection from real user evidence.
 
-Use up to three corrective passes by default, or the user's stated budget. Stop
-earlier when two consecutive passes reproduce the same failure without a new
-supported hypothesis, or when required evidence or authority is unavailable.
-Preserve the candidate and report incomplete criteria instead of calling it done.
+Use up to three corrective passes by default, or the user's stated budget.
+Continue unless two consecutive passes reproduce the same failure with no new
+supported hypothesis, or a required tool, environment, or piece of evidence is
+unavailable; report that blocker when it stops you, preserve the candidate, and
+list the incomplete criteria instead of calling it done.
 
 **Done:** every required criterion has passing evidence; material limitations are
-explicit. An attractive screenshot alone does not establish task completion.
+explicit. A screenshot shows layout, not task completion, so it cannot stand in
+for exercising the task. Post a progress update with the criterion-level results.
 
 ## 6. Deliver and learn
 
 Read [references/delivery.md](references/delivery.md) when preparing a handoff,
 PR, preview, deployment, or follow-up iteration.
 
-Complete the authorized delivery steps. Report the user-facing change, selected
+Complete the requested delivery. Report the user-facing change, selected
 approach and important tradeoff, artifact or changed files, verification evidence,
-and unresolved problems. Retain authorization across phases; prepare a concrete,
-reviewable result before requesting any missing external-action authorization.
+and unresolved problems. Prepare the concrete, reviewable result first, then ask
+for any go-ahead still missing for a commit, push, PR, or deployment.
 
-**Done:** the bounded outcome passes its criteria and authorized delivery is complete.
-Re-enter the loop only for observed feedback, a failed criterion, or a newly agreed
-objective. Treat future user research as pending work rather than inventing findings.
+**Done:** the bounded outcome passes its criteria and the requested delivery is
+complete. End with the recap described above. Re-enter the loop only for observed
+feedback, a failed criterion, or a newly agreed objective. Treat future user
+research as pending work rather than inventing findings.
 
 ## Portability
 
 This skill owns the flow and requires no companion skill. Use available browser,
-design, repository, and deployment tools that fit the environment. Optional
-specialists can supply bounded evidence; reconcile their output against the brief.
-Use direct analysis when they are unavailable. Report unavailable verification
-honestly and finish independent authorized work.
+design, repository, and deployment tools that fit the environment. Report
+unavailable verification honestly and finish the independent work.
+
+A specialist subagent starts cold and re-derives the brief, so it pays only for
+a bounded bulk read with one clear question (a browser sweep over many routes
+at two widths, a contrast audit of every in-scope screen) or an independent write
+in files nobody else touches (a styled slice on its own route). Keep structural
+and visual-language decisions in the main loop. A specialist's brief carries the
+goal, the scope and exact files or routes, the evidence to return (screenshots,
+measurements, failing criteria), and the return format. Reconcile its output
+against the brief before acting on it.
 
 ## Example requests
 
@@ -227,6 +251,6 @@ honestly and finish independent authorized work.
 - “Design a neutral wireframe for this dashboard. Compare layouts and recommend
   one; stop at the HTML artifact.”
 - “Improve this expense-submission flow using relevant established product
-  patterns. Keep the existing components and deploy to the authorized preview.”
+  patterns. Keep the existing components and deploy to the staging preview.”
 - “Redesign this badly styled app from first principles. Replace its layout and
   visual system as needed, preserve its required capabilities, and verify the result.”

@@ -1,6 +1,6 @@
 ---
 name: maintain-verification-skill
-description: "Check and repair a project verification skill against source and live behavior. Use when its commands, journey map, or evidence requirements may have drifted."
+description: "Check and repair a project verification skill against source and live behavior. Use when its launch commands, journey map, feature index, or evidence requirements may have drifted from the application."
 license: MIT
 metadata:
   kind: component
@@ -17,18 +17,26 @@ metadata:
    from the request; if none exists, report that creation is needed.
 2. Reconcile the index with its entries and current source. Check every mapped
    feature, and look for missing user surfaces with concrete source evidence.
-3. Exercise every mapped feature on the real surface, even if source looks unchanged.
-   Use one driver per shared instance or isolated sessions. Health-check before use
-   and after surprising failures; reset unusable state instead of continuing blindly.
+3. Exercise every mapped feature on the real surface, even if source looks unchanged,
+   because runtime drift (a changed dependency, environment, or data) is invisible
+   in source. Use one driver per shared instance or isolated sessions. Health-check
+   before use and after surprising failures; reset unusable state instead of
+   continuing blindly, since results from a broken instance prove nothing.
 4. Classify failures: documentation drift, a harness gap, a product regression, or
-   an unavailable prerequisite. Fix only the verification skill and its owned helpers.
-   Report product regressions without rewriting expected behavior to hide them.
-5. Rerun corrected instructions live. For a health-check failure caused by skill
-   drift, correct it and retry once before reporting the remaining blocker. Preserve
-   evidence and clean owned resources after each failed attempt and final teardown.
-6. Report clean, changed, or blocked with per-feature coverage and evidence. An
-   unreachable feature needs its attempted route and missing prerequisite recorded;
-   it is not a passing feature. Publish corrections only if requested.
+   an unavailable prerequisite. Fix only the verification skill and its owned
+   helpers, because product code is the user's to change. Report product
+   regressions without rewriting expected behavior to hide them.
+5. Rerun corrected instructions live. For a failure caused by skill drift, retry
+   while each retry changes the failure; stop when the same blocker repeats and
+   report it. Preserve evidence and clean owned resources after each failed attempt
+   and final teardown.
+6. Report clean, changed, or blocked with per-feature coverage and evidence. Record
+   an unreachable feature with its attempted route and missing prerequisite rather
+   than as passing, because a hidden gap misleads the next run.
+
+Continue unless the application cannot be launched or the same blocker repeats;
+report that blocker when it stops you. Post a short progress update after the
+source reconciliation and after the live pass.
 
 Done when every feature has a source and runtime disposition, corrections have
 been exercised, and surviving evidence supports the outcome. Incomplete live

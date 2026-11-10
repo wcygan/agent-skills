@@ -1,6 +1,6 @@
 ---
 name: prepare-pull-request
-description: "Prepare a concise, visual, evidence-backed pull request from the actual diff. Use when drafting or updating a PR title/body, assembling review assets, or preparing a change for review; publication follows existing authorization."
+description: "Prepare a concise, visual, evidence-backed pull request from the actual diff. Use when drafting or updating a PR title and body, writing a PR description, assembling review assets, or preparing a change for review. Opening the PR needs an explicit go-ahead."
 license: MIT
 metadata:
   author: William Cygan
@@ -12,53 +12,48 @@ metadata:
 
 Help a reviewer understand the problem, the resulting behavior, and the evidence
 without reconstructing the conversation. Prefer a small change with one useful
-overview visual and a few precise sentences. Follow the repository's PR template and title
-conventions; brevity must not erase required information or material risks.
+overview visual and a few precise sentences. Follow the repository's PR template and
+title conventions. Brevity must not erase required information or material risks,
+because a reviewer who misses a risk approves blind.
 
-Use linked skills when available; the criteria here remain the fallback when a
-component is installed alone. Report missing rendering or publication capabilities.
+Use the named skills when they are installed; the criteria here remain the fallback
+when this skill is installed alone. Report missing rendering or publication
+capabilities.
 
 1. Inspect the target base, current revision, final diff, and actual validation.
    Separate unrelated work and distinguish tests run from suggested commands.
-   If the change has several independent purposes, use
-   [slice-changes](../slice-changes/SKILL.md) to propose a coherent boundary;
-   do not rewrite history or expand the task merely to improve the description.
-2. Write the problem and before/after behavior first. Use
-   [write-clearly](../write-clearly/SKILL.md) for prose and captions. Explain a
-   concrete trigger when useful; omit the transcript, abandoned attempts, and
-   file-by-file narration unless they explain a material tradeoff.
-3. Synthesize the code into the smallest useful model of actors, state, and outcomes;
-   do not mirror the call graph or list changed files. Select one overview visual
-   that answers the main reviewer question. Use
-   [technical-visuals](../technical-visuals/SKILL.md) when creating a figure.
-   Default to 2D; use 3D only when requested. For format and evidence choices,
-   read [review package](references/review-package.md).
-4. Unless a required repository template overrides it, lead with a concise visible
-   overview and a useful visual or image table, then put the full description in a
-   collapsed “Full description and validation” section. Inside it, use exactly
-   `## Problem & Solution Overview` and `## Testing Done`; put additional headings
-   beneath them. Keep material failures and risks visible above the disclosure. Check
-   whether required PR checks accept headings inside a disclosure; if not, keep the
-   required headings outside it and collapse details beneath them. For meaningful
-   testing scenarios, keep a scenario diagram visible when it helps. Choose from
-   the [cache, form retry, and queue examples](../technical-visuals/examples/pull-requests/index.html);
-   borrow their presentation, never their fictional results. Do not require a fixed
-   scenario count or add a diagram that conveys no useful information.
+   If the change has several independent purposes, use the slice-changes skill to
+   propose a coherent boundary; rewriting history or expanding the task to improve
+   the description changes what the reviewer is reviewing.
+2. Write the problem and before/after behavior first. Use the write-clearly skill
+   for prose and captions. Explain a concrete trigger when useful; omit the
+   transcript, abandoned attempts, and file-by-file narration unless they explain
+   a material tradeoff.
+3. Synthesize the code into the smallest useful model of actors, state, and
+   outcomes; mirroring the call graph or listing changed files repeats the diff.
+   Select one overview visual that answers the main reviewer question. Use the
+   technical-visuals skill when creating a figure. Default to 2D; use 3D only
+   when requested. For format and evidence choices, read
+   [review package](references/review-package.md).
+4. Lay out the body with a short visible overview and the full description in a
+   collapsed section, following the exact headings, disclosure rules, and
+   scenario-diagram rules in [review package](references/review-package.md).
    State verification for the current revision, reproducible commands when useful,
-   and material compatibility, rollout, or rollback concerns. Keep uncertainty
-   visible. A conceptual diagram is explanation, not execution evidence.
+   and material compatibility, rollout, or rollback concerns, keeping uncertainty
+   and failures visible above the fold.
 5. Inspect the completed description and rendered assets as a reviewer. Confirm
    links, readable labels, accessible captions, revision consistency, and removal
    of temporary paths or sensitive data. Refresh stale visuals after scope changes.
-6. If publication is authorized, use the available publication mechanism or
-   [deliver-change](../deliver-change/SKILL.md), preserving requested draft status,
-   and read back the title, body, base, head, and asset access. Otherwise deliver the
-   reviewable local title/body and assets at the requested checkpoint.
+6. Opening a pull request posts in the user's name, so it needs an explicit
+   go-ahead. Before publishing, read back the title, base, head, the evidence the
+   body cites, and what was not verified. With the go-ahead, use the available
+   publication mechanism or the deliver-change skill, preserving requested draft
+   status, and confirm the published title, body, base, head, and asset access.
+   Without it, deliver the reviewable local title, body, and assets.
 
 A trivial typo or obvious dependency pin may need no visual; omit decorative
 figures. More than one visual is justified when it answers distinct necessary
 questions. No fixed word count outranks correctness or the repository template.
 
 Done when the review package matches the actual change and evidence, and the
-requested local or published destination is confirmed. Preparing or opening a PR
-never implies merge or deployment authority.
+requested local or published destination is confirmed.

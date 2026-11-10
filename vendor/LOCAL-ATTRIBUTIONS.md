@@ -1,5 +1,17 @@
 # Locally maintained skill attributions
 
+## Converted from vendored sources
+
+These skills began as copies of upstream repositories and are now maintained
+locally. Each keeps its upstream repository, pinned revision, original path, and
+license in its frontmatter, and its license file stays in `references/`.
+
+| Local skill | Upstream repository | Revision | Original path | License |
+| --- | --- | --- | --- | --- |
+| `mysql` | <https://github.com/planetscale/database-skills> | `f6ed002d03084cb39c01d1d58904d47a36f5322a` | `skills/mysql` | MIT |
+| `postgres` | <https://github.com/planetscale/database-skills> | `f6ed002d03084cb39c01d1d58904d47a36f5322a` | `skills/postgres` | MIT |
+| `agent-desktop` | <https://github.com/vercel-labs/agent-desktop> | `5261b5287b5208e7c4bf3713df6f66faaaf2c4cc` | `skills/agent-desktop` | Apache-2.0 |
+
 ## Pstack adaptations
 
 The components and procedures below are locally maintained adaptations of Lauren

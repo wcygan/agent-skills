@@ -1,6 +1,6 @@
 ---
 name: wcygan-implement
-description: "Carry an agreed change through small implementation steps and evidence. Use for features, fixes, refactors, or migrations."
+description: "Carry an agreed change through small implementation steps with verification evidence at each one. Use for building a feature, fixing a bug, a refactor, or a migration once the intended behavior is known."
 license: MIT
 metadata:
   kind: procedure
@@ -13,29 +13,27 @@ metadata:
 
 # Implement
 
-Read linked components only when their stated condition applies. Use available
-tools and preserve the task's scope, prior authorization, and explicit checkpoints.
-Read the shared [principle index](../wcygan-mode/references/principles.md)
-and relevant leaves at entry; reconsider them as the work changes and report
-each principle that changed a decision with the specific choice it shaped.
+Read the shared [principle index](../wcygan-mode/references/principles.md) at entry and reconsider it as the work changes. Report each principle that changed a decision, with the specific choice it shaped.
 
+Read linked components only when their stated condition applies, so the context
+stays small. Keep the task's scope and any checkpoint the user set.
 
-1. State the behavior contract and scope. Use
-   [explain-code](../explain-code/SKILL.md) where current behavior is uncertain and
-   [design-options](../design-options/SKILL.md) where the structure remains unsettled.
-2. For a bug, use [reproduce-bug](../reproduce-bug/SKILL.md) before changing the
-   implementation. For a refactor, retain a baseline equivalence check.
-3. When the work spans several reviewer questions, use
-   [slice-changes](../slice-changes/SKILL.md) before implementation grows. Keep a
-   single coherent change together when splitting would weaken its verification.
-   Use [implement-change](../implement-change/SKILL.md) for each coherent unit.
-   When several owners are useful, use [coordinate-work](../coordinate-work/SKILL.md)
-   to establish boundaries and integration order.
-4. Use [verify-behavior](../verify-behavior/SKILL.md) on the integrated result.
-   For demonstrated recurring errors, apply
-   [prevent-recurrence](../prevent-recurrence/SKILL.md) within the requested scope.
-5. Report the result, evidence, and gaps. Proceed to publication only when it is
-   part of the task; preserve requested checkpoints and already-granted authorization.
+1. State the behavior contract and scope. Use `explain-code` where current
+   behavior is uncertain and `design-options` where the structure remains unsettled.
+2. For a bug, use `reproduce-bug` before changing the implementation, so the fix
+   has a failing-before check. For a refactor, retain a baseline equivalence check.
+3. When the work spans several reviewer questions, use `slice-changes` before
+   implementation grows. Keep a single coherent change together when splitting
+   would weaken its verification. Use `implement-change` for each coherent unit.
+   When several owners are useful, use `coordinate-work` to establish boundaries
+   and integration order.
+4. Use `verify-behavior` on the integrated result. For demonstrated recurring
+   errors, apply `prevent-recurrence` within the requested scope.
+5. Post a short progress update at each step boundary and report the result,
+   evidence, and gaps. Running tests, builds, and linters never needs a go-ahead;
+   committing, pushing, opening or merging a pull request, and deploying each
+   need an explicit one. Continue into those steps when the task includes them
+   and the go-ahead was given; stop at a checkpoint the user set.
 
 Done when requested behavior is implemented and verified, with incomplete outcomes
 reported honestly rather than hidden behind successful builds.

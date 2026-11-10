@@ -3,8 +3,8 @@
 Diagnose and improve one measured performance problem.
 
 1. Establish the user-visible slowdown, representative workload, and baseline.
-2. Follow [experiment](../../wcygan-experiment/SKILL.md) and
-   [measure-performance](../../measure-performance/SKILL.md). Profile separately
+2. Follow `wcygan-experiment` and
+   `measure-performance`. Profile separately
    from reported measurements and identify the limiting resource.
 3. Change the cause of the bottleneck in a bounded unit; compare under equivalent
    conditions, including errors and correctness.

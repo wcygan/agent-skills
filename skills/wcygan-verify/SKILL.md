@@ -1,6 +1,6 @@
 ---
 name: wcygan-verify
-description: "Verify acceptance criteria and maintain reusable project verification when needed. Use for checking a completed change or an application journey."
+description: "Verify a change against its acceptance criteria on the real artifact, and create or maintain a reusable project verification skill when repeated checks need one. Use to verify a completed change, test an application journey end to end, or confirm a fix works."
 license: MIT
 metadata:
   kind: procedure
@@ -13,29 +13,29 @@ metadata:
 
 # Verify
 
-Read linked components only when their stated condition applies. Use available
-tools and preserve the task's scope, prior authorization, and explicit checkpoints.
-Read the shared [principle index](../wcygan-mode/references/principles.md)
-and relevant leaves at entry; reconsider them as the work changes and report
-each principle that changed a decision with the specific choice it shaped.
+Read the shared [principle index](../wcygan-mode/references/principles.md) at entry and reconsider it as the work changes. Report each principle that changed a decision, with the specific choice it shaped.
 
+Read linked components only when their stated condition applies, so the context
+stays small. Keep the task's scope and any checkpoint the user set.
 
 1. Identify the artifact and acceptance criteria. Locate any existing project
    verification skill and inspect whether it covers the relevant user journeys.
 2. If reusable verification guidance is requested or necessary for repeated work,
-   use [create-verification-skill](../create-verification-skill/SKILL.md) when absent.
-   Use [maintain-verification-skill](../maintain-verification-skill/SKILL.md) when an
-   existing skill is stale or its audit was requested. A one-off check needs neither.
-   When a property must hold across every case in a stated scope, such as a race,
-   retry, state machine, parser, or unsafe code, and formal verification is requested,
-   use [create-formal-verification-skill](../create-formal-verification-skill/SKILL.md).
-3. Use [verify-behavior](../verify-behavior/SKILL.md), following applicable project
-   instructions. Preserve evidence from skill creation or maintenance as coverage
-   only when it matches the same artifact, environment, and acceptance criteria.
-4. Report verified, failed, and inconclusive criteria, plus any unexercised journeys.
-   Separate product defects from verification-instruction defects.
+   use `create-verification-skill` when absent. Use `maintain-verification-skill`
+   when an existing skill is stale or its audit was requested. A one-off check
+   needs neither. When a property must hold across every case in a stated scope,
+   such as a race, retry, state machine, parser, or unsafe code, and formal
+   verification is requested, use `create-formal-verification-skill`.
+3. Use `verify-behavior`, following applicable project instructions. Count
+   evidence from skill creation or maintenance as coverage only when it matches
+   the same artifact, environment, and acceptance criteria, because a run on a
+   different revision proves nothing about this one.
+4. Report verified, failed, and inconclusive criteria, plus any unexercised
+   journeys. Count a verification skill as proof only for the journeys it was run
+   on in this check, because its existence says nothing about the current
+   artifact. Separate product defects from verification-instruction defects.
 
 Done when the requested verification scope has evidenced outcomes and owned resources
-are cleaned up without losing proof. A reusable skill's existence is not itself proof.
+are cleaned up without losing proof.
 
 Adapted from pstack; [license and attribution](references/LICENSE.txt).

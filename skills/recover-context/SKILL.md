@@ -1,6 +1,6 @@
 ---
 name: recover-context
-description: "Reconstruct the current state of prior work from scoped records and live artifacts. Use when resuming a task or preparing a handoff."
+description: "Reconstruct the current state of prior work from scoped records and live artifacts. Use to resume a task, pick up where I left off, prepare a handoff, or catch up after a break."
 license: MIT
 metadata:
   kind: component
@@ -16,11 +16,15 @@ metadata:
 1. Bound the project, topic, and time window. Use a supplied state summary first;
    inspect only relevant history and records accessible within that scope.
 2. Recover the goal, constraints, decisions, previous attempts, outstanding work,
-   and artifact locations. Preserve prior authorization and explicit checkpoints.
+   and artifact locations. Note which actions the user already approved by name
+   (such as a commit or a push) and which checkpoints they set, so the resumed
+   work neither re-asks for a go-ahead it has nor skips a stop the user wanted.
 3. Check current files, revisions, published results, and active work against the
-   historical claims. Treat the live state as authoritative about what exists now.
+   historical claims. Treat the live state as authoritative about what exists now,
+   because records describe the past.
 4. Read detailed execution records when the question is what actually ran or was
-   inspected. Summaries alone cannot prove that; state any unavailable evidence.
+   inspected, because a summary records what its writer believed, not what ran.
+   State any unavailable evidence.
 5. Return a compact brief with current status, confirmed decisions, known failures,
    unresolved questions, and the next concrete action.
 

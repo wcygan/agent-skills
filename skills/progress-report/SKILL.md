@@ -1,6 +1,6 @@
 ---
 name: progress-report
-description: "Catch the user up on changes, status, and decisions awaiting them. Use for progress updates or summaries since a specified checkpoint."
+description: "Catch the user up on changes, status, and decisions awaiting them. Use for progress updates, status reports, or summaries since a specified checkpoint."
 license: MIT
 metadata:
   kind: component
@@ -14,7 +14,10 @@ metadata:
 # Progress report
 
 1. Establish the reporting window from the requested checkpoint or the user's
-   previous message. Gather relevant changes and verify current status where possible.
+   previous message. Gather relevant changes and verify current status where
+   possible. Read-only commands (`git status`, `git log`, `git diff`, reading CI
+   results) and test reruns need no go-ahead; run them to confirm status rather
+   than reporting from memory.
 2. Lead with what changed for the user. Distinguish completed, running, failed,
    and unchecked work; include older decisions still waiting on the user.
 3. Separate actions only the user can take from work you can continue. Give each
@@ -23,8 +26,12 @@ metadata:
    only when needed to act or follow evidence. Use existing visuals when they help;
    distinguish diagrams from observed screenshots and measured results.
 
+The report must stand alone away from the transcript: a reader who sees nothing
+else knows the current outcome, remaining work, and any decision needed from them.
+
 Done when the user knows the current outcome, remaining work, and any decision
-needed from them. Reporting itself does not start jobs, edit code, or publish
-anything, and a status request does not cancel an already-authorized task.
+needed from them. Reporting starts no jobs, edits no code, and publishes nothing,
+because the user asked for status, not action. A status request does not cancel
+a task already under way; keep it running and report its state.
 
 Adapted from pstack; [license and attribution](references/LICENSE.txt).

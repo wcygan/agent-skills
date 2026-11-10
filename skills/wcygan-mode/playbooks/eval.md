@@ -10,7 +10,9 @@ Compare workflow or instruction changes before promoting them.
    cannot be independent, record that confound explicitly.
 4. Inspect actual outputs and execution evidence. Repeat enough trials to expose
    variability; evaluate correctness and task completion alongside cost.
-5. Use [experiment](../../wcygan-experiment/SKILL.md) to judge the comparison.
+5. Use `wcygan-experiment` to judge the comparison.
 
 Complete with methods, outcomes, failure examples, uncertainty, and a promotion
-recommendation. Do not promote based only on self-reports or one convenient example.
+recommendation. Promote only on inspected outputs across trials, because a
+self-report or one convenient example can pass while the candidate fails
+representative tasks.

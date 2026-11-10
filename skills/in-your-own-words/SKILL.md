@@ -16,13 +16,14 @@ metadata:
 Restate in your own words what you think the user's goals are and what problem
 they are trying to solve.
 
-Use the available [write-clearly](../write-clearly/SKILL.md) skill to make the
-restatement plain, concise, and concrete. If it is unavailable, use familiar
-words, lead with the desired outcome, and remove jargon and filler.
+Use the write-clearly skill, when it is installed, to make the restatement plain,
+concise, and concrete. If it is unavailable, use familiar words, lead with the
+desired outcome, and remove jargon and filler.
 
 Preserve the user's scope, constraints, and uncertainty. Distinguish the underlying
 problem from a suggested implementation without inventing motives or requirements.
 Return the restatement itself, rather than a plan, solution, or report about your
-process. A standalone request to restate intent does not authorize implementation.
+process. Stop after the restatement, because the user asked to check understanding,
+not for the work to start.
 
 Adapted from pstack; [license and attribution](references/LICENSE.txt).

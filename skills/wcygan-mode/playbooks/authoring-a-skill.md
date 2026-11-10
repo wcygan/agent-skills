@@ -12,5 +12,5 @@ Create or revise an agent skill.
    behavior when the change affects consequential decisions.
 
 Complete with a usable skill, evidence of validation, and known behavioral limits.
-For project verification authoring, use [create-verification-skill](../../create-verification-skill/SKILL.md).
-For formal verification of one property, use [create-formal-verification-skill](../../create-formal-verification-skill/SKILL.md).
+For project verification authoring, use `create-verification-skill`.
+For formal verification of one property, use `create-formal-verification-skill`.

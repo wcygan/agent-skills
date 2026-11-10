@@ -26,7 +26,7 @@ existing visual or interaction conventions precedence.
 ## Inspect and record evidence
 
 Use official product documentation, public demos, or accessible product screens.
-Use authenticated surfaces only within available authorization. If browsing is
+Use signed-in product screens only through access the user provided. If browsing is
 unavailable, use supplied screenshots and documentation; label unverified recollection
 as a hypothesis and avoid asserting current product behavior.
 

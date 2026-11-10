@@ -8,7 +8,8 @@ Diagnose a live runtime symptom.
    the symptom to execution, allocation, scheduling, or resource contention.
 3. Form competing explanations and run the smallest discriminating observation.
    Account for instrumentation overhead and preserve raw evidence.
-4. Use [investigate](../../wcygan-investigate/SKILL.md) to map the evidence to source.
+4. Use `wcygan-investigate` to map the evidence to source.
 
 Complete with the supported cause, alternatives eliminated, and remaining unknowns.
-Diagnosis does not authorize a product edit; preserve a handoff for an already-requested fix.
+Continue into a fix only when one was requested, because the user asked for a
+diagnosis; otherwise hand off the findings.

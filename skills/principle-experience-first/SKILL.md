@@ -13,16 +13,23 @@ metadata:
 
 # Experience First
 
-When implementation convenience conflicts with user delight, choose delight.
+**Trigger:** a product, UX, or feature-scope tradeoff: what to build, what to cut, how polished to make it.
 
-- Every feature, control, and option must be justified
-- Ship less, ship better (polished experience with three features beats rough one with ten)
-- Prototype before committing (design decisions are cheaper in throwaway HTML than production code)
-- Get the details right (transitions, alignment, spacing, feedback, error states)
-- Tighten the core loop (every feature should serve the central workflow or get out of the way)
+**Rule:** when implementation convenience conflicts with the user's experience, choose the experience. Ship fewer features, finished, over more features, rough.
 
-The user is whoever consumes the work. For a UI that is the end user. For a library or an internal API it is the colleague who imports it. The engineer who maintains the code next is a user too. Weigh their experience the same way, and explain impact from their perspective.
+**Why:** the user pays for every rough edge on every use; the implementer pays for convenience once. A polished experience with three features is used; a rough one with ten is worked around.
 
-Foundations should serve the experience. Foundational thinking governs the *sequence* of work. This principle governs the *target*.
+**Who the user is:** whoever consumes the work. For a UI, the end user. For a library or an internal API, the colleague who imports it. The engineer who maintains the code next is a user too. Weigh their experience the same way, and explain impact from their perspective.
+
+**Pattern:**
+- Every feature, control, and option must be justified by the central workflow. One that does not serve it gets out of the way or gets cut.
+- Get the details right: transitions, alignment, spacing, feedback, error states, and the recovery path when something fails.
+- Tighten the core loop. The thing the user does most should take the fewest steps and the least waiting.
+
+**Decision test:** "Would the user notice this cut?" If they would not notice a feature's absence, cut it and spend the time on what they will notice. If they would notice a rough edge, it is not done.
+
+**Who decides scope cuts:** propose dropping a feature; do not drop it silently. State what you would cut, why the user would not miss it, and what the time buys instead, then let the user decide. A cut the user did not agree to is a missing feature, not a scope decision. Within scope the user already set, polish decisions (spacing, wording, error copy) are yours to make.
+
+**Scope:** this principle governs the *target*: what good looks like for the person using the result. The foundational-thinking principle governs the *sequence* of work; foundations exist to serve the experience, not the other way round. For choosing between designs by building them, see exhaust-the-design-space.
 
 Adapted from pstack; [license and attribution](references/LICENSE.txt).

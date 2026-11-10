@@ -1,6 +1,6 @@
 ---
 name: typescript-app-stack
-description: "Explain TypeScript application components and locate their documentation: runtimes, Effect, TanStack, PostgreSQL, Pi models and durable execution, infrastructure, and observability. Use for stack orientation and component reference lookup."
+description: "Explain TypeScript application components and locate their documentation: Bun and Node runtimes, Effect, React and TanStack, PostgreSQL, Pi models and durable execution, Docker and just, OpenTelemetry and Grafana observability. Use for stack orientation, picking a component, or looking up a component's reference docs."
 license: MIT
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: model-state-transitions
-description: Model and verify lifecycle rules as explicit states, events, and transitions. Use when scattered flags, asynchronous responses, retries, cancellation, or lifecycle checks make legal behavior unclear.
+description: Model and verify lifecycle rules as explicit states, events, and transitions (state machine, statechart, reducer, typestate). Use when scattered flags, asynchronous responses, retries, cancellation, or lifecycle checks make legal behavior unclear.
 license: MIT
 metadata:
   kind: component
@@ -10,6 +10,10 @@ metadata:
 # Model state transitions
 
 Read [modeling](references/modeling.md) first to select the smallest useful model.
+A model pays off when it removes contradictory data, duplicated rules, or unclear
+ownership. Keep a simple synchronous toggle as a boolean when it already expresses
+the domain correctly; a machine for two values adds reading cost and no guarantee.
+
 Then load only the references relevant to the task:
 
 | Task | Reference |
@@ -23,6 +27,8 @@ Then load only the references relevant to the task:
 | Implement enums, exhaustive transitions, or ownership-based typestate in Rust | [Rust](references/rust.md) |
 | Implement sealed variants, records, and exhaustive transitions in Java | [Java](references/java.md) |
 | Verify a model or implementation, or evaluate this skill | [Verification](references/verification.md) |
-| Model-check a TLA+ spec with TLC and show its bug paths as a Mermaid statechart | [statechart](../statechart/SKILL.md) |
+| Model-check a TLA+ spec with TLC and show its bug paths as a Mermaid statechart | The statechart skill, when available |
 
 Before reporting a completed implementation, read the verification reference.
+End with the owner, the invariants, the event policies, and the histories you
+exercised, then what was not verified.

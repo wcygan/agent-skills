@@ -2,7 +2,7 @@
 
 Read when handing off artifacts, opening a PR, deploying, or continuing from feedback.
 
-## Match the authorized destination
+## Match the requested destination
 
 - Artifact request: return the usable wireframe/prototype and its location.
 - Implementation request: finish the change and required checks; summarize the diff.
@@ -11,11 +11,11 @@ Read when handing off artifacts, opening a PR, deploying, or continuing from fee
 - Deployment request: use the designated environment and established deployment
   workflow; verify the delivered version and primary task at its destination.
 
-Carry explicit authorization through the loop. When an external action still
-needs authorization, first finish the reviewable candidate, verification evidence,
-and concrete action details. Ask only for the missing decision or action. Never
-treat this skill's activation as blanket authorization to publish, merge, message,
-or deploy.
+A go-ahead given with the request covers the action it names and holds through
+every phase. Committing, pushing, opening or merging a PR, deploying, or posting
+in the user's name without one needs an explicit go-ahead first: finish the
+reviewable candidate, verification evidence, and concrete action details, then
+ask only for the missing decision.
 
 Keep unrelated work intact and stage only task-owned changes. Inspect the final
 diff and follow repository-required checks. Report failed delivery separately from
@@ -38,7 +38,7 @@ documents merely to demonstrate that phases ran.
 
 ## Close the loop deliberately
 
-Stop once the agreed criteria pass and authorized delivery is complete. Record
+Stop once the agreed criteria pass and the requested delivery is complete. Record
 future research questions without extending the task automatically.
 
 When actual feedback or usage data is available, compare it with the original

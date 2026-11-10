@@ -15,7 +15,7 @@ metadata:
 
 A test calls the code as its users do and asserts the exact result they see. Rewrite or delete any test that would still pass if every imported function returned `undefined` or a wrong value.
 
-These shapes fail that check:
+These shapes fail that check. The matcher names are Jest examples, not the rule; the same shapes fail in any test framework's equivalents.
 
 - Loose or no assertion: `toBeDefined`, `toBeTruthy`, `not.toThrow`, `toBeGreaterThan(0)`.
 - Call or absence only: `toHaveBeenCalled`, `not.toHaveBeenCalled`, `toBeUndefined`, `toEqual([])`.

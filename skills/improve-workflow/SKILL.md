@@ -1,6 +1,6 @@
 ---
 name: improve-workflow
-description: "Find evidence-backed improvements to an engineering process. Use for retrospectives, repeated friction, or ineffective instructions."
+description: "Find evidence-backed improvements to an engineering process from a run's records. Use for a retrospective, postmortem, repeated friction, wasted effort, or instructions that did not work."
 license: MIT
 metadata:
   kind: component
@@ -20,12 +20,13 @@ metadata:
 3. For each proposed improvement, cite the observed failure or wasted effort,
    explain the causal link, and name the smallest change that would help.
 4. Prefer structural enforcement for repeatable mistakes. Reserve instructions
-   for judgment that cannot be encoded reliably; avoid adding rules for speculation.
+   for judgment that cannot be encoded reliably. Add a rule only for an observed
+   failure, because a rule for a speculative one costs every future reader.
 5. Classify proposals as adopt, reject, or defer with reasons. Apply and verify
    changes already requested; a retrospective-only request returns proposals.
 
 Done when useful improvements have evidence, a disposition, and a way to evaluate
-whether they worked. Publishing issues or changing unrelated workflows requires
-that scope to be part of the task.
+whether they worked. Opening an issue or posting in the user's name needs an
+explicit go-ahead; change unrelated workflows only when the task asks for it.
 
 Adapted from pstack; [license and attribution](references/LICENSE.txt).

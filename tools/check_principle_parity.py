@@ -1,4 +1,9 @@
-"""Check the 24 principle skills against a pinned Pstack source and explicit adaptations."""
+"""Check the 24 principle skills against a pinned Pstack source and explicit adaptations.
+
+Principles in LOCALLY_REVISED are maintained as local writing: their bodies no
+longer track the pinned text, so the check verifies only their provenance metadata
+and the attribution footer. See skills/wcygan-mode/references/parity.md.
+"""
 
 from __future__ import annotations
 
@@ -37,39 +42,6 @@ NAMES = (
     "type-system-discipline",
 )
 ADAPTATIONS = {
-    "build-the-lever": (
-        ("When you fan work out to subagents,", "When delegation is available and authorized and you fan work out to subagents,"),
-        ("Commit the lever when the work outlives the session.", "Keep the lever when the work outlives the session; commit it when committing is authorized."),
-    ),
-    "explain-the-number": (
-        (
-            "For a performance number, run the full procedure with the [benchmark-checklist](../benchmark-checklist/SKILL.md) skill.",
-            "For a performance number, compare repeated runs under matched workloads and environments, retain raw results, and check that the measured work actually occurred.",
-        ),
-    ),
-    "guard-the-context-window": (
-        (
-            "- **Size phases and cap scope.** Limit files per phase, set turn budgets, account for mechanism costs.",
-            "- **Size phases and cap scope.** Limit files per phase, set turn budgets, account for mechanism costs.\n- Route bounded bulk reading to subagents when delegation is available and authorized; keep findings and evidence pointers in the main thread. Otherwise narrow reads and summarize locally.",
-        ),
-    ),
-    "never-block-on-the-human": (
-        ("Make reasonable decisions, proceed,", "Make reasonable decisions within the authorized scope, proceed,"),
-        (
-            "Irreversible actions (force-push, delete production data, send external messages) still require confirmation.",
-            "Irreversible actions (force-push, delete production data, send external messages) still require authorization. Preserve prior authorization and explicit checkpoints; ask only when authority or a necessary product decision is missing.",
-        ),
-    ),
-    "prove-it-works": (
-        ("(the **show-me-your-work** skill)", "(retain a decision log and evidence pointers)"),
-        ("Commit it only for large or complex work", "Commit it only when committing is authorized and for large or complex work"),
-    ),
-    "sequence-verifiable-units": (
-        (
-            "Rebase onto clean trunk first so every check measures against the real baseline.",
-            "Establish the actual starting revision and preserve unrelated work so every check measures against a known baseline; rebase only when authorized.",
-        ),
-    ),
     "type-system-discipline": (
         (
             " For TypeScript syntax, see the `typescript-best-practices` skill.",
@@ -77,6 +49,33 @@ ADAPTATIONS = {
         ),
     ),
 }
+
+
+LOCALLY_REVISED = frozenset((
+    "attack-the-premise",
+    "boundary-discipline",
+    "build-the-lever",
+    "encode-lessons-in-structure",
+    "exhaust-the-design-space",
+    "experience-first",
+    "explain-the-number",
+    "fix-root-causes",
+    "foundational-thinking",
+    "guard-the-context-window",
+    "laziness-protocol",
+    "make-operations-idempotent",
+    "migrate-callers-then-delete-legacy-apis",
+    "minimize-reader-load",
+    "model-the-domain",
+    "never-block-on-the-human",
+    "outcome-oriented-execution",
+    "prove-it-works",
+    "redesign-from-first-principles",
+    "separate-before-serializing-shared-state",
+    "sequence-verifiable-units",
+    "subtract-before-you-add",
+    "test-behavior-not-implementation",
+))
 
 
 def render(name: str, source: str) -> str:
@@ -107,6 +106,16 @@ def main() -> int:
 
     def check(name: str) -> str:
         relative = f"pstack/skills/principle-{name}/SKILL.md"
+        if name in LOCALLY_REVISED:
+            actual = (root / f"skills/principle-{name}/SKILL.md").read_text()
+            required = (
+                f"name: principle-{name}\n",
+                f"  upstream-path: pstack/skills/principle-{name}\n",
+                f"  upstream-revision: {REVISION}\n",
+                "Adapted from pstack; [license and attribution](references/LICENSE.txt).\n",
+            )
+            missing = [line.strip() for line in required if line not in actual]
+            return "" if not missing else f"local/{name}: missing provenance {missing}\n"
         if args.upstream:
             source = (args.upstream / relative).read_text()
         else:

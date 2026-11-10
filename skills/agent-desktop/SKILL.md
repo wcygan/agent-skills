@@ -10,6 +10,12 @@ description: >
   "operate desktop", "accessibility tree", "snapshot app", "type into field", "navigate menu",
   "toggle checkbox", "take screenshot", "desktop automation", "agent-desktop",
   or any desktop GUI task on macOS, Windows or Linux.
+license: Apache-2.0
+metadata:
+  upstream-repository: https://github.com/vercel-labs/agent-desktop
+  upstream-revision: 5261b5287b5208e7c4bf3713df6f66faaaf2c4cc
+  upstream-path: skills/agent-desktop
+  maintenance: local
 ---
 
 # agent-desktop
@@ -63,7 +69,11 @@ Action results carry `data.disposition` and errors carry `error.disposition`, ea
 
 ## Headless and headed
 
-Ref actions are headless by default. They use semantic accessibility calls and do not take focus, move the cursor, synthesize keys or use the clipboard. If no semantic path exists, the action fails closed. Use the global `--headed` flag only when the user explicitly permits physical input, such as double-click, hover, drag, or focus. Never switch to headed mode to recover from a headless failure. Raw coordinates (`--xy`) never imply focus. Which actions need `--headed` differs by OS: read the platform skill.
+Ref actions are headless by default. They use semantic accessibility calls and do not take focus, move the cursor, synthesize keys or use the clipboard. If no semantic path exists, the action fails closed. Use the global `--headed` flag only when the user explicitly permits physical input, such as double-click, hover, drag, or focus. Do not switch to headed mode to recover from a headless failure, because headed input takes focus and moves the cursor on the person's machine while they may be using it; report the failure instead. Raw coordinates (`--xy`) do not focus the window first. Which actions need `--headed` differs by OS: read the platform skill.
+
+## Irreversible actions
+
+Confirm with the user before clicking a control that sends, submits, posts, pays, or deletes inside an app, because the app may act before you can read the result and the action cannot be taken back. Opening apps, navigating menus and windows, scrolling, reading state, and taking snapshots or screenshots need no confirmation. A go-ahead given with the request covers the action it names.
 
 ## References
 

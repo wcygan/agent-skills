@@ -13,12 +13,13 @@
 Respect the requested format. Native Mermaid rendering depends on the host; inspect
 it at the destination when possible. For image delivery, verify that the target can
 render the chosen format. A local filesystem path cannot serve as a remote PR asset.
-Keep references repository-relative where supported, or use an authorized durable
-asset destination. Check the final URL and reader access after publication.
+Keep references repository-relative where supported, or use a durable asset
+location the user named. Check the final URL and reader access after publication.
 
 Do not add generated media to a product bundle or commit screenshots merely because
 they were created. Follow repository conventions and the requested artifact location.
-Do not upload private data to an image or hosting service without task authorization.
+Get an explicit go-ahead before uploading private data to an image or hosting
+service, because the upload leaves the user's control.
 
 ## Render checks
 

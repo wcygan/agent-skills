@@ -16,7 +16,8 @@ coherent PR is preferable to a stack whose fragments cannot be reviewed or verif
 
 1. Inspect the intended outcome, current diff or design, repository conventions,
    tests, and delivery constraints. Identify unrelated work without moving or
-   discarding it. Do not turn a planning request into branch or commit mutations.
+   discarding it. A planning request produces a plan, not branches or commits,
+   because the user has not yet chosen the split.
 2. Group by observable behavior and ownership. Keep implementation, necessary tests,
    and relevant documentation together. Separate independent cleanup; do not split
    mechanically by file type, frontend/backend, or implementation/tests.
@@ -38,8 +39,11 @@ Suggested compact output:
 | Name the behavior | One bounded question | Base or prior slice | Specific check | What remains valid |
 
 For an already mixed diff, propose extraction boundaries and risks before rewriting
-history. Do not silently rebase, force-push, discard work, or create many branches.
-Preserve existing publication authority and explicit checkpoints.
+history. Rebasing, force-pushing, or discarding work rewrites history the user may
+rely on, so do each only when the user asked for it; create branches only when the
+user asked for the split to be executed. Committing, pushing, or opening a pull
+request needs an explicit go-ahead, and a go-ahead given with the request covers
+the action it names. Keep any checkpoint the user set.
 
 Done when the sequence is understandable, its intermediate states are viable, and
 verification covers each slice plus the integrated result. Report uncertainty where
