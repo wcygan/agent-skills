@@ -18,11 +18,8 @@ decisions, recommend an approach, build it, verify it, and correct failures.
 Honor requests limited to a brief, wireframe, prototype, or review. In a
 from-scratch build the new code is yours: how it is structured is your call, so
 merge repeated code and fix related problems as you build. In an existing
-codebase, change what the brief needs and report the rest. Get an
-explicit go-ahead before committing, pushing, opening or merging a pull request,
-deploying, publishing a package, or posting in the user's name; a go-ahead given
-with the request covers the action it names. Reads, searches, tests, builds,
-linters, safe-to-repeat reruns, and local scratch work need no go-ahead.
+codebase, change what the brief needs and report the rest. Publishing actions
+follow [delivery](references/delivery.md).
 
 Post a short progress update at each **Done** checkpoint below. End with a
 self-contained recap that leads with the outcome, then what was verified, what

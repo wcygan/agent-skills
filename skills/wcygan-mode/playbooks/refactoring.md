@@ -7,7 +7,7 @@ Change structure while preserving behavior.
    on behavior changes too.
 2. Name the simpler target structure. Use `wcygan-design`
    for consequential ownership or interface changes.
-3. Follow `wcygan-implement` in behavior-preserving units.
+3. Follow `implement-change` in behavior-preserving units.
    Migrate necessary callers and remove obsolete internal paths when complete.
 4. Rerun the baseline against the integrated result and inspect overlooked consumers,
    serialized names, configuration, and documentation references.

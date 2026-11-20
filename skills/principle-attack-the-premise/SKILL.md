@@ -1,6 +1,6 @@
 ---
 name: principle-attack-the-premise
-description: "Apply when two or more fixes that share one premise have failed the same gate. Take a census of which actors hold the imbalance before the next fix, then question the premise instead of writing another fix that assumes it."
+description: "Apply when two or more fixes that share one premise have failed the same gate. Write the premise down and test it directly before you write another fix that assumes it."
 license: MIT
 metadata:
   kind: principle
@@ -13,28 +13,12 @@ metadata:
 
 # Attack the Premise
 
-**Trigger:** two or more fixes that share one premise have failed the same gate (the same failing test, benchmark, or check).
+When two or more fixes that share one premise have failed the same gate, suspect the premise, not the fixes. One failed fix is not a trigger; it can be an implementation mistake.
 
-**Rule:** before the next fix, write the premise down and count where the failing condition actually lands. Then question the premise instead of writing another fix that assumes it.
+- Write the premise down: the one sentence every failed fix assumed.
+- Test it before the next fix. Find an observation that would come out differently if the premise were false, and make it. Look at how the failures are distributed (by actor, input, or time), not only at how large they are.
+- If the evidence contradicts the premise, look for what the failures share that it did not predict. If one part always lands on the losing side, change what puts it there instead of adding a mechanism that cleans up after it.
 
-**Why:** each fix that fails under a shared premise is evidence about the premise, not about the fix. A third fix built on the same assumption is most likely a third failure.
-
-Terms used here:
-- **Premise:** the one sentence every failed fix assumed. Example: "the workers are slow because the queue is too big."
-- **Actors:** the components or callers that could hold the failing condition: workers, hosts, requests, callers, files, test cases.
-- **Imbalance:** the failing condition being held by some actors far more than others. Example: a timeout that only ever hits two of twenty workers.
-- **Census:** a count, per actor, of how often that actor holds the failing condition across runs.
-
-**Pattern:**
-- **Write the premise down.** If you cannot state it in one sentence, you do not yet know what the failed fixes had in common.
-- **Take a census before the next fix.** Count, per component or caller, how often each holds the failing condition. The census shows *which* actors hold the condition, not how large it is. Write it as a rerunnable script (the build-the-lever principle), so a reviewer can rerun it and so you can rerun it after the fix.
-- **Read the skew.** If the same few actors hold most of the imbalance on every run, something assigns them that role: an ordering, a hash, a default, a first-come rule. Find what assigns the role. That assignment is the next "why" in the fix-root-causes chain.
-- **Remove the asymmetry instead of compensating for it** (the laziness-protocol principle). Rotate the role between actors, randomize the assignment, or move the role so no actor holds it on every run. A return path, a shared pool, a batched hand-off, or a periodic rebalance leaves the assignment in place and adds work on every run.
-
-**Stop gate:** do not start the next fix before the premise is written down and the census exists. Without them, the next fix is a guess that costs a full implement-and-test cycle and, if it fails, adds nothing to what you know; with them, a failed fix at least tells you which actor it did not help.
-
-**Scope and exception:** if the census is even across actors, the premise is not the cause. Look elsewhere and keep the census as evidence. One failed fix is not yet a trigger; one failure can be an implementation mistake.
-
-Distinct from redesign-from-first-principles, which rebuilds a design around a new requirement. This principle questions a fact the current design assumes.
+Do not start the next fix before the premise is written down and tested.
 
 Adapted from pstack; [license and attribution](references/LICENSE.txt).

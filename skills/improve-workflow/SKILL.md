@@ -26,7 +26,6 @@ metadata:
    changes already requested; a retrospective-only request returns proposals.
 
 Done when useful improvements have evidence, a disposition, and a way to evaluate
-whether they worked. Opening an issue or posting in the user's name needs an
-explicit go-ahead; change unrelated workflows only when the task asks for it.
+whether they worked. Change unrelated workflows only when the task asks for it.
 
 Adapted from pstack; [license and attribution](references/LICENSE.txt).

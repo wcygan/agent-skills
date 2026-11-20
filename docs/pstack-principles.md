@@ -7,9 +7,8 @@ This integration adds all 24 as standalone skills beneath the existing workflows
 
 Source: Lauren Tan's [Pstack principles](https://github.com/cursor/plugins/blob/afd51cf66a3100a95f878d6c4b93a01f6508e3b0/pstack/docs/guide/08-principles.md)
 at `afd51cf66a3100a95f878d6c4b93a01f6508e3b0`, MIT licensed.
-Every skill preserves its name, description, examples, and decision rules.
-Seventeen bodies are unchanged; seven have targeted exceptions documented in the
-[parity matrix](../skills/wcygan-mode/references/parity.md#principle-catalog).
+Every skill preserves its name. All 24 bodies are now locally revised, as recorded
+in the [parity matrix](pstack-parity.md#principle-catalog).
 Pstack-specific invocation metadata is replaced by portable frontmatter, source
 metadata, and an attribution footer. Each leaf contains its original MIT notice.
 
@@ -48,7 +47,7 @@ column shows where the rule commonly shapes decisions; it is not exclusive routi
 
 ## Use
 
-Wcygan-mode and all nine procedural entrypoints read the
+Wcygan-mode and all seven procedural entrypoints read the
 [shared index](../skills/wcygan-mode/references/principles.md). They read selected
 leaves in full, revisit the selection when evidence changes, and name each applied
 principle with the specific choice it changed. There is no required response heading
@@ -62,12 +61,10 @@ essential inline guidance rather than introducing required dependencies.
 
 ## Verification
 
-Check source fidelity without following a moving upstream branch:
+Check each leaf's name, source metadata, and attribution footer:
 
 ```sh
 uv run --locked tools/check_principle_parity.py
-# Or use a local checkout/snapshot of the pinned cursor/plugins source:
-uv run --locked tools/check_principle_parity.py --upstream /path/to/cursor-plugins
 ```
 
 The checker compares complete skill text with the pinned source plus an explicit

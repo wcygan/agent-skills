@@ -4,7 +4,7 @@ Prepare a reviewable proposal for an implemented change.
 
 1. Confirm that the user asked for a pull request, identify the target base,
    and inspect the final diff for unrelated work and temporary artifacts.
-2. Follow `wcygan-verify` for required evidence. Preserve
+2. Follow `verify-behavior` for required evidence. Preserve
    requested draft status and the project's submission conventions.
 3. Use `prepare-pull-request` for the title,
    concise problem/result, useful visual, and current verification evidence. Respect
@@ -15,4 +15,4 @@ Prepare a reviewable proposal for an implemented change.
    because that would discard the user's edits.
 
 Complete with the confirmed proposal and its evidence, or a local prepared handoff
-when opening the pull request had no go-ahead. Merging needs its own go-ahead.
+when opening the pull request had no go-ahead.

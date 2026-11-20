@@ -13,10 +13,8 @@ metadata:
 
 # Coordinate
 
-Read the shared [principle index](../wcygan-mode/references/principles.md) at entry and reconsider it as the work changes. Report each principle that changed a decision, with the specific choice it shaped.
-
-Read linked components only when their stated condition applies, so the context
-stays small. Keep the task's scope and any checkpoint the user set.
+Read the [principle index](../wcygan-mode/references/principles.md) first. Load a
+component named below only when its condition applies.
 
 1. Establish the final acceptance criteria and constraints with `clarify-task`
    when needed. Resolve risky shared interfaces before splitting implementation
@@ -39,8 +37,6 @@ stays small. Keep the task's scope and any checkpoint the user set.
    with the outcome, then what was verified, what was not, and what is next.
 
 Done when all required units and the integrated result have evidenced dispositions.
-Missing work remains visible. Committing, pushing, opening or merging a pull
-request, or deploying needs an explicit go-ahead; scheduling future runs needs an
-external trigger.
+Missing work remains visible. Scheduling future runs needs an external trigger.
 
 Adapted from pstack; [license and attribution](references/LICENSE.txt).

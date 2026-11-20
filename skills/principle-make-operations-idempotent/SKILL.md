@@ -13,28 +13,12 @@ metadata:
 
 # Make Operations Idempotent
 
-**Trigger:** you are designing a command, a lifecycle step (startup, shutdown, migration), or a processing loop that will run where crashes, restarts, and retries happen.
+Design every state-changing operation to converge to the correct state however many times it runs and wherever the previous run stopped.
 
-**Rule:** design the operation so it converges to the correct end state no matter how many times it runs or what a previous run left behind. An operation that converges this way is called idempotent.
+Derive each step from the state that exists, not from what the previous run meant to do. Read the current state, compare it to the goal, and apply only the difference.
 
-**Why:** in long-running systems, crashes and retries are normal, not exceptional. If partial state from one run changes the next run's outcome, every restart becomes a debugging session and every retry is a gamble.
+Anything a run leaves behind (a lock, a temporary file, a half-written record, a claimed job) must be recognizable as stale by the next run, by evidence that holds wherever the previous run could have stopped. Write to a temporary path and rename it into place.
 
-**The pattern:**
-- **Convergent startup:** scan for existing state, clean stale artifacts, adopt live work rather than assuming a clean slate.
-- **Content-based cleanup:** decide what to keep by comparing content, not creation order or timestamps, because a crash can leave the newest artifact as the broken one.
-- **Recoverable locks:** a lock must be safe to recover after the holder crashes. Record enough in the lock to tell a live holder from a dead one (an owner identity plus a liveness check, or an expiry), and let the next run reclaim a dead lock on its own. A lock that only a human can clear turns every crash into an outage that waits for someone to notice.
-- **Idempotent scheduling:** failed work is respawned from its definition, not from a half-finished record, and inputs are regenerated after each cycle rather than consumed once.
-- **Write the final state atomically** (write to a temporary name, then rename) so a reader never sees a half-written artifact.
-
-**The test, for every state-mutating operation:**
-1. What happens if this runs twice in a row?
-2. What happens if the previous run crashed at every possible point?
-3. Does re-execution converge to the same end state?
-
-If any answer is "it depends on what state was left behind," the operation needs a reconciliation step before it does its work.
-
-**Scope:** a one-shot script run by hand under supervision can skip this, with the cost that a failure is cleaned up by hand. Anything that runs unattended, on a schedule, or in a retry loop cannot.
-
-Related: fix-root-causes treats "fails after restart" as a sign of unreconciled state; separate-before-serializing-shared-state covers when a lock is needed at all.
+The test: what happens if this runs twice? What if the previous run crashed at every possible point? If the answer depends on what was left behind, add a reconciliation step.
 
 Adapted from pstack; [license and attribution](references/LICENSE.txt).

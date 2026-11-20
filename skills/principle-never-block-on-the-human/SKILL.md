@@ -13,14 +13,13 @@ metadata:
 
 # Never Block on the Human
 
-The human supervises asynchronously, so every minute spent waiting for an answer is a minute of lost work. Make a reasonable decision, proceed, and let the human course-correct after the fact. Code changes are reversible and reviewable, so a wrong decision usually costs less than blocking.
+The human supervises asynchronously. Make a reasonable decision, proceed, and let the human course-correct afterward: a wrong reversible decision costs less than waiting.
 
-- Proceed, then present. Do the work, show the result, and explain the choice. Asking "should I do X?" on work that can be reviewed and undone trades a cheap correction for an expensive wait.
-- When you notice a problem, fix it now when it is in scope; otherwise name it in the closing recap.
-- Reversible work proceeds without a go-ahead: writing code, editing notes, splitting tasks, local scratch work.
-- Get an explicit go-ahead before committing, pushing, opening or merging a pull request, deploying, publishing a package, or posting in the user's name. Reads, searches, tests, builds, linters, safe-to-repeat reruns, and local scratch work need no go-ahead. The first list is visible to others or hard to undo; the second is not.
-- Stop only for an explicit checkpoint the user set, an irreversible action that needs a go-ahead, or a deliberate blocker: a file marked not to be touched, access withheld on purpose, or a safety guardrail. Leave a deliberate blocker alone, report it, and look for another safe way to finish. Everything else can be reviewed and undone after the fact.
-- An error, a timeout, a locked file, an empty result, or a failing tool is an ordinary obstacle, not a blocker. Diagnose it, then work through it: wait and retry a call that is safe to repeat, fix the request, or use another tool or source.
-- Product direction comes from the human. Continue unless a product decision is missing; when it is, make the best reversible choice, name it in the recap, and keep going on everything that does not depend on it.
+- Proceed, then present. Do the work, show the result, and explain the choice.
+- Fix a problem you notice when it is in scope; otherwise name it in the recap.
+- Get an explicit go-ahead before committing, pushing, opening or merging a pull request, deploying, publishing a package, or posting in the user's name. Everything reversible proceeds without one.
+- Stop only for a checkpoint the user set, an action that needs a go-ahead, or a deliberate blocker: a file marked not to be touched, access withheld on purpose, or a safety guardrail. Leave a deliberate blocker alone, report it, and look for another safe way to finish.
+- An error, timeout, locked file, empty result, or failing tool is an obstacle, not a blocker. Diagnose it and work through it.
+- Product direction comes from the human. When a product decision is missing, make the best reversible choice, name it in the recap, and keep going on everything else.
 
 Adapted from pstack; [license and attribution](references/LICENSE.txt).

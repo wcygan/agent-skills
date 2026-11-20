@@ -13,12 +13,12 @@ metadata:
 
 # Redesign From First Principles
 
-When integrating a change, redesign as if the requirement had been a foundational assumption from the start. Bolting it onto the existing design leaves a shape nobody would have chosen.
+When integrating a change, redesign as if the requirement had been a foundational assumption from the start, instead of bolting it onto the existing design.
 
-- Read the affected files and understand the current design. The redesign thinking is unbounded: follow the requirement wherever it leads before deciding what to deliver.
-- Ask: "if we were writing this from scratch with this new requirement, what would we build?"
-- Propagate the change through every reference inside the requested change: types, docs, examples, rationale sections. Delivery stays inside the requested change.
-- When the redesign reaches beyond the requested change, that expansion is a product decision. Surface it in the plan or recap with what it would touch, and keep going on the requested change rather than blocking on the answer.
+- Read the affected files and understand the current design.
+- Ask: "if we were writing this from scratch with this requirement, what would we build?"
+- Propagate the change through every reference inside the requested change: types, docs, examples.
+- When the redesign reaches beyond the requested change, surface that in the plan or recap and keep going on the requested change.
 - Think about the whole redesign, then deliver it incrementally.
 
 Adapted from pstack; [license and attribution](references/LICENSE.txt).

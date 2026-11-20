@@ -13,10 +13,8 @@ metadata:
 
 # Experiment
 
-Read the shared [principle index](../wcygan-mode/references/principles.md) at entry and reconsider it as the work changes. Report each principle that changed a decision, with the specific choice it shaped.
-
-Read linked components only when their stated condition applies, so the context
-stays small. Keep the task's scope and any checkpoint the user set.
+Read the [principle index](../wcygan-mode/references/principles.md) first. Load a
+component named below only when its condition applies.
 
 1. State the hypothesis, baseline, success criteria, resource budget, and stopping
    rule. Distinguish the required outcome from an exploration target, and establish

@@ -37,8 +37,7 @@ prepare-agent-objective skill or establish those same items before acting on the
    outputs and side effects directly. Preserve evidence and unchanged acceptance
    criteria. Commit, push, open or merge a PR, deploy, or roll back only with a
    go-ahead for that action, given either in the objective's setup or now; otherwise
-   prepare the result and record the action needed from its owner. Tests, builds,
-   reads, and reruns need no go-ahead.
+   prepare the result and record the action needed from its owner.
 6. After delivery, evaluate the outcome over the agreed observation window and
    only once the new version has carried enough traffic to show the change. Check
    collateral metrics and affected cohorts. A local test or successful deployment

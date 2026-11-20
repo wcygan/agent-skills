@@ -17,8 +17,7 @@ Instance ownership means what a run started and may therefore stop: the process,
 port, test data, or environment it launched. A shared instance belongs to whoever
 started it and stays running.
 
-Starting and stopping an instance the run owns, retrying readiness, and rerunning
-a journey need no go-ahead. Get an explicit go-ahead before seeding a shared
+Get an explicit go-ahead before seeding a shared
 database or writing outside the skill directory, because both change state that
 other people or runs depend on.
 

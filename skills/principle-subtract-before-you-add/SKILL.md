@@ -13,22 +13,13 @@ metadata:
 
 # Subtract Before You Add
 
-When evolving a system, remove complexity first, then build. Default to subtraction.
+When evolving a system, remove complexity first, then build. Default to subtraction, and leave the design slightly simpler behind the same or smaller surface than you found it.
 
-Make simplification a continual investment. Leave the design slightly simpler and more capable behind the same or smaller surface than you found it.
+- Sequence removal before construction.
+- Cut before you polish: get to the minimum before investing in quality.
+- Design for observed usage, not speculative edge cases. Add no validators, parsers, or guards beyond what the spec demands.
+- In prompts and skills, remove redundant instructions and templates, and delete a reference file that has no novel content.
 
-- Sequence removal before construction
-- Cut before you polish (get to the minimum before investing in quality)
-- Design for observed usage, not speculative edge cases
-- Add no speculative validators, parsers, or guards beyond what the spec demands, because each one is code to maintain for a case nobody has seen
-
-**Scope the deletion to the task.** Dead code inside the task's area goes first. Dead code outside the task is an expansion: delete it and say so in the recap, or note it in the recap and leave it, so the diff does not widen silently.
-
-## When the artifact is a prompt or skill
-
-The same rule applies to instructions:
-
-- Simplify prompts: remove redundant instructions and excessive templates
-- When a reference file has no novel content, delete it rather than leaving a stub
+Dead code outside the task's area is an expansion: name it in the recap whether you delete it or leave it.
 
 Adapted from pstack; [license and attribution](references/LICENSE.txt).

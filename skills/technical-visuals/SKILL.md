@@ -138,5 +138,3 @@ contrast score. Retain editable source. Use the linked review commands when
 adapting a bundled demo; do not load every example or build an application when
 a small figure answers the question. End with the figure or its location, what
 was verified (themes, widths, states), what was not, and any open question.
-Posting the figure to a PR or page in the user's name needs an explicit
-go-ahead; rendering, screenshots, and local checks need none.

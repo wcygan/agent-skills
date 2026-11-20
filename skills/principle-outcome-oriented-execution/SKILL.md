@@ -13,22 +13,10 @@ metadata:
 
 # Outcome-Oriented Execution
 
-Optimize for the intended, verifiable end state rather than preserving smooth intermediate states.
+In a planned rewrite or migration with explicit phase boundaries, optimize for the intended, verifiable end state instead of keeping every intermediate state smooth. Compatibility code written to keep intermediate steps stable becomes long-lived debt.
 
-**Why:** Keeping every intermediate step fully stable often creates temporary compatibility code that becomes long-lived debt. Converge on the target architecture and prove correctness at explicit verification boundaries.
-
-**Core rule:**
-- Prioritize end-state integrity over transitional stability
-- Intermediate breakage is acceptable when it is planned, scoped, and reversible
-
-**Guardrails:**
-- Use this for planned rewrites and migrations with explicit phase boundaries
-- State where temporary breakage is acceptable in the plan, and repeat it in the progress update at each phase boundary, so the user can object before the break lands
-- Keep high-signal checks for actively touched areas while migrating
-- Require full static and runtime verification at plan completion
-
-**How this fits with sequencing verifiable units:** the sequence-verifiable-units principle skill still applies. Per-unit checks run on every touched area at every step. The only thing allowed to break is a compatibility shim (throwaway code that keeps old callers working during the migration), because the shim is deleted at plan completion and its breakage is planned in advance.
-
-For a multi-phase migration, post a progress update at each phase boundary and end with a self-contained recap that leads with the outcome: what converged, what is still broken by plan, and what verification ran.
+- Intermediate breakage is acceptable when it is planned, scoped, and reversible. State where it is acceptable in the plan and at each phase boundary, so the user can object before the break lands.
+- Keep high-signal checks on the areas being touched while migrating.
+- Require full static and runtime verification at plan completion.
 
 Adapted from pstack; [license and attribution](references/LICENSE.txt).

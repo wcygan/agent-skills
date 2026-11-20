@@ -13,22 +13,12 @@ metadata:
 
 # Foundational Thinking
 
-**Trigger:** you are about to write logic: a new feature, a module, a phase of a larger plan.
+Get the data shape right before writing logic. Define core types early, trace every access pattern, and choose structures that match the dominant paths. DRY the structure, not every line.
 
-**Rule:** decide the core types and the scaffold before the logic. Sequence work so that what every later step depends on exists first.
+Before sharing state between actors, ask what happens if another actor modifies it concurrently. If the answer is not "nothing", isolate.
 
-**Why:** logic written against the wrong data shape is rewritten when the shape changes; logic written against the right shape is mostly obvious. Scaffold that lands late (tests, CI, shared types) is paid for by every feature that shipped without it.
+Scaffold first. Whatever helps every later phase (CI, tests, shared types) goes first, after removing dead code. In an existing codebase, follow its types and scaffold instead of laying new ones beside them.
 
-**The sequencing decision:**
-1. **Subtract first.** Remove dead code, redundant validators, and stub references, so the foundation is laid on a simpler base. This is subtract-before-you-add.
-2. **Types and data structures next.** Define the core types early, trace every access pattern, and choose structures that match the dominant paths. How to pick them is model-the-domain: a state machine, typed model, or lookup table instead of scattered conditionals.
-3. **Scaffold next.** Ask "does every subsequent phase benefit from this existing?" If yes, build it before the first feature: CI, linting, test infrastructure, shared types. If only one phase benefits, it is a feature, not scaffold, and it waits its turn.
-4. **Then logic,** in small units that each end in a verifiable state. How to cut and order those units is sequence-verifiable-units.
-
-**Concurrency check, before step 2 is final:** for any state that more than one actor (process, worker, agent, request) might touch, ask "what happens if another actor modifies this concurrently?" If the answer is not "nothing," isolate it. The rule for that is separate-before-serializing-shared-state: eliminate the sharing first; serialize only when one shared writer is a real invariant.
-
-**Test:** when the types and scaffold are in place, does the next feature read as mostly obvious code? If it still needs special-case coordination spread across callers, the foundation is not done.
-
-**Scope:** this principle governs the *sequence* of work. Experience-first governs the *target*; foundations exist to serve it. For an existing codebase, the foundation is often already there: follow its types and scaffold rather than laying new ones beside them.
+The test: with the types and scaffold in place, does the next feature read as mostly obvious code?
 
 Adapted from pstack; [license and attribution](references/LICENSE.txt).

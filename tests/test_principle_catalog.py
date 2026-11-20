@@ -54,7 +54,7 @@ class PrincipleCatalogTests(unittest.TestCase):
                 self.assertEqual(license_path.read_bytes(), (ROOT / "skills/wcygan-mode/references/LICENSE.txt").read_bytes())
 
     def test_principle_links_resolve_inside_the_distributed_catalog(self) -> None:
-        paths = [INDEX, INDEX.with_name("parity.md")]
+        paths = [INDEX]
         paths.extend(ROOT / "skills" / f"principle-{name}" / "SKILL.md" for name in PARITY.NAMES)
         for path in paths:
             for target in links(path):

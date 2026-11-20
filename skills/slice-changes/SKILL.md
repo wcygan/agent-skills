@@ -41,9 +41,7 @@ Suggested compact output:
 For an already mixed diff, propose extraction boundaries and risks before rewriting
 history. Rebasing, force-pushing, or discarding work rewrites history the user may
 rely on, so do each only when the user asked for it; create branches only when the
-user asked for the split to be executed. Committing, pushing, or opening a pull
-request needs an explicit go-ahead, and a go-ahead given with the request covers
-the action it names. Keep any checkpoint the user set.
+user asked for the split to be executed.
 
 Done when the sequence is understandable, its intermediate states are viable, and
 verification covers each slice plus the integrated result. Report uncertainty where

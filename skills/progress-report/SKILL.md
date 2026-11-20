@@ -15,9 +15,8 @@ metadata:
 
 1. Establish the reporting window from the requested checkpoint or the user's
    previous message. Gather relevant changes and verify current status where
-   possible. Read-only commands (`git status`, `git log`, `git diff`, reading CI
-   results) and test reruns need no go-ahead; run them to confirm status rather
-   than reporting from memory.
+   possible: run read-only commands (`git status`, `git log`, `git diff`, reading
+   CI results) and test reruns rather than reporting from memory.
 2. Lead with what changed for the user. Distinguish completed, running, failed,
    and unchecked work; include older decisions still waiting on the user.
 3. Separate actions only the user can take from work you can continue. Give each

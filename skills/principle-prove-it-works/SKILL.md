@@ -13,20 +13,8 @@ metadata:
 
 # Prove It Works
 
-Verify every task output by checking the real thing directly. Inferring from proxies, self-reports, or "it compiles" leaves the work's correctness unknown.
+Verify every output by checking the real thing directly: run the feature, read the actual value, inspect the diff. Proxies (file mtimes, self-reports, cached output, "it compiles") do not count. When a check fails, check the observation method once, then trust the failure and investigate the system. When direct verification is impossible, say so in the recap with what you checked instead.
 
-**Why:** Indirect verification (file mtimes, output freshness, agent self-reports, cached screenshots) feels cheaper than direct observation. Acting on a wrong inference costs far more than checking the source.
-
-Check the real thing, not a proxy:
-- Check process liveness directly, not indirectly through derived state
-- Read the actual value, not a cached or derived representation
-- When a check fails, check the observation method once (right target, fresh data, correct command). If the method holds, trust the failure and investigate the system; re-checking the method again only delays the real fix.
-- When direct verification is impossible (no access, no environment, no way to run it), say so in the recap with what you checked instead. Stopping the work for it would lose everything that does not depend on the missing check.
-
-## Script the check when you can
-
-The strongest proof is a deterministic script that re-runs the same comparison, not a one-time eyeball. Write the script, run it, and keep its output as an artifact a reviewer can re-run instead of trusting your word.
-
-Keep the artifact visible for the human: leave it in the working tree or scratch space where the reviewer can run it. When the work is large enough that the trail has to be auditable later, like a big port or migration, keep it with the change and retain a decision log and evidence pointers.
+Script the check when you can. A deterministic script that reruns the comparison beats a one-time look. Keep its output where the human can see it, and keep it with the change only when the trail must be auditable later.
 
 Adapted from pstack; [license and attribution](references/LICENSE.txt).

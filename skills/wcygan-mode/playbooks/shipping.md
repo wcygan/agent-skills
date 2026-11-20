@@ -17,4 +17,4 @@ Land verified changes in dependency order.
 
 Complete with confirmed landed changes, verification evidence, and the next gap.
 Report a queued merge as queued until read-back confirms it landed. Land only the
-approved sequence; a further change needs its own go-ahead.
+approved sequence.

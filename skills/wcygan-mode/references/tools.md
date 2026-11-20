@@ -13,58 +13,12 @@ project environment outside installed skills and disable Python bytecode writes:
 export MODE_SCRIPTS=/absolute/path/to/wcygan-mode/scripts
 export UV_PROJECT_ENVIRONMENT="${XDG_CACHE_HOME:-$HOME/.cache}/wcygan-mode/venv"
 export PYTHONDONTWRITEBYTECODE=1
-uv run --locked --project "$MODE_SCRIPTS" python -B "$MODE_SCRIPTS/orchestrate.py" --help
+uv run --locked --project "$MODE_SCRIPTS" python -B "$MODE_SCRIPTS/watch_pr.py" --help
 ```
 
-Use that same command prefix for the other entrypoints. uv owns its cache and the
-external environment. Store data, activity evidence, and outputs belong in task
-locations outside the installation. Keep credentials out of arguments and
-records, because both end up in shell history and store files.
-The Python entrypoints also disable bytecode before importing their local modules.
-
-## Orchestration store
-
-```sh
-uv run --locked --project "$MODE_SCRIPTS" python -B "$MODE_SCRIPTS/orchestrate.py" --store /task/state init
-uv run --locked --project "$MODE_SCRIPTS" python -B "$MODE_SCRIPTS/orchestrate.py" --store /task/state unit add export --track backend --brief /task/export.md
-uv run --locked --project "$MODE_SCRIPTS" python -B "$MODE_SCRIPTS/orchestrate.py" --store /task/state --json status
-```
-
-`--store` also accepts `ORCH_STORE`. Put global options before the command.
-The command families retain upstream operations:
-
-- `unit add/set/get/list/counts`: bounded work and its state, branch, PR, SHA, brief.
-- `ledger record/check/summary`: verdicts keyed by PR and full commit SHA, with
-  evidence, verifier, and timestamp. Updating a key replaces its current verdict.
-- `inbox push/drain/count`: completion pointers; `drain --peek` is observational.
-- `gate park/list/resolve`: explicit decision gates. A default records a proposal;
-  the gate still waits for the user's resolution.
-- `standing add/show`: durable instructions.
-- `frontier set/show`: the PR base chain ending at the current repository branch.
-  `set --repo DIR --prs 1,2` optionally checks an expected order; `ORCH_REPO` is supported.
-- `status`: derive `status.md` from the current records.
-
-Run each command with `--help` for arguments. `--json` returns full JSON;
-otherwise output is indented JSON. Exit codes are 0 success, 1 invalid request,
-invalid state, or operation failure, and 2 missing record.
-
-Storage uses TSV units/ledger and JSON inbox/gates/standing/frontier, plus a
-rendered Markdown status. This is a new store format; it does not import an
-upstream store automatically. Back up old state before manual migration.
-
-Stores are single-host. A persistent OS lock prevents concurrent writers and is
-released automatically on process exit. Stale metadata from the same host is
-harmless; foreign or malformed ownership is rejected. `--force` is retained for
-argument compatibility but cannot steal a live or uncertain lock. Keep a store
-on a filesystem with known lock guarantees, because two writers could otherwise
-corrupt it.
-
-Draining validates all pending pointers, writes a durable copy under `drains/`,
-then clears the inbox atomically. Recovery copies survive successful drains too.
-After a crash, inspect the latest copies and deduplicate by the complete pointer
-before replaying; a crash between copy and clear can deliver a pointer twice.
-Reconcile artifact identity before applying a result, because a replayed pointer
-may describe a stale revision.
+Use that same command prefix for the other entrypoint. Activity evidence and
+outputs belong in task locations outside the installation. Keep credentials out
+of arguments, because they end up in shell history.
 
 ## Observe pull requests
 
@@ -106,15 +60,6 @@ Configured bot and gate annotations never override readiness requirements.
 
 Optional `--config FILE` accepts JSON lists `review_bots`, `review_gate_checks`,
 and `automation_check_tokens`. All default empty; no particular bot is required.
-
-## Validate a plan
-
-```sh
-uv run --locked --project "$MODE_SCRIPTS" python -B "$MODE_SCRIPTS/check_plan.py" /task/plan.md --json
-```
-
-Follow [plan format](plan-format.md). Returns 0 valid, 1 invalid, 2 unreadable file.
-A valid plan still needs semantic review and actual verification evidence.
 
 ## Audit worktrees
 

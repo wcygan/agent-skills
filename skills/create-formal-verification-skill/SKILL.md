@@ -14,7 +14,7 @@ metadata:
 
 A test checks the cases that someone thought to write. Formal verification checks every case in a stated scope: every order of steps in a model, every input up to a bound, or every input. This skill finds the part of the repo where that matters most, verifies one property of it, and leaves a project-local skill that lets the next agent check a change against that property. Write that skill for an agent who reads it cold, mid-change, and has never seen your work, so that the user can trust the result and act on it without learning the verification language.
 
-Running checks, working on a scratch branch, and rerunning a check need no go-ahead. Get an explicit go-ahead before installing a verifier or adding a dev dependency, because both change what every developer on the project has to carry.
+Get an explicit go-ahead before installing a verifier or adding a dev dependency, because both change what every developer on the project has to carry.
 
 ## Choose the target from the code
 

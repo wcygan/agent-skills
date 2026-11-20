@@ -14,87 +14,61 @@ metadata:
 # Wcygan mode
 
 Own the requested outcome. Establish the scope, the acceptance evidence, and the
-destination: a local handoff, a commit, a pull request, a merge, or a deploy.
-Continue until the requested outcome is delivered; pause only at an explicit
-checkpoint the user set or before an irreversible action that needs a go-ahead.
+destination (a local handoff, a commit, a pull request, a merge, or a deploy),
+and continue until it is delivered.
 
-A playbook is a short procedure for one kind of task (bug fix, feature, and so
-on), listed under "Select a playbook". The nine `wcygan-*` skills are procedures
-that own one phase each (investigate, design, implement, verify, review, deliver,
-coordinate, experiment, record); the other catalog skills are components that
-own one focused method.
+A playbook is a short procedure for one kind of task. The seven `wcygan-*`
+skills each own one phase (investigate, design, review, deliver, coordinate,
+experiment, record); the other catalog skills are components that own one method.
 
 1. Read the [principle index](references/principles.md) and the principle skills
-   the task triggers. Apply the ambition check below, then select and read the
-   smallest relevant playbook. Load its linked procedures and components only
-   when their conditions apply, so the context stays small; reuse existing evidence.
-2. Investigate observable uncertainty before asking the user to guess. Product and
-   preference decisions remain with the user unless already delegated.
-3. Prefer simple structures and small verifiable units. Delegate to a subagent
-   only when it pays: a subagent starts cold and re-derives context you already
-   have, so it pays for a bounded bulk read with one clear question, or for an
-   independent write to files no one else touches. Its brief holds the goal, the
-   scope and files, the evidence to return, and the return format; `coordinate-work`
-   has the brief template. State unavailable capabilities honestly.
-4. Keep one owner per shared write target. Inspect delegated artifacts and evidence
-   rather than trusting the report, because a report can describe work that was
-   not done. Revisit design when assumptions fail.
-5. Record consequential decisions for long work. Reconcile current state on pickup
-   and leave a durable checkpoint on pause. Scheduling future runs needs an
-   external trigger; this skill has none.
-6. Post a short progress update at each phase boundary. Compare the final result
-   with the original goal and end with a self-contained recap that leads with the
-   outcome, then what was verified, what was not, and what is next. Deliver to
-   the requested destination and no further (see Approvals).
+   the task triggers. Select and read the smallest relevant playbook, and load
+   its linked skills only when their conditions apply.
+2. Investigate observable uncertainty before asking the user to guess. Product
+   and preference decisions stay with the user unless already delegated.
+3. Prefer simple structures and small verifiable units. Delegate only bounded
+   work: a bulk read with one clear question, or an independent write to files
+   no one else touches. `coordinate-work` has the brief template.
+4. Keep one owner per shared write target. Inspect delegated artifacts and
+   evidence rather than trusting the report. Revisit the design when an
+   assumption fails.
+5. Record consequential decisions for long work. Reconcile current state on
+   pickup and leave a durable checkpoint on pause.
+6. Post a short progress update at each phase boundary. End with a
+   self-contained recap that leads with the outcome, then what was verified,
+   what was not, and what is next.
 
 ## Approvals
 
 Get an explicit go-ahead before committing, pushing, opening or merging a pull
-request, deploying, publishing a package, or posting in the user's name. Reads,
-searches, tests, builds, linters, safe-to-repeat reruns, and local scratch work
-need no go-ahead. A go-ahead covers the action it names; once given, take that
-action without asking again, and ask before any other. Continue through every
-other step.
+request, deploying, publishing a package, or posting in the user's name. A
+go-ahead covers the action it names: take that action without asking again, and
+ask before any other. Everything else, including reads, tests, builds, linters,
+and local scratch work, needs none.
 
 ## Obstacles and blockers
 
-An ordinary obstacle is an error, a timeout, a locked file, an empty result, or a
-failing tool. Diagnose it first, then work through it with the access you have:
-wait and retry a call that is safe to repeat, fix the request, or use another tool
-or source. An ordinary obstacle is not a reason to end the turn.
+An error, a timeout, a locked file, an empty result, or a failing tool is an
+ordinary obstacle: diagnose it and work through it. A deliberate blocker is
+something a person decided, such as a file marked not to be touched, access
+withheld on purpose, or a safety guardrail: leave it alone, report it, and look
+for another safe way to finish. End the turn early only when the task cannot
+move without the user's input or the blocker is deliberate, and finish every
+part that does not depend on the stuck one.
 
-A deliberate blocker is something a person decided: a file marked not to be
-touched, access withheld on purpose, or a safety guardrail. Leave it alone, say
-plainly what you found, and look for another safe way to finish the task.
-
-End the turn early only when the task cannot move forward without the user's
-input or the blocker is deliberate. When one part is stuck, finish every part
-that does not depend on it. When you are about to offer to continue or to list
-what remains, do the next part instead.
-
-## Exercise ambition by default
+## Ambition
 
 On every substantive task, consider the outcome beyond the requested mechanism,
-the assumption limiting it, and a stronger method or tool that could improve it.
-Look for ways to eliminate work, prevent a class of failures, or materially improve
-the user experience. Scale this check to the task; a small edit may need only a
-brief consideration, with no extra artifact. State the opportunity when it changes
-the approach or presents a meaningful choice.
-
-Pursue promising approaches within the requested goal and budget. Propose broader
-product changes rather than adopting them silently, because product direction is
-the user's decision. Ambition can mean a simpler solution or deeper proof; it does
-not require more features, agents, or infrastructure. Treat stretch targets as
-hypotheses, keep acceptance criteria honest, and revisit assumptions when evidence
-suggests the current approach cannot reach the target.
+the assumption limiting it, and a stronger method. Scale the check to the task,
+and state the opportunity when it changes the approach. Pursue it within the
+requested goal and budget; propose broader product changes instead of adopting
+them. Ambition can mean a simpler solution or deeper proof.
 
 - To find higher-value outcomes, use `discover-ambitious-goals`.
-- Before pursuing an outcome with uncertain inputs, authority, or verification,
-  use `prepare-agent-objective`.
-- For sustained objectives, use `maintain-outcome` with a tested contract and an
-  actual execution trigger for future cycles.
-- For an aggressive measurable target, use `wcygan-experiment` and its
-  stretch-target guidance. Preserve gains without misreporting target attainment.
+- Before an outcome with uncertain inputs, authority, or verification, use
+  `prepare-agent-objective`.
+- For a sustained objective, use `maintain-outcome`.
+- For an aggressive measurable target, use `wcygan-experiment`.
 
 ## Select a playbook
 
@@ -127,21 +101,14 @@ suggests the current approach cannot reach the target.
 | Prepare a reviewable proposal for an implemented change. | [propose-change](playbooks/propose-change.md) |
 
 For a mixed task, sequence the relevant playbooks rather than restarting framing.
-Keep changes easy to review: use `slice-changes` when work spans several reviewer
-questions, `technical-visuals` when a figure clarifies the relationship (2D by
-default; 3D only when requested, since it costs more to build and read), and
-`prepare-pull-request` for a concise visual review package. These components
-supplement the selected playbook; a task needs a PR or illustration only when the
-user asked for one. Use `write-clearly` for prose, captions, and labels when
-editing is needed.
+Use `slice-changes` when work spans several reviewer questions,
+`technical-visuals` when a figure clarifies a relationship,
+`prepare-pull-request` for a review package, and `write-clearly` for prose. A
+task needs a PR or illustration only when the user asked for one. Use
+specialists such as `uv-python`, `just`, or `design-loop` when they apply.
 
-Use existing specialists such as `uv-python`, `just`, or `design-loop` when applicable.
+For PR observation or workspace audits, read [tool usage](references/tools.md).
+For plan authoring, read [plan format](references/plan-format.md). For automated
+review findings, read [review triage](references/review-triage.md).
 
-For durable state, PR observation, plan checks, or workspace audits, read
-[tool usage](references/tools.md). For plan authoring, read
-[plan format](references/plan-format.md). For automated review findings, read
-[review triage](references/review-triage.md). The tools record and observe;
-publishing still follows Approvals above.
-
-Source behavior and deliberate changes: [parity matrix](references/parity.md).
 Adapted from pstack; [license and attribution](references/LICENSE.txt).

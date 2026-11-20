@@ -8,8 +8,7 @@ Checkpoint active work on an explicit pause or unavoidable interruption.
    evidence, unresolved decisions, and the next action using
    `wcygan-record`.
 3. Stop owned processes when safe; identify anything that could not be stopped.
-   Preserve files and proof. A pause needs no commit or publication; those need
-   their own go-ahead.
+   Preserve files and proof. A pause needs no commit or publication.
 4. Check that the checkpoint resolves to actual artifacts and survives session loss.
 
 Complete with a durable handoff and explicit remaining activity. Say that the

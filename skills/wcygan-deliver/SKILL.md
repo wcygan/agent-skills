@@ -13,16 +13,8 @@ metadata:
 
 # Deliver
 
-Read the shared [principle index](../wcygan-mode/references/principles.md) at entry and reconsider it as the work changes. Report each principle that changed a decision, with the specific choice it shaped.
-
-Read linked components only when their stated condition applies, so the context
-stays small. Keep the task's scope and any checkpoint the user set.
-
-Get an explicit go-ahead before committing, pushing, opening or merging a pull
-request, deploying, publishing a package, or posting in the user's name. A
-go-ahead covers the action it names; take that action without asking again and
-ask before any other. Reads, tests, builds, linters, status polling, and local
-scratch work need no go-ahead.
+Read the [principle index](../wcygan-mode/references/principles.md) first. Load a
+component named below only when its condition applies.
 
 1. Establish the destination (local handoff, commit, pull request, merge, or
    deploy) and the current artifact. Reuse existing evidence only while it covers
@@ -40,7 +32,6 @@ scratch work need no go-ahead.
    a status update. Include evidence, operational steps, and remaining limitations.
 
 Done when the requested destination is confirmed or the precise blocking condition
-is reported. Report a proposal, a queued operation, and a completed publication as
-different states, because each leaves the change in a different place.
+is reported.
 
 Adapted from pstack; [license and attribution](references/LICENSE.txt).

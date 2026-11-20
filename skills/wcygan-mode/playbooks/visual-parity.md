@@ -6,9 +6,9 @@ Verify visual and interaction equivalence between implementations.
    Capture the reference before changing the implementation.
 2. List representative journeys, responsive states, and consequential interactions.
    Identify intentional differences rather than silently excluding mismatches.
-3. Make bounded changes using `wcygan-implement`, then
+3. Make bounded changes using `implement-change`, then
    compare captured outputs under the same conditions. Inspect meaningful differences.
-4. Follow `wcygan-verify`, including keyboard/focus behavior
+4. Follow `verify-behavior`, including keyboard/focus behavior
    and side effects where relevant. Preserve reference and resulting evidence.
 
 Complete with the comparison method, observed differences, and coverage. Report

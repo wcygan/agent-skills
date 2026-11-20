@@ -9,9 +9,9 @@ Coordinate a sustained project across multiple work units.
    recurring health or performance objectives through
    `maintain-outcome`; an active execution trigger is needed
    for automatic future cycles.
-2. For durable coordination, initialize the Python store described in
-   [tools](../references/tools.md) outside installed skills. Record instructions,
-   units, verification evidence, unresolved gates, and current artifact identities.
+2. For durable coordination, keep a `decision-log` outside installed skills.
+   Record instructions, units, verification evidence, unresolved gates, and
+   current artifact identities.
 3. Pilot one unit through execution, verification, integration, and the requested
    delivery stage before expanding. Fix weaknesses in the brief or proof method first.
 4. Give each worker a self-contained brief, because a worker starts cold and
@@ -26,5 +26,5 @@ Coordinate a sustained project across multiple work units.
 6. On restart, reconcile live artifacts and owners with stored claims before dispatch.
 
 Complete with every required unit accounted for, integrated evidence, and durable
-handoff state. Inspect the evidence a ledger entry points to, because the entry
+handoff state. Inspect the evidence a log entry points to, because the entry
 only records a claim.

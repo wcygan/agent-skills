@@ -21,8 +21,7 @@ metadata:
    rather than missing setup or a different error. Record the failing evidence.
 4. Fix the cause when the request asked for a fix or a later go-ahead named one;
    a reproduction-only request ends with the reproduction and diagnosis. Rerun
-   the same check after the fix; rerunning is safe to repeat and needs no
-   go-ahead. Keep expected behavior intact, because a test that passes after its
+   the same check after the fix. Keep expected behavior intact, because a test that passes after its
    assertion was weakened proves nothing about the fix.
 5. Check nearby contracts affected by the fix. For intermittent failures, record
    repetition counts and residual uncertainty, because one pass of a flaky check

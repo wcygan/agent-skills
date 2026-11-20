@@ -45,10 +45,10 @@ frontmatter and focused descriptions; selection behavior belongs to the host.
 | [in-your-own-words](../skills/in-your-own-words/SKILL.md) | component | `skills/in-your-own-words` |
 | [no-comments](../skills/no-comments/SKILL.md) | component | `skills/no-comments`, `agents/comment-sicko.md` |
 | [clarify-task](../skills/clarify-task/SKILL.md) | component | `skills/sharpen`, `skills/in-your-own-words`, `skills/figure-it-out` |
-| [implement-change](../skills/implement-change/SKILL.md) | component | `skills/poteto-mode/playbooks/feature.md`, `skills/poteto-mode/playbooks/refactoring.md` |
+| [implement-change](../skills/implement-change/SKILL.md) | component | `skills/poteto-mode/playbooks/feature.md`, `skills/poteto-mode/playbooks/refactoring.md`, `skills/tdd` |
 | [reproduce-bug](../skills/reproduce-bug/SKILL.md) | component | `skills/tdd` |
 | [assess-impact](../skills/assess-impact/SKILL.md) | component | `skills/blast-radius` |
-| [verify-behavior](../skills/verify-behavior/SKILL.md) | component | `skills/principle-prove-it-works`, `skills/figure-it-out`, `skills/create-verification-skill` |
+| [verify-behavior](../skills/verify-behavior/SKILL.md) | component | `skills/principle-prove-it-works`, `skills/figure-it-out`, `skills/create-verification-skill`, `skills/maintain-verification-skill` |
 | [measure-performance](../skills/measure-performance/SKILL.md) | component | `skills/benchmark-checklist`, `skills/poteto-mode/playbooks/hillclimb.md` |
 | [coordinate-work](../skills/coordinate-work/SKILL.md) | component | `skills/swarm`, `skills/poteto-mode/playbooks/orchestrate.md` |
 | [decision-log](../skills/decision-log/SKILL.md) | component | `skills/show-me-your-work` |
@@ -63,8 +63,6 @@ frontmatter and focused descriptions; selection behavior belongs to the host.
 | [write-clearly](../skills/write-clearly/SKILL.md) | component | `skills/unslop`, `skills/technical-writing`, `skills/bro` |
 | [wcygan-investigate](../skills/wcygan-investigate/SKILL.md) | procedure | `skills/how`, `skills/why`, `skills/recall` |
 | [wcygan-design](../skills/wcygan-design/SKILL.md) | procedure | `skills/architect`, `skills/arena`, `skills/interrogate` |
-| [wcygan-implement](../skills/wcygan-implement/SKILL.md) | procedure | `skills/poteto-mode/playbooks/feature.md`, `skills/poteto-mode/playbooks/refactoring.md`, `skills/tdd` |
-| [wcygan-verify](../skills/wcygan-verify/SKILL.md) | procedure | `skills/create-verification-skill`, `skills/maintain-verification-skill`, `skills/principle-prove-it-works` |
 | [wcygan-review](../skills/wcygan-review/SKILL.md) | procedure | `skills/interrogate`, `skills/blast-radius` |
 | [wcygan-experiment](../skills/wcygan-experiment/SKILL.md) | procedure | `skills/benchmark-checklist`, `skills/arena`, `skills/figure-it-out` |
 | [wcygan-coordinate](../skills/wcygan-coordinate/SKILL.md) | procedure | `skills/swarm`, `skills/figure-it-out`, `skills/poteto-mode/playbooks/orchestrate.md` |
@@ -135,25 +133,24 @@ Each skill records that exact revision, author, and path in its metadata and
 includes the upstream MIT notice in `references/LICENSE.txt`.
 
 The [complete mapping](../docs/pstack-principles.md) enumerates every leaf.
-Seventeen bodies retain the original text; seven remove unavailable dependencies
-or preserve host authorization with targeted edits. Portable frontmatter and an
-attribution footer are added to all leaves. The [principle parity matrix](../skills/wcygan-mode/references/parity.md#principle-catalog)
-records the exceptions; [the source checker](../tools/check_principle_parity.py)
-verifies all text against the immutable source and explicit replacement list.
+All 24 bodies are locally revised. Portable frontmatter and an attribution
+footer are added to all leaves. The [principle parity matrix](../docs/pstack-parity.md#principle-catalog)
+records the revisions; [the provenance checker](../tools/check_principle_parity.py)
+verifies each leaf's name, source metadata, and footer.
 These skills have no `.vendored` markers or synchronization-lock entries.
 
-Wcygan-mode and its nine procedures load one shared index and name principles
+Wcygan-mode and its seven procedures load one shared index and name principles
 only when they changed a specific choice. These routing additions are local;
 the original procedure, playbook, and tool source revisions remain unchanged.
 
 ## Orchestrator and Python tools
 
-`wcygan-mode` adapts the source entrypoint and all 23 playbooks. Its four Python
-entrypoints and shared modules adapt the upstream orchestration store, PR watcher,
-plan checker, worktree audit, and their tests at the same pinned revision.
+`wcygan-mode` adapts the source entrypoint and all 23 playbooks. Its two Python
+entrypoints and shared modules adapt the upstream PR watcher, worktree audit, and
+their tests at the same pinned revision.
 The upstream MIT notice is included in the skill and applies to these adaptations.
 
-See the [behavior matrix](../skills/wcygan-mode/references/parity.md) for every
+See the [behavior matrix](../docs/pstack-parity.md) for every
 script capability, retained interfaces, and deliberate changes. Runtime code is
 Python 3.11+ using uv and the standard library. Git and `gh` remain integrations;
 Bun, TypeScript, shell implementations, Origin CLI support, and harness-specific

@@ -69,5 +69,4 @@ Do not report rules merely read or considered.
 
 These leaves keep Pstack's names; most bodies are locally revised. The index
 selects principles; playbooks and procedures supply the methods. Principles do
-not require every method on every task. For which leaves still match the source
-and which are local, see the [parity matrix](parity.md#principle-catalog).
+not require every method on every task.

@@ -44,7 +44,7 @@ choices made during the migration, including their costs and remaining limits.
    than literal platform compatibility.
 6. We fixed the upstream revision before implementing the orchestrator and tools.
    The source implementation and tests informed the
-   [capability matrix](../skills/wcygan-mode/references/parity.md); controlled
+   [capability matrix](pstack-parity.md); controlled
    behavioral tests and installation checks then checked the local implementation.
 
 ### Architecture and instruction decisions
@@ -105,7 +105,7 @@ equivalent agent behavior in different environments.
 playbook, preserves scope across phases, and judges completion against evidence.
 Its 23 Markdown playbooks reuse the procedures below. Python tools support durable
 state and observation; see [tool usage](../skills/wcygan-mode/references/tools.md)
-and [script parity](../skills/wcygan-mode/references/parity.md).
+and [script parity](pstack-parity.md).
 
 **Components** perform one focused job and can be used independently. They describe
 what to investigate, decide, produce, or verify, with explicit completion criteria.
@@ -161,7 +161,7 @@ and `interrogate`. Their replacements are `explain-code`, `design-options`,
 
 ## Procedural skills and their components
 
-These nine procedures are local compositions. They organize the adapted methods
+These seven procedures are local compositions; two more were later merged into `implement-change` and `verify-behavior`. They organize the adapted methods
 by the user's task. `wcygan-mode` now composes them without installing a persistent
 global mode.
 The listed components are available branches, not steps that always run.
@@ -170,8 +170,6 @@ The listed components are available branches, not steps that always run.
 | --- | --- | --- |
 | [wcygan-investigate](../skills/wcygan-investigate/SKILL.md) | Behavior, history, and constraints | [clarify-task](../skills/clarify-task/SKILL.md), [recover-context](../skills/recover-context/SKILL.md), [explain-code](../skills/explain-code/SKILL.md), [explain-history](../skills/explain-history/SKILL.md), [assess-impact](../skills/assess-impact/SKILL.md) |
 | [wcygan-design](../skills/wcygan-design/SKILL.md) | Alternatives, structure, and interfaces | [explain-code](../skills/explain-code/SKILL.md), [explain-history](../skills/explain-history/SKILL.md), [design-options](../skills/design-options/SKILL.md), [compare-solutions](../skills/compare-solutions/SKILL.md), [review-changes](../skills/review-changes/SKILL.md) |
-| [wcygan-implement](../skills/wcygan-implement/SKILL.md) | Small changes and integrated verification | [explain-code](../skills/explain-code/SKILL.md), [design-options](../skills/design-options/SKILL.md), [reproduce-bug](../skills/reproduce-bug/SKILL.md), [implement-change](../skills/implement-change/SKILL.md), [coordinate-work](../skills/coordinate-work/SKILL.md), [verify-behavior](../skills/verify-behavior/SKILL.md), [prevent-recurrence](../skills/prevent-recurrence/SKILL.md) |
-| [wcygan-verify](../skills/wcygan-verify/SKILL.md) | Acceptance evidence and reusable verification guidance | [create-verification-skill](../skills/create-verification-skill/SKILL.md), [maintain-verification-skill](../skills/maintain-verification-skill/SKILL.md), [verify-behavior](../skills/verify-behavior/SKILL.md) |
 | [wcygan-review](../skills/wcygan-review/SKILL.md) | Correctness, impact, and tradeoffs | [explain-code](../skills/explain-code/SKILL.md), [review-changes](../skills/review-changes/SKILL.md), [assess-impact](../skills/assess-impact/SKILL.md), [verify-behavior](../skills/verify-behavior/SKILL.md) |
 | [wcygan-experiment](../skills/wcygan-experiment/SKILL.md) | Fair comparisons and bounded experiments | [clarify-task](../skills/clarify-task/SKILL.md), [compare-solutions](../skills/compare-solutions/SKILL.md), [measure-performance](../skills/measure-performance/SKILL.md), [decision-log](../skills/decision-log/SKILL.md) |
 | [wcygan-coordinate](../skills/wcygan-coordinate/SKILL.md) | Ownership, dependencies, and integration | [clarify-task](../skills/clarify-task/SKILL.md), [coordinate-work](../skills/coordinate-work/SKILL.md), [decision-log](../skills/decision-log/SKILL.md), [recover-context](../skills/recover-context/SKILL.md), [verify-behavior](../skills/verify-behavior/SKILL.md), [progress-report](../skills/progress-report/SKILL.md) |
@@ -190,7 +188,7 @@ The listed components are available branches, not steps that always run.
 | `teach` | No dedicated teaching workflow was added. Investigation and clear-writing components cover parts of explanation, without promising the upstream visual teaching flow. |
 | `make-bot-ui` and the separate Benny automation pack | Omitted. No webhook, bot, messaging, secrets, or hosted automation integration is included. |
 | 24 `principle-*` skills | Originally omitted as standalone skills. Now imported with original names and closely preserved rules, a shared index, and routing from wcygan-mode and all nine procedures. See the [principle mapping](pstack-principles.md). |
-| Poteto Mode playbooks | All 23 now have generic Markdown counterparts. Six have plainer filenames; see the [playbook mapping](../skills/wcygan-mode/references/parity.md#playbook-mapping). Runtime capabilities remain conditional. |
+| Poteto Mode playbooks | All 23 now have generic Markdown counterparts. Six have plainer filenames; see the [playbook mapping](pstack-parity.md#playbook-mapping). Runtime capabilities remain conditional. |
 | Agent definitions | Omitted. No fixed model roster, custom agent registration, or scheduler is installed. |
 | Runtime helper scripts | Reimplemented in Python with uv: orchestration records, PR/stack watching, generic plan validation, and observational worktree auditing. |
 

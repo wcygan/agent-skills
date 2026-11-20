@@ -13,25 +13,12 @@ metadata:
 
 # Model the Domain
 
-**Trigger:** you are writing stateful logic, or the code branches a lot, or the same shape assumption is repeated across files.
+Encode the domain in a data structure instead of scattering it across conditionals. The right structure makes invalid states unrepresentable and deletes branches.
 
-**Rule:** encode the real domain in a data structure (a state machine, a typed model, a lookup table) instead of scattering it across conditionals.
+Reach for a state machine instead of scattered booleans or phase checks, a typed model instead of loose parameters, a map, registry, or discriminated union instead of branching spread across files, a reducer instead of ad hoc mutations, and an index, queue, or normalized collection where the access pattern calls for it. Organize a module around one body of domain knowledge, not a sequence such as load, validate, transform, and save.
 
-**Why:** a structure that matches the domain makes invalid states unrepresentable and deletes branches. Choosing it at write time is cheap. Recovering it later reads as a refactor and gets deferred.
+Do not force it. Keep boring code when the shape is clear, local, and unlikely to grow, and distrust an abstraction that adds indirection without removing branches or invalid states.
 
-Reach for:
-
-- A state machine instead of scattered booleans, phases, or lifecycle checks.
-- A typed model instead of loose parameters or repeated shape assumptions.
-- A map, registry, lookup table, or discriminated union instead of branching spread across files.
-- A reducer or command/event model instead of ad hoc state mutations.
-- A module organized around one body of domain knowledge instead of a sequence such as load, validate, transform, and save. Execution order is not ownership.
-- A small module boundary that gathers repeated behavior, ownership, or invariants.
-- A queue, cache, index, graph, tree, or normalized collection where the access pattern calls for it.
-- Any other structure that fits. When none fits, work out what the code must never allow and how the data gets read, then find the structure that encodes exactly that.
-
-Do not force an abstraction. Prefer boring code if the current shape is already clear, local, and unlikely to grow, because an abstraction has to pay for its indirection. Be skeptical of one that adds indirection without removing branches, duplicated rules, invalid states, or lifecycle risk.
-
-The sign that you skipped this is a new feature that grows an existing if/else chain by one more branch, or a second boolean that must stay in sync with the first. Temporal decomposition is another sign: phase-named modules repeat the same domain rules across steps.
+The sign that you skipped this: a feature that grows an if/else chain by one more branch, or a second boolean that must stay in sync with the first.
 
 Adapted from pstack; [license and attribution](references/LICENSE.txt).

@@ -1,7 +1,7 @@
 [project]
 name = "wcygan-mode-tools"
 version = "0.1.0"
-description = "Portable orchestration, verification, and repository observation tools"
+description = "Portable pull request and worktree observation tools"
 requires-python = ">=3.11"
 dependencies = []
 

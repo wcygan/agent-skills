@@ -13,7 +13,7 @@ Explain a system, behavior, or change through a concise visual artifact.
    when present. Use `write-clearly` for labels
    and the short caption; preserve qualifications and evidence.
 4. Deliver the requested artifact. For a PR, incorporate it through
-   `prepare-pull-request`; opening or updating the PR needs its go-ahead.
+   `prepare-pull-request`.
 
 Complete with the editable artifact, requested preview, source/evidence context,
 and any unverified behavior, since a conceptual visual shows intent rather than

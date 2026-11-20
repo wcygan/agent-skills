@@ -31,7 +31,5 @@ metadata:
 
 Done when another reader can reconstruct important choices and their outcomes,
 including abandoned approaches and uncertainty. Preserve the log through cleanup.
-Writing and editing the log locally needs no go-ahead; get an explicit go-ahead
-before committing, pushing, or publishing it.
 
 Adapted from pstack; [license and attribution](references/LICENSE.txt).

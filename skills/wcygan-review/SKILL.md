@@ -13,10 +13,8 @@ metadata:
 
 # Review
 
-Read the shared [principle index](../wcygan-mode/references/principles.md) at entry and reconsider it as the work changes. Report each principle that changed a decision, with the specific choice it shaped.
-
-Read linked components only when their stated condition applies, so the context
-stays small. Keep the task's scope and any checkpoint the user set.
+Read the [principle index](../wcygan-mode/references/principles.md) first. Load a
+component named below only when its condition applies.
 
 1. Fix the review scope, intent, and artifact version. Use `explain-code` where
    surrounding behavior is unclear.
@@ -27,11 +25,9 @@ stays small. Keep the task's scope and any checkpoint the user set.
    when checks cannot run.
 4. Present prioritized findings, impact, evidence, disagreements, and limitations.
    Continue into corrections only when they were also requested; a review-only
-   request wants findings, so edits would exceed it. Posting a review comment in
-   the user's name needs an explicit go-ahead.
+   request wants findings, so edits would exceed it.
 
 Done when material findings have a reasoned disposition and the verdict describes
-what was actually inspected or exercised. Agreement among reviewers is a signal,
-not proof, because they can share a blind spot.
+what was actually inspected or exercised.
 
 Adapted from pstack; [license and attribution](references/LICENSE.txt).

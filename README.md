@@ -1,7 +1,7 @@
 # agent-skills
 
 A public Agent Skills catalog with 1 orchestrator, 24 engineering principles,
-33 focused components, 9 procedural skills, and 8 specialist skills.
+33 focused components, 7 procedural skills, and 8 specialist skills.
 Components work independently. Procedures load only
 the components needed for the task, using relative links within the catalog.
 
@@ -9,11 +9,10 @@ the components needed for the task, using relative links within the catalog.
 
 [wcygan-mode](skills/wcygan-mode/SKILL.md) selects and sequences workflows for an
 end-to-end task. It includes 25 generic Markdown playbooks and Python tools for
-orchestration state, PR observation, plan validation, and worktree audits.
-Read its [tool usage](skills/wcygan-mode/references/tools.md) for uv commands and
-external environment placement, and its
-[parity matrix](skills/wcygan-mode/references/parity.md) for upstream behavior and
-intentional changes. GitHub observation uses Git and authenticated `gh`; the
+PR observation and worktree audits. Read its
+[tool usage](skills/wcygan-mode/references/tools.md) for uv commands and external
+environment placement, and the [parity matrix](docs/pstack-parity.md) for
+upstream behavior and intentional changes. GitHub observation uses Git and authenticated `gh`; the
 playbooks assume no particular agent harness or model.
 
 Wcygan-mode considers ambition on every substantive task: a more valuable outcome,
@@ -28,7 +27,7 @@ and resource budgets remain explicit; ongoing operation requires a real trigger.
 The [principle index](skills/wcygan-mode/references/principles.md) gives all 24
 Pstack engineering principles their original names and task triggers. Each is a
 standalone `principle-*` skill, preserving the original rule as closely as possible.
-Wcygan-mode and all nine procedures read the shared index, load relevant leaves,
+Wcygan-mode and all seven procedures read the shared index, load relevant leaves,
 and name each principle that changed a decision together with that specific choice.
 
 Steer with a name such as “Subtract Before You Add,” or invoke a leaf directly as
@@ -46,8 +45,6 @@ or delegation API.
 | --- | --- |
 | [wcygan-investigate](skills/wcygan-investigate/SKILL.md) | Understand behavior and history. |
 | [wcygan-design](skills/wcygan-design/SKILL.md) | Compare structures and define interfaces. |
-| [wcygan-implement](skills/wcygan-implement/SKILL.md) | Make small changes with clear ownership. |
-| [wcygan-verify](skills/wcygan-verify/SKILL.md) | Check real results against requirements. |
 | [wcygan-review](skills/wcygan-review/SKILL.md) | Challenge correctness and tradeoffs with independent scrutiny where available. |
 | [wcygan-experiment](skills/wcygan-experiment/SKILL.md) | Measure alternatives with a fair, repeatable method. |
 | [wcygan-coordinate](skills/wcygan-coordinate/SKILL.md) | Divide work, manage dependencies, and integrate results. |

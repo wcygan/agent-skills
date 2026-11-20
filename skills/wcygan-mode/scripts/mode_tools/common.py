@@ -1,12 +1,10 @@
-"""Shared process and durable-file boundaries. See ../../references/LICENSE.txt."""
+"""Shared process and file-reading boundaries. See ../../references/LICENSE.txt."""
 
 import argparse
 import json
 import math
-import os
 from pathlib import Path
 import subprocess
-import tempfile
 from datetime import datetime, timezone
 
 
@@ -73,31 +71,6 @@ def decode(raw):
         raise ToolError("malformed JSON") from exc
 
 
-def atomic(path, text):
-    path = Path(path)
-    if path.is_symlink():
-        raise ToolError(f"refusing symlink: {path}")
-    fd, temporary = tempfile.mkstemp(prefix="." + path.name, dir=path.parent)
-    try:
-        with os.fdopen(fd, "w") as stream:
-            stream.write(text)
-            stream.flush()
-            os.fsync(stream.fileno())
-        os.replace(temporary, path)
-        directory = os.open(path.parent, os.O_RDONLY)
-        try:
-            os.fsync(directory)
-        finally:
-            os.close(directory)
-    finally:
-        if os.path.exists(temporary):
-            os.unlink(temporary)
-
-
-def write_json(path, value):
-    atomic(path, json.dumps(value, indent=2, ensure_ascii=False) + "\n")
-
-
 def read_json(path):
     try:
         if Path(path).is_symlink():
@@ -105,20 +78,6 @@ def read_json(path):
         return decode(Path(path).read_text())
     except FileNotFoundError as exc:
         raise Missing(f"missing file: {path}") from exc
-
-
-def text_cell(value, label="value", empty=False):
-    if (
-        not isinstance(value, str)
-        or (not empty and not value.strip())
-        or any(c in value for c in "\t\r\n\x00")
-    ):
-        raise ToolError(
-            f"{label} must be a single nonempty text cell"
-            if not empty
-            else f"invalid {label}"
-        )
-    return value
 
 
 def emit(value, pretty=False):

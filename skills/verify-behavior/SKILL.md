@@ -1,12 +1,12 @@
 ---
 name: verify-behavior
-description: "Check actual results against acceptance criteria and keep the evidence. Use before claiming that a feature, fix, refactor, or other artifact works, for a smoke test, QA pass, or end-to-end check of a change."
+description: "Check actual results against acceptance criteria on the real artifact and keep the evidence. Use to verify a completed change, confirm a fix works, or before claiming that a feature, refactor, or other artifact works; for a smoke test, QA pass, or end-to-end check of an application journey."
 license: MIT
 metadata:
   kind: component
   upstream-repository: https://github.com/cursor/plugins
   upstream-revision: 1e5c90a4b6f249917bd21fe361b3a2a7deb741b8
-  upstream-path: pstack/skills/principle-prove-it-works; pstack/skills/figure-it-out; pstack/skills/create-verification-skill
+  upstream-path: pstack/skills/principle-prove-it-works; pstack/skills/figure-it-out; pstack/skills/create-verification-skill; pstack/skills/maintain-verification-skill
   upstream-author: Lauren Tan
   maintenance: local
 ---
@@ -19,8 +19,13 @@ someone else started is theirs; use it, but leave it running and its data in pla
 
 1. List the acceptance criteria and identify the exact artifact or revision under
    test. Match each criterion to an observable result on the relevant surface.
-2. Use the project's established checks and real entry points. Check prerequisites,
-   instance ownership, and readiness before exercising behavior.
+2. Use the project's established checks and real entry points, including any
+   project verification skill that covers the journey. When repeated work needs
+   reusable guidance, use `create-verification-skill` if none exists and
+   `maintain-verification-skill` if it is stale; a one-off check needs neither.
+   When a property must hold for every case in a stated scope and formal
+   verification is requested, use `create-formal-verification-skill`. Check
+   prerequisites, instance ownership, and readiness before exercising behavior.
 3. Exercise representative success and failure paths, including the consequential
    boundaries the change touches. Check resulting side effects as well as output.
 4. Retain the actions, results, and artifact identity as evidence. Inspect artifacts
@@ -34,13 +39,10 @@ someone else started is theirs; use it, but leave it running and its data in pla
    resources alone since other work may depend on them. Confirm the proof
    artifacts survive cleanup.
 
-Running checks, starting and stopping an instance the run owns, retrying
-readiness, and rerunning a check need no go-ahead. Continue unless a criterion
-cannot be exercised at all; report that blocker (the missing environment,
-prerequisite, or access) when it stops you.
+Continue unless a criterion cannot be exercised at all; report that blocker (the
+missing environment, prerequisite, or access) when it stops you. A verification
+skill counts as proof only for the journeys run in this check.
 
-Done when every acceptance criterion has an evidenced disposition. Report an
-inconclusive check as a gap rather than a pass, because a gap reported as a pass
-hides the missing check from the next reader.
+Done when every acceptance criterion has an evidenced disposition.
 
 Adapted from pstack; [license and attribution](references/LICENSE.txt).

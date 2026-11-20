@@ -7,6 +7,11 @@ store-format, or exact JSON-schema compatibility with the upstream tools.
 
 ## Script capability matrix
 
+The orchestration store (`orchestrate.py`, `mode_tools/store.py`) and the plan
+checker (`check_plan.py`) were removed on 2026-11-20, after upstream deleted the
+sources they were ported from (cursor/plugins#1043 and #1249). Their rows below
+record the retired port.
+
 | Upstream source / capability | Python location | Treatment |
 | --- | --- | --- |
 | `orch/orch.ts`: init, unit add/set/get/list/counts | `orchestrate.py`, `mode_tools/store.py` | Preserved, with the same command families and unit fields. |
@@ -72,27 +77,19 @@ descriptions, and rules at revision `afd51cf66a3100a95f878d6c4b93a01f6508e3b0`.
 This later source applies to the principles only; the playbooks and tools retain
 their original revision. Each leaf records its own source and MIT notice.
 
-Type System Discipline keeps its pinned body except for two references to a
-TypeScript specialist that is not in this catalog; those now name language idioms.
-The other 23 principles are locally revised. Their bodies state the trigger and
-rule first, give concrete tests, and carry the catalog's approval and delegation
-rules with each absolute's reason. Encode Lessons in Structure, Exhaust the Design
-Space, Guard the Context Window, and Laziness Protocol were pinned fragments or
-stubs and are now complete local bodies. The checker lists these principles in
-`LOCALLY_REVISED` in `tools/check_principle_parity.py`; for them it verifies only
-the name, upstream provenance, and attribution footer, so body changes are
-intentional and reviewable here.
-
-| Principle | Local adaptation |
-| --- | --- |
-| Type System Discipline | Replace the unavailable TypeScript specialist dependency with language idioms; retain all original examples and type-design rules. |
+All 24 principles are locally revised. Each body states the rule and the test
+that decides a case, following upstream's later shortening
+(cursor/plugins#1249). Attack the Premise, Fix Root Causes, and Test Behavior Not
+Implementation follow upstream's restatement of bans as reasoning
+(cursor/plugins#633). `tools/check_principle_parity.py` verifies each leaf's
+name, upstream provenance, and attribution footer.
 
 All leaves use portable Agent Skills frontmatter with source metadata, omitting
 Pstack's host-specific `disable-model-invocation` field. No aliases or synchronization
 lock entries are added. Individual principles are usable without invoking a workflow;
 cross-principle links supply optional context rather than missing implementation steps.
 
-The [shared index](principles.md) is read by wcygan-mode and all nine procedural
+The [shared index](../skills/wcygan-mode/references/principles.md) is read by wcygan-mode and all seven procedural
 entrypoints. It selects relevant leaves, preserves project contracts, and requires
 each applied principle to be named together with the specific decision it changed.
 The existing playbooks and components supply methods without duplicating the rules.

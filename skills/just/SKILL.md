@@ -32,7 +32,7 @@ and possible side effects are known.
 
 - Continue the requested change once the cause is understood; stay read-only only when the request is explicitly review-only.
 - Inspect an unfamiliar recipe before running it, because its body may deploy, delete, or reset state.
-- Running a recipe that deploys, publishes, commits, pushes, or changes user state needs an explicit go-ahead; a go-ahead given with the request covers the action it names. Reads, tests, builds, linters, and reruns of those need none.
+- Running a recipe that deploys, publishes, commits, pushes, or changes user state needs an explicit go-ahead.
 - Keep the underlying tool as the source of command behavior, so a recipe change never silently changes what the tool does.
 - Keep secrets in process environment variables, because substitutions echo into logs and tracked files.
 
