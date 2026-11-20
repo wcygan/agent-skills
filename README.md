@@ -1,7 +1,7 @@
 # agent-skills
 
 A public Agent Skills catalog with 1 orchestrator, 24 engineering principles,
-33 focused components, 7 procedural skills, and 8 specialist skills.
+31 focused components, 9 procedural skills, and 8 specialist skills.
 Components work independently. Procedures load only
 the components needed for the task, using relative links within the catalog.
 
@@ -10,8 +10,7 @@ the components needed for the task, using relative links within the catalog.
 [wcygan-mode](skills/wcygan-mode/SKILL.md) selects and sequences workflows for an
 end-to-end task. It includes 25 generic Markdown playbooks and Python tools for
 PR observation and worktree audits. Read its
-[tool usage](skills/wcygan-mode/references/tools.md) for uv commands and external
-environment placement, and the [parity matrix](docs/pstack-parity.md) for
+[tool usage](skills/wcygan-mode/references/tools.md) for commands, and the [parity matrix](docs/pstack-parity.md) for
 upstream behavior and intentional changes. GitHub observation uses Git and authenticated `gh`; the
 playbooks assume no particular agent harness or model.
 
@@ -27,7 +26,7 @@ and resource budgets remain explicit; ongoing operation requires a real trigger.
 The [principle index](skills/wcygan-mode/references/principles.md) gives all 24
 Pstack engineering principles their original names and task triggers. Each is a
 standalone `principle-*` skill, preserving the original rule as closely as possible.
-Wcygan-mode and all seven procedures read the shared index, load relevant leaves,
+Wcygan-mode and all nine procedures read the shared index, load relevant leaves,
 and name each principle that changed a decision together with that specific choice.
 
 Steer with a name such as “Subtract Before You Add,” or invoke a leaf directly as
@@ -45,6 +44,8 @@ or delegation API.
 | --- | --- |
 | [wcygan-investigate](skills/wcygan-investigate/SKILL.md) | Understand behavior and history. |
 | [wcygan-design](skills/wcygan-design/SKILL.md) | Compare structures and define interfaces. |
+| [implement-change](skills/implement-change/SKILL.md) | Make small changes with clear ownership. |
+| [verify-behavior](skills/verify-behavior/SKILL.md) | Check real results against requirements. |
 | [wcygan-review](skills/wcygan-review/SKILL.md) | Challenge correctness and tradeoffs with independent scrutiny where available. |
 | [wcygan-experiment](skills/wcygan-experiment/SKILL.md) | Measure alternatives with a fair, repeatable method. |
 | [wcygan-coordinate](skills/wcygan-coordinate/SKILL.md) | Divide work, manage dependencies, and integrate results. |
@@ -70,10 +71,8 @@ providers. Independent execution is optional and its absence is stated honestly.
 | [in-your-own-words](skills/in-your-own-words/SKILL.md) | Restate the user’s goal and underlying problem in clear, plain language. |
 | [no-comments](skills/no-comments/SKILL.md) | Remove implementation commentary while preserving schema and contract documentation. |
 | [clarify-task](skills/clarify-task/SKILL.md) | Turn an ambiguous task into an observable outcome and bounded scope. |
-| [implement-change](skills/implement-change/SKILL.md) | Implement a bounded feature or refactor in verifiable steps. |
 | [reproduce-bug](skills/reproduce-bug/SKILL.md) | Establish a failing-before and passing-after check for a bug. |
 | [assess-impact](skills/assess-impact/SKILL.md) | Trace what a change could break beyond its immediate diff. |
-| [verify-behavior](skills/verify-behavior/SKILL.md) | Check actual results against acceptance criteria. |
 | [measure-performance](skills/measure-performance/SKILL.md) | Measure a performance claim fairly and repeatably. |
 | [model-state-transitions](skills/model-state-transitions/SKILL.md) | Model and verify lifecycle rules as explicit states, events, and transitions. |
 | [statechart](skills/statechart/SKILL.md) | Model-check a TLA+ spec with TLC and draw it as a Mermaid statechart with bug paths. |
@@ -196,15 +195,14 @@ just reinstall --apply --dotfiles /path/to/dotfiles
 ```
 
 Without `--apply` the script changes nothing. Both repositories must be on their
-default branch, so unreviewed branches cannot reach the pin. The dotfiles path
-defaults to a sibling of the main checkout, including from a worktree. Run it
-from clean clones of both repositories when either checkout has unrelated
-edits. Claude Code's `~/.claude/skills` holds symlinks to the pinned copies that
-no installer manages yet; [AGENTS.md](AGENTS.md#distribution) gives the exact
-post-install steps. Never copy skill content into either directory by hand.
-With `--apply`, the script refreshes the snapshot, runs `just check-full`, commits and pushes
-provider changes, advances the consumer pin, installs and verifies through
-`./bootstrap.sh agent-skills`, then commits and pushes the pin. Standard refresh
+default branch and the provider checkout must have no uncommitted paths, so only
+reviewed, committed work can reach the pin. The dotfiles path defaults to a
+sibling of the main checkout, including from a worktree. Run it from clean
+clones of both repositories when either checkout has unrelated edits.
+With `--apply`, the script runs `just check-full`, pushes the provider's commits,
+advances the consumer pin, installs and verifies through
+`./bootstrap.sh agent-skills`, points Claude Code's `~/.claude/skills` links at
+the pinned copies, then commits and pushes the pin. Standard refresh
 archives retired provider-owned copies through `--prune`. `--reset-global`
 archives every other shared user skill through `--reset --yes`. Machine archives
 live under XDG state outside skill discovery roots. Unrelated dotfiles edits must

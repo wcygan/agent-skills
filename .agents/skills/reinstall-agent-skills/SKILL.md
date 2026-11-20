@@ -15,32 +15,35 @@ just reinstall --apply --reset-global
 ```
 
 Run the dry run first and report its plan. The script refuses unless both
-repositories are on their default branch, so land the reviewed change on the
-default branch before `--apply`; never hand-copy skills into global directories
-as a substitute. Run from clean clones of both repositories when either
-checkout has unrelated edits, because `--apply` publishes every uncommitted
-path; the dry run must report 0 uncommitted paths unless they were requested.
-After `--apply`, reconcile `~/.claude/skills` symlinks to the pinned copies as
-described in the repository's AGENTS.md Distribution section.
+repositories are on their default branch and the provider checkout has no
+uncommitted paths, so commit the reviewed change on the default branch first;
+never hand-copy skills into global directories as a substitute. Run from clean
+clones of both repositories when either checkout has unrelated edits.
+
+Both runs stop before changing anything when an installed skill tree holds
+anything but files and directories (a `.venv`, a symlink), because the
+installer refuses to archive such a tree. Report the listed paths and get a
+go-ahead before moving them.
 
 Use `--dotfiles /path/to/dotfiles` to override the default, a `dotfiles`
 checkout beside the main repository checkout (worktrees resolve to the same).
 Read the dotfiles repository instructions and its `dotfiles-operations` and
 `agent-skills-integration` skills before execution.
 
-With `--apply`, the script regenerates `catalog-snapshot.json` with `just catalog-snapshot`,
-then validates with `just check-full`, commits all current provider changes,
-pushes them, fast-forwards dotfiles, advances `agent-skills.lock.toml` to the exact provider
+With `--apply`, the script validates with `just check-full` (which fails on a
+stale `catalog-snapshot.json`), pushes the provider's commits, fast-forwards dotfiles, advances `agent-skills.lock.toml` to the exact provider
 commit, verifies or installs through `./bootstrap.sh agent-skills`, runs the
-consumer checks, and commits and pushes the consumer lock. Changed catalogs use
+consumer checks, reconciles the `~/.claude/skills` links to the pinned copies
+(adding links for new skills, removing dangling links of retired ones, and
+leaving every other entry alone), and commits and pushes the consumer lock. Changed catalogs use
 `agent-skills --prune` to archive retired provider-owned copies outside discovery
 roots. `--reset-global` authorizes archiving every other shared user skill and
 passes `agent-skills --reset --yes`. Installation uses
 GitHub CLI through dotfiles, including its collision checks and journal.
 
-A request to run this workflow authorizes both repositories’ commits and
-pushes, the consumer pin update, and global installation. Inspect provider
-changes first: all tracked and untracked non-ignored changes are included.
+A request to run this workflow authorizes the provider push, the consumer pin
+commit and push, global installation, and the link changes. Committing provider
+changes is a separate step that needs its own go-ahead.
 A request to explain the workflow is read-only.
 
 Reruns create commits only for changed content and skip installation when the

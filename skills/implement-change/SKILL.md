@@ -3,7 +3,7 @@ name: implement-change
 description: "Implement a feature, bug fix, refactor, or migration in small verifiable steps: contract, baseline, change, callers, verification, diff inspection. Use for building or changing code once the intended behavior and scope are established."
 license: MIT
 metadata:
-  kind: component
+  kind: procedure
   upstream-repository: https://github.com/cursor/plugins
   upstream-revision: 1e5c90a4b6f249917bd21fe361b3a2a7deb741b8
   upstream-path: pstack/skills/poteto-mode/playbooks/feature.md; pstack/skills/poteto-mode/playbooks/refactoring.md; pstack/skills/tdd
@@ -12,6 +12,9 @@ metadata:
 ---
 
 # Implement a change
+
+Read the [principle index](../wcygan-mode/references/principles.md) first. Load a
+component named below only when its condition applies.
 
 1. Establish the behavior contract, affected callers, and state ownership before
    editing. Use `explain-code` where current behavior is uncertain and

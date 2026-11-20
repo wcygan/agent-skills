@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import fcntl
+import os
 import re
 import subprocess
 import sys
@@ -17,7 +18,9 @@ from pathlib import Path
 
 def run(root: Path, *args: str, capture: bool = False) -> str:
     print(f"[{root.name}] {' '.join(args)}", flush=True)
-    result = subprocess.run(args, cwd=root, check=True, text=True,
+    # A caller's VIRTUAL_ENV belongs to this script, not to the commands it runs.
+    env = {key: value for key, value in os.environ.items() if key != "VIRTUAL_ENV"}
+    result = subprocess.run(args, cwd=root, check=True, text=True, env=env,
                             stdout=subprocess.PIPE if capture else None)
     return result.stdout.rstrip("\n") if capture else ""
 
@@ -66,17 +69,73 @@ def update_pin(path: Path, sha: str) -> None:
         temporary.replace(path)
 
 
-def report_plan(provider: Path, consumer: Path, provider_branch: str,
-                consumer_branch: str, reset_global: bool) -> None:
-    pending = git(provider, "status", "--porcelain")
-    pin = tomllib.loads((consumer / "agent-skills.lock.toml").read_text()).get("commit")
+def unsupported_entries(shared: Path, names: set[str] | None) -> list[Path]:
+    """Entries the installer refuses to archive: anything but files and directories.
+
+    `names` limits the scan to those skill trees; None scans every tree.
+    """
+    found: list[Path] = []
+    if not shared.is_dir():
+        return found
+    for tree in sorted(shared.iterdir()):
+        if names is not None and tree.name not in names:
+            continue
+        if tree.is_symlink() or not tree.is_dir():
+            continue
+        for directory, subdirectories, files in os.walk(tree):
+            for name in sorted(subdirectories + files):
+                path = Path(directory) / name
+                if path.is_symlink() or not (path.is_dir() or path.is_file()):
+                    found.append(path)
+    return found
+
+
+def plan_links(catalog: set[str], shared: Path, claude: Path) -> tuple[list[str], list[str], list[str]]:
+    """Plan `claude/<name> -> shared/<name>` links: names to add, remove, and leave alone.
+
+    Only a dangling link into `shared` for a skill outside the catalog is removed.
+    An entry that is anything other than the expected link is left alone.
+    """
+    if not claude.is_dir():
+        return [], [], []
+    add, conflicts = [], []
+    for name in sorted(catalog):
+        link = claude / name
+        if link.is_symlink() and Path(os.readlink(link)) == shared / name:
+            continue
+        if link.is_symlink() or link.exists():
+            conflicts.append(name)
+        else:
+            add.append(name)
+    remove = sorted(
+        link.name for link in claude.iterdir()
+        if link.is_symlink() and link.name not in catalog
+        and Path(os.readlink(link)).parent == shared and not link.exists()
+    )
+    return add, remove, conflicts
+
+
+def apply_links(add: list[str], remove: list[str], shared: Path, claude: Path) -> None:
+    for name in remove:
+        (claude / name).unlink()
+    for name in add:
+        (claude / name).symlink_to(shared / name)
+
+
+def report_plan(provider: Path, consumer: Path, provider_branch: str, consumer_branch: str,
+                reset_global: bool, links: tuple[list[str], list[str], list[str]]) -> None:
+    lock = tomllib.loads((consumer / "agent-skills.lock.toml").read_text())
     check = subprocess.run(["./bootstrap.sh", "agent-skills", "--check"], cwd=consumer)
-    print(f"Dry run: no commits, pushes, pin updates, or installs.\n"
+    unpushed = git(provider, "rev-list", "--count", f"origin/{provider_branch}..HEAD")
+    add, remove, conflicts = links
+    print(f"Dry run: no pushes, pin updates, installs, or link changes.\n"
           f"Provider {provider} on {provider_branch} at {git(provider, 'rev-parse', 'HEAD')}; "
-          f"{len(pending.splitlines())} uncommitted path(s) would be published.\n"
-          f"Consumer {consumer} on {consumer_branch}; current pin {pin}; "
+          f"{unpushed} unpushed commit(s) would be pushed.\n"
+          f"Consumer {consumer} on {consumer_branch}; current pin {lock.get('commit')}; "
           f"catalog check {'passes' if check.returncode == 0 else 'fails'}.\n"
           f"Install mode: {'--reset --yes' if reset_global else '--prune when the check fails'}.\n"
+          f"Claude links: add {add or 'none'}; remove {remove or 'none'}; "
+          f"left alone {conflicts or 'none'}.\n"
           f"Rerun with --apply to publish and install.")
 
 
@@ -85,7 +144,7 @@ def main() -> None:
     parser.add_argument("--dotfiles", type=Path,
                         help="Consumer checkout (default: dotfiles beside the main checkout)")
     parser.add_argument("--apply", action="store_true",
-                        help="Commit, push, pin, and install; without it, only preflight and report")
+                        help="Push, pin, and install; without it, only preflight and report")
     parser.add_argument("--reset-global", action="store_true",
                         help="Archive every shared user skill outside this catalog")
     args = parser.parse_args()
@@ -111,12 +170,25 @@ def main() -> None:
         git(provider, "fetch", "origin", provider_branch)
         if git(provider, "merge-base", "HEAD", f"origin/{provider_branch}") != git(provider, "rev-parse", f"origin/{provider_branch}"):
             raise ValueError("Provider is behind or diverged; reconcile it before publishing")
+        pending = git(provider, "status", "--porcelain").splitlines()
+        if pending:
+            raise ValueError(f"Provider has {len(pending)} uncommitted path(s); "
+                             "commit the reviewed change or discard it first")
+        lock = tomllib.loads((consumer / "agent-skills.lock.toml").read_text())
+        shared = Path.home() / lock.get("directory", ".agents/skills")
+        claude = Path.home() / ".claude" / "skills"
+        skills = provider / "skills"
+        catalog = {entry.name for entry in skills.iterdir() if entry.is_dir()} if skills.is_dir() else set()
+        pinned = set(git(provider, "ls-tree", "--name-only", f"{lock.get('commit')}:skills").splitlines())
+        blocked = unsupported_entries(shared, None if args.reset_global else catalog | pinned)
+        if blocked:
+            raise ValueError("The installer refuses skill trees that hold anything but files and "
+                             "directories; move these out first: " + ", ".join(map(str, blocked)))
         if not args.apply:
-            report_plan(provider, consumer, provider_branch, consumer_branch, args.reset_global)
+            report_plan(provider, consumer, provider_branch, consumer_branch, args.reset_global,
+                        plan_links(catalog, shared, claude))
             return
-        run(provider, "just", "catalog-snapshot")
         run(provider, "just", "check-full")
-        commit_if_changed(provider, "chore(skills): publish current catalog", ".")
         run(provider, "git", "push", "origin", f"HEAD:refs/heads/{provider_branch}")
         sha = git(provider, "rev-parse", "HEAD")
         if not dirty:
@@ -128,6 +200,10 @@ def main() -> None:
         elif check.returncode:
             run(consumer, "./bootstrap.sh", "agent-skills", "--prune")
         run(consumer, "./bootstrap.sh", "agent-skills", "--check")
+        add, remove, conflicts = plan_links(catalog, shared, claude)
+        apply_links(add, remove, shared, claude)
+        print(f"Claude links: added {add or 'none'}; removed {remove or 'none'}; "
+              f"left alone {conflicts or 'none'}.")
         run(consumer, "make", "test-pre")
         run(consumer, "git", "diff", "--check")
         commit_if_changed(consumer, "chore(skills): advance catalog pin", "agent-skills.lock.toml")

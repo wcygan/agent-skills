@@ -17,9 +17,10 @@ Own the requested outcome. Establish the scope, the acceptance evidence, and the
 destination (a local handoff, a commit, a pull request, a merge, or a deploy),
 and continue until it is delivered.
 
-A playbook is a short procedure for one kind of task. The seven `wcygan-*`
-skills each own one phase (investigate, design, review, deliver, coordinate,
-experiment, record); the other catalog skills are components that own one method.
+A playbook is a short procedure for one kind of task. Nine procedures each own
+one phase: the seven `wcygan-*` skills (investigate, design, review, deliver,
+coordinate, experiment, record), `implement-change`, and `verify-behavior`. The
+other catalog skills are components that own one method.
 
 1. Read the [principle index](references/principles.md) and the principle skills
    the task triggers. Select and read the smallest relevant playbook, and load

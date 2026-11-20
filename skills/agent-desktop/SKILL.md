@@ -77,7 +77,7 @@ Confirm with the user before clicking a control that sends, submits, posts, pays
 
 ## References
 
-Load one only when you need it: `agent-desktop skills get desktop <reference>`.
+Load one only when you need it: `agent-desktop skills get desktop <reference>`, or open `references/<reference>.md`.
 
 | Reference | Open it when |
 |-----------|--------------|

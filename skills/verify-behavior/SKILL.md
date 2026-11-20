@@ -3,7 +3,7 @@ name: verify-behavior
 description: "Check actual results against acceptance criteria on the real artifact and keep the evidence. Use to verify a completed change, confirm a fix works, or before claiming that a feature, refactor, or other artifact works; for a smoke test, QA pass, or end-to-end check of an application journey."
 license: MIT
 metadata:
-  kind: component
+  kind: procedure
   upstream-repository: https://github.com/cursor/plugins
   upstream-revision: 1e5c90a4b6f249917bd21fe361b3a2a7deb741b8
   upstream-path: pstack/skills/principle-prove-it-works; pstack/skills/figure-it-out; pstack/skills/create-verification-skill; pstack/skills/maintain-verification-skill
@@ -12,6 +12,9 @@ metadata:
 ---
 
 # Verify behavior
+
+Read the [principle index](../wcygan-mode/references/principles.md) first. Load a
+component named below only when its condition applies.
 
 Instance ownership means what this run started and may therefore stop: the
 process, port, test data, or environment it launched. A shared instance that

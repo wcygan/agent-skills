@@ -1,5 +1,9 @@
 # Pstack principles in the Wcygan stack
 
+Historical record of the 2026-10-14 integration; not maintained. Counts and
+skill names below describe that date. Current state: [README](../README.md) and
+the [parity record](pstack-parity.md).
+
 The earlier generic port omitted the standalone principles. Individual workflows
 contained overlapping criteria, but did not provide a shared vocabulary, complete
 rule coverage, or a requirement to identify the decision each principle changed.
@@ -47,7 +51,7 @@ column shows where the rule commonly shapes decisions; it is not exclusive routi
 
 ## Use
 
-Wcygan-mode and all seven procedural entrypoints read the
+Wcygan-mode and all nine procedural entrypoints read the
 [shared index](../skills/wcygan-mode/references/principles.md). They read selected
 leaves in full, revisit the selection when evidence changes, and name each applied
 principle with the specific choice it changed. There is no required response heading
@@ -61,11 +65,8 @@ essential inline guidance rather than introducing required dependencies.
 
 ## Verification
 
-Check each leaf's name, source metadata, and attribution footer:
-
-```sh
-uv run --locked tools/check_principle_parity.py
-```
+`tests/test_principle_catalog.py` checks each leaf's name, source metadata, and
+attribution footer as part of `just check`.
 
 The checker compares complete skill text with the pinned source plus an explicit
 list of replacements. It is read-only and prints a diff for any unrecorded change.

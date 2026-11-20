@@ -10,7 +10,9 @@ store-format, or exact JSON-schema compatibility with the upstream tools.
 The orchestration store (`orchestrate.py`, `mode_tools/store.py`) and the plan
 checker (`check_plan.py`) were removed on 2026-11-20, after upstream deleted the
 sources they were ported from (cursor/plugins#1043 and #1249). Their rows below
-record the retired port.
+record the retired port. The scripts' uv project (`pyproject.toml`, `uv.lock`) was
+removed the same day: with no dependencies it only created a `.venv` inside the
+installed skill, and the scripts now run with plain `python3 -B`.
 
 | Upstream source / capability | Python location | Treatment |
 | --- | --- | --- |
@@ -81,7 +83,7 @@ All 24 principles are locally revised. Each body states the rule and the test
 that decides a case, following upstream's later shortening
 (cursor/plugins#1249). Attack the Premise, Fix Root Causes, and Test Behavior Not
 Implementation follow upstream's restatement of bans as reasoning
-(cursor/plugins#633). `tools/check_principle_parity.py` verifies each leaf's
+(cursor/plugins#633). `tests/test_principle_catalog.py` verifies each leaf's
 name, upstream provenance, and attribution footer.
 
 All leaves use portable Agent Skills frontmatter with source metadata, omitting
@@ -89,7 +91,7 @@ Pstack's host-specific `disable-model-invocation` field. No aliases or synchroni
 lock entries are added. Individual principles are usable without invoking a workflow;
 cross-principle links supply optional context rather than missing implementation steps.
 
-The [shared index](../skills/wcygan-mode/references/principles.md) is read by wcygan-mode and all seven procedural
+The [shared index](../skills/wcygan-mode/references/principles.md) is read by wcygan-mode and all nine procedural
 entrypoints. It selects relevant leaves, preserves project contracts, and requires
 each applied principle to be named together with the specific decision it changed.
 The existing playbooks and components supply methods without duplicating the rules.

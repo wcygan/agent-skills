@@ -45,10 +45,10 @@ frontmatter and focused descriptions; selection behavior belongs to the host.
 | [in-your-own-words](../skills/in-your-own-words/SKILL.md) | component | `skills/in-your-own-words` |
 | [no-comments](../skills/no-comments/SKILL.md) | component | `skills/no-comments`, `agents/comment-sicko.md` |
 | [clarify-task](../skills/clarify-task/SKILL.md) | component | `skills/sharpen`, `skills/in-your-own-words`, `skills/figure-it-out` |
-| [implement-change](../skills/implement-change/SKILL.md) | component | `skills/poteto-mode/playbooks/feature.md`, `skills/poteto-mode/playbooks/refactoring.md`, `skills/tdd` |
+| [implement-change](../skills/implement-change/SKILL.md) | procedure | `skills/poteto-mode/playbooks/feature.md`, `skills/poteto-mode/playbooks/refactoring.md`, `skills/tdd` |
 | [reproduce-bug](../skills/reproduce-bug/SKILL.md) | component | `skills/tdd` |
 | [assess-impact](../skills/assess-impact/SKILL.md) | component | `skills/blast-radius` |
-| [verify-behavior](../skills/verify-behavior/SKILL.md) | component | `skills/principle-prove-it-works`, `skills/figure-it-out`, `skills/create-verification-skill`, `skills/maintain-verification-skill` |
+| [verify-behavior](../skills/verify-behavior/SKILL.md) | procedure | `skills/principle-prove-it-works`, `skills/figure-it-out`, `skills/create-verification-skill`, `skills/maintain-verification-skill` |
 | [measure-performance](../skills/measure-performance/SKILL.md) | component | `skills/benchmark-checklist`, `skills/poteto-mode/playbooks/hillclimb.md` |
 | [coordinate-work](../skills/coordinate-work/SKILL.md) | component | `skills/swarm`, `skills/poteto-mode/playbooks/orchestrate.md` |
 | [decision-log](../skills/decision-log/SKILL.md) | component | `skills/show-me-your-work` |
@@ -135,11 +135,11 @@ includes the upstream MIT notice in `references/LICENSE.txt`.
 The [complete mapping](../docs/pstack-principles.md) enumerates every leaf.
 All 24 bodies are locally revised. Portable frontmatter and an attribution
 footer are added to all leaves. The [principle parity matrix](../docs/pstack-parity.md#principle-catalog)
-records the revisions; [the provenance checker](../tools/check_principle_parity.py)
+records the revisions; [the catalog test](../tests/test_principle_catalog.py)
 verifies each leaf's name, source metadata, and footer.
 These skills have no `.vendored` markers or synchronization-lock entries.
 
-Wcygan-mode and its seven procedures load one shared index and name principles
+Wcygan-mode and its nine procedures load one shared index and name principles
 only when they changed a specific choice. These routing additions are local;
 the original procedure, playbook, and tool source revisions remain unchanged.
 
@@ -152,7 +152,7 @@ The upstream MIT notice is included in the skill and applies to these adaptation
 
 See the [behavior matrix](../docs/pstack-parity.md) for every
 script capability, retained interfaces, and deliberate changes. Runtime code is
-Python 3.11+ using uv and the standard library. Git and `gh` remain integrations;
+Python 3.11+ using only the standard library. Git and `gh` remain integrations;
 Bun, TypeScript, shell implementations, Origin CLI support, and harness-specific
 transcript discovery are not required. This remains locally maintained work.
 

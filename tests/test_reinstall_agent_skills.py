@@ -1,4 +1,4 @@
-"""Focused checks for publication gates, exact pin replacement, and no-op reruns."""
+"""Focused checks for publication gates, pin replacement, install preflight, and Claude links."""
 import importlib.util
 import subprocess
 import tempfile
@@ -38,7 +38,7 @@ class PinTests(unittest.TestCase):
 
 class PublicationTests(unittest.TestCase):
     def exercise_workflow(self, failed_gate=None, *, reset_global=False, check_returncode=0,
-                          apply=True):
+                          apply=True, pending="", blocked=()):
         with tempfile.TemporaryDirectory() as directory:
             provider = Path(directory).resolve() / "provider"
             consumer = Path(directory).resolve() / "consumer"
@@ -51,7 +51,7 @@ class PublicationTests(unittest.TestCase):
                 if args == ("rev-parse", "--git-path", "reinstall-agent-skills.lock"):
                     return str(provider / "reinstall-agent-skills.lock")
                 if args == ("status", "--porcelain"):
-                    return ""
+                    return pending if root == provider else ""
                 return sha
 
             def command_result(root, *args):
@@ -68,6 +68,9 @@ class PublicationTests(unittest.TestCase):
                     patch.object(reinstall, "run", side_effect=command_result) as run, \
                     patch.object(reinstall, "commit_if_changed") as commit, \
                     patch.object(reinstall, "update_pin") as pin, \
+                    patch.object(reinstall, "unsupported_entries", return_value=list(blocked)), \
+                    patch.object(reinstall, "plan_links", return_value=(["new"], ["old"], [])), \
+                    patch.object(reinstall, "apply_links") as links, \
                     patch.object(reinstall.subprocess, "run",
                                  return_value=subprocess.CompletedProcess([], check_returncode)) as raw, \
                     patch("builtins.print"):
@@ -75,6 +78,7 @@ class PublicationTests(unittest.TestCase):
                 events.attach_mock(run, "run")
                 events.attach_mock(commit, "commit")
                 events.attach_mock(pin, "pin")
+                events.attach_mock(links, "links")
                 if failed_gate:
                     with self.assertRaises(subprocess.CalledProcessError):
                         reinstall.main()
@@ -82,25 +86,38 @@ class PublicationTests(unittest.TestCase):
                     reinstall.main()
             return provider, consumer, sha, events.mock_calls
 
-    def test_snapshot_and_validation_precede_publication(self):
+    def test_validation_precedes_publication(self):
         provider, consumer, sha, events = self.exercise_workflow()
-        self.assertEqual(events[:5], [
-            call.run(provider, "just", "catalog-snapshot"),
+        self.assertEqual(events[:3], [
             call.run(provider, "just", "check-full"),
-            call.commit(provider, "chore(skills): publish current catalog", "."),
             call.run(provider, "git", "push", "origin", "HEAD:refs/heads/main"),
             call.run(consumer, "git", "pull", "--ff-only", "origin", "main"),
         ])
-        self.assertEqual(events[5], call.pin(consumer / "agent-skills.lock.toml", sha))
+        self.assertEqual(events[3], call.pin(consumer / "agent-skills.lock.toml", sha))
 
-    def test_failed_gate_stops_before_commit_push_or_pin_update(self):
-        for gate in ("catalog-snapshot", "check-full"):
-            with self.subTest(gate=gate):
-                provider, _, _, events = self.exercise_workflow(failed_gate=gate)
-                expected = [call.run(provider, "just", "catalog-snapshot")]
-                if gate == "check-full":
-                    expected.append(call.run(provider, "just", "check-full"))
-                self.assertEqual(events, expected)
+    def test_failed_gate_stops_before_push_or_pin_update(self):
+        provider, _, _, events = self.exercise_workflow(failed_gate="check-full")
+        self.assertEqual(events, [call.run(provider, "just", "check-full")])
+
+    def test_uncommitted_provider_paths_are_refused_before_any_step(self):
+        for apply in (False, True):
+            with self.subTest(apply=apply), \
+                    self.assertRaisesRegex(ValueError, "2 uncommitted path"):
+                self.exercise_workflow(apply=apply, pending=" M a\n?? b")
+
+    def test_unsupported_installed_entries_are_refused_before_any_step(self):
+        for apply in (False, True):
+            with self.subTest(apply=apply), \
+                    self.assertRaisesRegex(ValueError, "move these out first: /shared/x/.venv"):
+                self.exercise_workflow(apply=apply, blocked=[Path("/shared/x/.venv")])
+
+    def test_links_are_reconciled_after_the_installed_catalog_verifies(self):
+        _, consumer, _, events = self.exercise_workflow()
+        check = events.index(call.run(consumer, "./bootstrap.sh", "agent-skills", "--check"))
+        applied = [event for event in events if event[0] == "links"]
+        self.assertEqual(1, len(applied))
+        self.assertEqual((["new"], ["old"]), applied[0].args[:2])
+        self.assertGreater(events.index(applied[0]), check)
 
     def test_requested_reset_runs_even_when_existing_pin_checks_pass(self):
         _, consumer, _, events = self.exercise_workflow(reset_global=True)
@@ -119,6 +136,44 @@ class PublicationTests(unittest.TestCase):
         self.assertEqual(events, [
             call.raw(["./bootstrap.sh", "agent-skills", "--check"], cwd=consumer),
         ])
+
+
+class InstalledStateTests(unittest.TestCase):
+    def test_unsupported_entries_reports_links_inside_selected_trees_only(self):
+        with tempfile.TemporaryDirectory() as directory:
+            shared = Path(directory)
+            for name in ("kept", "other"):
+                (shared / name / "scripts").mkdir(parents=True)
+                (shared / name / "SKILL.md").write_text("x")
+                (shared / name / "scripts" / "python").symlink_to("/usr/bin/true")
+            self.assertEqual([shared / "kept" / "scripts" / "python"],
+                             reinstall.unsupported_entries(shared, {"kept"}))
+            self.assertEqual(2, len(reinstall.unsupported_entries(shared, None)))
+
+    def test_links_follow_the_catalog_and_leave_other_entries_alone(self):
+        with tempfile.TemporaryDirectory() as directory:
+            shared = Path(directory) / "shared"
+            claude = Path(directory) / "claude"
+            for name in ("current", "added", "local-only", "clash"):
+                (shared / name).mkdir(parents=True)
+            claude.mkdir()
+            (claude / "current").symlink_to(shared / "current")
+            (claude / "retired").symlink_to(shared / "retired")
+            (claude / "local-only").symlink_to(shared / "local-only")
+            (claude / "own-folder").mkdir()
+            (claude / "clash").mkdir()
+            catalog = {"current", "added", "clash"}
+
+            plan = reinstall.plan_links(catalog, shared, claude)
+            self.assertEqual((["added"], ["retired"], ["clash"]), plan)
+            reinstall.apply_links(plan[0], plan[1], shared, claude)
+
+            self.assertEqual(shared / "added", (claude / "added").readlink())
+            self.assertFalse((claude / "retired").is_symlink())
+            self.assertTrue((claude / "local-only").is_symlink())
+            self.assertTrue((claude / "own-folder").is_dir())
+            self.assertFalse((claude / "clash").is_symlink())
+            self.assertEqual(([], [], ["clash"]), reinstall.plan_links(catalog, shared, claude))
 
 
 class PreflightTests(unittest.TestCase):

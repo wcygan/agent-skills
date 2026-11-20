@@ -1,6 +1,8 @@
 # Pstack generic port
 
-Updated: 2026-10-14.
+Historical record of the port as of 2026-10-14; not maintained. Counts and skill
+names below describe that date. Current state: [README](../README.md) and the
+[parity record](pstack-parity.md).
 
 This catalog adapts pstack into short, harness-agnostic engineering skills. The
 implemented port contains **one orchestrator, 30 self-contained components, and
@@ -161,7 +163,7 @@ and `interrogate`. Their replacements are `explain-code`, `design-options`,
 
 ## Procedural skills and their components
 
-These seven procedures are local compositions; two more were later merged into `implement-change` and `verify-behavior`. They organize the adapted methods
+These procedures are local compositions; `wcygan-implement` and `wcygan-verify` were later merged into `implement-change` and `verify-behavior`. They organize the adapted methods
 by the user's task. `wcygan-mode` now composes them without installing a persistent
 global mode.
 The listed components are available branches, not steps that always run.

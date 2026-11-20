@@ -1,30 +1,25 @@
 # Python tool usage
 
-Requires uv and Python 3.11+ on macOS or Linux. Repository observation requires
-Git; GitHub operations require an authenticated `gh`. All implementation is
-Python with standard-library dependencies. No global package installation is needed.
+Requires Python 3.11+ on macOS or Linux. Repository observation requires Git;
+GitHub operations require an authenticated `gh`. The scripts use only the
+standard library, so nothing is installed and no environment is created.
 
-## Run without changing the installed skill
-
-Set `MODE_SCRIPTS` to this skill's absolute `scripts` directory. Keep the uv
-project environment outside installed skills and disable Python bytecode writes:
+Set `MODE_SCRIPTS` to this skill's absolute `scripts` directory and run a script
+with `python3 -B`, which writes no bytecode into the installed skill:
 
 ```sh
-export MODE_SCRIPTS=/absolute/path/to/wcygan-mode/scripts
-export UV_PROJECT_ENVIRONMENT="${XDG_CACHE_HOME:-$HOME/.cache}/wcygan-mode/venv"
-export PYTHONDONTWRITEBYTECODE=1
-uv run --locked --project "$MODE_SCRIPTS" python -B "$MODE_SCRIPTS/watch_pr.py" --help
+MODE_SCRIPTS=/absolute/path/to/wcygan-mode/scripts
+python3 -B "$MODE_SCRIPTS/watch_pr.py" --help
 ```
 
-Use that same command prefix for the other entrypoint. Activity evidence and
-outputs belong in task locations outside the installation. Keep credentials out
-of arguments, because they end up in shell history.
+Activity evidence and outputs belong in task locations outside the installation.
+Keep credentials out of arguments, because they end up in shell history.
 
 ## Observe pull requests
 
 ```sh
-uv run --locked --project "$MODE_SCRIPTS" python -B "$MODE_SCRIPTS/watch_pr.py" --owner OWNER --repo REPO --pr 123 --status-only
-uv run --locked --project "$MODE_SCRIPTS" python -B "$MODE_SCRIPTS/watch_pr.py" --owner OWNER --repo REPO --queued-stack --stack-prs 123,124 --timeout 1800
+python3 -B "$MODE_SCRIPTS/watch_pr.py" --owner OWNER --repo REPO --pr 123 --status-only
+python3 -B "$MODE_SCRIPTS/watch_pr.py" --owner OWNER --repo REPO --queued-stack --stack-prs 123,124 --timeout 1800
 ```
 
 Without an explicit repository, `gh` resolves the current checkout. `--stack`
@@ -64,7 +59,7 @@ and `automation_check_tokens`. All default empty; no particular bot is required.
 ## Audit worktrees
 
 ```sh
-uv run --locked --project "$MODE_SCRIPTS" python -B "$MODE_SCRIPTS/audit_worktrees.py" /repo --base main --json
+python3 -B "$MODE_SCRIPTS/audit_worktrees.py" /repo --base main --json
 ```
 
 `--fetch` explicitly refreshes origin; the default uses current refs and reports
