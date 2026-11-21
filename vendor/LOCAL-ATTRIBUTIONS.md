@@ -87,7 +87,7 @@ Benny automation integration, strict comment-sicko persona, TypeScript reference
 and dedicated teaching workflow are not imported. The local no-comments adaptation
 preserves schema and contract documentation and has no named-agent requirement.
 The dedicated in-your-own-words adaptation retains the upstream restatement task
-and adds write-clearly guidance. Local technical visuals are described below. This catalog
+and adds write-clearly guidance. This catalog
 covers core engineering work; it does not promise those additional capabilities.
 
 Historical provenance and licenses for the retired catalog remain preserved in
@@ -159,11 +159,9 @@ transcript discovery are not required. This remains locally maintained work.
 
 ## Original communication components
 
-`technical-visuals`, `slice-changes`, and `prepare-pull-request` are original local
-components by William Cygan, licensed MIT. The technical-visuals design system and
-example implementation are new; historical topic/style precedent is documented in
-its `references/precedent.md`. No retired example code or upstream teaching workflow
-was copied. The existing pstack-derived `write-clearly` retains its attribution and
+`slice-changes` and `prepare-pull-request` are original local
+components by William Cygan, licensed MIT. No retired example code or upstream
+teaching workflow was copied. The existing pstack-derived `write-clearly` retains its attribution and
 license, with new local examples for concise prose, labels, captions, and evidence.
 Local routing additions connect these components to wcygan-mode and its procedures.
 

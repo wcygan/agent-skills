@@ -1,8 +1,6 @@
 # Assemble the review package
 
-For the 300-line house target, visual examples, and compact execution evidence,
-use the technical-visuals skill's pull-request design system and its gallery of
-pull-request examples (cache, form retry, and queue). Treat the 300-line target as
+Treat the 300-line house target as
 a prompt to split; keep related tests with the change even when they push past it,
 because a change without its tests is harder to review.
 
@@ -32,8 +30,7 @@ substitute for a tested UI state or measured result for the same reason.
 ## Scenario diagrams
 
 For meaningful testing scenarios, keep a scenario diagram visible when it helps
-the reviewer follow the path under test. Borrow the presentation of the
-technical-visuals pull-request examples, never their fictional results, because
+the reviewer follow the path under test. Show only real results, because
 results in a PR must be real. Use no fixed scenario count, and add no diagram
 that conveys no useful information. A conceptual diagram is explanation; label
 it so a reviewer does not mistake it for execution evidence.

@@ -103,7 +103,6 @@ them. Ambition can mean a simpler solution or deeper proof.
 
 For a mixed task, sequence the relevant playbooks rather than restarting framing.
 Use `slice-changes` when work spans several reviewer questions,
-`technical-visuals` when a figure clarifies a relationship,
 `prepare-pull-request` for a review package, and `write-clearly` for prose. A
 task needs a PR or illustration only when the user asked for one. Use
 specialists such as `uv-python`, `just`, or `design-loop` when they apply.

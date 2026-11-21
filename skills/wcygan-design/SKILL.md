@@ -25,7 +25,7 @@ component named below only when its condition applies.
    comparison step; reuse its candidates rather than generating a second set.
 3. For contested or consequential choices, use `review-changes` to challenge the
    selected structure.
-4. Use `technical-visuals` when a diagram clarifies the chosen boundaries or
+4. Add a diagram when it clarifies the chosen boundaries or
    behavior. Default to 2D; use 3D only when requested, since it costs more to
    build and read. Record the chosen interfaces, ownership, tradeoffs, and
    acceptance criteria. Continue into implementation when it was already

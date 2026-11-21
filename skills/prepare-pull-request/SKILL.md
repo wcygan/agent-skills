@@ -31,9 +31,8 @@ capabilities.
    a material tradeoff.
 3. Synthesize the code into the smallest useful model of actors, state, and
    outcomes; mirroring the call graph or listing changed files repeats the diff.
-   Select one overview visual that answers the main reviewer question. Use the
-   technical-visuals skill when creating a figure. Default to 2D; use 3D only
-   when requested. For format and evidence choices, read
+   Select one overview visual that answers the main reviewer question. Default
+   to 2D; use 3D only when requested. For format and evidence choices, read
    [review package](references/review-package.md).
 4. Lay out the body with a short visible overview and the full description in a
    collapsed section, following the exact headings, disclosure rules, and

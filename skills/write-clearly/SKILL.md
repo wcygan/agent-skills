@@ -42,8 +42,8 @@ For feeds, repeated cards, table summaries, notifications, or session titles, re
 [repeated-item writing](references/repeated-items.md). Review the collection together:
 consistent individual sentences can still hide the differences readers need to find.
 
-For a relationship that is clearer visually, use an available technical-visuals
-skill and keep prose for the takeaway, evidence, and qualifications. A simple fact
+For a relationship that is clearer visually, use a figure
+and keep prose for the takeaway, evidence, and qualifications. A simple fact
 stays as a sentence, because a figure makes the reader decode what one line could
 state; an image never substitutes for a missing explanation, for the same reason.
 

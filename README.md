@@ -1,7 +1,7 @@
 # agent-skills
 
 A public Agent Skills catalog with 1 orchestrator, 24 engineering principles,
-31 focused components, 9 procedural skills, and 8 specialist skills.
+30 focused components, 9 procedural skills, and 8 specialist skills.
 Components work independently. Procedures load only
 the components needed for the task, using relative links within the catalog.
 
@@ -89,7 +89,6 @@ providers. Independent execution is optional and its absence is stated honestly.
 | [deliver-change](skills/deliver-change/SKILL.md) | Present or publish a verified result within authorized scope. |
 | [write-clearly](skills/write-clearly/SKILL.md) | Make technical prose, captions, and labels concise, concrete, and accurate. |
 | [slice-changes](skills/slice-changes/SKILL.md) | Plan coherent PRs with verifiable intermediate states. |
-| [technical-visuals](skills/technical-visuals/SKILL.md) | Explain technical relationships in 2D, or explicitly requested 3D, with paired light/dark themes. |
 | [prepare-pull-request](skills/prepare-pull-request/SKILL.md) | Assemble a concise visual review package from the actual diff and evidence. |
 
 The initial names `how`, `architect`, `arena`, and `interrogate` are now
@@ -106,14 +105,8 @@ behavior, keeping product regressions distinct from documentation drift.
 scope with a model checker, code verifier, or proof, and leaves a rerunnable check.
 
 The communication components connect planning to review: `slice-changes` establishes
-small review boundaries, `technical-visuals` supplies a useful explanation, and
-`prepare-pull-request` combines it with accurate prose and verification evidence.
-Browse the [visual design system](skills/technical-visuals/references/design-system.md)
-and [interactive examples](skills/technical-visuals/examples/index.html). Open the
-examples locally; GitHub's source view does not execute the HTML. 2D is the default,
-and 3D requires an explicit request. See the
-[example check instructions](skills/technical-visuals/references/examples.md) for
-browser validation and export checks.
+small review boundaries, and `prepare-pull-request` combines an overview figure
+with accurate prose and verification evidence.
 
 ## Specialists
 

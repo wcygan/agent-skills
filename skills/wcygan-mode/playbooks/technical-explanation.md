@@ -6,9 +6,9 @@ Explain a system, behavior, or change through a concise visual artifact.
    `wcygan-investigate` when behavior is uncertain; leave an unknown
    relationship out of the drawing rather than inventing it, because the reader
    will trust what is drawn.
-2. Use `technical-visuals` to choose the input
-   contract, design system, format, and matching example. Default to 2D and use
-   3D only when explicitly requested. Keep a small static figure small.
+2. Choose the simplest format that answers the question: Mermaid, SVG, or
+   interactive HTML. Default to 2D and use 3D only when explicitly requested.
+   Keep a small static figure small.
 3. Verify both meaning and rendered presentation, including controls or export
    when present. Use `write-clearly` for labels
    and the short caption; preserve qualifications and evidence.
