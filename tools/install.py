@@ -42,6 +42,7 @@ class Timeline:
     def __init__(self) -> None:
         self.spans: list[dict[str, object]] = []
         self.started = time.perf_counter()
+        self.installed_at: float | None = None
 
     @contextmanager
     def span(self, step: str):
@@ -56,7 +57,7 @@ class Timeline:
 
     def record(self, outcome: str) -> dict[str, object]:
         return {"started": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-                "outcome": outcome,
+                "outcome": outcome, "installed_at": self.installed_at,
                 "seconds": round(time.perf_counter() - self.started, 4), "spans": self.spans}
 
 
@@ -71,7 +72,9 @@ def format_run(record: dict) -> str:
     """One line per step in the order it ran, with its share of the run."""
     total = record["seconds"] or 1e-9
     totals = step_seconds(record)
-    lines = [f"{record['seconds']:.2f}s total ({record['outcome']})"]
+    lines = [f"{record['seconds']:.2f}s total ({record['outcome']})"
+             + (f"; installed locally at {record['installed_at']:.2f}s, the rest is pushing"
+                if record.get("installed_at") else "")]
     lines += [f"  {seconds:6.3f}s {seconds / total:4.0%}  {step}" for step, seconds in totals.items()]
     other = max(record["seconds"] - sum(totals.values()), 0.0)
     lines.append(f"  {other:6.3f}s {other / total:4.0%}  everything else")
@@ -81,12 +84,13 @@ def format_run(record: dict) -> str:
 def format_history(records: list[dict]) -> str:
     """Recent runs side by side, one column per step, so a regression stands out."""
     steps = list(dict.fromkeys(span["step"] for record in records for span in record["spans"]))
-    lines = ["  ".join([f"{'started (UTC)':<19}", f"{'outcome':<7}", f"{'total':>6}"]
+    lines = ["  ".join([f"{'started (UTC)':<19}", f"{'outcome':<7}", f"{'total':>6}", f"{'local':>6}"]
                        + [f"{step:>14}" for step in steps])]
     for record in records:
         totals = step_seconds(record)
         lines.append("  ".join(
-            [record["started"][:19], f"{record['outcome']:<7}", f"{record['seconds']:6.2f}"]
+            [record["started"][:19], f"{record['outcome']:<7}", f"{record['seconds']:6.2f}",
+             f"{record.get('installed_at') or 0:6.2f}"]
             + [f"{totals[step]:14.3f}" if step in totals else f"{'-':>14}" for step in steps]))
     return "\n".join(lines)
 
@@ -107,9 +111,11 @@ def together(*thunks):
 
 
 SOCKETS = Path.home() / ".cache" / "agent-skills"
-# One SSH connection serves both pushes and stays open for the next run.
+# One SSH connection serves both pushes and stays open for the next run. The
+# keepalive closes a connection the server dropped, so a later run never waits on it.
 MULTIPLEX = ["-o", "ControlMaster=auto", "-o", "ControlPersist=600",
-             "-o", f"ControlPath={SOCKETS}/ssh-%C"]
+             "-o", f"ControlPath={SOCKETS}/ssh-%C",
+             "-o", "ServerAliveInterval=5", "-o", "ServerAliveCountMax=2"]
 
 
 def git_environment() -> dict[str, str]:
@@ -161,16 +167,18 @@ def commit_message(paths: list[str]) -> str:
     return f"feat(skills): update {named}"
 
 
-def commit_catalog(provider: Path, message: str | None) -> str:
+def commit_catalog(provider: Path, message: str | None, timeline: Timeline) -> str:
     """Stage everything and commit it; return the message used."""
     # CI rejects a stale snapshot, so refresh it inside the same commit. The
     # snapshot reads the working tree, so staging can run beside it.
-    together(lambda: subprocess.run(["uv", "run", "--locked", "tools/catalog.py", "snapshot"],
-                                    cwd=provider, check=True, env=ENV, stdout=subprocess.DEVNULL),
-             lambda: git(provider, "add", "-A"))
-    git(provider, "add", "-A")
-    used = message or commit_message(git(provider, "diff", "--cached", "--name-only").splitlines())
-    git(provider, "commit", "-q", "-m", used)
+    with timeline.span("snapshot + stage"):
+        together(lambda: subprocess.run(["uv", "run", "--locked", "tools/catalog.py", "snapshot"],
+                                        cwd=provider, check=True, env=ENV, stdout=subprocess.DEVNULL),
+                 lambda: git(provider, "add", "-A"))
+        git(provider, "add", "-A")
+    with timeline.span("git commit"):
+        used = message or commit_message(git(provider, "diff", "--cached", "--name-only").splitlines())
+        git(provider, "commit", "-q", "-m", used)
     return used
 
 
@@ -364,13 +372,14 @@ def install(args: argparse.Namespace, provider: Path, consumer: Path, timeline: 
     home = Path.home()
     shared = home / ".agents" / "skills"
     claude = home / ".claude" / "skills"
-    with timeline.span("commit"):
+    with timeline.span("read state"):
         provider_branch, consumer_branch, dirty = together(
             lambda: on_default_branch(provider), lambda: on_default_branch(consumer),
             lambda: git(provider, "status", "--porcelain"))
         if dirty or unpushed(provider, provider_branch):
             warm_connection(provider)
-        message = commit_catalog(provider, args.message) if dirty else None
+    message = commit_catalog(provider, args.message, timeline) if dirty else None
+    with timeline.span("plan"):
         commit = git(provider, "rev-parse", "HEAD")
         catalog = catalog_at_head(provider)
         replace, restamp, foreign, retired = plan_install(catalog, shared, commit, args.full)
@@ -405,6 +414,8 @@ def install(args: argparse.Namespace, provider: Path, consumer: Path, timeline: 
                     "--", LOCK_FILE)
 
     (archive, add, remove, conflicts), _ = together(install_skills, commit_pin)
+    # Everything after this line is network: the skills are already usable.
+    timeline.installed_at = round(time.perf_counter() - timeline.started, 4)
     if push:
         finish_push(provider, push)
         # Measured from its start, so it overlaps the local steps it ran beside.

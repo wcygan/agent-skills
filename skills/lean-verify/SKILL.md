@@ -2,7 +2,7 @@
 name: lean-verify
 description: "Prove a property of code for every input with the Lean 4 proof assistant, and leave a check that one command reruns. Use for Lean, Lake, or Mathlib work, \"prove this for all inputs\", or when a parser, codec, arithmetic routine, data-structure invariant, or policy rule must hold at every size and a bounded check or a test is not enough."
 license: MIT
-compatibility: Requires elan, which installs Lean 4 and Lake. Checked against Lean 4.36; verify tactic and Lake syntax against the installed version.
+compatibility: Requires elan, which installs Lean 4 and Lake; the worked example also needs uv. Checked against Lean 4.36; verify tactic and Lake syntax against the installed version.
 metadata:
   kind: component
   maintenance: local
@@ -29,6 +29,8 @@ A theorem is about Lean definitions. It says nothing about code in another langu
 - **The code is Lean.** Prove the theorem about the definition that runs.
 - **The code is safe Rust.** Aeneas translates it to Lean. Read its documentation for the supported subset before you rely on it.
 - **Any other code.** Write a Lean model of the function, in this repo's names, with each definition pointing at the code it models. Then add a differential test: run the same generated inputs through the model and the real code, and compare the results. Without that test, the proof covers only the model.
+
+For that last connection, read the [worked example](references/example.md): a Python codec, its Lean model, the proof, and the differential test, in `examples/varint/`.
 
 ## Set up
 
