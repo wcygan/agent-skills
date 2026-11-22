@@ -1,23 +1,30 @@
 ---
-name: install-agent-skills
-description: Commit and push this catalog, pin it in dotfiles, and install it into the global skill directories with one fast command. Use when asked to install, refresh, or publish this computer's global skills, or to profile and speed up that install.
+name: really-fast-reinstall
+description: Reinstall this computer's global agent skills from whatever is in this checkout right now, with one fast command that commits, installs, pins dotfiles, and pushes in the background. Use when asked to reinstall, install, refresh, or publish the global skills, or to profile and speed up that install.
 ---
 
-# Install agent skills
+# Really fast reinstall
 
-Run from the repository root:
+Invoking this skill is the go-ahead to run the install now, with the checkout
+as it is:
+
+1. Run `git status --short` and note what will be committed. The run commits
+   every change, including work another session left in progress.
+2. Run `just install` from the repository root. Pass `-m "..."` when the
+   changes deserve a message better than the one derived from the paths.
+3. Report the commit, what was replaced or archived, and the printed timings.
+   If the run opens with a warning about an earlier publish, relay it.
 
 ```sh
-just install                  # commit, push, pin, install
+just install                  # commit, install, pin; push in the background
 just install -m "feat: ..."   # with an explicit commit message
 just install --wait           # push before exiting; fail on a rejected push
 just install --full           # rewrite every installed skill
-just install --timings        # step timings of recent runs
+just install --timings        # step timings of recent runs and the last publish
 ```
 
-The script is `tools/install.py`, a dependency-free uv script. It commits
-everything in the checkout, so read `git status` first; a request to install
-authorizes the commit, both pushes, the pin, and the global changes.
+The script is `tools/install.py`, a dependency-free uv script. The go-ahead
+covers the commit, both pushes, the pin, and the global changes.
 
 ## What one run guarantees
 

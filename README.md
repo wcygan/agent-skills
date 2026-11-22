@@ -191,7 +191,7 @@ change in this checkout, so review `git status` first. Each step does only what
 is not already true, so a rerun after a failure continues where it stopped. A
 skill removed from the catalog is moved out of the global directories into
 `~/.local/state/dotfiles/agent-skills-archives/`; entries from other sources are
-never touched. The [install-agent-skills](.agents/skills/install-agent-skills/SKILL.md)
+never touched. The [really-fast-reinstall](.agents/skills/really-fast-reinstall/SKILL.md)
 skill describes the contract and the timing record.
 
 ## Author and validate

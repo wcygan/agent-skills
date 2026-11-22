@@ -97,7 +97,7 @@ just check-full
 ### This machine: `just install`
 
 Global skills on this machine come only from `just install`, described in
-`.agents/skills/install-agent-skills/SKILL.md`. One run:
+`.agents/skills/really-fast-reinstall/SKILL.md`. One run:
 
 1. Stages and commits every change in this checkout (`git add -A`), with a
    message derived from the changed paths or given with `-m`, and pushes it.
