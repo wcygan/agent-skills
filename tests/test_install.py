@@ -159,16 +159,18 @@ class InstallTests(unittest.TestCase):
         self.assertIn("left alone: alpha", result.stdout)
         self.assertIn("Mine.", (clash / "SKILL.md").read_text())
 
-    def test_a_failed_provider_push_stops_before_the_pin_is_published(self):
+    def test_a_failed_catalog_push_is_reported_and_the_rerun_publishes_it(self):
         self.box.run()
-        pinned = self.box.pin()
         git(self.box.provider, "remote", "set-url", "--push", "origin", "/nonexistent.git")
         self.box.skill("gamma")
         result = self.box.run()
         self.assertNotEqual(0, result.returncode)
         self.assertIn("Stopped: push from", result.stderr)
-        self.assertEqual(pinned, self.box.pin())
-        # The rerun finishes what the failed run left: the push, then the pin.
+        head = git(self.box.provider, "rev-parse", "HEAD")
+        self.assertNotEqual(head, git(self.box.provider, "rev-parse", "origin/main"))
+        # The pin push ran beside the failed one, so the skills and the pin are current.
+        self.assertEqual(head, self.box.pin())
+        self.assertTrue((self.box.shared / "gamma").is_dir())
         git(self.box.provider, "remote", "set-url", "--push", "origin",
             str(self.box.provider.parent / "agent-skills.git"))
         self.assertEqual(0, self.box.run().returncode)

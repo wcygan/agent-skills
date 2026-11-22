@@ -20,7 +20,9 @@ authorizes the commit, both pushes, the pin, and the global changes.
 
 ## What one run guarantees
 
-- The catalog commit is pushed before the dotfiles pin that names it.
+- The catalog and the dotfiles pin that names it are pushed at the same time.
+  A run that exits 0 published both. A rejected catalog push fails the run
+  while the pin may already be published; rerun after resolving it.
 - `~/.agents/skills` holds exactly the catalog's skills at that commit, plus
   entries from other sources, which are never changed.
 - A skill is replaced only when its git tree changed; the others only get the
@@ -49,10 +51,9 @@ by side. Pushes dominate; the script reuses one SSH connection for ten minutes
 through a control socket in `~/.cache/agent-skills`, so the first run after a
 pause is slower than the next.
 
-Independent work already runs at once: the catalog push beside the local
-install and the pin commit, the skill copies beside each other, and the opening
-git reads of both repositories. The dotfiles push waits for the catalog push on
-purpose, so a published pin never names an unpublished commit. Steps marked
+Independent work runs at once: the catalog push beside the local install and
+the pin commit, the two pushes beside each other, the skill copies beside each
+other, and the opening git reads of both repositories. Steps marked
 `(parallel)` in the timings overlap others, so the shares can exceed 100%.
 
 This project-local skill is not part of the published `skills/` catalog.

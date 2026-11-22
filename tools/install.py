@@ -383,8 +383,7 @@ def install(args: argparse.Namespace, provider: Path, consumer: Path, timeline: 
         commit = git(provider, "rev-parse", "HEAD")
         catalog = catalog_at_head(provider)
         replace, restamp, foreign, retired = plan_install(catalog, shared, commit, args.full)
-    # The provider push runs beside everything local. The pin is pushed only
-    # after it lands, so a published pin always names a published commit.
+    # The catalog push runs beside everything local.
     push = start_push(provider, provider_branch) if unpushed(provider, provider_branch) else None
     push_started = time.perf_counter()
 
@@ -416,14 +415,25 @@ def install(args: argparse.Namespace, provider: Path, consumer: Path, timeline: 
     (archive, add, remove, conflicts), _ = together(install_skills, commit_pin)
     # Everything after this line is network: the skills are already usable.
     timeline.installed_at = round(time.perf_counter() - timeline.started, 4)
-    if push:
-        finish_push(provider, push)
-        # Measured from its start, so it overlaps the local steps it ran beside.
-        timeline.spans.append({"step": "push catalog (parallel)", "ok": True,
-                               "seconds": round(time.perf_counter() - push_started, 4)})
-    with timeline.span("push dotfiles"):
-        if unpushed(consumer, consumer_branch):
-            finish_push(consumer, start_push(consumer, consumer_branch))
+    # Both pushes overlap: waiting for the catalog before pushing the pin would
+    # double the network time. If the catalog push is rejected while the pin
+    # lands, dotfiles names an unpublished commit until the next run pushes it.
+    pin_push = start_push(consumer, consumer_branch) if unpushed(consumer, consumer_branch) else None
+    pin_started = time.perf_counter()
+    failures = []
+    for label, root, running, started in (("push catalog (parallel)", provider, push, push_started),
+                                          ("push dotfiles (parallel)", consumer, pin_push, pin_started)):
+        if not running:
+            continue
+        try:
+            finish_push(root, running)
+        except Stop as error:
+            failures.append(str(error))
+        # Measured from its start, so it overlaps the steps it ran beside.
+        timeline.spans.append({"step": label, "ok": not running.returncode,
+                               "seconds": round(time.perf_counter() - started, 4)})
+    if failures:
+        raise Stop("; ".join(failures))
     stale = plan_install(catalog, shared, commit, False)
     if stale[0] or stale[1] or stale[3] or plan_links(set(catalog), shared, claude)[1]:
         raise Stop(f"Global skills did not converge: replace {stale[0]}, restamp {stale[1]}, "
