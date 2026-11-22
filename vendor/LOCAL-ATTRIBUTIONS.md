@@ -111,8 +111,8 @@ attribution footer is added. It has no `.vendored` marker or synchronization loc
 ## Statechart
 
 [statechart](../skills/statechart/SKILL.md) is a locally maintained adaptation of
-Lauren Tan's pstack `skills/statechart`, pstack 0.15.36, pinned at revision
-`4dd1d05818d19792e7cd6e818f1667f95f7e1dbe`. It includes the upstream MIT notice in
+Lauren Tan's pstack `skills/statechart`, pstack 0.15.46, pinned at revision
+`0b46ec399d55f2829e88822998f53b84944837d3`. It includes the upstream MIT notice in
 `references/LICENSE.txt`, and its frontmatter records that revision and path.
 
 The body, references, scripts, and tests keep the upstream content. Changes: the

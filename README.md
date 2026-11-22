@@ -1,7 +1,7 @@
 # agent-skills
 
 A public Agent Skills catalog with 1 orchestrator, 24 engineering principles,
-31 focused components, 9 procedural skills, and 8 specialist skills.
+31 focused components, 9 procedural skills, and 9 specialist skills.
 Components work independently. Procedures load only
 the components needed for the task, using relative links within the catalog.
 
@@ -120,6 +120,7 @@ with accurate prose and verification evidence.
 | [agent-desktop](skills/agent-desktop/SKILL.md) | Operate desktop applications through the agent-desktop CLI (vendored from Vercel). |
 | [postgres](skills/postgres/SKILL.md) | PostgreSQL schema, queries, connections, and performance (vendored from PlanetScale). |
 | [mysql](skills/mysql/SKILL.md) | MySQL/InnoDB schema, indexing, queries, and operations (vendored from PlanetScale). |
+| [visual-explainer](skills/visual-explainer/SKILL.md) | Explain systems, changes and plans as figure-led HTML pages (vendored from nicobailon). |
 | [rex-workflow](skills/rex-workflow/SKILL.md) | Organize projects and parallel agents in Rex sessions on an always-on host. |
 
 ## Install
@@ -200,7 +201,7 @@ Skills remain immediate children of `skills/`, following the
 [Agent Skills specification](https://agentskills.io/specification). The layout
 also supports Agent Plugins packaging. Source ownership for future vendors is
 recorded in `vendor/skills-lock.json`; adapted upstream work must preserve its
-provenance and license. The vendor lock tracks `postgres` and `mysql` from PlanetScale and `agent-desktop` from Vercel.
+provenance and license. The vendor lock tracks `visual-explainer` from nicobailon.
 
 ```sh
 uv tool run --from skills-ref agentskills validate ./skills/<name>

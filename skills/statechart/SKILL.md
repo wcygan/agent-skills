@@ -6,7 +6,7 @@ compatibility: Requires Node 22.18–22.x or 23.6+, Bun 1.1.5+, or Deno 2+, and 
 metadata:
   kind: component
   upstream-repository: https://github.com/cursor/plugins
-  upstream-revision: 4dd1d05818d19792e7cd6e818f1667f95f7e1dbe
+  upstream-revision: 0b46ec399d55f2829e88822998f53b84944837d3
   upstream-path: pstack/skills/statechart
   upstream-author: Lauren Tan
   maintenance: local
@@ -24,7 +24,7 @@ Work in a scratch folder outside the repo, so that the spec, TLC output, and cha
 sh <skill dir>/scripts/statechart SPEC.tla [--config FILE] [--view FILE] [--out DIR]
 ```
 
-`scripts/statechart.ts` is TypeScript, so run it with a runtime that can execute TypeScript. Run the launcher with `sh`, because an installed copy can lose its executable bit.
+`scripts/statechart.ts` is TypeScript, so run it with a runtime that can execute TypeScript. `scripts/statechart` is a POSIX shell script that picks one; run it with `sh`, because an installed copy can lose its executable bit. On native Windows, run `node --disable-warning=ExperimentalWarning <skill dir>/scripts/statechart.ts` with Node 22.18 to 22.x, or Node 23.6 or later.
 
 The first run installs TLC and Java with mise and needs the network. That install changes the user's machine, so ask for a go-ahead first unless the request explicitly asked for a model check; a run with the tools already installed needs no go-ahead, and reruns are safe to repeat.
 
