@@ -22,6 +22,8 @@ capabilities.
 
 1. Inspect the target base, current revision, final diff, and actual validation.
    Separate unrelated work and distinguish tests run from suggested commands.
+   Read the commit messages for intent, and check each claim you reuse against
+   the code, because a message can describe an earlier state of the branch.
    If the change has several independent purposes, use the slice-changes skill to
    propose a coherent boundary; rewriting history or expanding the task to improve
    the description changes what the reviewer is reviewing.
@@ -37,6 +39,9 @@ capabilities.
 4. Lay out the body with a short visible overview and the full description in a
    collapsed section, following the exact headings, disclosure rules, and
    scenario-diagram rules in [review package](references/review-package.md).
+   In a repository template, tick a checkbox only when it is true and keep the
+   markers that automation reads. Scale the body to the change: a small one
+   needs a sentence or two and one validation line, with no collapsed section.
    State verification for the current revision, reproducible commands when useful,
    and material compatibility, rollout, or rollback concerns, keeping uncertainty
    and failures visible above the fold.

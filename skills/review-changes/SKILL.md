@@ -33,6 +33,14 @@ request also asked for implementation.
 3. Require each finding to name a concrete failure or maintenance cost, its evidence,
    and its impact on the stated goals. Trace reachable execution paths for suspected
    bugs. Distinguish a demonstrated problem from an untested hypothesis.
+   - Point each finding at the smallest relevant changed line.
+   - Hold the change responsible only for a problem it introduced or made worse.
+     A problem that was already there is **Noted**, because blocking on it makes
+     the author pay for work outside the change.
+   - Check that each new or changed test would fail without the change. A test
+     that passes either way is no evidence for it.
+   - Question a changed file whose link to the stated intent is unclear: ask for
+     the link, or recommend splitting it out.
 4. Merge duplicate findings and investigate disagreements. Independent agreement
    strengthens a finding without proving it, because reviewers given the same
    brief can share the same blind spot; a serious finding from one reviewer still
@@ -52,5 +60,10 @@ when it stops you.
 The verdict leads, then the findings to act on, then the rest: considered and
 noted items, dismissals with reasons, disagreements, review limitations, and
 unresolved checks. Each retained finding has a disposition and rationale.
+
+For someone else's pull request, open with a few bullets on what the change does
+so the requester can check your reading of it, and deliver the findings to the
+requester. Posting a review comment speaks in the user's name, so it needs an
+explicit go-ahead.
 
 Adapted from pstack; [license and attribution](references/LICENSE.txt).
