@@ -2,7 +2,7 @@
 name: lean-verify
 description: "Prove a property of code for every input with the Lean 4 proof assistant, and leave a check that one command reruns. Use for Lean, Lake, or Mathlib work, \"prove this for all inputs\", or when a parser, codec, arithmetic routine, data-structure invariant, or policy rule must hold at every size and a bounded check or a test is not enough."
 license: MIT
-compatibility: Requires elan, which installs Lean 4 and Lake; the worked example also needs uv. Checked against Lean 4.36; verify tactic and Lake syntax against the installed version.
+compatibility: Requires elan, which installs Lean 4 and Lake; the worked examples also need uv, and the Rust one needs cargo and nix. Checked against Lean 4.36; verify tactic and Lake syntax against the installed version.
 metadata:
   kind: component
   maintenance: local
@@ -27,10 +27,10 @@ Use another tool in these cases, and say why:
 A theorem is about Lean definitions. It says nothing about code in another language until you connect the two. Pick one connection and name it in the hand-off:
 
 - **The code is Lean.** Prove the theorem about the definition that runs.
-- **The code is safe Rust.** Aeneas translates it to Lean. Read its documentation for the supported subset before you rely on it.
+- **The code is safe Rust.** Aeneas translates it to Lean, so the proof is about the code and no model is needed. It needs the Charon and Aeneas tools and Mathlib, about 8 GB. Read its documentation for the supported subset, and check the generated file for `axiom`, which marks Rust that it could not translate.
 - **Any other code.** Write a Lean model of the function, in this repo's names, with each definition pointing at the code it models. Then add a differential test: run the same generated inputs through the model and the real code, and compare the results. Without that test, the proof covers only the model.
 
-For that last connection, read the [worked example](references/example.md): a Python codec, its Lean model, the proof, and the differential test, in `examples/varint/`.
+Read the [worked examples](references/examples.md) before you set up your own: each is real code, its Lean side, the proof, and one command that reruns the check.
 
 ## Set up
 

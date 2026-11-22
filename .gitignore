@@ -23,6 +23,7 @@ dist/
 playwright-report/
 coverage/
 .lake/
+target/
 .browser-use/
 .env
 .env.*

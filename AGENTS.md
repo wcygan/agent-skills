@@ -112,9 +112,12 @@ Global skills on this machine come only from `just install`, described in
    leaves every entry from another source alone (such as `rex` and `synced`)
    and reports a catalog name it could not install or link.
 4. Points `agent-skills.lock.toml` in the sibling `dotfiles` checkout at the
-   commit, commits only that file, and pushes it at the same time as the
-   catalog. If the catalog push is rejected, the run fails and says so; rerun
-   it after resolving the rejection so the pin names a published commit.
+   commit and commits only that file.
+5. Exits, and pushes both repositories in the background. The next run, and
+   `just install --timings`, report a publish that failed or stopped early, and
+   the next run retries it. `just install --wait` pushes before it exits and
+   fails the run when a push is rejected; use it when you need to know the
+   commit is on GitHub.
 
 Both repositories must be on their default branch. The script validates
 nothing: CI runs `just check` on the pushed commit, so run `just check` first

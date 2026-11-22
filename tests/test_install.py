@@ -1,8 +1,11 @@
 """End-to-end checks of tools/install.py against real git repositories in a temp home."""
 import importlib.util
+import json
 import os
+import signal
 import subprocess
 import tempfile
+import time
 import unittest
 from pathlib import Path
 
@@ -27,6 +30,7 @@ class Sandbox:
         self.shared = self.home / ".agents" / "skills"
         self.claude = self.home / ".claude" / "skills"
         self.claude.mkdir(parents=True)
+        self.env: dict[str, str] = {}
         self.provider = self.checkout(root, "agent-skills")
         self.consumer = self.checkout(root, "dotfiles")
         (self.provider / "tools").mkdir()
@@ -63,21 +67,54 @@ class Sandbox:
         (folder / "SKILL.md").write_text(
             f"---\nname: {name}\ndescription: d\nmetadata:\n  kind: component\n---\n\n{body}")
 
-    def run(self, *flags: str) -> subprocess.CompletedProcess:
-        env = {**os.environ, "HOME": str(self.home), "GIT_SSH_COMMAND": "ssh"}
-        # The snapshot refresh belongs to the real catalog; the sandbox has no tools/catalog.py.
-        return subprocess.run(
-            ["python3", "-c",
-             "import runpy, subprocess, sys\n"
-             "real = subprocess.run\n"
-             "subprocess.run = lambda cmd, *a, **k: (subprocess.CompletedProcess(cmd, 0) "
-             "if cmd[:1] == ['uv'] else real(cmd, *a, **k))\n"
-             f"sys.argv = ['install.py', '--dotfiles', {str(self.consumer)!r}, *sys.argv[1:]]\n"
-             f"runpy.run_path({str(self.provider / 'tools' / 'install.py')!r}, run_name='__main__')",
-             *flags], env=env, text=True, capture_output=True)
+    def command(self, *flags: str) -> tuple[list[str], dict[str, str]]:
+        # The sandbox provider has no skill_catalog package, so the run skips the snapshot.
+        return (["python3", str(self.provider / "tools" / "install.py"), "--dotfiles",
+                 str(self.consumer), *flags],
+                {**os.environ, "HOME": str(self.home), "GIT_SSH_COMMAND": "ssh", **self.env})
+
+    def run(self, *flags: str, wait: bool = True) -> subprocess.CompletedProcess:
+        """Run the installer; `wait` pushes before it exits, so pushed state can be asserted."""
+        command, env = self.command(*flags, *(["--wait"] if wait else []))
+        return subprocess.run(command, env=env, text=True, capture_output=True)
+
+    def block_pushes(self) -> Path:
+        """Make every catalog push wait until the returned file is removed."""
+        gate = self.provider.parent / "gate"
+        gate.write_text("")
+        hook = self.provider / ".git" / "hooks" / "pre-push"
+        hook.parent.mkdir(exist_ok=True)
+        hook.write_text(f'#!/bin/sh\nwhile [ -e "{gate}" ]; do sleep 0.05; done\n')
+        hook.chmod(0o755)
+        return gate
+
+    def publishers(self) -> list[int]:
+        """Process ids of this sandbox's background publishers."""
+        pattern = f"{self.provider / 'tools' / 'install.py'} --publish"
+        return [int(pid) for pid in subprocess.run(["pgrep", "-f", pattern], text=True,
+                                                   capture_output=True).stdout.split()]
 
     def pin(self) -> str:
         return git(self.consumer, "show", "origin/main:agent-skills.lock.toml").split('commit = "')[1][:40]
+
+    def remote(self, name: str) -> Path:
+        return self.provider.parent / f"{name}.git"
+
+    def remote_pin(self) -> str:
+        return git(self.remote("dotfiles"), "show", "main:agent-skills.lock.toml").split('commit = "')[1][:40]
+
+    def publishes(self) -> list[dict]:
+        log = self.provider / ".git" / "install.push.jsonl"
+        return [json.loads(line) for line in log.read_text().splitlines()] if log.exists() else []
+
+    def settle(self) -> list[dict]:
+        """Wait up to 10 s for every background publisher of this sandbox to exit; return the records."""
+        deadline = time.monotonic() + 10
+        while self.publishers():
+            if time.monotonic() > deadline:
+                raise AssertionError("a background publisher is still running after 10 s")
+            time.sleep(0.05)
+        return self.publishes()
 
 
 class InstallTests(unittest.TestCase):
@@ -85,6 +122,7 @@ class InstallTests(unittest.TestCase):
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)
         self.box = Sandbox(Path(directory.name).resolve())
+        self.addCleanup(self.box.settle)  # A publisher must not outlive the directory it pushes from.
 
     def installed(self):
         return sorted(path.name for path in self.box.shared.iterdir())
@@ -188,6 +226,164 @@ class InstallTests(unittest.TestCase):
         (self.box.consumer / "notes.txt").write_text("mine\n")
         self.assertEqual(0, self.box.run().returncode)
         self.assertEqual("?? notes.txt", git(self.box.consumer, "status", "--porcelain"))
+
+    def assert_published(self):
+        """Both remotes hold what the checkouts hold, and the pin names the catalog commit."""
+        head = git(self.box.provider, "rev-parse", "HEAD")
+        self.assertEqual(head, git(self.box.remote("agent-skills"), "rev-parse", "main"))
+        self.assertEqual(git(self.box.consumer, "rev-parse", "HEAD"),
+                         git(self.box.remote("dotfiles"), "rev-parse", "main"))
+        self.assertEqual(head, self.box.remote_pin())
+
+    def test_a_default_run_exits_before_pushing_and_publishes_in_the_background(self):
+        self.box.skill("gamma")
+        result = self.box.run(wait=False)
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertIn("Publishing continues in the background", result.stdout)
+        self.assertTrue((self.box.shared / "gamma").is_dir())
+        records = self.box.settle()
+        self.assert_published()
+        self.assertEqual(["ok"], [record["outcome"] for record in records])
+        self.assertEqual(git(self.box.provider, "rev-parse", "HEAD"), records[-1]["commit"])
+
+    def test_a_failed_background_push_is_recorded_warned_about_and_retried(self):
+        self.box.run()
+        git(self.box.provider, "remote", "set-url", "--push", "origin", "/nonexistent.git")
+        self.box.skill("gamma")
+        result = self.box.run(wait=False)
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertEqual("failed", self.box.settle()[-1]["outcome"])
+        head = git(self.box.provider, "rev-parse", "HEAD")
+        self.assertNotEqual(head, git(self.box.remote("agent-skills"), "rev-parse", "main"))
+        result = self.box.run(wait=False)
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertTrue(result.stdout.startswith("Warning: the last publish"), result.stdout)
+        self.assertEqual("failed", self.box.settle()[-1]["outcome"])
+        git(self.box.provider, "remote", "set-url", "--push", "origin",
+            str(self.box.remote("agent-skills")))
+        self.assertEqual(0, self.box.run(wait=False).returncode)
+        self.assertEqual("ok", self.box.settle()[-1]["outcome"])
+        self.assert_published()
+        self.assertNotIn("Warning", self.box.run(wait=False).stdout)
+
+    def test_two_default_runs_back_to_back_leave_everything_published_and_clean(self):
+        self.box.skill("gamma")
+        first = self.box.run(wait=False)
+        self.box.skill("delta")
+        second = self.box.run(wait=False)
+        self.assertEqual(0, first.returncode, first.stdout + first.stderr)
+        self.assertEqual(0, second.returncode, second.stdout + second.stderr)
+        records = self.box.settle()
+        self.assert_published()
+        self.assertEqual({"ok"}, {record["outcome"] for record in records})
+        for checkout in (self.box.provider, self.box.consumer):
+            self.assertEqual("", git(checkout, "status", "--porcelain"))
+            git(checkout, "fsck", "--no-dangling")
+        self.assertEqual(["alpha", "beta", "delta", "gamma"], self.installed())
+
+    def test_wait_fails_the_run_when_the_remote_rejects_the_push(self):
+        self.box.run()
+        other = self.box.provider.parent / "other"
+        git(other.parent, "clone", "-q", str(self.box.remote("agent-skills")), "other")
+        (other / "theirs.txt").write_text("theirs\n")
+        git(other, "add", "-A")
+        git(other, "-c", "user.name=o", "-c", "user.email=o@example.invalid", "-c",
+            "commit.gpgsign=false", "commit", "-qm", "theirs")
+        git(other, "push", "-q", "origin", "main")
+        theirs = git(other, "rev-parse", "HEAD")
+        self.box.skill("gamma")
+        result = self.box.run()
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("Stopped: push from", result.stderr)
+        self.assertEqual(theirs, git(self.box.remote("agent-skills"), "rev-parse", "main"))
+        self.assertEqual("failed", self.box.publishes()[-1]["outcome"])
+
+    def test_an_unchanged_default_run_starts_no_publisher(self):
+        self.box.run()
+        before = self.box.publishes()
+        result = self.box.run(wait=False)
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertNotIn("Publishing continues", result.stdout)
+        self.assertEqual(before, self.box.settle())
+
+    def test_a_publisher_killed_before_recording_is_reported_and_the_next_run_warns(self):
+        self.box.run()
+        gate = self.box.block_pushes()
+        self.box.skill("gamma")
+        self.assertEqual(0, self.box.run(wait=False).returncode)
+        for pid in self.box.publishers():
+            os.killpg(pid, signal.SIGKILL)  # The publisher leads its own session, so this takes git too.
+        self.box.settle()
+        gate.unlink()
+        self.assertEqual(1, len(self.box.publishes()))
+        timings = self.box.run("--timings", wait=False).stdout
+        self.assertIn("Unpublished: catalog", timings)
+        self.assertIn("no publish is running", timings)
+        result = self.box.run(wait=False)
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertTrue(result.stdout.startswith("Warning: catalog"), result.stdout)
+        self.assertEqual("ok", self.box.settle()[-1]["outcome"])
+        self.assert_published()
+        self.assertNotIn("Unpublished", self.box.run("--timings", wait=False).stdout)
+        self.assertNotIn("Warning", self.box.run(wait=False).stdout)
+
+    def test_timings_reports_a_publish_still_in_progress(self):
+        self.box.run()
+        gate = self.box.block_pushes()
+        self.box.skill("gamma")
+        self.assertEqual(0, self.box.run(wait=False).returncode)
+        timings = self.box.run("--timings", wait=False).stdout
+        gate.unlink()
+        self.assertIn("a publish is in progress", timings)
+
+    def test_wait_says_it_is_waiting_for_a_running_publisher_then_finishes(self):
+        self.box.run()
+        gate = self.box.block_pushes()
+        self.addCleanup(gate.unlink, missing_ok=True)
+        self.box.skill("gamma")
+        self.assertEqual(0, self.box.run(wait=False).returncode)
+        output = self.box.provider.parent / "wait.out"
+        command, env = self.box.command("--wait")
+        with output.open("w") as sink:
+            waiting = subprocess.Popen(command, env=env, stdout=sink, stderr=subprocess.STDOUT)
+        self.addCleanup(waiting.kill)
+        deadline = time.monotonic() + 5
+        while "Waiting for" not in output.read_text() and time.monotonic() < deadline:
+            time.sleep(0.05)
+        said = output.read_text()
+        other = self.box.run(wait=False)
+        gate.unlink()
+        self.assertEqual(0, waiting.wait(timeout=10), output.read_text())
+        self.assertIn("Waiting for the publish in progress", said)
+        self.assertIn("Stopped: another install is running", other.stderr)
+        self.box.settle()
+        self.assert_published()
+
+    def test_runs_during_a_slow_push_queue_one_publisher_and_record_only_real_pushes(self):
+        self.box.run()
+        gate = self.box.block_pushes()
+        self.addCleanup(gate.unlink, missing_ok=True)
+        for name in ("gamma", "delta", "epsilon", "zeta"):
+            self.box.skill(name)
+            result = self.box.run(wait=False)
+            self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+            self.assertIn("Publishing continues in the background", result.stdout)
+        self.assertLessEqual(len(self.box.publishers()), 2)
+        gate.unlink()
+        records = self.box.settle()
+        self.assert_published()
+        self.assertEqual({"ok"}, {record["outcome"] for record in records})
+        self.assertNotIn({}, [record["pushes"] for record in records])
+
+    def test_a_push_that_hangs_is_stopped_and_recorded_as_failed(self):
+        self.box.run()
+        self.box.block_pushes()  # Never released: the hook ends when the sandbox is removed.
+        self.box.env["AGENT_SKILLS_PUSH_TIMEOUT"] = "1"
+        self.box.skill("gamma")
+        self.assertEqual(0, self.box.run(wait=False).returncode)
+        record = self.box.settle()[-1]
+        self.assertEqual("failed", record["outcome"])
+        self.assertIn("timed out after 1s", record["error"])
 
 
 class UnitTests(unittest.TestCase):

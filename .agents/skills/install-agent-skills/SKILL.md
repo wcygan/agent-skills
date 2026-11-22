@@ -10,6 +10,7 @@ Run from the repository root:
 ```sh
 just install                  # commit, push, pin, install
 just install -m "feat: ..."   # with an explicit commit message
+just install --wait           # push before exiting; fail on a rejected push
 just install --full           # rewrite every installed skill
 just install --timings        # step timings of recent runs
 ```
@@ -20,9 +21,11 @@ authorizes the commit, both pushes, the pin, and the global changes.
 
 ## What one run guarantees
 
-- The catalog and the dotfiles pin that names it are pushed at the same time.
-  A run that exits 0 published both. A rejected catalog push fails the run
-  while the pin may already be published; rerun after resolving it.
+- A run that exits 0 has installed the skills and committed both repositories.
+  Both pushes then run at the same time in a detached publisher, recorded in
+  `.git/install.push.jsonl`. A failed or interrupted publish is reported by the
+  next run and by `--timings`, and the next run retries it. With `--wait`, a
+  run that exits 0 has published both.
 - `~/.agents/skills` holds exactly the catalog's skills at that commit, plus
   entries from other sources, which are never changed.
 - A skill is replaced only when its git tree changed; the others only get the
@@ -51,9 +54,10 @@ by side. Pushes dominate; the script reuses one SSH connection for ten minutes
 through a control socket in `~/.cache/agent-skills`, so the first run after a
 pause is slower than the next.
 
-Independent work runs at once: the catalog push beside the local install and
-the pin commit, the two pushes beside each other, the skill copies beside each
-other, and the opening git reads of both repositories. Steps marked
-`(parallel)` in the timings overlap others, so the shares can exceed 100%.
+Independent work runs at once: the two pushes beside each other, the pin
+commit beside the install, the skill copies beside each other, and the opening
+git reads of both repositories. Steps marked `(parallel)` in the timings
+overlap others, so the shares can exceed 100%. A push is stopped after 120
+seconds (`AGENT_SKILLS_PUSH_TIMEOUT` changes that).
 
 This project-local skill is not part of the published `skills/` catalog.
