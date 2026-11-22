@@ -1,7 +1,7 @@
 # agent-skills
 
 A public Agent Skills catalog with 1 orchestrator, 24 engineering principles,
-31 focused components, 9 procedural skills, and 9 specialist skills.
+32 focused components, 9 procedural skills, and 9 specialist skills.
 Components work independently. Procedures load only
 the components needed for the task, using relative links within the catalog.
 
@@ -90,6 +90,7 @@ providers. Independent execution is optional and its absence is stated honestly.
 | [deliver-change](skills/deliver-change/SKILL.md) | Present or publish a verified result within authorized scope. |
 | [write-clearly](skills/write-clearly/SKILL.md) | Make technical prose, captions, and labels concise, concrete, and accurate. |
 | [slice-changes](skills/slice-changes/SKILL.md) | Plan coherent PRs with verifiable intermediate states. |
+| [draw-diagram](skills/draw-diagram/SKILL.md) | Draw a quick Mermaid diagram that answers one question, and check that it renders. |
 | [prepare-pull-request](skills/prepare-pull-request/SKILL.md) | Assemble a concise visual review package from the actual diff and evidence. |
 
 The initial names `how`, `architect`, `arena`, and `interrogate` are now

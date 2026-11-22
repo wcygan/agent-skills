@@ -165,6 +165,11 @@ teaching workflow was copied. The existing pstack-derived `write-clearly` retain
 license, with new local examples for concise prose, labels, captions, and evidence.
 Local routing additions connect these components to wcygan-mode and its procedures.
 
+`draw-diagram` is an original local component by William Cygan, licensed MIT. It
+is written in the short single-file shape pstack uses for focused skills. Its rule
+to build a larger picture as a series that adds one part at a time restates an
+idea from pstack's `teach` skill; no upstream text is copied.
+
 
 ## Original ambition workflows
 
