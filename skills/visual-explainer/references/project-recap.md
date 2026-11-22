@@ -1,11 +1,8 @@
----
-name: project-recap
-description: Generate a visual project recap for context switching
----
+# Project recap
 
-Load the visual-explainer skill and make a visual project recap for someone who is coming back to the project.
+Make a visual project recap for someone who is coming back to the project.
 
-`$@` can set the time window (for example `2w`).
+The request can set the time window (for example `2w`).
 
 Read the README, changelog, and package/build files, the top-level tree, `git status`, recent commits, open branches, TODOs in recently changed files, any progress or todo notes, and the main entry points. Cite command output or `file:line`. Do not invent momentum.
 

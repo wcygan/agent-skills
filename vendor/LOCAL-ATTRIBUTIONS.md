@@ -11,6 +11,16 @@ license in its frontmatter, and its license file stays in `references/`.
 | `mysql` | <https://github.com/planetscale/database-skills> | `f6ed002d03084cb39c01d1d58904d47a36f5322a` | `skills/mysql` | MIT |
 | `postgres` | <https://github.com/planetscale/database-skills> | `f6ed002d03084cb39c01d1d58904d47a36f5322a` | `skills/postgres` | MIT |
 | `agent-desktop` | <https://github.com/vercel-labs/agent-desktop> | `5261b5287b5208e7c4bf3713df6f66faaaf2c4cc` | `skills/agent-desktop` | Apache-2.0 |
+| `visual-explainer` | <https://github.com/nicobailon/visual-explainer> | `9d5f880b7e8e0a9a80c890b8e1bb6918b68481ad` | `plugins/visual-explainer` | MIT |
+
+`visual-explainer` (version 0.15.0) is one skill here, not a plugin. Changes: the
+ten `commands/` files are removed; seven become reference files (`compare`,
+`diff-review`, `fact-check`, `plan-review`, `project-recap`, `state-machine`,
+`visual-plan`) and the slide, video and plain-page commands become rows of a
+routing table in `SKILL.md`. The `.claude-plugin/plugin.json` manifest and the
+`mcp/` server, which registered those commands as prompts and has no package
+manifest to run from in an installed skill, are removed. The kit, renderer,
+other references and templates are unchanged.
 
 ## Pstack adaptations
 

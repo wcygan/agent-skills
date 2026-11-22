@@ -1,9 +1,6 @@
----
-name: state-machine
-description: Draw a state machine from the code itself, walk every state, and show each rule it breaks as a path to replay
----
+# State machine from code
 
-Load the visual-explainer skill, read `references/machines.md`, and draw the state machine in `$@` (a file, a reducer, or a feature). With no argument, ask which machine.
+Read `machines.md`, and draw the state machine the request names (a file, a reducer, or a feature). With none named, ask which machine.
 
 1. Gather: find the step (a reducer, an XState config, a `transition()`), the shape of its state, and every event that reaches it. Cite each with `file:line`.
 2. Model: import the step from the repo. Copy a step as a hand model (`when`, `then`, `at:`) only when it does I/O, and say which steps are copied.

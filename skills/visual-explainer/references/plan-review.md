@@ -1,15 +1,12 @@
----
-name: plan-review
-description: Compare an implementation plan against the current codebase, with each fix to accept or reject in the page
----
+# Plan review
 
-Load the visual-explainer skill and make a visual plan review.
+Make a visual plan review.
 
-Input: `$@` is a plan path or plan text. If it is empty, ask for the plan.
+Input: the request gives a plan path or plan text. If it gives neither, ask for the plan.
 
 Read the whole plan, every file it references, and the code that depends on them. For each proposed change, check that the file, function, or type exists, that current behavior matches the plan, which ripple effects it misses, and whether its tests fit the repo style. Cite the plan section and `file:line`.
 
-Write the review as a plan page (`references/plans.md`), so the reader accepts or rejects each fix in place:
+Write the review as a plan page (`plans.md`), so the reader accepts or rejects each fix in place:
 
 - **Header**: h1 "Review: <plan name>"; the lead gives the verdict (approve, revise, or reject) and why.
 - **Hero**: `<ve-flow>` of the planned design, the parts a finding touches marked `gone` or `new` and linked to its claim.

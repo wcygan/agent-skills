@@ -1,11 +1,6 @@
----
-name: generate-visual-plan
-description: Generate an interactive visual implementation plan the reader can answer in place
----
+# Visual plan
 
-Load the visual-explainer skill and make a visual implementation plan for: $@
-
-Follow `references/plans.md`.
+Make a visual implementation plan for the request. Follow `plans.md`.
 
 1. **Research first:** entry points, affected modules, public APIs, data model and config, tests, similar features, and README/CHANGELOG constraints. Note exact `file:line` and the user's own words.
 2. **Write the level-1 claims** and fix them before anything else.

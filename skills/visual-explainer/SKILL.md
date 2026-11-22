@@ -6,11 +6,34 @@ compatibility: Requires a browser to view generated HTML files. Optional surf-cl
 metadata:
   author: nicobailon
   version: "0.15.0"
+  upstream-repository: https://github.com/nicobailon/visual-explainer
+  upstream-revision: 9d5f880b7e8e0a9a80c890b8e1bb6918b68481ad
+  upstream-path: plugins/visual-explainer
+  upstream-author: nicobailon
+  maintenance: local
 ---
 
 # Visual Explainer
 
 Turn what you know into something a person understands in ten seconds. The default output is one HTML page whose spine is figures; text is caption, not content. Animate when motion helps the reader understand a process, a flow, a change of state, or cause and effect; keep what is static still.
+
+## Pick the job
+
+Read the one reference the request matches before gathering; a request that matches none is a plain explainer page.
+
+| The request asks to | Read |
+|---|---|
+| compare options and recommend one | `references/compare.md` |
+| review a diff, branch, commit, or PR | `references/diff-review.md` |
+| review a plan against the codebase | `references/plan-review.md` |
+| plan an implementation | `references/visual-plan.md` |
+| recap a project for someone coming back | `references/project-recap.md` |
+| check a generated page against code and git history | `references/fact-check.md` |
+| draw a state machine from code | `references/state-machine.md` |
+| make slides, only when asked | `references/slides.md`; for PPTX follow its PPTX section, and if the exporter is not installed deliver the HTML deck and say what is missing |
+| make a video, only when asked | `references/video.md`; its tutorial section records a live web app, and every number in the narration comes from the source |
+
+For a plain explainer page, find the one sentence the reader must leave with, build the page by the rules below, and run the Before delivery check.
 
 ## Deliver
 
@@ -58,7 +81,7 @@ Shape the page to the content; merge, reorder, or drop sections.
 | A process over time, steps, a state machine, queue, or workflow | stepper or scene player; a state machine replays one event per step |
 | A state machine read from the user's code | `<ve-flow>` with a model: the render walks every state and marks the rules it breaks (`references/machines.md`); one with no code to cite stays a hand-drawn replay |
 | A setting to feel: TTL, rollout % | live figure |
-| Slide deck, only when asked (`/generate-slides`, `--slides`); PPTX only on request or `--pptx` | `references/slides.md` |
+| Slide deck, only when asked; PPTX only on request | `references/slides.md` |
 
 Hand-drawn SVG is the default; never bend a figure to fit a tag. Steppers, replays, live figures, and three.js: `references/motion.md`. Mermaid only when the user asks for it or supplies its source; images (a hero or concept art) only when an image tool exists; both, and the older v0.11 recipes: `references/extras.md`. Do not read or copy `templates/page.html`.
 
@@ -81,7 +104,7 @@ Exact, calm, visual, and specific to the subject: someone who understands the sy
 ## Animate
 
 - **On the page, wherever it helps, unasked:** steppers, scene players, replays, flow dots, live figures (`references/motion.md`). Script first: one claim per step; the picture changes with every sentence.
-- **Video file** (`/generate-video`, MP4), only on request: `references/video.md`, rendered with `visual-explainer-video` (or `npx -y -p visual-explainer -p playwright-core visual-explainer-video`).
+- **Video file** (MP4), only on request: `references/video.md`, rendered with `visual-explainer-video` (or `npx -y -p visual-explainer -p playwright-core visual-explainer-video`).
 
 ## Before delivery
 
@@ -90,3 +113,5 @@ Exact, calm, visual, and specific to the subject: someone who understands the sy
 □ one look at the sheet: the first screen is the answer; each figure states its claim and draws the mechanism; it would not pass for a generic template
 □ slides: each fits, all source items are covered, the delivery check passes
 ```
+
+Adapted from nicobailon's visual-explainer; [license](references/LICENSE.txt).

@@ -21,9 +21,9 @@
     "tools/catalog.py": "96d000ca4a86ef78e87e53a632137e0a547251acf8b3ea4d5366d15cbc11d165",
     "tools/sync_skills.py": "4726c4e7702a586522031e2684aea035d921ec90a1ba83d49a4daac01b564dab",
     "uv.lock": "b8088892e84e2a71c92df67f4b74ec1b7b9b3d7f6fffa4eebbec26fd22be8f9d",
-    "vendor/ATTRIBUTIONS.md": "ade699c8da64f1531c954fc90bd73bdfba5d052f97f6dac59d4ce982cac987a4",
-    "vendor/LOCAL-ATTRIBUTIONS.md": "2f03689f973a4242eb7ba9a1a596b35f29839c9e817251080ed1743e99faf044",
-    "vendor/skills-lock.json": "8ae440fadaa79c8d03bd6d00bf98efca11af1352477de82dadfea4b111d373b2"
+    "vendor/ATTRIBUTIONS.md": "8164d12bec228efd517654f7cabc4fcb81f6c7db3ff46d0177a55dfaf54e1133",
+    "vendor/LOCAL-ATTRIBUTIONS.md": "0643991978aa89d0467455a05473fbff4159334a71e0eec65e47f19ef4d88d8e",
+    "vendor/skills-lock.json": "28696579e93277dc33a99acfa4cedd145699c8f2ef2863ad7606d157b6c5c3c0"
   },
   "schema": 1,
   "skills": {
@@ -92,7 +92,7 @@
     "typescript-app-stack": "86797498de60c3e977427589ae59e8b5049df486fd392221d5ebd94044dc235a",
     "uv-python": "81ad8d996b924f41ffa29454a1279a7debf58dbaf7f9d2442c3afdd69f69a93f",
     "verify-behavior": "443d40d9686f805e9cea7773383e70401f2644c2c9feeedad26c422a7ad150b7",
-    "visual-explainer": "8fa561536e1cd75bf29b937f38e90424509973f32ade58b65b304ad9979b8885",
+    "visual-explainer": "d84a11cfa040e0347aaadc1132024d6d1ac1ff12ad5a79d8d495b8f233b13eed",
     "wcygan-coordinate": "207a0c984a7e9bacd408ca9bd0b52ca43df28d0e5018128e1830e8ddae2b696c",
     "wcygan-deliver": "363847a4454d11ad2efe8be83f29477568be0ff3f4a484fb8e212281bea57e19",
     "wcygan-design": "b66c93fafb38d5c9f6d531affb739000a14993d07164336e438d5943606329dc",
