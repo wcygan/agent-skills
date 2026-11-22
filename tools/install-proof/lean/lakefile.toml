@@ -1,0 +1,9 @@
+name = "installplan"
+defaultTargets = ["InstallPlan", "model"]
+
+[[lean_lib]]
+name = "InstallPlan"
+
+[[lean_exe]]
+name = "model"
+root = "Main"

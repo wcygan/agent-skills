@@ -53,6 +53,13 @@ rejected dotfiles push means another commit landed there: pull it, then rerun.
 against the pinned commit on GitHub. It takes about nine seconds, so it is not
 part of the install; run it after changing `tools/install.py`.
 
+`just verify-install` checks a Lean proof that one run leaves exactly the
+catalog's skills, never changes an entry from another source, and leaves
+nothing for a second run to do. It then compares the proved model with the
+script's own planning and install functions on 3,120 generated situations. Run
+it after changing `plan_install`, `plan_links`, `install_tree`, `stamp`, or
+`archive_retired`; it needs elan and takes a few seconds.
+
 ## Profile
 
 Every run prints its step timings and appends them to

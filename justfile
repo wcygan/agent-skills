@@ -47,6 +47,10 @@ parent-upgrade $CATALOG_TARGET="":
 install *flags:
     @uv run --script tools/install.py "$@"
 
+# Check the Lean proof of the install plan and compare its model with tools/install.py (needs elan).
+verify-install:
+    uv run tools/install-proof/check.py
+
 # Validate directly vendored skills.
 vendor-validate:
     uv run --locked tools/sync_skills.py validate
