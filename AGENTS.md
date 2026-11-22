@@ -94,41 +94,38 @@ just check-full
 
 ## Distribution
 
-### This machine: dotfiles pin only
+### This machine: `just install`
 
-Global skills on this machine come only from the dotfiles pin. Follow
-`.agents/skills/reinstall-agent-skills/SKILL.md`; in short:
+Global skills on this machine come only from `just install`, described in
+`.agents/skills/install-agent-skills/SKILL.md`. One run:
 
-1. Commit the reviewed change on `main`. The script refuses any other branch,
-   and it refuses a provider checkout with uncommitted paths: it never commits
-   provider changes itself. If a checkout holds the user's unrelated edits, run
-   from fresh clones of `agent-skills` and `dotfiles` side by side instead.
-   Never stash, commit, or discard the user's edits to make a checkout clean.
-2. `just reinstall` is a read-only dry run. Show the user its plan: the commits
-   it would push, the catalog check, and the `~/.claude/skills` link changes.
-3. `just reinstall --apply` validates and pushes the provider, advances and
-   pushes the dotfiles pin, installs into `~/.agents/skills`, and reconciles
-   `~/.claude/skills`, where each catalog skill is a symlink to its pinned copy:
-   `~/.claude/skills/<name> -> ~/.agents/skills/<name>`. It adds a link for each
-   added skill and removes the dangling link of each retired one. It leaves
-   every other entry alone (such as `synced`) and reports a catalog name it
-   could not link.
-4. Both runs stop before changing anything when an installed skill tree holds
-   anything but files and directories, such as a `.venv`, because the installer
-   refuses to archive such a tree. Report the listed paths; moving them out of
-   an installed skill needs the user's go-ahead.
+1. Stages and commits every change in this checkout (`git add -A`), with a
+   message derived from the changed paths or given with `-m`, and pushes it.
+   Because it commits everything, look at `git status` first, and get the
+   user's go-ahead before running it when the checkout holds changes you did
+   not make.
+2. Installs the catalog at that commit from this checkout into
+   `~/.agents/skills`, stamped with the same source metadata GitHub CLI writes,
+   and links each skill as `~/.claude/skills/<name> -> ~/.agents/skills/<name>`.
+3. Moves skills the catalog no longer ships into
+   `~/.local/state/dotfiles/agent-skills-archives/` and removes their links. It
+   leaves every entry from another source alone (such as `rex` and `synced`)
+   and reports a catalog name it could not install or link.
+4. Points `agent-skills.lock.toml` in the sibling `dotfiles` checkout at the
+   commit, commits only that file, and pushes it after the catalog push lands.
 
-Never copy skill content into `~/.agents/skills` or `~/.claude/skills`, and
-never link by hand to anything other than a pinned copy. `just reinstall
---apply` and the dotfiles check ignore hand copies, and the next pinned install
-can collide with them. After a run from fresh clones, the user's own `main`
-checkouts are behind `origin`; report that rather than pulling over their
-uncommitted edits.
+Both repositories must be on their default branch. The script validates
+nothing: CI runs `just check` on the pushed commit, so run `just check` first
+when the change is more than a routine edit. `./bootstrap.sh agent-skills
+--check` in dotfiles remains the independent audit of the installed copies.
+
+Never copy skill content into `~/.agents/skills` or `~/.claude/skills` by hand,
+and never edit an installed copy: the next run replaces it.
 
 ## Other machines: GitHub CLI
 
 Machines without the dotfiles pin (other users, CI, fresh hosts) install with
-GitHub CLI. On this machine, use the dotfiles pin above instead.
+GitHub CLI. On this machine, use `just install` above instead.
 
 - Installation: `gh skill install OWNER/agent-skills --agent <agent> --scope <scope>` (`--all` to install every skill; a trailing skill name selects one).
 - Prefer the shared Agent Skills directory `~/.agents/skills` for user-level

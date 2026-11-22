@@ -30,7 +30,7 @@ SKILL_PATTERN = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 IGNORED_DIRECTORIES = {
     "__pycache__", ".mypy_cache", ".pytest_cache", ".ruff_cache", "node_modules",
     ".data", ".output", ".tanstack", "dist", "test-results", "playwright-report",
-    "coverage", ".browser-use", ".venv",
+    "coverage", ".browser-use", ".venv", ".lake",
 }
 IGNORED_FILES = {".DS_Store"}
 

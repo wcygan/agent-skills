@@ -22,6 +22,7 @@ node_modules/
 dist/
 playwright-report/
 coverage/
+.lake/
 .browser-use/
 .env
 .env.*

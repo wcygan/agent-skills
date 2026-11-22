@@ -42,9 +42,10 @@ parent-upgrade-preview $CATALOG_TARGET="":
 parent-upgrade $CATALOG_TARGET="":
     uv run --locked tools/catalog.py upgrade
 
-# Preview, or with --apply publish, this machine's dotfiles-pinned global skills.
-reinstall *flags:
-    uv run --script tools/reinstall_agent_skills.py {{ flags }}
+# Commit and push this catalog, pin it in dotfiles, and install it globally.
+[positional-arguments]
+install *flags:
+    @uv run --script tools/install.py "$@"
 
 # Validate directly vendored skills.
 vendor-validate:

@@ -1,7 +1,7 @@
 # agent-skills
 
 A public Agent Skills catalog with 1 orchestrator, 24 engineering principles,
-30 focused components, 9 procedural skills, and 8 specialist skills.
+31 focused components, 9 procedural skills, and 8 specialist skills.
 Components work independently. Procedures load only
 the components needed for the task, using relative links within the catalog.
 
@@ -76,6 +76,7 @@ providers. Independent execution is optional and its absence is stated honestly.
 | [measure-performance](skills/measure-performance/SKILL.md) | Measure a performance claim fairly and repeatably. |
 | [model-state-transitions](skills/model-state-transitions/SKILL.md) | Model and verify lifecycle rules as explicit states, events, and transitions. |
 | [statechart](skills/statechart/SKILL.md) | Model-check a TLA+ spec with TLC and draw it as a Mermaid statechart with bug paths. |
+| [lean-verify](skills/lean-verify/SKILL.md) | Prove a property of code for every input with Lean 4 and leave a rerunnable check. |
 | [coordinate-work](skills/coordinate-work/SKILL.md) | Assign independent units, control shared writes, and reconcile results. |
 | [decision-log](skills/decision-log/SKILL.md) | Keep an auditable record of consequential choices and evidence. |
 | [progress-report](skills/progress-report/SKILL.md) | Catch the user up on changes, status, and decisions awaiting them. |
@@ -173,33 +174,25 @@ files require explicit reconciliation. Plain Git forks can merge upstream;
 [BOOTSTRAP.md](BOOTSTRAP.md) describes adoption for templates and other arrival
 routes. A repository update does not by itself remove globally installed copies.
 
-## Publish and reset this machine through dotfiles
+## Install on this machine
 
-The repository-local [reinstall-agent-skills](.agents/skills/reinstall-agent-skills/SKILL.md)
-workflow owns provider publication, the exact dotfiles pin and global refresh:
+One command commits and pushes this catalog, pins the new commit in dotfiles,
+and installs it into `~/.agents/skills` with links in `~/.claude/skills`:
 
 ```sh
-just reinstall              # dry run: preflight, plan, read-only catalog check
-just reinstall --apply      # publish and install from the reviewed default branch
-# Explicitly reset the entire shared user catalog:
-just reinstall --apply --reset-global
-# Use a clean alternate consumer checkout when preserving unrelated edits:
-just reinstall --apply --dotfiles /path/to/dotfiles
+just install                    # commit, push, pin, install
+just install -m "feat: ..."     # the same, with your commit message
+just install --full             # also rewrite skills whose content did not change
+just install --timings          # compare the step timings of recent runs
 ```
 
-Without `--apply` the script changes nothing. Both repositories must be on their
-default branch and the provider checkout must have no uncommitted paths, so only
-reviewed, committed work can reach the pin. The dotfiles path defaults to a
-sibling of the main checkout, including from a worktree. Run it from clean
-clones of both repositories when either checkout has unrelated edits.
-With `--apply`, the script runs `just check-full`, pushes the provider's commits,
-advances the consumer pin, installs and verifies through
-`./bootstrap.sh agent-skills`, points Claude Code's `~/.claude/skills` links at
-the pinned copies, then commits and pushes the pin. Standard refresh
-archives retired provider-owned copies through `--prune`. `--reset-global`
-archives every other shared user skill through `--reset --yes`. Machine archives
-live under XDG state outside skill discovery roots. Unrelated dotfiles edits must
-be preserved; the consumer checkout used by the script must be clean.
+Run it on the default branch of both repositories. It stages and commits every
+change in this checkout, so review `git status` first. Each step does only what
+is not already true, so a rerun after a failure continues where it stopped. A
+skill removed from the catalog is moved out of the global directories into
+`~/.local/state/dotfiles/agent-skills-archives/`; entries from other sources are
+never touched. The [install-agent-skills](.agents/skills/install-agent-skills/SKILL.md)
+skill describes the contract and the timing record.
 
 ## Author and validate
 
