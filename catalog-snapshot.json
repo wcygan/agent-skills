@@ -22,7 +22,7 @@
     "tools/sync_skills.py": "4726c4e7702a586522031e2684aea035d921ec90a1ba83d49a4daac01b564dab",
     "uv.lock": "b8088892e84e2a71c92df67f4b74ec1b7b9b3d7f6fffa4eebbec26fd22be8f9d",
     "vendor/ATTRIBUTIONS.md": "8164d12bec228efd517654f7cabc4fcb81f6c7db3ff46d0177a55dfaf54e1133",
-    "vendor/LOCAL-ATTRIBUTIONS.md": "0643991978aa89d0467455a05473fbff4159334a71e0eec65e47f19ef4d88d8e",
+    "vendor/LOCAL-ATTRIBUTIONS.md": "79d3ad1474d65ce1ac8fe03287b55e9b32c5b58282ca6c66d33b148acb932206",
     "vendor/skills-lock.json": "28696579e93277dc33a99acfa4cedd145699c8f2ef2863ad7606d157b6c5c3c0"
   },
   "schema": 1,
@@ -86,6 +86,7 @@
     "recover-context": "71fd726c35819803891680dfb1662ae0782d6e54d98346ebbd4b2200bbe41f2b",
     "reproduce-bug": "41cf4b77741e226cedafdb81c79226bd795e66a9f2dfeebd384a6fe058b9b78c",
     "review-changes": "5fbad8d00fae0451c451c0d5b1e80a80f9cbf3072c4edfe90610b1330aa026d6",
+    "review-report": "345237f502544def7bdbe9f766f66775954f044ce793bc99704982e9dbeaffbf",
     "rex-workflow": "9ae0806b560b179df71519bc81b8239a447bbfa769eecb7ef344f4844e69a651",
     "slice-changes": "e4b53568da09e7e6bb1393a01ebed1e1a94e71870e0f6fa6e005c06ceb899196",
     "statechart": "e90494e2181cd936d6462de83579bec3d511c39cdbcb4b8fa0c0ab7ed3a23df8",

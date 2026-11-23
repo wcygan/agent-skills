@@ -180,6 +180,10 @@ is written in the short single-file shape pstack uses for focused skills. Its ru
 to build a larger picture as a series that adds one part at a time restates an
 idea from pstack's `teach` skill; no upstream text is copied.
 
+`review-report` is an original local component by William Cygan, licensed MIT. It
+renders the Act on and Consider findings of a `review-changes` review as one
+evidence page; no upstream text or code is copied.
+
 
 ## Original ambition workflows
 
