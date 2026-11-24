@@ -1,10 +1,13 @@
 # Fact-check
 
-Fact-check the document the request names. With no path, use the newest HTML page excluding `.src.html`. Native Pi: call `visual_explainer` `prepare` with `topic: "Fact-check"` and `preferSubagent: false`, then search its `outputDir`. Elsewhere: use nonblank `VISUAL_EXPLAINER_OUTPUT_DIR` (relative to the working directory), else `~/.agent/diagrams/`.
+Identify the page from the user's path, link, description, or earlier artifact.
+If the target is still unclear, ask which page to check.
 
-1. Extract every claim that you can verify: paths, names, behavior, data flow, APIs, commands, dependencies, tests, numbers, and git history. Skip opinions.
-2. Check each claim against the source or `git show`. Mark it verified, corrected, unsupported, or unverifiable.
-3. Fix errors with small edits to the page's source (`<name>.src.html` when it exists, else the HTML) and render again; keep its structure and style. A wrong edge or label is a wrong claim too.
-4. Add a verification strip at the top: counts per status as chips, with a `<details>` list of what changed.
+Check factual claims in the prose and figures against the relevant source or
+Git revision. Include labels, arrow directions, commands, and numbers. Report
+discrepancies with the evidence and identify claims you could not verify.
 
-Open the result; for Markdown, report the path.
+When the user asks for corrections, edit the identified document. If its HTML
+comes from `<name>.src.html`, edit that source and render it again. Inspect
+the corrected document, link it, and summarize what changed. Add an in-page
+verification summary when requested.

@@ -18,6 +18,9 @@ metadata:
 For a quick diagram, inline Mermaid, or a requested `.mmd` file, use
 [Standalone Mermaid](references/mermaid.md). Deliver the diagram directly.
 
+For a [fact-check of an existing page](references/fact-check.md), report findings
+in the reply. Update the page when the user asks for corrections.
+
 For a broader explanation, default to a self-contained HTML page. Put the answer
 in the first viewport as a figure and one sentence. Give each figure a claim in
 its caption, draw the mechanism with verb-labeled edges, and put measurements
@@ -34,7 +37,6 @@ follow a change, replay an event, or explore a setting.
 | Explain a plan against the codebase | [Plan review](references/plan-review.md) |
 | Prepare a visual implementation plan | [Visual plan](references/visual-plan.md) and [plan format](references/plans.md) |
 | Recap a project | [Project recap](references/project-recap.md) |
-| Check an existing page against code and history | [Fact-check](references/fact-check.md) |
 | Draw and check a state machine from code | [State machine](references/state-machine.md) and [models](references/machines.md) |
 | Make requested slides or PPTX | [Slides and export](references/slides.md). If PPTX export is unavailable, deliver the HTML deck and report the missing export. |
 | Make a requested MP4 or live app tutorial | [Video](references/video.md) |

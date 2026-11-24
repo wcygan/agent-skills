@@ -13,14 +13,15 @@ metadata:
 
 # Wcygan mode
 
-Work to the user's requested outcome and destination. Read the [principle index](references/principles.md)
-once per task. Open the rules triggered by the work, including any named by title or
-former `principle-*` skill name.
+Work to the user's requested outcome and destination. For a focused request,
+open its method directly. For multi-step work, choose the smallest matching
+playbook. Consult the [principle index](references/principles.md) for substantive
+engineering decisions or when the user names a rule by title or former
+`principle-*` skill name. Open the matching rule.
 
-For a focused request, open its method directly (`references/methods/<name>.md`). For multi-step work, choose the
-smallest matching playbook. Honor explicit checkpoints and continue through every
-stage already requested. Use project commands when a specialist is unavailable.
-If its artifact requires a missing tool, identify that dependency.
+Honor explicit checkpoints and continue through every stage already requested.
+Use project commands when a specialist is unavailable. If its artifact requires
+a missing tool, identify that dependency.
 
 ## Focused requests
 

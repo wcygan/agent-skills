@@ -24,7 +24,7 @@ describe the choice it changed in the final reply.
 | [Outcome-Oriented Execution](principles/principle-outcome-oriented-execution.md) | Planned migrations with declared phase boundaries: converge on the target design. |
 | [Experience First](principles/principle-experience-first.md) | Product or interface tradeoffs: optimize the experience of users and maintainers. |
 | [Exhaust the Design Space](principles/principle-exhaust-the-design-space.md) | A novel interaction or architecture lacks precedent: compare two or three prototypes. |
-| [Build the Lever](principles/principle-build-the-lever.md) | Nontrivial work: build the smallest rerunnable tool that does or proves it. |
+| [Build the Lever](principles/principle-build-the-lever.md) | Repeated operations or a missing check call for a rerunnable tool. See whether an existing one covers the work. |
 
 ## Architecture
 

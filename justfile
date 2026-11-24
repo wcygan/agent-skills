@@ -59,6 +59,10 @@ verify-install:
 vendor-validate:
     uv run --locked tools/sync_skills.py validate
 
+# Validate public skill frontmatter and names.
+validate-skills:
+    for entry in skills/*/SKILL.md; do uv tool run --from skills-ref==0.1.1 agentskills validate "${entry%/SKILL.md}" || exit; done
+
 # Run the maintenance test suite.
 test:
     uv run --locked python -m unittest discover -s tests -v
@@ -68,6 +72,7 @@ check:
     just --fmt --check
     uv lock --check
     uv run --locked python -m unittest discover -s tests -v
+    just validate-skills
     uv run --locked tools/sync_skills.py validate
     uv run --locked tools/catalog.py verify
 

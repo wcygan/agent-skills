@@ -24,9 +24,9 @@ to relaunch programs and retain any output needed beyond that restart.
   directory unless you assign separate worktrees.
 - Pane-local requests use `REX_SESSION` and `REX_BLOCK`. Prefer an explicit
   target when acting elsewhere. Start agents in Rex panes on macOS so their
-  tools can use the login Keychain. In Codex's workspace-write sandbox, enable
-  `network_access = true` in `[sandbox_workspace_write]` if the sandbox blocks
-  Rex access.
+  tools can use the login Keychain. If the Codex sandbox blocks a pane check,
+  use an existing authorized connection to the same session when available.
+  Otherwise report the failed command and the access error.
 - Activity and notifications use OSC 7501. Confirm each agent reports status
   with `rex block call -s S -b B program_status` before relying on it. For a
   terminal command, use `rex wait -s S B --for 30s --json` and inspect
@@ -47,6 +47,12 @@ to relaunch programs and retain any output needed beyond that restart.
 - With Remote Control enabled on the target app, find it with `rex client ls`
   and list available actions with `rex -C CLIENT actions`. Bring a result
   forward with `rex -C CLIENT do session.select session_id=S`.
+
+### Codex sandbox setup
+
+When the user asks to enable workspace-write networking for Rex, set
+`network_access = true` in `[sandbox_workspace_write]` and verify the Rex
+connection. This grants network access to the whole workspace-write sandbox.
 
 ### Always-on host
 

@@ -2,31 +2,23 @@
 
 ## Purpose of this repository
 
-This is a **public GitHub repository that stores all of my agent skills** and
-distributes them through the GitHub CLI. To install skills, read
-[Distribution](#distribution) first; this machine uses a different path from
-other machines.
+This public Agent Skills catalog is distributed through GitHub CLI. Public
+entrypoints live at `skills/<name>/SKILL.md`. Read [Distribution](#distribution)
+before installing.
 
-Skills in this repository follow the **Agent Skills** specification, which is
-the format `gh skill install` discovers, validates, and installs. Every skill
-lives at `skills/<name>/SKILL.md` (with optional `scripts/`, `references/`,
-and `assets/` directories).
+## Procedures and approvals
 
-This repo deliberately uses the layout that **Agent Plugins** also defines for
-its `skills/` component, so the same tree can be packaged as an Agent Plugin
-(optional `plugin.json`) for plugin-capable clients without restructuring.
-
-## Follow these instructions exactly
-
-- Follow the documented procedure for the task. Do not substitute an
-  improvised alternative, such as `cp`, `ln`, `gh skill install --from-local`,
-  or editing global skill directories, for a documented command.
-- If a documented step fails or refuses, stop and report the exact output.
-  Do not work around a guard; guards encode past mistakes.
-- Before any task that publishes, pins, or installs, read the project-local
-  skill that owns it (`.agents/skills/<name>/SKILL.md`) and follow it.
-- If instructions conflict or do not cover the situation, ask the user rather
-  than choosing for them.
+- Follow the documented procedure, and read the owning project skill before
+  publishing, pinning, or installing. Keep installed copies under the supported
+  installer.
+- Diagnose routine failures and retry a documented step when it is safe to
+  repeat. If a safety guard refuses an operation, stop that operation, report
+  its exact output, and leave the guard in place. Continue independent work
+  that stays within scope.
+- Make reversible decisions within scope. Ask before proceeding when resolving
+  a conflict or ambiguity would change the scope or require authorization.
+  Get explicit approval for commits, pushes, PR and publication actions, and
+  other actions covered by the user's or repository's approval rules.
 
 ## Core paths
 
@@ -40,25 +32,6 @@ its `skills/` component, so the same tree can be packaged as an Agent Plugin
 - `catalog-seed.json` and `catalog-projection.json` define inheritance inputs.
 - `catalog-snapshot.json` records distributable content hashes.
 - `.github/workflows/ci.yml` runs the shared validation gate.
-
-### Rules every skill MUST follow
-
-1. `skills/<name>/SKILL.md` must exist as a regular file. Only **immediate
-   children** of `skills/` are discovered; no recursive search.
-2. The `name` field in `SKILL.md` frontmatter **must exactly match the parent
-   directory name**.
-3. `name` constraints: 1–64 characters, lowercase `a-z0-9` and hyphens only;
-   no leading/trailing hyphen; no consecutive hyphens (`--`).
-4. `description` is required: 1–1024 characters, non-empty. Describe both
-   *what the skill does* and *when to use it*, with searchable keywords.
-5. Keep `SKILL.md` under ~500 lines; move detailed material to
-   `references/` and use relative paths from the skill root (progressive
-   disclosure — agents load instructions on activation and resources only
-   when needed).
-6. Optional frontmatter: `license`, `compatibility`, `metadata`, `allowed-tools`.
-7. Use relative paths for file references from `SKILL.md`. Link from the
-   entrypoint to the relevant index, playbook, or reference and put further
-   reading where it is first needed.
 
 ## Authoring and ownership
 
@@ -92,57 +65,29 @@ document the replacement for callers that use the old name.
 
 ## Validation before merging/committing skills
 
-Validate each changed skill with the Agent Skills reference library:
-
-```bash
-uv tool run --from skills-ref agentskills validate ./skills/<skill-name>
-```
-
-Run the shared repository and publication checks before pushing:
-
-```bash
-just check-full
-```
+Run `just validate-skills` for public skill format. The shared `just check`
+includes it, and `just check-full` adds the publication check before pushing.
+For a changed project-local skill, see the
+[authoring check](.agents/skills/author-agent-instructions/SKILL.md#check-the-edit).
 
 ## Distribution
 
 ### This machine: `just install`
 
-Global skills on this machine come only from `just install`, described in
-`.agents/skills/really-fast-reinstall/SKILL.md`. One run:
-
-1. Stages and commits every change in this checkout (`git add -A`), with a
-   message derived from the changed paths or given with `-m`, and pushes it.
-   Because it commits everything, look at `git status` first, and get the
-   user's go-ahead before running it when the checkout holds changes you did
-   not make.
-2. Installs the catalog at that commit from this checkout into
-   `~/.agents/skills`, stamped with the same source metadata GitHub CLI writes,
-   and links each skill as `~/.claude/skills/<name> -> ~/.agents/skills/<name>`.
-3. Moves skills the catalog no longer ships into
-   `~/.local/state/dotfiles/agent-skills-archives/` and removes their links. It
-   leaves every entry from another source alone (such as `rex` and `synced`)
-   and reports a catalog name it could not install or link.
-4. Points `agent-skills.lock.toml` in the sibling `dotfiles` checkout at the
-   commit and commits only that file.
-5. Exits, and pushes both repositories in the background. The next run, and
-   `just install --timings`, report a publish that failed or stopped early, and
-   the next run retries it. `just install --wait` pushes before it exits and
-   fails the run when a push is rejected; use it when you need to know the
-   commit is on GitHub.
-
-Both repositories must be on their default branch. The script validates
-nothing: CI runs `just check` on the pushed commit, so run `just check` first
-when the change is more than a routine edit. `./bootstrap.sh agent-skills
---check` in dotfiles remains the independent audit of the installed copies.
-
-Never copy skill content into `~/.agents/skills` or `~/.claude/skills` by hand,
-and never edit an installed copy: the next run replaces it.
+Use [really-fast-reinstall](.agents/skills/really-fast-reinstall/SKILL.md) for
+`just install`. Inspect `git status --short` and get the user's go-ahead
+before running it. It stages the entire provider checkout, changes the global
+skills, commits the dotfiles pin, and pushes both repositories. It also uses
+changes left by other sessions, so disclose those when requesting approval.
+For confirmed publication, use `just install --wait`. To restore the version
+already pinned in dotfiles, use its approved `./bootstrap.sh agent-skills`
+workflow. Audit either installation with `./bootstrap.sh agent-skills --check`
+in dotfiles.
 
 ## Other machines: GitHub CLI
 
-Machines without the dotfiles pin (other users, CI, fresh hosts) install with
-GitHub CLI. On this machine, use `just install` above instead.
+Machines without the dotfiles pin (other users or CI) install directly with
+GitHub CLI.
 
 - Installation: `gh skill install OWNER/agent-skills --agent <agent> --scope <scope>` (`--all` to install every skill; a trailing skill name selects one).
 - Prefer the shared Agent Skills directory `~/.agents/skills` for user-level

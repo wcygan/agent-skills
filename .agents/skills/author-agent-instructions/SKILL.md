@@ -24,9 +24,9 @@ handoff, ask for the result and enough evidence for someone who missed the work.
   that owns the details.
 - **A recurring task:** Look for a skill that already owns it. In `SKILL.md`,
   describe the trigger in the requester’s words. Keep shared decisions in the
-  entrypoint and link specialized commands or examples where they first apply.
-  Maintainer-only skills live in `.agents/skills/`. Reserve a public entrypoint
-  in `skills/` for a task someone would ask for on its own.
+  entrypoint and use relative links to specialized commands or examples where
+  they first apply. Maintainer-only skills live in `.agents/skills/`. Reserve
+  a public entrypoint in `skills/` for a task someone would ask for on its own.
 
 This catalog went from 76 public skills to 15 by keeping `wcygan-mode` as the
 engineering entrypoint and moving shared methods and optional outputs to the
@@ -50,7 +50,9 @@ For a consequential edit, try both versions on the same pair of requests with
 different boundaries. For example, “draft a PR” should produce local copy,
 while “open a PR” should reach the authorized remote action.
 Compare the chosen route, delivered artifact, and stopping point. For a changed
-skill, also validate its format and follow its links.
+skill, also follow its links and validate its format. Run `just validate-skills`
+for the public catalog. For a project-local skill, run
+`uv tool run --from skills-ref==0.1.1 agentskills validate <skill-directory>`.
 
 For model-specific guidance, consult OpenAI’s [Codex prompting guide](https://learn.chatgpt.com/guides/prompting-gpt-6-2-astra#keep-your-agentsmd-lean),
 [GPT-6.2 model guide](https://developers.openai.com/api/docs/guides/latest-model?model=gpt-6.2-astra#prompting-best-practices),

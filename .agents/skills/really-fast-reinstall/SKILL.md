@@ -5,47 +5,52 @@ description: Reinstall this computer's global agent skills from whatever is in t
 
 # Really fast reinstall
 
-Invoking this skill is the go-ahead to run the install now, with the checkout
-as it is:
+An explicit go-ahead to run `just install` covers the catalog commit, dotfiles
+pin and commit, global installation, and both pushes. Read this skill to plan
+or explain the workflow. To check an earlier run, use `just install --timings`.
+Get the go-ahead before starting an install.
 
 1. Run `git status --short` and note what will be committed. The run commits
-   every change, including work another session left in progress.
-2. Run `just install` from the repository root. Pass `-m "..."` when the
-   changes deserve a message better than the one derived from the paths.
-3. Report the commit, what was replaced or archived, and the printed timings.
-   If the run opens with a warning about an earlier publish, relay it.
+   every change, including work another session left in progress. Disclose
+   that work when requesting approval.
+2. Run `just check-full` from the repository root. Proceed once it passes,
+   since the installer can start pushing as part of the command.
+3. For a fast reinstall, run `just install` and report any pushes still in
+   progress. When the requested outcome is to publish the changes, run
+   `just install --wait` and report the outcome for both the catalog and the
+   dotfiles pin.
+4. Include the installed commit, what was replaced or archived, the printed
+   timings, and any warning about an earlier publish.
 
 ```sh
-just install                  # commit, install, pin; push in the background
 just install -m "feat: ..."   # with an explicit commit message
-just install --wait           # push before exiting; fail on a rejected push
 just install --full           # rewrite every installed skill
 just install --timings        # step timings of recent runs and the last publish
 ```
 
-The script is `tools/install.py`, a dependency-free uv script. The go-ahead
-covers the commit, both pushes, the pin, and the global changes.
-
 ## What one run guarantees
 
-- A run that exits 0 has installed the skills and committed both repositories.
-  Both pushes then run at the same time in a detached publisher, recorded in
-  `.git/install.push.jsonl`. A failed or interrupted publish is reported by the
-  next run and by `--timings`, and the next run retries it. With `--wait`, a
-  run that exits 0 has published both.
+- A successful install commits any changes and installs the catalog locally.
+  By default, a detached process pushes any outstanding commits and records
+  the outcome in `.git/install.push.jsonl`. A failed or interrupted publish
+  appears in `--timings` and the next run retries it. With `--wait`, success
+  also means the catalog and dotfiles pin have reached their remotes.
 - `~/.agents/skills` holds exactly the catalog's skills at that commit, plus
   entries from other sources, which are never changed.
 - A skill is replaced only when its git tree changed; the others only get the
   new commit written into their `SKILL.md`. `--full` replaces all of them.
 - A retired skill is moved to `~/.local/state/dotfiles/agent-skills-archives/`
   and its `~/.claude/skills` link is removed.
-- A rerun after any failure finishes the remaining steps; an unchanged rerun
-  makes no commits and no network calls.
+- Once the cause of an interruption is resolved, rerun the approved command
+  to finish the remaining steps. An unchanged rerun makes no commits and no
+  network calls.
 
-The script stops, changing nothing further, when either repository is off its
-default branch, a skill holds a symlink, a push is rejected, or the global
-directories do not match the catalog after the install. Report the message. A
-rejected dotfiles push means another commit landed there: pull it, then rerun.
+The installer reports an error when either repository is off its default
+branch, a skill holds a symlink, a push is rejected, or the global
+directories do not match the catalog after the install. After a rejected
+push, use `just install --timings` to identify which repository still needs
+publishing. Report the refusal and resolve its cause through the documented
+procedure. If a rejected dotfiles push requires a pull, get approval first.
 
 ## Verify
 

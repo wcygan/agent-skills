@@ -107,7 +107,8 @@ One command commits and pushes this catalog, pins the new commit in dotfiles,
 and installs it into `~/.agents/skills` with links in `~/.claude/skills`:
 
 ```sh
-just install                    # commit, push, pin, install
+just install                    # commit, install, pin, start both pushes
+just install --wait             # return after both pushes finish
 just install -m "feat: ..."     # the same, with your commit message
 just install --full             # also rewrite skills whose content did not change
 just install --timings          # compare the step timings of recent runs
@@ -130,11 +131,12 @@ recorded in `vendor/skills-lock.json`; adapted upstream work must preserve its
 provenance and license. The vendor lock is currently empty.
 
 ```sh
-uv tool run --from skills-ref agentskills validate ./skills/<name>
+just validate-skills
 just catalog-snapshot
 just check-full
 ```
 
-`just check` runs maintenance tests, source validation and snapshot verification;
-`check-full` also checks GitHub CLI publication. The design reference app retains
+`just check` runs maintenance tests, validates public skill frontmatter with the
+Agent Skills reference validator, and verifies the snapshot. `check-full` also
+checks GitHub CLI publication. The design reference app retains
 its focused CI workflow and `just design-reference-check` command.

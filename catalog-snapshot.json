@@ -9,7 +9,7 @@
     "archive/2026-10-14/skill-inventory.md": "7dcc2667454f0be41346618812a0600492fe103276f3bb80d24b6537f7e3a320",
     "catalog-projection.json": "8140fbfbd25d6b0e3f80a99b2270b2a22c0140a3cd7847704272ea7fd02a5f98",
     "docs/catalog-inheritance.md": "05385bdedeb7c34f081733f0ac0b94eb10558fc1b44331bfbe8b734212cf50ca",
-    "justfile": "8cb35fea08a532a3c01007b4639eb4160ec5a210b01ea57d29ef8747ed6b4c73",
+    "justfile": "79b7a1a50f1fe4176ef4074e12b450a815b345fbcd5c1fd0d79b0a5df3de0c9f",
     "pyproject.toml": "ccfaff36a9f21dcbd43b4056e065714d929c53628414c9a603e195ce139dd3b4",
     "skill_catalog/__init__.py": "65f33b1e55e7bbac6fcb0722e89d581d29ab4ce26266ac6d24d92fc9958cb513",
     "skill_catalog/catalog.py": "af8ae53986a3e9860d92feff1d7bb72e3b4bf1d4343948bcdccb41e35f4b4360",
@@ -33,14 +33,14 @@
     "postgres": "cd07aa4c83acd9ca1da223abdf96ed7f4838a46b7edc8f40d902d8288d1fe8d9",
     "prepare-pull-request": "2393c5db5fd691ffcd5a74be0f68978c751fc4fe90a2d438413717c7511ed908",
     "review-changes": "74910c1e7cf9797eb3754d0dc6f946a09a9f0420be2354dfcce20acb58523a70",
-    "rex-workflow": "5c386642bab5657208a381f5d3d754ee1fe9d73202f0ccd76278a8825bea4442",
+    "rex-workflow": "50b97b8a93871049ac73db5b9d82f7624c69a86227aafffab2bb73c9bc09eec2",
     "statechart": "b3987e4a1f402613b8593871050cbc8a1a80aa159fe551d53596d933e13a42a5",
     "uv-python": "eccca7b1072a268c9d843b828e9d44ab4d9c7dc7bc5711d4181b6923b2bce74a",
-    "verification-skill": "20190c800111894c890539440f5f3adfe6bcc48a3e2ce5afec5c7610e8dab0ee",
+    "verification-skill": "6f1e346d7d6c8e085c9d43e4eda8d6c1001b2222a81e3ceb5e70fddd15555fa6",
     "verify-behavior": "2825d4956290a2c4a886a46cead3a5346901313a4c3c8784c8e78c700f96db80",
-    "visual-explainer": "e44c96cdd190c6d90834ca0ee400b07c784d6bcb525728b2e9a12433df3fd5a8",
+    "visual-explainer": "c3ff68c692b4f636a9d828fcd925bf7bbbd8ce11be65273a32e81d6136b36799",
     "wcygan-experiment": "111abe45f4e9a279b42f2f15480d92d98bf119d39870e403a65d070cdafa0156",
-    "wcygan-mode": "59da7eb0c2bac27e713a5e858563ef34ebaf5e2b727ab32e8a55c1fb1801ea8b",
+    "wcygan-mode": "28363c0cef4bcea9588708c308442b97d5d55b8f2d39bba35b788fcefdce9681",
     "write-clearly": "bccd776686823c72c0c6f8020ed45161aca5e17d99979e05396a5aff98a6b5a4"
   }
 }

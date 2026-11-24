@@ -32,15 +32,20 @@ and record what prevented verification.
 
 ## Repair journey checks
 
-Reconcile every index entry with current source and exercise every mapped
-journey live, including those whose source appears unchanged. Look for missing
-user surfaces in the source. Fix instruction drift or harness gaps and rerun
-corrected checks. Report product regressions against the existing expectations.
-When no project skill exists, report that creation is needed.
+For a repair to a named journey, trace the stale instruction to current source,
+correct it, and run the journey as written. If you change a shared setup or
+harness step, exercise the other journeys affected by that change.
 
-Give each feature a source and runtime disposition with evidence. If a journey
-remains unreachable, name the attempted route and missing prerequisite.
-Incomplete runtime coverage leaves the repair blocked.
+For a full audit, reconcile every index entry with current source, look for
+missing user surfaces, and exercise every mapped journey live. Include
+journeys whose source appears unchanged.
+
+Rerun corrected checks and report product regressions against the existing
+expectations. For each journey in scope, report the source and runtime
+evidence. If one is unreachable, record the attempted route and missing
+prerequisite, then continue with the others. A full audit with missing runtime
+coverage remains incomplete. When no project skill exists, report that creation
+is needed.
 
 ## Evidence and instance ownership
 
