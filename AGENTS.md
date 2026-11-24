@@ -62,10 +62,9 @@ its `skills/` component, so the same tree can be packaged as an Agent Plugin
 
 ## Authoring and ownership
 
-Keep the capability and distinguishing trigger early, retain essential knowledge
-and decision criteria, and load branch-specific resources only when their stated
-conditions apply. A phase
-boundary must not discard authorization for the rest of the requested work.
+Use [author-agent-instructions](.agents/skills/author-agent-instructions/SKILL.md)
+when writing or reviewing skill instructions, `AGENTS.md` files, or task prompts.
+Preserve authorization for the rest of the requested work across phase boundaries.
 
 Use [wcygan-mode](skills/wcygan-mode/SKILL.md) for substantive engineering work
 on this catalog. Its playbooks route to workflow methods under
