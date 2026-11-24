@@ -40,7 +40,7 @@ class AuditTests(unittest.TestCase):
 
     def row(self, **kwargs):
         result = audit(self.repo, "main", gh_factory=self.reader, **kwargs)
-        return next(r for r in result["worktrees"] if r["worktree"] == str(self.work))
+        return next(r for r in result["worktrees"] if Path(r["worktree"]) == self.work)
 
     def test_unknown_owner_and_explicit_inactive_owner(self):
         self.assertEqual(self.row()["bucket"], "review-unknown-ownership")
@@ -78,7 +78,7 @@ class AuditTests(unittest.TestCase):
             activity={str(self.work): {"active": False}},
             gh_factory=unavailable,
         )
-        row = next(r for r in result["worktrees"] if r["worktree"] == str(self.work))
+        row = next(r for r in result["worktrees"] if Path(r["worktree"]) == self.work)
         self.assertEqual(row["bucket"], "review-incomplete-evidence")
         self.assertTrue(result["warnings"])
         self.assertTrue(self.work.exists())

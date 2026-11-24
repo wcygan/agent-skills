@@ -49,6 +49,15 @@ def requests(rng: random.Random) -> list[str]:
     return asked
 
 
+def create_fixture_link(link: Path, target: Path) -> None:
+    missing = install.WINDOWS and not target.exists()
+    if missing:
+        target.mkdir()
+    install.create_directory_link(link, target)
+    if missing:
+        target.rmdir()
+
+
 def build(root: Path, groups: list[list[str]]) -> tuple[Path, Path, Path, dict]:
     """Lay out the provider checkout and both global directories that a request describes."""
     provider, shared, claude = root / "provider", root / "home/.agents/skills", root / "home/.claude/skills"
@@ -66,7 +75,7 @@ def build(root: Path, groups: list[list[str]]) -> tuple[Path, Path, Path, dict]:
             (shared / name).mkdir()
             (shared / name / "SKILL.md").write_text(f"---\nname: {name}\n---\nForeign.\n")
         elif tree == "s":
-            (shared / name).symlink_to(root / "outside")
+            create_fixture_link(shared / name, root / "outside")
         elif tree != "-":
             lines = [f"    github-repo: {OURS}"] + [
                 f"    {key}: {sha(value)}" for key, value in zip(STAMPS, tree.split(":")[1:])
@@ -75,36 +84,36 @@ def build(root: Path, groups: list[list[str]]) -> tuple[Path, Path, Path, dict]:
             (shared / name / "SKILL.md").write_text(
                 "\n".join(["---", f"name: {name}", "metadata:", *lines, "---", "Old.", ""]))
         if link == "e":
-            (claude / name).symlink_to(shared / name)
+            create_fixture_link(claude / name, shared / name)
         elif link == "a":
             (shared / f"alive-{number}").mkdir()
-            (claude / name).symlink_to(shared / f"alive-{number}")
+            create_fixture_link(claude / name, shared / f"alive-{number}")
         elif link == "d":
-            (claude / name).symlink_to(shared / f"dead-{number}")
+            create_fixture_link(claude / name, shared / f"dead-{number}")
         elif link == "x":
             (claude / name).mkdir()
         elif link == "y":
-            (claude / name).symlink_to(root / "outside")
+            create_fixture_link(claude / name, root / "outside")
         elif link == "z":
-            (claude / name).symlink_to(root / "missing")
+            create_fixture_link(claude / name, root / "missing")
     return provider, shared, claude, catalog
 
 
 def read_tree(path: Path) -> str:
-    if not path.exists() and not path.is_symlink():
+    if not path.exists() and not install.is_link(path):
         return "-"
-    if path.is_symlink() or not install.ours(path / "SKILL.md"):
+    if install.is_link(path) or not install.ours(path / "SKILL.md"):
         return "f"
     found = install.stamps(path / "SKILL.md")
     return "o:" + ":".join(str(int(found[key], 16)) if key in found else "-" for key in STAMPS)
 
 
 def read_link(path: Path, shared: Path) -> str:
-    if not path.exists() and not path.is_symlink():
+    if not path.exists() and not install.is_link(path):
         return "-"
-    if path.is_symlink() and Path(os.readlink(path)) == shared / path.name:
+    if install.is_link(path) and install.link_target(path) == shared / path.name:
         return "e"
-    if path.is_symlink() and Path(os.readlink(path)).parent == shared:
+    if install.is_link(path) and install.link_target(path).parent == shared:
         return "a" if path.exists() else "d"
     return "x"
 
@@ -117,6 +126,8 @@ def python_answer(request: str) -> str:
         root = Path(directory)
         provider, shared, claude, catalog = build(root, groups)
         os.environ["HOME"] = str(root / "home")
+        if install.WINDOWS:
+            os.environ["USERPROFILE"] = os.environ["HOME"]
         replace, restamp, foreign, retired = install.plan_install(
             catalog, shared, sha(commit), full == "1")
         for name in replace:
@@ -128,9 +139,9 @@ def python_answer(request: str) -> str:
         install.archive_retired(shared, retired, sha(commit))
         add, remove, conflicts = install.plan_links(set(catalog), shared, claude)
         for name in remove:
-            (claude / name).unlink()
+            install.remove_directory_link(claude / name)
         for name in add:
-            (claude / name).symlink_to(shared / name)
+            install.create_directory_link(claude / name, shared / name)
         answers = []
         for number, *_ in groups:
             name = f"skill-{number}"
@@ -155,7 +166,7 @@ def main() -> int:
     if len(model) != len(asked):
         print(f"FAIL: the model answered {len(model)} of {len(asked)} requests")
         return 1
-    home = os.environ.get("HOME")
+    home_variables = {name: os.environ.get(name) for name in ("HOME", "USERPROFILE")}
     try:
         for request, expected in zip(asked, model):
             actual = python_answer(request)
@@ -164,8 +175,11 @@ def main() -> int:
                       f"and install.py gives `{actual}`")
                 return 1
     finally:
-        if home is not None:
-            os.environ["HOME"] = home
+        for name, original in home_variables.items():
+            if original is None:
+                os.environ.pop(name, None)
+            else:
+                os.environ[name] = original
     print(f"PASS: proof builds; model and install.py agree on {len(asked)} situations")
     return 0
 

@@ -16,17 +16,26 @@ it reports a publish that never recorded a result.
 from __future__ import annotations
 
 import argparse
-import fcntl
+import errno
+import hashlib
 import json
 import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import time
 from contextlib import contextmanager, nullcontext
 from datetime import datetime, timezone
 from pathlib import Path
+
+WINDOWS = os.name == "nt"
+if WINDOWS:
+    import msvcrt
+    from _winapi import CreateJunction
+else:
+    import fcntl
 
 REPOSITORY = "wcygan/agent-skills"
 LOCK_FILE = "agent-skills.lock.toml"
@@ -137,13 +146,13 @@ MULTIPLEX = ["-o", "ControlMaster=auto", "-o", "ControlPersist=600",
 
 def git_environment() -> dict[str, str]:
     env = {key: value for key, value in os.environ.items() if key != "VIRTUAL_ENV"}
-    if "GIT_SSH_COMMAND" not in env:
+    if OWN_SSH:
         SOCKETS.mkdir(parents=True, exist_ok=True)
         env["GIT_SSH_COMMAND"] = " ".join(["ssh", *MULTIPLEX])
     return env
 
 
-OWN_SSH = "GIT_SSH_COMMAND" not in os.environ
+OWN_SSH = not WINDOWS and "GIT_SSH_COMMAND" not in os.environ
 ENV = git_environment()
 
 
@@ -159,7 +168,7 @@ def warm_connection(root: Path) -> None:
 
 
 def git(root: Path, *args: str, check: bool = True) -> str:
-    result = subprocess.run(["git", *args], cwd=root, text=True, env=ENV,
+    result = subprocess.run(["git", *args], cwd=root, encoding="utf-8", env=ENV,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if check and result.returncode:
         raise Stop(f"git {' '.join(args)} failed in {root}: {result.stderr.strip()}")
@@ -215,7 +224,7 @@ def commit_catalog(provider: Path, message: str | None, timeline: Timeline) -> s
 
 def start_push(root: Path, branch: str) -> subprocess.Popen:
     return subprocess.Popen(["git", "push", "-q", "origin", f"HEAD:refs/heads/{branch}"], cwd=root,
-                            env=ENV, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                            env=ENV, encoding="utf-8", stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 
 def finish_push(root: Path, push: subprocess.Popen, started: float) -> None:
@@ -224,7 +233,11 @@ def finish_push(root: Path, push: subprocess.Popen, started: float) -> None:
             timeout=max(started + PUSH_TIMEOUT - time.perf_counter(), 0))
     except subprocess.TimeoutExpired:
         # Not read again: a hook the push started may hold the pipe open.
-        push.kill()
+        if WINDOWS:
+            subprocess.run(["taskkill.exe", "/pid", str(push.pid), "/t", "/f"],
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        else:
+            push.kill()
         raise Stop(f"push from {root} timed out after {PUSH_TIMEOUT:g}s") from None
     if push.returncode:
         raise Stop(f"push from {root} failed: {output.strip()}")
@@ -270,23 +283,41 @@ def format_publish(record: dict | None) -> str:
             + (f"\n  {record['error']}" if record["error"] else ""))
 
 
+def acquire_lock(handle, *, blocking: bool = False, shared: bool = False) -> None:
+    if not WINDOWS:
+        mode = fcntl.LOCK_SH if shared else fcntl.LOCK_EX
+        fcntl.flock(handle, mode if blocking else mode | fcntl.LOCK_NB)
+        return
+
+    while True:
+        try:
+            msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+            return
+        except OSError as error:
+            if error.errno not in (errno.EACCES, errno.EDEADLK):
+                raise
+            if not blocking:
+                raise BlockingIOError(error.errno, error.strerror) from error
+            time.sleep(0.05)
+
+
 @contextmanager
 def push_lock(common: Path, waiting: str | None = None):
     """One pusher at a time: a publisher still running finishes before the next push starts."""
     with (common / PUSH_LOCK).open("a") as handle:
         try:
-            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            acquire_lock(handle)
         except BlockingIOError:
             if waiting:
                 print(waiting, flush=True)
-            fcntl.flock(handle, fcntl.LOCK_EX)
+            acquire_lock(handle, blocking=True)
         yield
 
 
 def locked(path: Path) -> bool:
     with path.open("a") as handle:
         try:
-            fcntl.flock(handle, fcntl.LOCK_SH | fcntl.LOCK_NB)
+            acquire_lock(handle, shared=True)
         except BlockingIOError:
             return True
     return False
@@ -329,7 +360,7 @@ def spawn_publisher(common: Path, consumer: Path) -> None:
     """
     with (common / QUEUE_LOCK).open("a") as queue:
         try:
-            fcntl.flock(queue, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            acquire_lock(queue)
         except BlockingIOError:
             return
         subprocess.Popen([sys.executable, str(Path(__file__).resolve()), "--publish",
@@ -385,7 +416,7 @@ def stamp(text: str, name: str, commit: str, tree: str) -> str:
 
 def stamps(manifest: Path) -> dict[str, str]:
     try:
-        return dict(STAMP.findall(manifest.read_text(errors="replace")))
+        return dict(STAMP.findall(manifest.read_text(encoding="utf-8", errors="replace")))
     except OSError:
         return {}
 
@@ -404,20 +435,20 @@ def plan_install(catalog: dict[str, tuple[str, list[str]]], shared: Path, commit
     for name, (tree, _) in sorted(catalog.items()):
         target = shared / name
         found = stamps(target / "SKILL.md")
-        if target.is_symlink() or (target.exists() and not ours(target / "SKILL.md")):
+        if is_link(target) or (target.exists() and not ours(target / "SKILL.md")):
             foreign.append(name)
         elif full or found.get("github-tree-sha") != tree:
             replace.append(name)
         elif found.get("github-pinned") != commit or found.get("github-ref") != commit:
             restamp.append(name)
     retired = sorted(tree.name for tree in shared.iterdir() if tree.name not in catalog
-                     and not tree.is_symlink() and ours(tree / "SKILL.md")) if shared.is_dir() else []
+                     and not is_link(tree) and ours(tree / "SKILL.md")) if shared.is_dir() else []
     return replace, restamp, foreign, retired
 
 
 def write_atomically(path: Path, text: str) -> None:
     temporary = path.with_name(f".{path.name}.tmp")
-    temporary.write_text(text)
+    temporary.write_text(text, encoding="utf-8", newline="\n")
     temporary.replace(path)
 
 
@@ -431,7 +462,9 @@ def install_tree(provider: Path, shared: Path, name: str, files: list[str], comm
         destination = staging / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
         if relative == "SKILL.md":
-            destination.write_text(stamp((source / relative).read_text(), name, commit, tree))
+            destination.write_text(
+                stamp((source / relative).read_text(encoding="utf-8"), name, commit, tree),
+                encoding="utf-8", newline="\n")
         else:
             shutil.copy2(source / relative, destination)
     target = shared / name
@@ -443,18 +476,91 @@ def install_tree(provider: Path, shared: Path, name: str, files: list[str], comm
     shutil.rmtree(replaced, ignore_errors=True)
 
 
-def archive_retired(shared: Path, retired: list[str], commit: str) -> Path | None:
+def legacy_catalog_copies(provider: Path, legacy: Path) -> list[str]:
+    """Identify unstamped Codex copies by an exact historical manifest at the same path."""
+    if not legacy.is_dir() or is_link(legacy) or is_link(legacy.parent):
+        return []
+    history = git(provider, "log", "--all", "--format=", "--raw", "--no-abbrev",
+                  "--no-renames", "--", ":(glob)skills/*/SKILL.md")
+    manifests: dict[str, set[str]] = {}
+    for line in history.splitlines():
+        if line.startswith(":"):
+            change, path = line.split("\t", 1)
+            manifests.setdefault(path, set()).update(change.split()[2:4])
+    copies = []
+    for tree in legacy.iterdir():
+        manifest = tree / "SKILL.md"
+        if is_link(tree) or is_link(manifest) or not manifest.is_file():
+            continue
+        recorded = stamps(manifest).get("github-repo")
+        if recorded:
+            if recorded == f"https://github.com/{REPOSITORY}":
+                copies.append(tree.name)
+            continue
+        raw = manifest.read_bytes()
+        known = manifests.get(f"skills/{tree.name}/SKILL.md", ())
+        if any(hashlib.sha1(f"blob {len(data)}\0".encode() + data).hexdigest() in known
+               for data in (raw, raw.replace(b"\r\n", b"\n"))):
+            copies.append(tree.name)
+    return sorted(copies)
+
+
+def archive_retired(shared: Path, retired: list[str], commit: str,
+                    legacy: Path | None = None, copies: tuple[str, ...] = ()) -> Path | None:
     """Move retired copies out of every discovery root, where they stay recoverable."""
-    if not retired:
+    if not retired and not copies:
         return None
     archive = (Path.home() / ".local" / "state" / "dotfiles" / "agent-skills-archives"
                / datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%S.%fZ"))
     archive.mkdir(parents=True, mode=0o700)
     for name in retired:
         shutil.move(shared / name, archive / name)
-    (archive / "manifest.json").write_text(json.dumps(
-        {"repository": REPOSITORY, "target_commit": commit, "skills": retired}, indent=2) + "\n")
+    manifest = {"repository": REPOSITORY, "target_commit": commit, "skills": retired}
+    if legacy is not None and copies:
+        archived_copies = archive / "legacy-codex"
+        archived_copies.mkdir()
+        for name in copies:
+            shutil.move(legacy / name, archived_copies / name)
+        manifest["legacy_codex_skills"] = list(copies)
+    (archive / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     return archive
+
+
+def is_junction(path: Path) -> bool:
+    if not WINDOWS:
+        return False
+    try:
+        return getattr(path.lstat(), "st_reparse_tag", 0) == stat.IO_REPARSE_TAG_MOUNT_POINT
+    except FileNotFoundError:
+        return False
+
+
+def is_link(path: Path) -> bool:
+    return path.is_symlink() or is_junction(path)
+
+
+def create_directory_link(link: Path, target: Path) -> None:
+    if WINDOWS:
+        CreateJunction(str(target), str(link))
+    else:
+        link.symlink_to(target, target_is_directory=True)
+
+
+def remove_directory_link(link: Path) -> None:
+    if is_junction(link):
+        link.rmdir()
+    else:
+        link.unlink()
+
+
+def link_target(path: Path) -> Path:
+    target = os.readlink(path)
+    if WINDOWS:
+        if target.startswith("\\\\?\\UNC\\"):
+            target = "\\\\" + target[8:]
+        else:
+            target = target.removeprefix("\\\\?\\")
+    return Path(target)
 
 
 def plan_links(catalog: set[str], shared: Path, claude: Path,
@@ -470,16 +576,16 @@ def plan_links(catalog: set[str], shared: Path, claude: Path,
     add, conflicts = [], []
     for name in sorted(catalog):
         link = claude / name
-        if link.is_symlink() and Path(os.readlink(link)) == shared / name:
+        if is_link(link) and link_target(link) == shared / name:
             continue
-        if link.is_symlink() or link.exists():
+        if is_link(link) or link.exists():
             conflicts.append(name)
         else:
             add.append(name)
     remove = sorted(
         link.name for link in claude.iterdir()
-        if link.is_symlink() and link.name not in catalog
-        and Path(os.readlink(link)).parent == shared
+        if is_link(link) and link.name not in catalog
+        and link_target(link).parent == shared
         and (not link.exists() or link.name in retired)
     )
     return add, remove, conflicts
@@ -538,6 +644,9 @@ def install(args: argparse.Namespace, common: Path, provider: Path, consumer: Pa
             commit, provider_ahead = git(provider, "rev-parse", "HEAD"), True
         catalog = catalog_at_head(provider)
         replace, restamp, foreign, retired = plan_install(catalog, shared, commit, args.full)
+        legacy = Path(os.environ.get("CODEX_HOME") or home / ".codex") / "skills"
+        copies = (tuple(legacy_catalog_copies(provider, legacy))
+                  if WINDOWS and args.full and legacy.resolve() != shared.resolve() else ())
     published, clock = utc_now(), time.perf_counter()
     running = []
     # With --wait the catalog push runs beside everything local. Without it the
@@ -554,15 +663,15 @@ def install(args: argparse.Namespace, common: Path, provider: Path, consumer: Pa
                 *[lambda name=name: install_tree(provider, shared, name, catalog[name][1], commit,
                                                  catalog[name][0]) for name in replace],
                 *[lambda name=name: write_atomically(shared / name / "SKILL.md", stamp(
-                    (provider / "skills" / name / "SKILL.md").read_text(), name, commit,
+                    (provider / "skills" / name / "SKILL.md").read_text(encoding="utf-8"), name, commit,
                     catalog[name][0])) for name in restamp])
-            archive = archive_retired(shared, retired, commit)
+            archive = archive_retired(shared, retired, commit, legacy, copies)
         with timeline.span("links"):
             add, remove, conflicts = plan_links(set(catalog), shared, claude)
             for name in remove:
-                (claude / name).unlink()
+                remove_directory_link(claude / name)
             for name in add:
-                (claude / name).symlink_to(shared / name)
+                create_directory_link(claude / name, shared / name)
         return archive, add, remove, conflicts
 
     def commit_pin() -> bool:
@@ -610,6 +719,7 @@ def install(args: argparse.Namespace, common: Path, provider: Path, consumer: Pa
           f"  archived: {some(retired)}{f' at {archive}' if archive else ''}\n"
           f"  links: added {some(add)}; removed {some(remove)}"
           + (f"\n  left alone: {some(sorted(set(foreign + conflicts)))}" if foreign or conflicts else "")
+          + (f"\n  archived legacy Codex copies: {some(list(copies))}" if copies else "")
           + ("\nPublishing continues in the background; `just install --timings` shows the result."
              if pending else ""))
 
@@ -624,9 +734,10 @@ def main() -> None:
     parser.add_argument("--timings", action="store_true",
                         help="Show step timings of recent runs and the latest publish, then exit")
     parser.add_argument("--wait", action="store_true",
-                        help="Push before exiting, and fail when a push fails")
+                        help="Push before exiting, and fail when a push fails (default on Windows)")
     parser.add_argument("--publish", type=int, metavar="QUEUE_FD", help=argparse.SUPPRESS)
     args = parser.parse_args()
+    args.wait = args.wait or WINDOWS
     timeline = Timeline()
     provider = Path(__file__).resolve().parents[1]
     common = Path(git(provider, "rev-parse", "--path-format=absolute", "--git-common-dir"))
@@ -646,7 +757,7 @@ def main() -> None:
     try:
         with (common / "install.lock").open("a") as handle:
             try:
-                fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                acquire_lock(handle)
             except BlockingIOError:
                 raise Stop("another install is running") from None
             # Only a run holding install.lock takes the queue lock, so this probe meets no other.

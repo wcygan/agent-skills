@@ -12,12 +12,12 @@ class ReadmeCatalogTests(unittest.TestCase):
         sources = [ROOT / "README.md", MODE / "SKILL.md", *MODE.glob("playbooks/*.md")]
         for source in sources:
             for link in re.findall(r"\]\(((?:skills/|playbooks/|references/|\.\.?/)[^\s)]+|[a-z-]+\.md)\)",
-                                   source.read_text()):
+                                   source.read_text(encoding="utf-8")):
                 with self.subTest(source=source.relative_to(ROOT), link=link):
                     self.assertTrue((source.parent / link.split("#", 1)[0]).exists())
 
     def test_readme_entrypoints_match_discovery(self):
-        guide = (ROOT / "README.md").read_text().split("## Replacements")[0]
+        guide = (ROOT / "README.md").read_text(encoding="utf-8").split("## Replacements")[0]
         linked = set(re.findall(r"\]\(skills/([^/]+)/SKILL\.md\)", guide))
         self.assertEqual(linked, {p.parent.name for p in (ROOT / "skills").glob("*/SKILL.md")})
 
@@ -29,7 +29,7 @@ class ReadmeCatalogTests(unittest.TestCase):
             if source in visited:
                 continue
             visited.add(source)
-            for link in re.findall(r"\]\(([^\s)#]+\.md)(?:#[^)]*)?\)", source.read_text()):
+            for link in re.findall(r"\]\(([^\s)#]+\.md)(?:#[^)]*)?\)", source.read_text(encoding="utf-8")):
                 if "://" in link:
                     continue
                 target = (source.parent / link).resolve()
@@ -41,6 +41,6 @@ class ReadmeCatalogTests(unittest.TestCase):
         self.assertFalse(methods - visited, f"Unreachable methods: {methods - visited}")
 
     def test_every_playbook_is_reachable_from_mode(self):
-        entrypoint = (MODE / "SKILL.md").read_text()
+        entrypoint = (MODE / "SKILL.md").read_text(encoding="utf-8")
         linked = set(re.findall(r"\]\(playbooks/([a-z-]+\.md)\)", entrypoint))
         self.assertEqual(linked, {path.name for path in MODE.glob("playbooks/*.md")})

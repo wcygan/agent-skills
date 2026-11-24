@@ -4,6 +4,7 @@ import json
 import os
 import signal
 import subprocess
+import sys
 import tempfile
 import time
 import unittest
@@ -69,9 +70,10 @@ class Sandbox:
 
     def command(self, *flags: str) -> tuple[list[str], dict[str, str]]:
         # The sandbox provider has no skill_catalog package, so the run skips the snapshot.
-        return (["python3", str(self.provider / "tools" / "install.py"), "--dotfiles",
+        return ([sys.executable, str(self.provider / "tools" / "install.py"), "--dotfiles",
                  str(self.consumer), *flags],
-                {**os.environ, "HOME": str(self.home), "GIT_SSH_COMMAND": "ssh", **self.env})
+                {**os.environ, "HOME": str(self.home), "USERPROFILE": str(self.home),
+                 "CODEX_HOME": str(self.home / ".codex"), "GIT_SSH_COMMAND": "ssh", **self.env})
 
     def run(self, *flags: str, wait: bool = True) -> subprocess.CompletedProcess:
         """Run the installer; `wait` pushes before it exits, so pushed state can be asserted."""
@@ -84,12 +86,14 @@ class Sandbox:
         gate.write_text("")
         hook = self.provider / ".git" / "hooks" / "pre-push"
         hook.parent.mkdir(exist_ok=True)
-        hook.write_text(f'#!/bin/sh\nwhile [ -e "{gate}" ]; do sleep 0.05; done\n')
+        hook.write_text(f'#!/bin/sh\nwhile [ -e "{gate.as_posix()}" ]; do sleep 0.05; done\n')
         hook.chmod(0o755)
         return gate
 
     def publishers(self) -> list[int]:
         """Process ids of this sandbox's background publishers."""
+        if os.name == "nt":
+            return []
         pattern = f"{self.provider / 'tools' / 'install.py'} --publish"
         return [int(pid) for pid in subprocess.run(["pgrep", "-f", pattern], text=True,
                                                    capture_output=True).stdout.split()]
@@ -145,7 +149,7 @@ class InstallTests(unittest.TestCase):
             f"    github-tree-sha: {git(self.box.provider, 'rev-parse', 'HEAD:skills/gamma')}\n"
             "    kind: component\n---\nBody.\n", manifest)
         self.assertTrue(os.access(self.box.shared / "alpha" / "scripts" / "tool.sh", os.X_OK))
-        self.assertEqual(self.box.shared / "gamma", (self.box.claude / "gamma").readlink())
+        self.assertEqual(self.box.shared / "gamma", (self.box.claude / "gamma").resolve())
 
     def test_a_second_run_changes_nothing(self):
         self.box.run()
@@ -176,17 +180,33 @@ class InstallTests(unittest.TestCase):
         foreign = self.box.shared / "foreign"
         foreign.mkdir()
         (foreign / "SKILL.md").write_text("---\nname: foreign\n---\n")
-        (self.box.claude / "foreign").symlink_to(foreign)
+        install.create_directory_link(self.box.claude / "foreign", foreign)
         (self.box.claude / "own-folder").mkdir()
         git(self.box.provider, "rm", "-rq", "skills/beta")
         result = self.box.run()
         self.assertEqual(0, result.returncode, result.stdout + result.stderr)
         self.assertEqual(["alpha", "foreign"], self.installed())
-        self.assertFalse((self.box.claude / "beta").is_symlink())
-        self.assertTrue((self.box.claude / "foreign").is_symlink())
+        self.assertFalse(os.path.lexists(self.box.claude / "beta"))
+        self.assertEqual(foreign, (self.box.claude / "foreign").resolve())
         self.assertTrue((self.box.claude / "own-folder").is_dir())
         archives = list((self.box.home / ".local/state/dotfiles/agent-skills-archives").glob("*/beta/SKILL.md"))
         self.assertEqual(1, len(archives))
+
+    @unittest.skipUnless(os.name == "nt", "Windows legacy migration")
+    def test_full_install_archives_only_proven_legacy_catalog_copies(self):
+        legacy = self.box.home / ".codex" / "skills"
+        for name in ("alpha", "beta"):
+            (legacy / name).mkdir(parents=True)
+        (legacy / "alpha" / "SKILL.md").write_bytes(
+            (self.box.provider / "skills" / "alpha" / "SKILL.md").read_bytes())
+        (legacy / "beta" / "SKILL.md").write_text("Unrelated content.\n")
+        result = self.box.run("--full", wait=False)
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertFalse((legacy / "alpha").exists())
+        self.assertTrue((legacy / "beta" / "SKILL.md").is_file())
+        archives = self.box.home / ".local/state/dotfiles/agent-skills-archives"
+        self.assertEqual(1, len(list(archives.glob("*/legacy-codex/alpha/SKILL.md"))))
+        self.assert_published()
 
     def test_a_foreign_tree_with_a_catalog_name_is_left_alone_and_reported(self):
         clash = self.box.shared / "alpha"
@@ -235,6 +255,7 @@ class InstallTests(unittest.TestCase):
                          git(self.box.remote("dotfiles"), "rev-parse", "main"))
         self.assertEqual(head, self.box.remote_pin())
 
+    @unittest.skipIf(os.name == "nt", "Windows publishes synchronously")
     def test_a_default_run_exits_before_pushing_and_publishes_in_the_background(self):
         self.box.skill("gamma")
         result = self.box.run(wait=False)
@@ -246,6 +267,7 @@ class InstallTests(unittest.TestCase):
         self.assertEqual(["ok"], [record["outcome"] for record in records])
         self.assertEqual(git(self.box.provider, "rev-parse", "HEAD"), records[-1]["commit"])
 
+    @unittest.skipIf(os.name == "nt", "Windows publishes synchronously")
     def test_a_failed_background_push_is_recorded_warned_about_and_retried(self):
         self.box.run()
         git(self.box.provider, "remote", "set-url", "--push", "origin", "/nonexistent.git")
@@ -306,6 +328,7 @@ class InstallTests(unittest.TestCase):
         self.assertNotIn("Publishing continues", result.stdout)
         self.assertEqual(before, self.box.settle())
 
+    @unittest.skipIf(os.name == "nt", "Windows publishes synchronously")
     def test_a_publisher_killed_before_recording_is_reported_and_the_next_run_warns(self):
         self.box.run()
         gate = self.box.block_pushes()
@@ -327,6 +350,7 @@ class InstallTests(unittest.TestCase):
         self.assertNotIn("Unpublished", self.box.run("--timings", wait=False).stdout)
         self.assertNotIn("Warning", self.box.run(wait=False).stdout)
 
+    @unittest.skipIf(os.name == "nt", "Windows publishes synchronously")
     def test_timings_reports_a_publish_still_in_progress(self):
         self.box.run()
         gate = self.box.block_pushes()
@@ -336,6 +360,7 @@ class InstallTests(unittest.TestCase):
         gate.unlink()
         self.assertIn("a publish is in progress", timings)
 
+    @unittest.skipIf(os.name == "nt", "Windows publishes synchronously")
     def test_wait_says_it_is_waiting_for_a_running_publisher_then_finishes(self):
         self.box.run()
         gate = self.box.block_pushes()
@@ -359,6 +384,7 @@ class InstallTests(unittest.TestCase):
         self.box.settle()
         self.assert_published()
 
+    @unittest.skipIf(os.name == "nt", "Windows publishes synchronously")
     def test_runs_during_a_slow_push_queue_one_publisher_and_record_only_real_pushes(self):
         self.box.run()
         gate = self.box.block_pushes()
@@ -377,10 +403,12 @@ class InstallTests(unittest.TestCase):
 
     def test_a_push_that_hangs_is_stopped_and_recorded_as_failed(self):
         self.box.run()
-        self.box.block_pushes()  # Never released: the hook ends when the sandbox is removed.
+        gate = self.box.block_pushes()
+        self.addCleanup(gate.unlink, missing_ok=True)
         self.box.env["AGENT_SKILLS_PUSH_TIMEOUT"] = "1"
         self.box.skill("gamma")
-        self.assertEqual(0, self.box.run(wait=False).returncode)
+        result = self.box.run(wait=False)
+        self.assertEqual(1 if os.name == "nt" else 0, result.returncode, result.stdout + result.stderr)
         record = self.box.settle()[-1]
         self.assertEqual("failed", record["outcome"])
         self.assertIn("timed out after 1s", record["error"])

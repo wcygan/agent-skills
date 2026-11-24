@@ -45,7 +45,7 @@ NAMES = (
 def links(path: Path) -> list[Path]:
     return [
         (path.parent / target.split("#", 1)[0]).resolve()
-        for target in re.findall(r"\[[^\]]*\]\(([^)]+)\)", path.read_text())
+        for target in re.findall(r"\[[^\]]*\]\(([^)]+)\)", path.read_text(encoding="utf-8"))
         if not target.startswith(("https://", "http://", "#"))
     ]
 
@@ -66,13 +66,13 @@ class PrincipleCatalogTests(unittest.TestCase):
         self.assertIn(INDEX, links(MODE / "SKILL.md"))
 
     def test_rule_provenance_and_shared_license(self) -> None:
-        self.assertIn("Copyright (c) 2026 Lauren Tan", LICENSE.read_text())
+        self.assertIn("Copyright (c) 2026 Lauren Tan", LICENSE.read_text(encoding="utf-8"))
         for name in NAMES:
             rule = RULES / f"principle-{name}.md"
             with self.subTest(principle=name):
                 self.assertIn(
                     f"https://github.com/cursor/plugins/tree/{REVISION}/pstack/skills/principle-{name}",
-                    rule.read_text(),
+                    rule.read_text(encoding="utf-8"),
                 )
                 self.assertIn(LICENSE, links(rule))
 
