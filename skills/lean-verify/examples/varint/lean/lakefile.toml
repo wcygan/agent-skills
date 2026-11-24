@@ -1,9 +1,0 @@
-name = "varint"
-defaultTargets = ["Varint", "model"]
-
-[[lean_lib]]
-name = "Varint"
-
-[[lean_exe]]
-name = "model"
-root = "Main"

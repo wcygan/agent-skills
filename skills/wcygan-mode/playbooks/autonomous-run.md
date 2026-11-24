@@ -4,14 +4,14 @@ Drive one bounded task to an observable completion condition.
 
 1. State the completion predicate, scope, explicit pause gates, and any resource
    budget the user set. Do not invent a budget, because a self-imposed limit
-   becomes a reason to stop early. Use `clarify-task` for missing decisions.
+   becomes a reason to stop early. Use [clarify-task](../references/methods/clarify-task.md) for missing decisions.
    For outcome ownership with uncertain operational inputs or proof, use
-   `prepare-agent-objective` first. Route
+   [prepare-agent-objective](../references/methods/prepare-agent-objective.md) first. Route
    recurring health or performance objectives through
-   `maintain-outcome`; an active execution trigger is needed
+   [maintain-outcome](../references/methods/maintain-outcome.md); an active execution trigger is needed
    for automatic future cycles.
 2. Select the matching engineering playbook and execute small verified units. Record
-   significant decisions with `decision-log`.
+   significant decisions with [decision-log](../references/methods/decision-log.md).
 3. Reassess failed assumptions using evidence; stop repeating an approach that fails
    for the same reason. Report unrelated issues instead of fixing them, so the
    run stays within the requested task.

@@ -2,7 +2,7 @@
 
 Resume a particular prior task from its records and artifacts.
 
-1. Read the supplied checkpoint and use `recover-context`
+1. Read the supplied checkpoint and use [recover-context](../references/methods/recover-context.md)
    to recover scope, decisions, go-aheads already given, artifacts, owners, and
    incomplete work.
 2. Reconcile files, revisions, running operations, and external state against the

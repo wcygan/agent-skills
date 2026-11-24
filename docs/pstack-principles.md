@@ -1,91 +1,71 @@
 # Pstack principles in the Wcygan stack
 
-Historical record of the 2026-10-14 integration; not maintained. Counts and
-skill names below describe that date. Current state: [README](../README.md) and
-the [parity record](pstack-parity.md).
+The initial integration on 2026-10-14 shipped 24 standalone principle skills.
+Wcygan-mode now distributes the same 24 rules as references. The
+[shared index](../skills/wcygan-mode/references/principles.md) selects rules by
+task, and each reference records its source and links to the shared MIT notice.
 
-The earlier generic port omitted the standalone principles. Individual workflows
-contained overlapping criteria, but did not provide a shared vocabulary, complete
-rule coverage, or a requirement to identify the decision each principle changed.
-This integration adds all 24 as standalone skills beneath the existing workflows.
-
-Source: Lauren Tan's [Pstack principles](https://github.com/cursor/plugins/blob/afd51cf66a3100a95f878d6c4b93a01f6508e3b0/pstack/docs/guide/08-principles.md)
-at `afd51cf66a3100a95f878d6c4b93a01f6508e3b0`, MIT licensed.
-Every skill preserves its name. All 24 bodies are now locally revised, as recorded
-in the [parity matrix](pstack-parity.md#principle-catalog).
-Pstack-specific invocation metadata is replaced by portable frontmatter, source
-metadata, and an attribution footer. Each leaf contains its original MIT notice.
+Source is Lauren Tan's
+[Pstack principles](https://github.com/cursor/plugins/blob/afd51cf66a3100a95f878d6c4b93a01f6508e3b0/pstack/docs/guide/08-principles.md)
+at revision `afd51cf66a3100a95f878d6c4b93a01f6508e3b0`. The
+[parity matrix](pstack-parity.md#principle-catalog) records the local adaptations.
 
 ## Complete mapping
 
-Every local `skills/principle-<name>` maps to the identically named
-`pstack/skills/principle-<name>` directory at the pinned revision. The workflow
-column shows where the rule commonly shapes decisions; it is not exclusive routing.
+Each file in `skills/wcygan-mode/references/principles/` retains the name of its
+source directory under `pstack/skills/`. The workflow column shows where a rule
+commonly shapes decisions.
 
-| Standalone skill | Common workflow |
+| Principle | Common workflow |
 | --- | --- |
-| [Laziness Protocol](../skills/principle-laziness-protocol/SKILL.md) | Design, implementation, review |
-| [Foundational Thinking](../skills/principle-foundational-thinking/SKILL.md) | Design, implementation, coordination |
-| [Redesign from First Principles](../skills/principle-redesign-from-first-principles/SKILL.md) | Design, refactoring |
-| [Attack the Premise](../skills/principle-attack-the-premise/SKILL.md) | Investigation, debugging, experiments |
-| [Subtract Before You Add](../skills/principle-subtract-before-you-add/SKILL.md) | Design, implementation, refactoring |
-| [Minimize Reader Load](../skills/principle-minimize-reader-load/SKILL.md) | Design, implementation, review |
-| [Outcome-Oriented Execution](../skills/principle-outcome-oriented-execution/SKILL.md) | Planned migrations, implementation |
-| [Experience First](../skills/principle-experience-first/SKILL.md) | Product design, implementation, delivery |
-| [Exhaust the Design Space](../skills/principle-exhaust-the-design-space/SKILL.md) | Design, prototypes, experiments |
-| [Build the Lever](../skills/principle-build-the-lever/SKILL.md) | Implementation, investigation, verification |
-| [Model the Domain](../skills/principle-model-the-domain/SKILL.md) | Design, implementation |
-| [Boundary Discipline](../skills/principle-boundary-discipline/SKILL.md) | Design, implementation, review |
-| [Type System Discipline](../skills/principle-type-system-discipline/SKILL.md) | Design, implementation, review |
-| [Make Operations Idempotent](../skills/principle-make-operations-idempotent/SKILL.md) | Implementation, recovery, verification |
-| [Migrate Callers Then Delete Legacy APIs](../skills/principle-migrate-callers-then-delete-legacy-apis/SKILL.md) | Design, migrations, refactoring |
-| [Separate Before Serializing Shared State](../skills/principle-separate-before-serializing-shared-state/SKILL.md) | Design, coordination |
-| [Prove It Works](../skills/principle-prove-it-works/SKILL.md) | Verification, review, delivery |
-| [Fix Root Causes](../skills/principle-fix-root-causes/SKILL.md) | Investigation, debugging |
-| [Sequence Work into Verifiable Units](../skills/principle-sequence-verifiable-units/SKILL.md) | Implementation, coordination, delivery |
-| [Test Behavior, Not Implementation](../skills/principle-test-behavior-not-implementation/SKILL.md) | Implementation, verification, review |
-| [Explain the Number](../skills/principle-explain-the-number/SKILL.md) | Experiments, performance, evals |
-| [Guard the Context Window](../skills/principle-guard-the-context-window/SKILL.md) | Investigation, coordination, records |
-| [Never Block on the Human](../skills/principle-never-block-on-the-human/SKILL.md) | All substantive workflows |
-| [Encode Lessons in Structure](../skills/principle-encode-lessons-in-structure/SKILL.md) | Implementation, retrospectives, records |
+| [Laziness Protocol](../skills/wcygan-mode/references/principles/principle-laziness-protocol.md) | Design, implementation, review |
+| [Foundational Thinking](../skills/wcygan-mode/references/principles/principle-foundational-thinking.md) | Design, implementation, coordination |
+| [Redesign from First Principles](../skills/wcygan-mode/references/principles/principle-redesign-from-first-principles.md) | Design, refactoring |
+| [Attack the Premise](../skills/wcygan-mode/references/principles/principle-attack-the-premise.md) | Investigation, debugging, experiments |
+| [Subtract Before You Add](../skills/wcygan-mode/references/principles/principle-subtract-before-you-add.md) | Design, implementation, refactoring |
+| [Minimize Reader Load](../skills/wcygan-mode/references/principles/principle-minimize-reader-load.md) | Design, implementation, review |
+| [Outcome-Oriented Execution](../skills/wcygan-mode/references/principles/principle-outcome-oriented-execution.md) | Planned migrations, implementation |
+| [Experience First](../skills/wcygan-mode/references/principles/principle-experience-first.md) | Product design, implementation, delivery |
+| [Exhaust the Design Space](../skills/wcygan-mode/references/principles/principle-exhaust-the-design-space.md) | Design, prototypes, experiments |
+| [Build the Lever](../skills/wcygan-mode/references/principles/principle-build-the-lever.md) | Implementation, investigation, verification |
+| [Model the Domain](../skills/wcygan-mode/references/principles/principle-model-the-domain.md) | Design, implementation |
+| [Boundary Discipline](../skills/wcygan-mode/references/principles/principle-boundary-discipline.md) | Design, implementation, review |
+| [Type System Discipline](../skills/wcygan-mode/references/principles/principle-type-system-discipline.md) | Design, implementation, review |
+| [Make Operations Idempotent](../skills/wcygan-mode/references/principles/principle-make-operations-idempotent.md) | Implementation, recovery, verification |
+| [Migrate Callers Then Delete Legacy APIs](../skills/wcygan-mode/references/principles/principle-migrate-callers-then-delete-legacy-apis.md) | Design, migrations, refactoring |
+| [Separate Before Serializing Shared State](../skills/wcygan-mode/references/principles/principle-separate-before-serializing-shared-state.md) | Design, coordination |
+| [Prove It Works](../skills/wcygan-mode/references/principles/principle-prove-it-works.md) | Verification, review, delivery |
+| [Fix Root Causes](../skills/wcygan-mode/references/principles/principle-fix-root-causes.md) | Investigation, debugging |
+| [Sequence Work into Verifiable Units](../skills/wcygan-mode/references/principles/principle-sequence-verifiable-units.md) | Implementation, coordination, delivery |
+| [Test Behavior, Not Implementation](../skills/wcygan-mode/references/principles/principle-test-behavior-not-implementation.md) | Implementation, verification, review |
+| [Explain the Number](../skills/wcygan-mode/references/principles/principle-explain-the-number.md) | Experiments, performance, evals |
+| [Guard the Context Window](../skills/wcygan-mode/references/principles/principle-guard-the-context-window.md) | Investigation, coordination, records |
+| [Never Block on the Human](../skills/wcygan-mode/references/principles/principle-never-block-on-the-human.md) | All substantive workflows |
+| [Encode Lessons in Structure](../skills/wcygan-mode/references/principles/principle-encode-lessons-in-structure.md) | Implementation, retrospectives, records |
 
 ## Use
 
-Wcygan-mode and all nine procedural entrypoints read the
-[shared index](../skills/wcygan-mode/references/principles.md). They read selected
-leaves in full, revisit the selection when evidence changes, and name each applied
-principle with the specific choice it changed. There is no required response heading
-or requirement to apply all 24. A principle name can steer the work, and each leaf
-can also be invoked directly, for example `$principle-type-system-discipline`.
+Wcygan-mode reads the index at the start of substantive work and opens only the
+rules triggered by the task. Name the principle to steer the work, such as
+“Apply Type System Discipline” or `$principle-type-system-discipline`. The
+former standalone skill names now identify rules within wcygan-mode.
 
-Principles supply decision rules. Existing procedures and components supply methods
-such as reproducing a bug, measuring performance, or recording a decision. Leaves
-remain usable independently; missing upstream helper skills are replaced with
-essential inline guidance rather than introducing required dependencies.
+If a principle changes the approach, report the choice it changed. Use the
+playbook for the method, such as reproducing a bug or recording a decision.
 
 ## Verification
 
-`tests/test_principle_catalog.py` checks each leaf's name, source metadata, and
-attribution footer as part of `just check`.
-
-The checker compares complete skill text with the pinned source plus an explicit
-list of replacements. It is read-only and prints a diff for any unrecorded change.
-It does not update source, install skills, or synchronize a newer revision.
+`tests/test_principle_catalog.py` checks that all 24 rules ship within
+wcygan-mode, that each appears in the index once, and that its provenance and
+license link survive the move.
 
 ```sh
-uv tool run --from skills-ref agentskills validate skills/principle-type-system-discipline
+uv tool run --from skills-ref agentskills validate skills/wcygan-mode
 uv run --locked python -m unittest discover -s tests -p test_principle_catalog.py -v
-just catalog-snapshot
 just check-full
 ```
 
-Repository tests check catalog coverage, workflow routing, provenance, license
-packaging, and link resolution. Format and fidelity checks establish faithful
-distribution; they do not establish that every model applies every rule correctly.
-Use isolated representative trials for behavioral evidence, and preserve their
-inputs, outputs, and limitations separately from deterministic catalog checks.
-
-### Local evidence, 2026-10-14
+### Local evidence for the standalone catalog, 2026-10-14
 
 - The source checker passed against both a cached source snapshot and the remote
   immutable revision: all 24 leaves match the original plus the seven recorded adaptations.

@@ -5,8 +5,8 @@ Execute a queue of independent changes through the delivery step the user approv
 1. Confirm the queue entries are independent and establish per-entry acceptance
    criteria, the approved delivery step (commit, push, pull request, or merge),
    and a shared resource budget.
-2. Use `wcygan-coordinate`. Give each change one owner
-   and isolated writable state; keep its implementation, review, and evidence together.
+2. Use [coordinate-work](../references/methods/coordinate-work.md) to assign each change and keep its implementation,
+   review, and evidence together.
 3. Pilot one complete change before increasing concurrency. Verify each result
    independently where possible and inspect the actual evidence.
 4. Let each owner deliver only after its required gates pass. The coordinator checks

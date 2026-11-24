@@ -1,6 +1,6 @@
 ---
 name: design-loop
-description: "Design, style, or redesign websites and apps through investigation, layout, design-system creation, implementation, validation, and delivery. Use for an autonomous UI design loop, including from-scratch builds, wireframes, restyling, and replacement of poorly designed interfaces."
+description: "Design or redesign a website or app around a specific user task. Use for wireframes, prototypes, UI improvements, restyling, and from-scratch interface builds."
 license: MIT
 metadata:
   author: William Cygan
@@ -9,245 +9,42 @@ metadata:
 
 # Design Loop
 
-Own one integrated result: a consistent, easy-to-use interface that helps a user
-complete a specific task with fewer unnecessary steps. Carry the same brief and
-acceptance criteria from investigation through delivery; advance on evidence.
+Deliver a coherent interface that makes the user's task easier to complete and
+recover from. Establish the primary task, existing friction, behavior to
+preserve, and observable acceptance criteria. Work to the requested fidelity
+and destination, from a wireframe through a live implementation.
 
-Run the whole flow independently. Make routine layout and implementation
-decisions, recommend an approach, build it, verify it, and correct failures.
-Honor requests limited to a brief, wireframe, prototype, or review. In a
-from-scratch build the new code is yours: how it is structured is your call, so
-merge repeated code and fix related problems as you build. In an existing
-codebase, change what the brief needs and report the rest. Publishing actions
-follow [delivery](references/delivery.md).
+- **Improve** a bounded part of an existing interface using conventions that
+  already work. **Redesign** the in-scope layout, interaction, and visual system
+  from the user's task while preserving required capabilities, content, data
+  contracts, and brand constraints. **Build from scratch** around a clear task
+  structure and a consistent visual system.
+- Cut taglines, helper text, and secondary labels that compensate for layout.
+  Use hierarchy, grouping, placement, and direct action names. Keep essential
+  labels, units, constraints, consequences, status, and recovery guidance.
+- Choose for users, maintainers, and agents together. Favor semantic controls
+  with accessible names, observable states, shared components and tokens, and
+  repeatable setup and checks. Compare layouts when a structural decision
+  could materially change the task, using the same representative content.
 
-Post a short progress update at each **Done** checkpoint below. End with a
-self-contained recap that leads with the outcome, then what was verified, what
-was not, and what is next.
+## References
 
-## Design priorities
+- Page structure, navigation, forms, responsive layouts, and recovery states →
+  [Task structure](references/structure.md).
+- Unfamiliar interactions → [Product patterns](references/product-patterns.md).
+  For a working example of settings, feeds, records, approvals, or agent chat,
+  use the bundled [Forma reference app](references/reference-app.md). Its guide
+  covers mock data, local and Tailscale startup, and browser inspection.
+- New or changed visual language → [Design system](references/design-system.md).
+  Prove the direction in a representative slice before applying it across screens.
+- Handoff, preview, PR, or deployment → [Delivery](references/delivery.md).
 
-**Cut taglines, helper text and secondary labels. If a screen needs them to make sense, fix the layout.**
+## Verify the result
 
-Make purpose and the next action clear through hierarchy, grouping, placement,
-and direct action names. Remove decorative taglines, repeated subtitles, and
-explanations that merely narrate the controls. Keep essential field labels,
-constraints, units, consequences, status, and recovery guidance; replacing them
-with placeholders, unexplained icons, or hover-only help weakens the task.
-
-**Make the best decision that will elevate all three: the user experience (UX), developer experience (DX), and agent experience (AX) always, without breaking anything.**
-
-Evaluate design and implementation choices together:
-
-- **UX:** make the primary task obvious, accessible, and easy to complete and recover.
-- **DX:** use clear ownership, shared tokens and components, and the smallest
-  maintainable implementation with meaningful behavior checks.
-- **AX:** use semantic controls with accessible names, observable states and results,
-  and repeatable setup and verification commands so agents can inspect, operate,
-  and safely change the application.
-
-Prefer choices that improve all three. Simplify the approach when a gain relies
-on confusing users, adding maintenance burden, or making behavior hard to inspect.
-Preserve required capabilities, data, contracts, and accessibility. Expose any
-unavoidable tradeoff against the brief, and claim only improvements you verified.
-
-## 1. Investigate and frame
-
-Inspect the request, repository instructions, existing UI, components, routes,
-relevant data, and supplied research. Exercise the current task when possible.
-Preserve existing work and identify the actual implementation boundary.
-
-Choose the design mode from the request:
-
-- **Improve:** retain useful established conventions while addressing a bounded problem.
-- **Redesign:** reconsider layout, navigation, interaction, components, and visual
-  language from the user task. Existing design has no privileged status.
-- **From scratch:** establish the task structure and a coherent design system together.
-
-A request to redesign a poorly styled product covers replacing its design
-within the requested scope. Treat the current UI as evidence of capabilities and
-friction, not as a specification to preserve. Retain required business behavior,
-data contracts, user content, and explicit brand constraints; retain visual or
-interaction precedent only when it earns its place against the brief. Reusing the
-technical stack does not require reusing its presentation layer.
-
-Maintain a compact brief in task state or an existing project design document:
-
-```text
-User and task:
-Current friction and supporting evidence:
-Desired outcome:
-Design mode and explicit brand constraints:
-Scope and preserved behavior:
-Content, actions, and business rules:
-Existing components and design conventions:
-Acceptance criteria and verification method:
-UX, DX, and AX outcomes and regression checks:
-Assumptions and unresolved decisions:
-Requested delivery: artifact | implementation | PR | deployment
-```
-
-Separate observations from hypotheses. Infer reversible details from the project;
-ask when missing information changes the user goal, business rule, scope, or an
-action that needs a go-ahead. Continue independent work while awaiting answers.
-
-**Done:** the primary task, bounded change, and observable success criteria are
-clear. If evidence is unavailable, record the assumption and its verification gap.
-Post a progress update: the brief in two lines and what comes next.
-
-## 2. Structure the task
-
-Read [references/structure.md](references/structure.md) when organizing pages,
-navigation, content, forms, or responsive layouts.
-
-Map the shortest understandable path through the task, including recovery.
-Prioritize content and actions; choose grouping, navigation, screen boundaries,
-and relevant loading, empty, error, success, and permission states. Remove steps
-that serve no user need while preserving necessary review and safeguards.
-
-**Done:** every required piece of content and action has a place, the task has a
-complete path, and responsive behavior preserves access to essential actions.
-Post a progress update.
-
-For feeds, cards, notifications, or table summaries, use the write-clearly skill
-when available to review repeated text as a collection, including factual status
-and what remains visible after truncation.
-
-## 3. Inspect references and explore
-
-Read [references/product-patterns.md](references/product-patterns.md) when selecting
-design-system inspiration or resolving an unfamiliar interaction pattern.
-Use LinkedIn, X, Linear, Facebook, Mercury, Ramp, Figma, and Vercel as reference
-candidates. Inspect relevant examples and adapt the underlying task pattern.
-
-Use the bundled **Forma reference app** for settings, records, overview/detail,
-public product pages, feeds, approval workflows, and agent chat. It connects
-these patterns through actual React routes, shared tokens, and local SQLite.
-Read [references/reference-app.md](references/reference-app.md) before running
-or inspecting it; [examples/README.md](examples/README.md) owns application setup.
-
-Resolve paths from this skill's directory, including when installed under
-`~/.agents/skills/design-loop`. Run from any working directory using the installed global location:
-
-```sh
-just --justfile "$HOME/.agents/skills/design-loop/examples/justfile" dev
-```
-
-For another installation location, resolve the justfile relative to this loaded
-skill. In the repository example directory, `just dev` or `bun run dev` works.
-The launcher prepares dependencies and samples; installed skills run from a
-writable cache so the pinned skill contents remain unchanged.
-
-The app listens on `0.0.0.0:5173`, including the host's Tailscale interface.
-Open `http://127.0.0.1:5173` locally or the printed Tailscale MagicDNS/IP URL
-from a peer. The launcher discovers and allows the host's exact Tailscale names.
-Use Browser Use's local CLI to navigate, exercise the relevant route and recovery
-states, and capture layout evidence. Keep the app in mock mode, use sample data,
-and record the route, observed interaction, design rationale, and adaptation to
-the target brief. Read the inspection guide for Browser Use setup, MagicDNS,
-responsive checks, lifecycle, and limits. Adapt the patterns in the target app's
-stack; the reference is inspiration rather than a required product or framework.
-
-Start structural exploration with grayscale, system fonts, plain borders, real
-labels, and representative content. Use existing visual styles directly when the
-structure is settled, the mode is improve, and the styles fit the brief. Neutral
-wireframes are a structural tool, not the final aesthetic for a styling request.
-
-Read [references/design-system.md](references/design-system.md) for from-scratch
-design, styling, restyling, or replacement of an existing design system. Select a
-visual direction and build a representative styled slice before propagating it.
-
-Create two or three directions only when a meaningful structural decision remains
-uncertain, because each extra direction costs a build and a comparison. Keep the
-task and content constant; vary navigation, grouping, density, action placement,
-or task sequencing. For standalone wireframes, prefer one self-contained
-responsive HTML file with useful click-through behavior.
-
-Compare directions against the brief and the design priorities above, including
-the copy each layout still needs and its UX, DX, and AX effects. Recommend one
-and explain its material tradeoff. Continue with the recommendation when within
-the agreed scope; routine phase transitions do not require renewed approval.
-
-**Done:** one approach is selected with a task-based rationale, reference evidence
-or clearly labeled inference, and any unresolved consequential decision exposed.
-Post a progress update naming the chosen direction and its tradeoff.
-
-## 4. Build the recommended approach
-
-Implement in the project's existing stack unless changing it is in scope. In
-improve mode, reuse suitable components and conventions. In redesign and
-from-scratch modes, establish or replace shared tokens and components to implement
-the selected system; judge existing elements by fit rather than longevity.
-Apply the system consistently across all in-scope screens and states.
-
-Connect the primary path to actual data and behavior when implementation is in
-scope. For prototypes, label simulated behavior and its limits. Keep structural
-decisions separate from visual-language decisions so both can be evaluated.
-For styling requests, deliver the complete selected visual language, including
-typography, color, spacing, surfaces, controls, and interaction states.
-
-**Done:** the selected approach works at the requested fidelity, required states
-are represented, and each change supports the agreed task. Post a progress update.
-
-## 5. Validate and revise
-
-Read [references/validation.md](references/validation.md) before checking the
-candidate. Exercise the primary task, recovery paths, keyboard operation, and
-desktop/mobile layouts. Run repository checks appropriate to the changed behavior.
-Review redundant copy and record concrete UX, DX, and AX evidence from the rendered
-interface, implementation, and repeatable interaction checks.
-
-Compare the candidate with the baseline and acceptance criteria. Fix demonstrated
-failures, then repeat affected checks. Keep criteria stable; record any justified
-change to the verification method. Separate agent inspection from real user evidence.
-
-Use up to three corrective passes by default, or the user's stated budget.
-Continue unless two consecutive passes reproduce the same failure with no new
-supported hypothesis, or a required tool, environment, or piece of evidence is
-unavailable; report that blocker when it stops you, preserve the candidate, and
-list the incomplete criteria instead of calling it done.
-
-**Done:** every required criterion has passing evidence; material limitations are
-explicit. A screenshot shows layout, not task completion, so it cannot stand in
-for exercising the task. Post a progress update with the criterion-level results.
-
-## 6. Deliver and learn
-
-Read [references/delivery.md](references/delivery.md) when preparing a handoff,
-PR, preview, deployment, or follow-up iteration.
-
-Complete the requested delivery. Report the user-facing change, selected
-approach and important tradeoff, artifact or changed files, verification evidence,
-and unresolved problems. Prepare the concrete, reviewable result first, then ask
-for any go-ahead still missing for a commit, push, PR, or deployment.
-
-**Done:** the bounded outcome passes its criteria and the requested delivery is
-complete. End with the recap described above. Re-enter the loop only for observed
-feedback, a failed criterion, or a newly agreed objective. Treat future user
-research as pending work rather than inventing findings.
-
-## Portability
-
-This skill owns the flow and requires no companion skill. Use available browser,
-design, repository, and deployment tools that fit the environment. Report
-unavailable verification honestly and finish the independent work.
-
-A specialist subagent starts cold and re-derives the brief, so it pays only for
-a bounded bulk read with one clear question (a browser sweep over many routes
-at two widths, a contrast audit of every in-scope screen) or an independent write
-in files nobody else touches (a styled slice on its own route). Keep structural
-and visual-language decisions in the main loop. A specialist's brief carries the
-goal, the scope and exact files or routes, the evidence to return (screenshots,
-measurements, failing criteria), and the return format. Reconcile its output
-against the brief before acting on it.
-
-## Example requests
-
-- “Use design-loop to simplify this settings page. Implement and verify your
-  recommendation, then open a draft PR.”
-- “Design a neutral wireframe for this dashboard. Compare layouts and recommend
-  one; stop at the HTML artifact.”
-- “Improve this expense-submission flow using relevant established product
-  patterns. Keep the existing components and deploy to the staging preview.”
-- “Redesign this badly styled app from first principles. Replace its layout and
-  visual system as needed, preserve its required capabilities, and verify the result.”
+Use [Validation](references/validation.md) to inspect the rendered interface at
+representative wide and narrow sizes. When the user supplied a visual target,
+compare it at the same viewport and UI state. Exercise the primary task, relevant
+recovery states, and keyboard paths with representative content. Check the
+resulting application state for implemented behavior and identify simulated or
+deferred behavior for prototypes and wireframes. Fix observed failures, rerun
+affected checks, and report any criterion still unverified.

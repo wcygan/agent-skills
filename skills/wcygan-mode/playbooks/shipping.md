@@ -3,7 +3,7 @@
 Land verified changes in dependency order.
 
 1. Establish the changes the user approved to land and who owns publication.
-   Follow `wcygan-deliver` and retain evidence for the exact revisions.
+   Follow [deliver-change](../references/methods/deliver-change.md) and retain evidence for the exact revisions.
 2. Obtain independent verification when available; report when it is not. Passing
    checks alone leave the intended user behavior unproven, because checks cover
    what they test, not the user journey.

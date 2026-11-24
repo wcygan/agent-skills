@@ -3,8 +3,8 @@
 
 Usage: python3 -B upstream_changes.py [--days N]   (run from the repository root)
 
-Reads each skills/*/SKILL.md `upstream-path` to map upstream skill directories
-to local skills, then asks GitHub for the commits under pstack/skills.
+Maps upstream skill directories from public skill metadata and pinned source
+links in references, then asks GitHub for the commits under pstack/skills.
 Needs an authenticated `gh`. Changes nothing.
 """
 import argparse
@@ -17,6 +17,9 @@ import sys
 
 REPO = "cursor/plugins"
 ROOT = "pstack/skills/"
+PINNED_SOURCE = re.compile(
+    rf"https://github\.com/{REPO}/(?:tree|blob)/[a-f0-9]{{40}}/pstack/skills/([a-z0-9-]+)"
+)
 
 
 def gh(path):
@@ -32,16 +35,16 @@ def local_map():
     mapped = {}
     for skill in sorted(pathlib.Path("skills").glob("*/SKILL.md")):
         text = skill.read_text()
-        if REPO not in text:
-            continue
         match = re.search(r"^\s*upstream-path:\s*(.+)$", text, re.M)
-        if not match:
-            continue
-        for source in match.group(1).split(";"):
-            name = source.strip().removeprefix(ROOT).split("/")[0]
-            if skill.parent.name not in mapped.setdefault(name, []):
-                mapped[name].append(skill.parent.name)
-    return mapped
+        if REPO in text and match:
+            for source in match.group(1).split(";"):
+                name = source.strip().removeprefix(ROOT).split("/")[0]
+                mapped.setdefault(name, set()).add(skill.parent.name)
+        for reference in (skill.parent / "references").rglob("*.md"):
+            for name in PINNED_SOURCE.findall(reference.read_text()):
+                label = reference.relative_to(skill.parent.parent).as_posix()
+                mapped.setdefault(name, set()).add(label)
+    return {name: sorted(destinations) for name, destinations in mapped.items()}
 
 
 def main():
@@ -56,7 +59,7 @@ def main():
 
     upstream = [e["name"] for e in gh(f"repos/{REPO}/contents/{ROOT.rstrip('/')}")]
     unmapped = [n for n in upstream if n not in mapped]
-    print(f"Upstream skills no local skill names as a source ({len(unmapped)}):")
+    print(f"Upstream skills without a local source mapping ({len(unmapped)}):")
     print("  " + ", ".join(unmapped) if unmapped else "  none")
 
     commits = gh(f"repos/{REPO}/commits?path={ROOT.rstrip('/')}&since={since}&per_page=100")
@@ -74,9 +77,9 @@ def main():
                 skill, _, rest = name.removeprefix(ROOT).partition("/")
                 touched.setdefault(skill, set()).add(f"{changed['status']} {rest}")
 
-    print("\nChanged upstream skill -> local skills that name it:")
+    print("\nChanged upstream skill -> local skills and references that name it:")
     for skill in sorted(touched):
-        local = ", ".join(mapped.get(skill, [])) or "no local skill"
+        local = ", ".join(mapped.get(skill, [])) or "no local destination"
         files = sorted(touched[skill])
         added = [f for f in files if f.startswith("added ")]
         print(f"  {skill} -> {local}  ({len(files)} files"

@@ -1,4 +1,4 @@
-"""The review-report renderer draws a valid review as an evidence page and names each problem in a broken one."""
+"""The HTML report renderer draws a review as an evidence page and names invalid input."""
 import contextlib
 import copy
 import importlib.util
@@ -15,8 +15,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.dont_write_bytecode = True  # keep __pycache__ out of the distributable skill
-SKILL = ROOT / "skills/review-report"
-SPEC = importlib.util.spec_from_file_location("render", SKILL / "scripts/render.py")
+SKILL = ROOT / "skills/review-changes"
+RENDERER = SKILL / "scripts/render_report.py"
+REFERENCE = SKILL / "references/html-report.md"
+SPEC = importlib.util.spec_from_file_location("render_report", RENDERER)
 render = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(render)
 
@@ -28,7 +30,7 @@ PROOF_GAP = {"severity": "consider", "proof_gap": True, "title": "No live test",
 LIVE = {"tool": "client", "command": "client@{version} upload big.bin", "input": "A 200 MB file",
         "before": {"version": "2.3.0", "result": "Upload fails", "output": "error: part 2 timed out"},
         "after": {"version": "2.4.0", "result": "Upload completes", "output": "uploaded big.bin"}}
-AUTOMATED = {"level": "automated", "steps": ["The author ran `pytest`. All tests passed."]}
+AUTOMATED = {"level": "automated", "steps": [{"source": "reported", "text": "The author ran `pytest`. All tests passed."}]}
 
 
 def review(**changes) -> dict:
@@ -39,8 +41,10 @@ def review(**changes) -> dict:
         "intent": "The client tries a failed part again.",
         "picture": {"before": ["Client sends a part", "Upload fails"],
                     "after": ["Client sends a part", "Client tries again", "Upload completes"]},
-        "proof": {"level": "live", "steps": ["I uploaded a 200 MB file. The upload completed.",
-                                             "The author ran `pytest`. All tests passed."],
+        "proof": {"level": "live", "steps": [
+            {"source": "reviewer", "text": "I uploaded a 200 MB file. The upload completed."},
+            AUTOMATED["steps"][0],
+        ],
                   "live": copy.deepcopy(LIVE)},
         "changes": [{"kind": "changed", "what": "`upload_part` tries again", "detail": "Three times at most."}],
         "feedback": [CONSIDER, ACT_ON],
@@ -58,11 +62,11 @@ def run_main(argv: list[str]) -> tuple[int, str, str]:
 
 class FormatTests(unittest.TestCase):
     def test_the_skill_example_fits_the_format(self):
-        example = json.loads(re.search(r"```json\n(.*?)```", (SKILL / "SKILL.md").read_text(), re.DOTALL).group(1))
+        example = json.loads(re.search(r"```json\n(.*?)```", REFERENCE.read_text(), re.DOTALL).group(1))
         self.assertEqual(render.problems(example), [])
 
     def test_the_skill_documents_exactly_the_fields_the_script_accepts(self):
-        text = (SKILL / "SKILL.md").read_text()
+        text = REFERENCE.read_text()
         fields, rest = text.split("## Fields")[1].split("Each feedback item:")
         feedback = rest.split("## Proof")[0]
         live = text.split("`proof.live` records")[1].split("## Writing rules")[0]
@@ -102,9 +106,9 @@ class FormatTests(unittest.TestCase):
             "proof: level is live but a feedback item has `proof_gap`: change one or the other"])
 
     def test_a_live_level_must_record_the_run(self):
-        proof = {"level": "live", "steps": ["I uploaded a file."]}
+        proof = {"level": "live", "steps": [{"source": "reviewer", "text": "I uploaded a file."}]}
         self.assertEqual(render.problems(review(proof=proof)), [
-            "proof: level is live, so record the run in `live`: the command and both outputs"])
+            "proof: level is live, so record the run in `live`: the command and observed output"])
 
     def test_a_live_run_must_be_complete_and_needs_a_live_level(self):
         live = copy.deepcopy(LIVE)
@@ -132,7 +136,7 @@ class FormatTests(unittest.TestCase):
         self.assertEqual(render.problems(review(intent=long)), [
             'intent: a sentence has 26 words, the limit is 25; split "word word word word word..."'])
         self.assertEqual(render.problems(review(problem="One. Two. Three. Four.")), [
-            "problem: has 4 sentences, the limit is 3; let the pictures show the rest"])
+            "problem: has 4 sentences, the limit is 3; keep only the main point"])
 
 
 class PageTests(unittest.TestCase):
@@ -184,6 +188,33 @@ class PageTests(unittest.TestCase):
         self.assertIn('<div class="word c-good">AFTER</div>', page)
         self.assertNotIn("FAILS", page)
 
+    def test_a_single_run_and_no_diagram_render(self):
+        data = review()
+        del data["picture"]
+        live = data["proof"]["live"]
+        del live["before"]
+        live["command"] = "client upload big.bin"
+        live["note"] = "The previous release was unavailable."
+        self.assertEqual(render.problems(data), [])
+        page = render.render(data)
+        self.assertIn("OBSERVED", page)
+        self.assertIn("uploaded big.bin", page)
+        self.assertIn("The previous release was unavailable.", page)
+        self.assertNotIn('class="pair"', page)
+        self.assertNotIn('class="flow"', page)
+        self.assertNotIn("FAILS", page)
+
+    def test_the_evidence_source_controls_classification(self):
+        data = review()
+        data["proof"]["steps"] = [
+            {"source": "reviewer", "text": "The author and I observed the same upload."},
+            {"source": "reported", "text": "CI logs show a successful upload."},
+        ]
+        self.assertEqual(render.problems(data), [])
+        lists = render.evidence_lists(data)
+        self.assertEqual(lists["seen"], ["The author and I observed the same upload."])
+        self.assertEqual(lists["told"], ["CI logs show a successful upload."])
+
     def test_a_review_without_a_live_run_says_nobody_ran_it(self):
         data = review(proof=AUTOMATED, feedback=[PROOF_GAP])
         self.assertEqual(render.evidence_lists(data), {
@@ -233,7 +264,7 @@ class CommandTests(unittest.TestCase):
             source.write_text(json.dumps(review(title="Größe"), ensure_ascii=False), encoding="utf-8")
             env = os.environ | {"PYTHONUTF8": "0", "PYTHONCOERCECLOCALE": "0", "LC_ALL": "C"}
             done = subprocess.run(
-                [sys.executable, "-B", str(SKILL / "scripts/render.py"), str(source), "--out", str(out)],
+                [sys.executable, "-B", str(RENDERER), str(source), "--out", str(out)],
                 env=env, capture_output=True, text=True)
             self.assertEqual(done.returncode, 0, done.stderr)
             self.assertIn("Größe", out.read_text(encoding="utf-8"))

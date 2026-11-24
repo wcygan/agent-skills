@@ -1,4 +1,4 @@
-"""The draw-diagram style check accepts a styled flowchart and names each fix."""
+"""The standalone Mermaid style check accepts a styled flowchart and names each fix."""
 import importlib.util
 import sys
 import unittest
@@ -6,8 +6,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.dont_write_bytecode = True  # keep __pycache__ out of the distributable skill
+SKILL = ROOT / "skills/visual-explainer"
 SPEC = importlib.util.spec_from_file_location(
-    "check_style", ROOT / "skills/draw-diagram/scripts/check_style.py")
+    "check_style", SKILL / "scripts/check_style.py")
 check_style = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(check_style)
 
@@ -29,7 +30,7 @@ class StyleCheckTests(unittest.TestCase):
         self.assertEqual(check_style.problems(STYLED), [])
 
     def test_the_skill_palette_passes_its_own_check(self):
-        skill = (ROOT / "skills/draw-diagram/SKILL.md").read_text()
+        skill = (SKILL / "references/mermaid.md").read_text()
         palette = [line.strip() for line in skill.splitlines()
                    if line.strip().startswith("classDef ")]
         names = [line.split()[1] for line in palette]

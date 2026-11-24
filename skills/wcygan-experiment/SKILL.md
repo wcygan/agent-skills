@@ -1,44 +1,36 @@
 ---
 name: wcygan-experiment
-description: "Compare alternatives with a fair, repeatable experiment: hypothesis, baseline, one variable at a time, and measured results. Use for performance work, benchmarks, optimization, stretch targets, or an uncertain engineering choice that evidence can settle."
+description: "Measure a performance claim or compare alternatives with a fair, repeatable experiment. Use for benchmarks, latency and throughput checks, profiling, optimization, stretch targets, or an uncertain engineering choice that evidence can settle."
 license: MIT
 metadata:
   kind: procedure
   upstream-repository: https://github.com/cursor/plugins
   upstream-revision: 1e5c90a4b6f249917bd21fe361b3a2a7deb741b8
-  upstream-path: pstack/skills/benchmark-checklist; pstack/skills/arena; pstack/skills/figure-it-out
+  upstream-path: pstack/skills/benchmark-checklist; pstack/skills/arena; pstack/skills/figure-it-out; pstack/skills/poteto-mode/playbooks/hillclimb.md
   upstream-author: Lauren Tan
   maintenance: local
 ---
 
 # Experiment
 
-Read the [principle index](../wcygan-mode/references/principles.md) first. Load a
-component named below only when its condition applies.
+For a baseline, profile, or verdict on a performance claim, use
+[performance measurement](references/measurement.md). A measurement-only request
+ends with the result and its uncertainty.
 
-1. State the hypothesis, baseline, success criteria, resource budget, and stopping
-   rule. Distinguish the required outcome from an exploration target, and establish
-   whether to continue after the required outcome is met. For aggressive targets
-   or a plateau, read [stretch targets](references/stretch-targets.md).
-   Use `clarify-task` if the decision is underspecified.
-2. For competing artifacts, use `compare-solutions`. For performance claims, use
-   `measure-performance` as the measurement method for every candidate, including
-   the baseline, so the numbers are comparable.
-3. Change one relevant variable at a time where possible, so a result has one
-   cause. Keep comparison conditions consistent; remeasure affected candidates
-   when the method changes. When local tuning plateaus, test a different structure
-   or eliminate unnecessary work instead of repeating small variations of a failed
-   assumption.
-4. Use `decision-log` for multiple iterations. Keep changes supported by evidence,
-   preserve failed attempts in the record, and revert only the experiment's own
-   unsuccessful changes, so the user's unrelated edits survive.
-5. Verify the selected result against the actual user outcome. Continue until the
-   agreed budget or completion condition; report inconclusive results without
-   choosing a winner, since the evidence picks none. Report required-target and
-   stretch-target attainment separately, preserving useful improvements even when
-   the exploration target remains unmet.
+For a design choice or optimization, set the hypothesis, baseline, decision
+criteria, budget, and stopping condition. Use the same brief and judge for
+competing implementations. For a performance comparison, apply the measurement
+reference to the baseline and each candidate. Change one variable where possible
+and remeasure affected results if the method changes.
 
-Done when the evidence supports a decision or explains why none can be justified,
-with the method and limitations available for reproduction.
+Record each hypothesis, result, and decision in a multi-iteration experiment.
+Revert only the experiment's unsuccessful changes. For an aggressive target or
+plateau, use [stretch targets](references/stretch-targets.md) to explore a
+different mechanism. Track required and stretch targets separately.
 
-Adapted from pstack; [license and attribution](references/LICENSE.txt).
+Verify the selected result on the real user path, including correctness. When
+the agreed condition or budget is reached, report the verified improvement,
+comparison verdict, or reason the evidence is inconclusive. Include the method
+and limits needed to reproduce the result.
+
+Adapted from Pstack. [License and attribution](references/LICENSE.txt)

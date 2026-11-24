@@ -52,8 +52,7 @@ result has not introduced placeholder-only fields or unexplained icon actions.
 Judge task clarity and preserved behavior, not word counts or visual sparseness.
 
 Fix task blockers first, then meaningful consistency and readability problems.
-Revise the structure when cosmetic changes cannot address the failure. Follow the
-corrective-pass budget in SKILL.md; end each pass with a criterion-level result.
+Revise the structure when cosmetic changes cannot address the failure. Rerun affected checks after correcting a failure.
 
 ## Respect evidence limits
 

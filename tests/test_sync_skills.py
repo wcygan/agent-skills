@@ -72,8 +72,11 @@ class SyncSkillsCharacterizationTests(unittest.TestCase):
             capture_output=True,
         )
 
-        count = sum(len(source["skills"]) for source in sync_skills.load_lock()["sources"])
-        self.assertEqual(result.stdout, f"validated {count} vendored skills\n")
+        sources = sync_skills.load_lock()["sources"]
+        count = sum(len(source["skills"]) for source in sources)
+        expected = (f"validated {count} vendored skills\n" if sources
+                    else "no vendored sources configured\n")
+        self.assertEqual(result.stdout, expected)
 
     def test_root_skill_import_is_selective_pinned_and_preserves_license(self) -> None:
         source = {

@@ -1,11 +1,10 @@
 # Pstack generic port
 
-Historical record of the port as of 2026-10-14; not maintained. Counts and skill
-names below describe that date. Current state: [README](../README.md) and the
-[parity record](pstack-parity.md).
+The opening counts and decision record describe the initial port. The
+adaptation tables link to the current destinations. For current usage, see the
+[README](../README.md) and [parity record](pstack-parity.md).
 
-This catalog adapts pstack into short, harness-agnostic engineering skills. The
-implemented port contains **one orchestrator, 30 self-contained components, and
+The initial port adapted pstack into short, harness-agnostic engineering skills. It contained **one orchestrator, 30 self-contained components, and
 nine `wcygan-*` procedures**, alongside the retained `uv-python`, `just`, and `design-loop`
 specialists: 43 skills in total.
 
@@ -105,94 +104,82 @@ equivalent agent behavior in different environments.
 
 **[wcygan-mode](../skills/wcygan-mode/SKILL.md)** selects and sequences the relevant
 playbook, preserves scope across phases, and judges completion against evidence.
-Its 23 Markdown playbooks reuse the procedures below. Python tools support durable
-state and observation; see [tool usage](../skills/wcygan-mode/references/tools.md)
+Its Markdown playbooks route to focused methods and public skills. Python tools
+support PR observation and worktree auditing; see [tool usage](../skills/wcygan-mode/references/tools.md)
 and [script parity](pstack-parity.md).
 
-**Components** perform one focused job and can be used independently. They describe
-what to investigate, decide, produce, or verify, with explicit completion criteria.
-They do not require sibling skills, named agent roles, or particular tools.
+**Methods** describe what to investigate, decide, produce, or verify, with
+explicit completion criteria. Most now live in wcygan-mode's reference tree.
 
-**Procedures** sequence components for a broader task. They link to the component
-instructions and load them only when the stated condition applies. They preserve
-scope, prior authorization, and requested checkpoints across phases.
+**Procedures** sequence methods for a broader task. They load detailed
+instructions when the stated condition applies and preserve scope, prior
+authorization, and requested checkpoints across phases.
 
-For example, `wcygan-investigate` can combine `explain-code` and `explain-history`;
-`wcygan-design` uses `design-options` and can add `compare-solutions` or
-`review-changes` when needed. A one-off verification can use `verify-behavior`
-without first creating a reusable verification skill.
+The investigation playbook combines `explain-code` and `explain-history`.
+`design-options` can use `compare-solutions` or `review-changes` when needed.
+A one-off check can use `verify-behavior` directly.
 
-## Upstream skill to local component
+## Upstream skill to current method
 
 Some upstream skills are condensed together; others contribute to more than one
 component. Rows naming a playbook refer to a file inside `poteto-mode`, rather
 than a standalone upstream skill. Local names link to the implemented instructions.
 
-| Pstack source | Local component | Engineering behavior retained |
+| Pstack source | Current destination | Engineering behavior retained |
 | --- | --- | --- |
-| in-your-own-words | [in-your-own-words](../skills/in-your-own-words/SKILL.md) | Dedicated plain-language restatement of the user’s goal and problem, using write-clearly. |
-| no-comments | [no-comments](../skills/no-comments/SKILL.md) | Remove implementation narration; preserve schema documentation, contracts, required directives, and verified external constraints. |
-| how | [explain-code](../skills/explain-code/SKILL.md) | Trace behavior, ownership, and runtime flow with code evidence. |
-| why | [explain-history](../skills/explain-history/SKILL.md) | Separate historical facts, inferred rationale, and unknowns. |
-| architect | [design-options](../skills/design-options/SKILL.md) | Sketch caller usage and compare at least two structural alternatives. |
-| arena | [compare-solutions](../skills/compare-solutions/SKILL.md) | Compare candidates against predefined criteria and verify the synthesis. |
+| in-your-own-words | [clarify-task](../skills/wcygan-mode/references/methods/clarify-task.md) | Plain-language restatement when requested. |
+| no-comments | [no-comments](../skills/wcygan-mode/references/methods/no-comments.md) | Remove implementation narration; preserve schema documentation, contracts, required directives, and verified external constraints. |
+| how | [explain-code](../skills/wcygan-mode/references/methods/explain-code.md) | Trace behavior, ownership, and runtime flow with code evidence. |
+| why | [explain-history](../skills/wcygan-mode/references/methods/explain-history.md) | Separate historical facts, inferred rationale, and unknowns. |
+| architect | [design-options](../skills/wcygan-mode/references/methods/design-options.md) | Sketch caller usage and compare at least two structural alternatives. |
+| arena | [compare-solutions](../skills/wcygan-mode/references/methods/compare-solutions.md) | Compare candidates against predefined criteria and verify the synthesis. |
 | interrogate | [review-changes](../skills/review-changes/SKILL.md) | Challenge the work and classify findings by evidence and impact. |
-| sharpen; figure-it-out | [clarify-task](../skills/clarify-task/SKILL.md) | Establish the outcome, scope, uncertainties, and stopping conditions. |
-| poteto-mode: feature and refactoring playbooks | [implement-change](../skills/implement-change/SKILL.md) | Implement coherent units while preserving behavior contracts and ownership. |
-| tdd | [reproduce-bug](../skills/reproduce-bug/SKILL.md) | Demonstrate failure before a fix and success after it with a practical check. |
-| blast-radius | [assess-impact](../skills/assess-impact/SKILL.md) | Trace downstream contracts and prove the crucial safety assumptions. |
+| sharpen; figure-it-out | [clarify-task](../skills/wcygan-mode/references/methods/clarify-task.md) | Establish the outcome, scope, uncertainties, and stopping conditions. |
+| poteto-mode: feature and refactoring playbooks | [implement-change](../skills/wcygan-mode/references/methods/implement-change.md) | Implement coherent units while preserving behavior contracts and ownership. |
+| tdd | [reproduce-bug](../skills/wcygan-mode/references/methods/reproduce-bug.md) | Demonstrate failure before a fix and success after it with a practical check. |
+| blast-radius | [assess-impact](../skills/wcygan-mode/references/methods/assess-impact.md) | Trace downstream contracts and prove the crucial safety assumptions. |
 | principle-prove-it-works; figure-it-out; create-verification-skill | [verify-behavior](../skills/verify-behavior/SKILL.md) | Verify the actual artifact and distinguish verified, failed, and inconclusive criteria. |
-| benchmark-checklist; poteto-mode: hillclimb playbook | [measure-performance](../skills/measure-performance/SKILL.md) | Use comparable conditions, repeated measurements, and evidence that work occurred. |
-| swarm; poteto-mode: orchestrate playbook | [coordinate-work](../skills/coordinate-work/SKILL.md) | Assign ownership, isolate writes, reconcile results, and verify integration. |
-| show-me-your-work | [decision-log](../skills/decision-log/SKILL.md) | Keep an append-only decision trail with evidence and explicit audit limitations. |
-| ketchup; bro | [progress-report](../skills/progress-report/SKILL.md) | Give a concise status update and identify decisions that need the user. |
-| recall; poteto-mode: session-pickup playbook | [recover-context](../skills/recover-context/SKILL.md) | Reconcile scoped history with live artifacts before resuming work. |
-| reflect | [improve-workflow](../skills/improve-workflow/SKILL.md) | Propose or apply scoped process improvements grounded in observed failures. |
-| correct | [prevent-recurrence](../skills/prevent-recurrence/SKILL.md) | Prefer structural prevention and prove guards reject a real past mistake. |
-| automate-me | [personalize-workflow](../skills/personalize-workflow/SKILL.md) | Capture explicit and repeated preferences without turning one-off requests into rules. |
+| benchmark-checklist; poteto-mode: hillclimb playbook | [measure-performance](../skills/wcygan-experiment/references/measurement.md) | Use comparable conditions, repeated measurements, and evidence that work occurred. |
+| swarm; poteto-mode: orchestrate playbook | [coordinate-work](../skills/wcygan-mode/references/methods/coordinate-work.md) | Assign ownership, isolate writes, reconcile results, and verify integration. |
+| show-me-your-work | [decision-log](../skills/wcygan-mode/references/methods/decision-log.md) | Keep an append-only decision trail with evidence and explicit audit limitations. |
+| ketchup; bro | [progress-report](../skills/wcygan-mode/references/methods/progress-report.md) | Give a concise status update and identify decisions that need the user. |
+| recall; poteto-mode: session-pickup playbook | [recover-context](../skills/wcygan-mode/references/methods/recover-context.md) | Reconcile scoped history with live artifacts before resuming work. |
+| reflect | [improve-workflow](../skills/wcygan-mode/references/methods/improve-workflow.md) | Propose or apply scoped process improvements grounded in observed failures. |
+| correct | [prevent-recurrence](../skills/wcygan-mode/references/methods/prevent-recurrence.md) | Prefer structural prevention and prove guards reject a real past mistake. |
+| automate-me | [personalize-workflow](../skills/wcygan-mode/references/methods/personalize-workflow.md) | Capture explicit and repeated preferences without turning one-off requests into rules. |
 | statechart | [statechart](../skills/statechart/SKILL.md) | Check reader-agreed rules with TLC; label states and steps in the reader's words; mark breaking states and replay each bug path against real code. |
-| create-formal-verification-skill | [create-formal-verification-skill](../skills/create-formal-verification-skill/SKILL.md) | Choose the highest-value target and a fitting verification tool; show each property fail on a broken variant; generate and exercise a rerunnable project skill. |
-| create-verification-skill | [create-verification-skill](../skills/create-verification-skill/SKILL.md) | Create project-specific launch, drive, evidence, cleanup, and feature-map instructions; exercise a full journey. |
-| maintain-verification-skill | [maintain-verification-skill](../skills/maintain-verification-skill/SKILL.md) | Check every mapped feature against source and live behavior; separate drift from product regressions. |
-| poteto-mode: opening-a-pr, shipping, and babysit playbooks | [deliver-change](../skills/deliver-change/SKILL.md) | Confirm current proof, authorized destination, dependency order, and resulting publication state. |
+| create-formal-verification-skill | [create-formal-verification-skill](../skills/verification-skill/references/formal.md) | Choose the highest-value target and a fitting verification tool; show each property fail on a broken variant; generate and exercise a rerunnable project skill. |
+| create-verification-skill | [verification-skill](../skills/verification-skill/SKILL.md) | Create project-specific launch, drive, evidence, cleanup, and feature-map instructions; exercise a full journey. |
+| maintain-verification-skill | [verification-skill](../skills/verification-skill/SKILL.md) | Check every mapped feature against source and live behavior; separate drift from product regressions. |
+| poteto-mode: opening-a-pr, shipping, and babysit playbooks | [deliver-change](../skills/wcygan-mode/references/methods/deliver-change.md) | Confirm current proof, authorized destination, dependency order, and resulting publication state. |
 | unslop; technical-writing; bro | [write-clearly](../skills/write-clearly/SKILL.md) | Use concrete prose while preserving technical meaning, qualifications, and evidence. |
 
 The first four local drafts used the upstream names `how`, `architect`, `arena`,
 and `interrogate`. Their replacements are `explain-code`, `design-options`,
 `compare-solutions`, and `review-changes`; the old names are not alias skills.
 
-## Procedural skills and their components
+## Local compositions
 
-These procedures are local compositions; `wcygan-implement` and `wcygan-verify` were later merged into `implement-change` and `verify-behavior`. They organize the adapted methods
-by the user's task. `wcygan-mode` now composes them without installing a persistent
-global mode.
-The listed components are available branches, not steps that always run.
-
-| Procedure | Owns | Components referenced |
-| --- | --- | --- |
-| [wcygan-investigate](../skills/wcygan-investigate/SKILL.md) | Behavior, history, and constraints | [clarify-task](../skills/clarify-task/SKILL.md), [recover-context](../skills/recover-context/SKILL.md), [explain-code](../skills/explain-code/SKILL.md), [explain-history](../skills/explain-history/SKILL.md), [assess-impact](../skills/assess-impact/SKILL.md) |
-| [wcygan-design](../skills/wcygan-design/SKILL.md) | Alternatives, structure, and interfaces | [explain-code](../skills/explain-code/SKILL.md), [explain-history](../skills/explain-history/SKILL.md), [design-options](../skills/design-options/SKILL.md), [compare-solutions](../skills/compare-solutions/SKILL.md), [review-changes](../skills/review-changes/SKILL.md) |
-| [wcygan-review](../skills/wcygan-review/SKILL.md) | Correctness, impact, and tradeoffs | [explain-code](../skills/explain-code/SKILL.md), [review-changes](../skills/review-changes/SKILL.md), [assess-impact](../skills/assess-impact/SKILL.md), [verify-behavior](../skills/verify-behavior/SKILL.md) |
-| [wcygan-experiment](../skills/wcygan-experiment/SKILL.md) | Fair comparisons and bounded experiments | [clarify-task](../skills/clarify-task/SKILL.md), [compare-solutions](../skills/compare-solutions/SKILL.md), [measure-performance](../skills/measure-performance/SKILL.md), [decision-log](../skills/decision-log/SKILL.md) |
-| [wcygan-coordinate](../skills/wcygan-coordinate/SKILL.md) | Ownership, dependencies, and integration | [clarify-task](../skills/clarify-task/SKILL.md), [coordinate-work](../skills/coordinate-work/SKILL.md), [decision-log](../skills/decision-log/SKILL.md), [recover-context](../skills/recover-context/SKILL.md), [verify-behavior](../skills/verify-behavior/SKILL.md), [progress-report](../skills/progress-report/SKILL.md) |
-| [wcygan-record](../skills/wcygan-record/SKILL.md) | Decisions, evidence, preferences, and handoffs | [decision-log](../skills/decision-log/SKILL.md), [recover-context](../skills/recover-context/SKILL.md), [progress-report](../skills/progress-report/SKILL.md), [improve-workflow](../skills/improve-workflow/SKILL.md), [prevent-recurrence](../skills/prevent-recurrence/SKILL.md), [personalize-workflow](../skills/personalize-workflow/SKILL.md), [write-clearly](../skills/write-clearly/SKILL.md) |
-| [wcygan-deliver](../skills/wcygan-deliver/SKILL.md) | Verified handoff or authorized publication | [verify-behavior](../skills/verify-behavior/SKILL.md), [review-changes](../skills/review-changes/SKILL.md), [deliver-change](../skills/deliver-change/SKILL.md), [write-clearly](../skills/write-clearly/SKILL.md), [progress-report](../skills/progress-report/SKILL.md) |
+The early port composed methods in `wcygan-*` procedure skills. Wcygan-mode's
+playbooks now route to most of those methods. [Review changes](../skills/review-changes/SKILL.md)
+and [wcygan-experiment](../skills/wcygan-experiment/SKILL.md) remain public
+entrypoints for targeted review and experimentation.
 
 ## Upstream capabilities without a direct replacement
 
 | Pstack source | Treatment in the generic port |
 | --- | --- |
-| `poteto-mode` | [wcygan-mode](../skills/wcygan-mode/SKILL.md) is the generic orchestrator, with all 23 adapted playbooks and four Python tool entrypoints. |
+| `poteto-mode` | [wcygan-mode](../skills/wcygan-mode/SKILL.md) is the generic orchestrator. See the [parity record](pstack-parity.md) for playbook routes and the two current Python tools. |
 | `poteto-help` | The [catalog README](../README.md) and this mapping provide navigation; there is no help skill. |
 | `setup-pstack` | Omitted. Tool availability, model selection, and host configuration remain outside the skill instructions. |
-| `comment-sicko` agent | No named agent or harness API is required. The dedicated `no-comments` skill adapts the workflow with schema and contract exceptions. |
+| `comment-sicko` agent | No named agent or harness API is required. The `no-comments` method adapts the workflow with schema and contract exceptions. |
 | `typescript-best-practices` | Omitted as a language-specific reference; no equivalent TypeScript skill was added. |
 | `teach` | No dedicated teaching workflow was added. Investigation and clear-writing components cover parts of explanation, without promising the upstream visual teaching flow. |
 | `make-bot-ui` and the separate Benny automation pack | Omitted. No webhook, bot, messaging, secrets, or hosted automation integration is included. |
-| 24 `principle-*` skills | Originally omitted as standalone skills. Now imported with original names and closely preserved rules, a shared index, and routing from wcygan-mode and all nine procedures. See the [principle mapping](pstack-principles.md). |
-| Poteto Mode playbooks | All 23 now have generic Markdown counterparts. Six have plainer filenames; see the [playbook mapping](pstack-parity.md#playbook-mapping). Runtime capabilities remain conditional. |
+| 24 `principle-*` skills | Originally omitted, then imported as standalone skills. The original names now identify reference files under wcygan-mode. See the [principle mapping](pstack-principles.md). |
+| Poteto Mode playbooks | The original 23 received generic Markdown routes. Six received plainer filenames; see the [playbook mapping](pstack-parity.md#playbook-mapping). Runtime capabilities remain conditional. |
 | Agent definitions | Omitted. No fixed model roster, custom agent registration, or scheduler is installed. |
-| Runtime helper scripts | Reimplemented in Python with uv: orchestration records, PR/stack watching, generic plan validation, and observational worktree auditing. |
+| Runtime helper scripts | The port originally reimplemented four helpers in Python. PR watching and worktree auditing remain. The orchestration store and plan checker were retired. |
 
 ## What changed during adaptation
 
@@ -218,20 +205,18 @@ the user authorized, while preserving authorization already granted.
 
 ## Installation and maintenance
 
-Components can be installed individually. Procedures refer to sibling components
-through relative links, so install their referenced components alongside them;
-installing the full catalog supplies every procedure dependency. See the
-[installation instructions](../README.md#install).
+Each public skill can be installed individually with its references and scripts.
+Install the full catalog to make all sibling skills available to playbooks.
+See the [installation instructions](../README.md#install).
 
-Every adaptation records its original source paths and pinned revision in metadata
-and includes the upstream MIT license notice. These are locally maintained skills,
-not entries in the upstream synchronization lock. The exact provenance mapping is
-in [LOCAL-ATTRIBUTIONS.md](../vendor/LOCAL-ATTRIBUTIONS.md).
+Public adaptations and their reference material retain the original source paths,
+pinned revisions, and upstream MIT notice. The exact provenance mapping is in
+[LOCAL-ATTRIBUTIONS.md](../vendor/LOCAL-ATTRIBUTIONS.md).
 
 The prior catalog remains preserved in the [dated archive](../archive/2026-10-14/README.md).
 The generic port does not restore archived skills into the active catalog.
 
-## Verification status
+## Initial verification, 2026-10-14
 
 The 31 component and procedure adaptations passed Agent Skills validation; the
 new orchestrator passed its own validation, bringing the adaptation count to 32.

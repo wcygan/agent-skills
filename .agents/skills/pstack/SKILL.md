@@ -16,14 +16,14 @@ Pstack exists to make an agent write less code of higher quality. Its claims:
 
 - **Depth before speed.** An agent that investigates, reproduces, and verifies
   can be trusted alone, and only trusted agents can be run in parallel.
-- **A goal and a check, not a script.** The user states the outcome and how
-  they will know it is done. One mode skill picks a playbook and calls the
-  other skills as its steps need them.
+- **A goal and a check.** The user states the outcome and how they will know
+  it is done. One mode skill picks a playbook and loads focused guidance as
+  its steps need it.
 - **Evidence over self-report.** A claim counts when it was observed on the
   real artifact: a failing check before the fix, the feature run after it.
-- **Principles are names for complete rules.** Each of the 24 is a skill the
-  agent has already read, so a short phrase such as "subtract before you add"
-  redirects work. A principle is cited only with the decision it changed.
+- **Principles are names for complete rules.** Each of the 24 has a reference.
+  A short phrase such as "subtract before you add" tells wcygan-mode which
+  rule to apply. Report a principle with the decision it changed.
 - **Structure beats instructions.** For a repeated mistake, prefer a design
   that makes it impossible, then a type or lint, then a test, and a written
   rule last, because nothing fails when a rule is skipped.
@@ -37,12 +37,12 @@ The catalog keeps pstack's three layers under plain names:
 | Layer | Upstream | Here |
 | --- | --- | --- |
 | Orchestrator | `poteto-mode` and its playbooks | `wcygan-mode` and `playbooks/` |
-| Focused skills | `how`, `why`, `architect`, `arena`, `interrogate`, ... | components such as `explain-code`, `explain-history`, `design-options`, `compare-solutions`, `review-changes` |
-| Principles | 24 `principle-*` skills | the same 24 names, plus a shared index in `wcygan-mode/references/principles.md` |
+| Focused skills | `how`, `why`, `architect`, `arena`, `interrogate`, ... | methods such as `explain-code` and `compare-solutions` under `wcygan-mode/references/methods/`, or public skills such as `review-changes` |
+| Principles | 24 `principle-*` skills | the same 24 named references with a shared index in `wcygan-mode/references/principles.md` |
 
-The seven `wcygan-*` procedures are local compositions of the adapted
-components; upstream has no skill of that shape. Skills such as `uv-python`, `just`, `design-loop`, `mysql`, and
-`postgres` do not come from pstack.
+The playbooks and `wcygan-experiment` compose adapted methods, preserving the
+local workflow. Skills such as `uv-python`, `just`, `design-loop`, `mysql`, and
+`postgres` come from other sources.
 
 What the adaptation changes, and should keep changing when porting:
 
@@ -61,17 +61,16 @@ separate verified results from assumptions.
 
 ## Find the local equivalent
 
-Each adapted skill records its source in frontmatter (`upstream-revision`,
-`upstream-path`), so the frontmatter is the current map:
+Public adaptations record their source in frontmatter (`upstream-revision`,
+`upstream-path`). Moved methods and principle references link to the original
+source at its pinned commit. Use the upstream report or search those paths:
 
 ```sh
-grep -l "pstack/skills/<upstream-name>" skills/*/SKILL.md
-grep -h "upstream-revision" skills/*/SKILL.md | sort | uniq -c
+rg -l 'pstack/skills/<upstream-name>' skills -g '*.md'
 ```
 
-The second command lists the pins. The catalog has several: one for the
-components and playbooks, a later one for the principles, and separate ones
-for `statechart` and the formal-verification skill. Do not assume one pin.
+The catalog has separate pins for the methods and playbooks, the principles,
+`statechart`, and the formal verification reference in `verification-skill`.
 
 Upstream skills deliberately left out: `setup-pstack`, `poteto-help`, `teach`,
 `typescript-best-practices`, `make-bot-ui`, the Benny automation pack, and the
@@ -84,10 +83,10 @@ and that is not in this list has not been considered yet.
 python3 -B .agents/skills/pstack/scripts/upstream_changes.py --days 14
 ```
 
-Run it from the repository root; it needs an authenticated `gh` and changes
-nothing. It prints the upstream skills no local skill names as a source, the
-recent commits under `pstack/skills`, and each changed upstream skill beside
-the local skills that name it, with added files called out.
+Run it from the repository root with an authenticated `gh`. The report lists
+unmapped upstream skills, recent commits under `pstack/skills`, and each
+changed upstream skill beside its local entrypoints or references. It also
+lists added files.
 
 Then read the commits that matter. Most upstream commits are text trims, model
 routing, or harness changes that do not apply here. Report new skills, new
@@ -106,9 +105,9 @@ from `pstack/` only.
    change. For reworded skills, restate the upstream change in the local
    skill's own terms instead of copying text.
 3. Apply the adaptation rules above to anything new.
-4. Move the pin: `upstream-revision` in the skill's frontmatter and its entry
-   in `vendor/LOCAL-ATTRIBUTIONS.md`, with the pstack version from upstream
-   `pstack/plugin.json`. Record removals and retired ports in
+4. Update the pin in the owning skill's frontmatter or the reference's source
+   link and its entry in `vendor/LOCAL-ATTRIBUTIONS.md`. Use the pstack version
+   from upstream `pstack/plugin.json`. Record removals and retired ports in
    `docs/pstack-parity.md`.
 5. Run the skill's own tests when it has scripts, then
    `uv tool run --from skills-ref agentskills validate ./skills/<name>`,
@@ -124,9 +123,10 @@ Local records:
   changed. Kept current.
 - `docs/pstack-parity.md`: script capabilities, playbook renames, and the
   principle catalog. Kept current.
-- `docs/pstack-generic-port.md` and `docs/pstack-principles.md`: the decision
-  record and full name mapping from 2026-10-14. Historical, not maintained;
-  good for why a choice was made, not for current counts.
+- `docs/pstack-generic-port.md`: the initial decision record and a map to
+  current destinations.
+- `docs/pstack-principles.md`: the full principle source mapping and historical
+  verification of the standalone catalog.
 
 Official sources:
 

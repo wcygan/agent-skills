@@ -1,0 +1,23 @@
+# Clarify a task
+
+When asked only to check understanding, restate the goal, underlying problem,
+constraints, and uncertainty in plain language. Preserve the user’s scope and
+stop after the restatement.
+
+1. State the outcome the user wants, the affected surface, and the observable
+   condition that would demonstrate success. Preserve their chosen constraints.
+2. Identify existing evidence, important unknowns, and the cheapest check that
+   could invalidate the proposed approach. Investigate that uncertainty first.
+3. Separate required behavior from suggested implementation. Question constraints
+   that obstruct the goal, while leaving product decisions with the user.
+4. Resolve routine details from the project. Ask only for missing decisions that
+   change scope or block progress, and batch all such questions into one message
+   so the user answers once. Continue independent work while waiting.
+5. Set a bounded first step and proportionate verification. For lengthy work,
+   record the phases, resource limits, and stopping conditions before executing.
+
+Done when scope, success criteria, assumptions, and the next action are concrete.
+Continue into the task the request asked for rather than returning only a
+rewritten request.
+
+Adapted from Lauren Tan’s Pstack. [sharpen](https://github.com/cursor/plugins/tree/1e5c90a4b6f249917bd21fe361b3a2a7deb741b8/pstack/skills/sharpen) · [in-your-own-words](https://github.com/cursor/plugins/tree/1e5c90a4b6f249917bd21fe361b3a2a7deb741b8/pstack/skills/in-your-own-words) · [figure-it-out](https://github.com/cursor/plugins/tree/1e5c90a4b6f249917bd21fe361b3a2a7deb741b8/pstack/skills/figure-it-out). [MIT license](../LICENSE.txt).

@@ -1,6 +1,6 @@
 ---
 name: wcygan-mode
-description: "Own an engineering task end to end: scope it, investigate, implement, verify, review, and hand off or publish the result. Use when asked to work in wcygan-mode or for substantive engineering work such as building a feature, fixing a bug, refactoring, debugging, performance work, or coordinating multi-part work with the catalog playbooks."
+description: "Own an engineering task through the requested handoff. Use for features, refactors, debugging, engineering questions, coordination, workflow changes, or a named engineering principle."
 license: MIT
 metadata:
   kind: orchestrator
@@ -13,102 +13,49 @@ metadata:
 
 # Wcygan mode
 
-Own the requested outcome. Establish the scope, the acceptance evidence, and the
-destination (a local handoff, a commit, a pull request, a merge, or a deploy),
-and continue until it is delivered.
+Work to the user's requested outcome and destination. Read the [principle index](references/principles.md)
+once per task. Open the rules triggered by the work, including any named by title or
+former `principle-*` skill name.
 
-A playbook is a short procedure for one kind of task. Nine procedures each own
-one phase: the seven `wcygan-*` skills (investigate, design, review, deliver,
-coordinate, experiment, record), `implement-change`, and `verify-behavior`. The
-other catalog skills are components that own one method.
+For a focused request, open its method directly (`references/methods/<name>.md`). For multi-step work, choose the
+smallest matching playbook. Honor explicit checkpoints and continue through every
+stage already requested. Use project commands when a specialist is unavailable.
+If its artifact requires a missing tool, identify that dependency.
 
-1. Read the [principle index](references/principles.md) and the principle skills
-   the task triggers. Select and read the smallest relevant playbook, and load
-   its linked skills only when their conditions apply.
-2. Investigate observable uncertainty before asking the user to guess. Product
-   and preference decisions stay with the user unless already delegated.
-3. Prefer simple structures and small verifiable units. Delegate only bounded
-   work: a bulk read with one clear question, or an independent write to files
-   no one else touches. `coordinate-work` has the brief template.
-4. Keep one owner per shared write target. Inspect delegated artifacts and
-   evidence rather than trusting the report. Revisit the design when an
-   assumption fails.
-5. Record consequential decisions for long work. Reconcile current state on
-   pickup and leave a durable checkpoint on pause.
-6. Post a short progress update at each phase boundary. End with a
-   self-contained recap that leads with the outcome, then what was verified,
-   what was not, and what is next.
+## Focused requests
 
-## Approvals
+- [Clarify or restate a goal](references/methods/clarify-task.md), [compare designs](references/methods/design-options.md), or [assess downstream impact](references/methods/assess-impact.md).
+- [Reproduce a bug](references/methods/reproduce-bug.md) when the user wants a failing example only.
+- [Review a workflow](references/methods/improve-workflow.md), [capture working preferences](references/methods/personalize-workflow.md), or [remove implementation comments](references/methods/no-comments.md).
+- [Report status](references/methods/progress-report.md), [record a decision](references/methods/decision-log.md), or [hand off completed work](references/methods/deliver-change.md).
 
-Get an explicit go-ahead before committing, pushing, opening or merging a pull
-request, deploying, publishing a package, or posting in the user's name. A
-go-ahead covers the action it names: take that action without asking again, and
-ask before any other. Everything else, including reads, tests, builds, linters,
-and local scratch work, needs none.
+## Playbooks
 
-## Obstacles and blockers
-
-An error, a timeout, a locked file, an empty result, or a failing tool is an
-ordinary obstacle: diagnose it and work through it. A deliberate blocker is
-something a person decided, such as a file marked not to be touched, access
-withheld on purpose, or a safety guardrail: leave it alone, report it, and look
-for another safe way to finish. End the turn early only when the task cannot
-move without the user's input or the blocker is deliberate, and finish every
-part that does not depend on the stuck one.
-
-## Ambition
-
-On every substantive task, consider the outcome beyond the requested mechanism,
-the assumption limiting it, and a stronger method. Scale the check to the task,
-and state the opportunity when it changes the approach. Pursue it within the
-requested goal and budget; propose broader product changes instead of adopting
-them. Ambition can mean a simpler solution or deeper proof.
-
-- To find higher-value outcomes, use `discover-ambitious-goals`.
-- Before an outcome with uncertain inputs, authority, or verification, use
-  `prepare-agent-objective`.
-- For a sustained objective, use `maintain-outcome`.
-- For an aggressive measurable target, use `wcygan-experiment`.
-
-## Select a playbook
-
-| Task | Playbook |
+| Task | Choose the requested outcome |
 | --- | --- |
-| Discover, prepare, or sustain an ambitious project outcome. | [ambitious outcome](playbooks/ambitious-outcome.md) |
-| Explain or diagnose without changing the product. | [investigation](playbooks/investigation.md) |
-| Reproduce and correct a reported defect. | [bug-fix](playbooks/bug-fix.md) |
-| Diagnose and improve one measured performance problem. | [perf-issue](playbooks/perf-issue.md) |
-| Improve a metric through bounded, repeatable experiments. | [iterative-optimization](playbooks/iterative-optimization.md) |
-| Diagnose a live runtime symptom. | [runtime-forensics](playbooks/runtime-forensics.md) |
-| Diagnose a supplied profile, trace, or snapshot. | [trace-forensics](playbooks/trace-forensics.md) |
-| Build new or changed user behavior. | [feature](playbooks/feature.md) |
-| Change structure while preserving behavior. | [refactoring](playbooks/refactoring.md) |
-| Build a small experiment to settle a design uncertainty. | [prototype](playbooks/prototype.md) |
-| Explain a system or change with a technical visual. | [technical explanation](playbooks/technical-explanation.md) |
-| Verify visual and interaction equivalence between implementations. | [visual-parity](playbooks/visual-parity.md) |
-| Create or revise an agent skill. | [authoring-a-skill](playbooks/authoring-a-skill.md) |
-| Compare workflow or instruction changes before promoting them. | [eval](playbooks/eval.md) |
-| Inspect or follow a proposed change toward readiness. | [monitor-change](playbooks/monitor-change.md) |
-| Land verified changes in dependency order. | [shipping](playbooks/shipping.md) |
-| Drive one bounded task to an observable completion condition. | [autonomous-run](playbooks/autonomous-run.md) |
-| Coordinate a sustained project across multiple work units. | [coordinate-program](playbooks/coordinate-program.md) |
-| Execute a queue of independent changes through the approved delivery step. | [execute-independent-changes](playbooks/execute-independent-changes.md) |
-| Build a verified sequence that another owner will land. | [prepare-dependent-changes](playbooks/prepare-dependent-changes.md) |
-| Resume a particular prior task from its records and artifacts. | [session-pickup](playbooks/session-pickup.md) |
-| Checkpoint active work on an explicit pause or unavoidable interruption. | [pause-safely](playbooks/pause-safely.md) |
-| Produce an executable plan for several dependent units. | [multi-phase-plan](playbooks/multi-phase-plan.md) |
-| Assess repository workspaces for safe reclamation. | [worktree-cleanup](playbooks/worktree-cleanup.md) |
-| Prepare a reviewable proposal for an implemented change. | [propose-change](playbooks/propose-change.md) |
+| Understand | [Trace behavior or history](playbooks/investigation.md) · [explain with a visual](playbooks/technical-explanation.md) |
+| Change code | [Fix a bug](playbooks/bug-fix.md) · [build a feature](playbooks/feature.md) · [refactor](playbooks/refactoring.md) · [test a design with a prototype](playbooks/prototype.md) |
+| Measure | [Benchmark or fix a slowdown](playbooks/perf-issue.md) · [optimize toward a target](playbooks/iterative-optimization.md) · [check visual and interaction parity](playbooks/visual-parity.md) |
+| Change agent behavior | [Author a skill](playbooks/authoring-a-skill.md) · [evaluate an instruction change](playbooks/eval.md) |
+| Plan or coordinate | [Discover, prepare, or sustain an ambitious outcome](playbooks/ambitious-outcome.md) · [plan dependent work](playbooks/multi-phase-plan.md) · [coordinate a program](playbooks/coordinate-program.md) |
+| Execute | [Drive one bounded task to completion](playbooks/autonomous-run.md) · [run independent changes](playbooks/execute-independent-changes.md) · [prepare a dependent sequence for another owner](playbooks/prepare-dependent-changes.md) |
+| Deliver | [Draft or open a PR](playbooks/propose-change.md) · [inspect or watch a change](playbooks/monitor-change.md) · [land verified changes](playbooks/shipping.md) |
+| Manage a workspace or session | [Audit worktrees](playbooks/worktree-cleanup.md) · [resume prior work](playbooks/session-pickup.md) · [checkpoint a pause](playbooks/pause-safely.md) |
 
-For a mixed task, sequence the relevant playbooks rather than restarting framing.
-Use `slice-changes` when work spans several reviewer questions,
-`prepare-pull-request` for a review package, and `write-clearly` for prose. A
-task needs a PR or illustration only when the user asked for one. Use
-specialists such as `uv-python`, `just`, or `design-loop` when they apply.
+## Decisions and delivery
 
-For PR observation or workspace audits, read [tool usage](references/tools.md).
-For plan authoring, read [plan format](references/plan-format.md). For automated
-review findings, read [review triage](references/review-triage.md).
+Resolve factual uncertainty from available evidence. Make reversible assumptions
+within scope. Leave undelegated product and preference choices to the user.
+When [delegating](references/methods/coordinate-work.md), give each write target
+one owner and inspect the resulting work.
 
-Adapted from pstack; [license and attribution](references/LICENSE.txt).
+Get a go-ahead before committing, pushing, opening or merging a PR, deploying,
+publishing a package, or posting in the user's name. Use existing approval for
+the action it covers. Reads, tests, builds, and local scratch work can proceed.
+
+Work through ordinary failures. Respect deliberately withheld access, protected
+files, and safety guards. Finish independent work and report any blocker that
+still prevents delivery. At a phase boundary, report material progress. At handoff,
+give the result, the evidence for it, and any remaining gaps or next action.
+
+[Pstack license and attribution](references/LICENSE.txt) · [Local contributions license](references/LOCAL-LICENSE.txt)

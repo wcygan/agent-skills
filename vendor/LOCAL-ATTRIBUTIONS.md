@@ -10,80 +10,69 @@ license in its frontmatter, and its license file stays in `references/`.
 | --- | --- | --- | --- | --- |
 | `mysql` | <https://github.com/planetscale/database-skills> | `f6ed002d03084cb39c01d1d58904d47a36f5322a` | `skills/mysql` | MIT |
 | `postgres` | <https://github.com/planetscale/database-skills> | `f6ed002d03084cb39c01d1d58904d47a36f5322a` | `skills/postgres` | MIT |
-| `agent-desktop` | <https://github.com/vercel-labs/agent-desktop> | `5261b5287b5208e7c4bf3713df6f66faaaf2c4cc` | `skills/agent-desktop` | Apache-2.0 |
 | `visual-explainer` | <https://github.com/nicobailon/visual-explainer> | `9d5f880b7e8e0a9a80c890b8e1bb6918b68481ad` | `plugins/visual-explainer` | MIT |
 
-`visual-explainer` (version 0.15.0) is one skill here, not a plugin. Changes: the
-ten `commands/` files are removed; seven become reference files (`compare`,
+The retired `agent-desktop` adaptation came from
+[vercel-labs/agent-desktop](https://github.com/vercel-labs/agent-desktop) at
+`5261b5287b5208e7c4bf3713df6f66faaaf2c4cc`, original path `skills/agent-desktop`,
+under Apache-2.0. Its local source and license remain in
+[Git history](https://github.com/wcygan/agent-skills/tree/71b741ce640e0275929fe55f03f059970a82477f/skills/agent-desktop).
+
+`visual-explainer` (version 0.15.0) ships as one skill. Seven of the ten
+`commands/` files become reference files (`compare`,
 `diff-review`, `fact-check`, `plan-review`, `project-recap`, `state-machine`,
-`visual-plan`) and the slide, video and plain-page commands become rows of a
-routing table in `SKILL.md`. The `.claude-plugin/plugin.json` manifest and the
-`mcp/` server, which registered those commands as prompts and has no package
-manifest to run from in an installed skill, are removed. The kit, renderer,
-other references and templates are unchanged.
+`visual-plan`). The entrypoint routes requests for pages, slides, and videos. The port omits the `.claude-plugin/plugin.json`
+manifest and `mcp/` command registration server. The kit, renderer, and templates retain their upstream source. The style
+guide points to the local entrypoint for output and validation.
 
 ## Pstack adaptations
 
-The components and procedures below are locally maintained adaptations of Lauren
+The skills and methods below are locally maintained adaptations of Lauren
 Tan's pstack, version 0.15.24, at revision
 `1e5c90a4b6f249917bd21fe361b3a2a7deb741b8` in
 <https://github.com/cursor/plugins>.
 
-Each skill includes the upstream MIT notice, copyright (c) 2026 Lauren Tan, in
-`references/LICENSE.txt`. Its frontmatter records the source revision and original
-paths. These adaptations have no `.vendored` marker or synchronization lock entry.
+Public skills record their sources in frontmatter. The moved methods retain
+their pinned sources and use their owning skill's `references/LICENSE.txt`,
+which includes the upstream MIT notice, copyright (c) 2026 Lauren Tan.
 
-Changes: shortened instructions; generic names; removed platform APIs, model
-routing, fixed installation paths, mandatory delegation, and automatic publication.
-Components are self-contained. New `wcygan-*` procedures compose them conditionally
-without duplicating their detailed instructions. Evidence requirements, alternative
-designs, honest coverage, ownership, and scope boundaries remain explicit.
+The adaptation uses shorter instructions, generic names, and conditional
+routing. It leaves model selection, tools, installation paths, and publication
+approval to the host and user. Evidence requirements, alternative designs,
+honest coverage, ownership, and scope boundaries remain explicit.
 
-These are locally maintained workflows, not a complete or behavior-identical port
-of pstack. Sequential execution is supported without claiming independence.
-Original explicit-invocation settings are omitted in favor of portable skill
-frontmatter and focused descriptions; selection behavior belongs to the host.
-
-| Local skill | Layer | Original source paths within `pstack/` |
+| Local material | Role | Original source paths within `pstack/` |
 | --- | --- | --- |
 | [wcygan-mode](../skills/wcygan-mode/SKILL.md) | orchestrator, playbooks, Python tools | `skills/poteto-mode` (entrypoint, all playbooks, references, and scripts) |
-| [explain-code](../skills/explain-code/SKILL.md) | component | `skills/how` |
-| [design-options](../skills/design-options/SKILL.md) | component | `skills/architect` |
-| [compare-solutions](../skills/compare-solutions/SKILL.md) | component | `skills/arena` |
+| [explain-code](../skills/wcygan-mode/references/methods/explain-code.md) | method | `skills/how` |
+| [design-options](../skills/wcygan-mode/references/methods/design-options.md) | method | `skills/architect` |
+| [compare-solutions](../skills/wcygan-mode/references/methods/compare-solutions.md) | method | `skills/arena` |
 | [review-changes](../skills/review-changes/SKILL.md) | component | `skills/interrogate` |
-| [explain-history](../skills/explain-history/SKILL.md) | component | `skills/why` |
-| [in-your-own-words](../skills/in-your-own-words/SKILL.md) | component | `skills/in-your-own-words` |
-| [no-comments](../skills/no-comments/SKILL.md) | component | `skills/no-comments`, `agents/comment-sicko.md` |
-| [clarify-task](../skills/clarify-task/SKILL.md) | component | `skills/sharpen`, `skills/in-your-own-words`, `skills/figure-it-out` |
-| [implement-change](../skills/implement-change/SKILL.md) | procedure | `skills/poteto-mode/playbooks/feature.md`, `skills/poteto-mode/playbooks/refactoring.md`, `skills/tdd` |
-| [reproduce-bug](../skills/reproduce-bug/SKILL.md) | component | `skills/tdd` |
-| [assess-impact](../skills/assess-impact/SKILL.md) | component | `skills/blast-radius` |
+| [explain-history](../skills/wcygan-mode/references/methods/explain-history.md) | method | `skills/why` |
+| [no-comments](../skills/wcygan-mode/references/methods/no-comments.md) | method | `skills/no-comments`, `agents/comment-sicko.md` |
+| [clarify-task](../skills/wcygan-mode/references/methods/clarify-task.md) | method | `skills/sharpen`, `skills/in-your-own-words`, `skills/figure-it-out` |
+| [implement-change](../skills/wcygan-mode/references/methods/implement-change.md) | method | `skills/poteto-mode/playbooks/feature.md`, `skills/poteto-mode/playbooks/refactoring.md`, `skills/tdd` |
+| [reproduce-bug](../skills/wcygan-mode/references/methods/reproduce-bug.md) | method | `skills/tdd` |
+| [assess-impact](../skills/wcygan-mode/references/methods/assess-impact.md) | method | `skills/blast-radius` |
 | [verify-behavior](../skills/verify-behavior/SKILL.md) | procedure | `skills/principle-prove-it-works`, `skills/figure-it-out`, `skills/create-verification-skill`, `skills/maintain-verification-skill` |
-| [measure-performance](../skills/measure-performance/SKILL.md) | component | `skills/benchmark-checklist`, `skills/poteto-mode/playbooks/hillclimb.md` |
-| [coordinate-work](../skills/coordinate-work/SKILL.md) | component | `skills/swarm`, `skills/poteto-mode/playbooks/orchestrate.md` |
-| [decision-log](../skills/decision-log/SKILL.md) | component | `skills/show-me-your-work` |
-| [progress-report](../skills/progress-report/SKILL.md) | component | `skills/ketchup`, `skills/bro` |
-| [recover-context](../skills/recover-context/SKILL.md) | component | `skills/recall`, `skills/poteto-mode/playbooks/session-pickup.md` |
-| [improve-workflow](../skills/improve-workflow/SKILL.md) | component | `skills/reflect` |
-| [prevent-recurrence](../skills/prevent-recurrence/SKILL.md) | component | `skills/correct` |
-| [personalize-workflow](../skills/personalize-workflow/SKILL.md) | component | `skills/automate-me` |
-| [create-verification-skill](../skills/create-verification-skill/SKILL.md) | component | `skills/create-verification-skill` |
-| [maintain-verification-skill](../skills/maintain-verification-skill/SKILL.md) | component | `skills/maintain-verification-skill` |
-| [deliver-change](../skills/deliver-change/SKILL.md) | component | `skills/poteto-mode/playbooks/opening-a-pr.md`, `skills/poteto-mode/playbooks/shipping.md`, `skills/poteto-mode/playbooks/babysit.md` |
+| [measure-performance](../skills/wcygan-experiment/references/measurement.md) | measurement reference | `skills/benchmark-checklist`, `skills/poteto-mode/playbooks/hillclimb.md` |
+| [coordinate-work](../skills/wcygan-mode/references/methods/coordinate-work.md) | method | `skills/swarm`, `skills/poteto-mode/playbooks/orchestrate.md` |
+| [decision-log](../skills/wcygan-mode/references/methods/decision-log.md) | method | `skills/show-me-your-work` |
+| [progress-report](../skills/wcygan-mode/references/methods/progress-report.md) | method | `skills/ketchup`, `skills/bro` |
+| [recover-context](../skills/wcygan-mode/references/methods/recover-context.md) | method | `skills/recall`, `skills/poteto-mode/playbooks/session-pickup.md` |
+| [improve-workflow](../skills/wcygan-mode/references/methods/improve-workflow.md) | method | `skills/reflect` |
+| [prevent-recurrence](../skills/wcygan-mode/references/methods/prevent-recurrence.md) | method | `skills/correct` |
+| [personalize-workflow](../skills/wcygan-mode/references/methods/personalize-workflow.md) | method | `skills/automate-me` |
+| [verification-skill](../skills/verification-skill/SKILL.md) | component | `skills/create-verification-skill`, `skills/maintain-verification-skill` |
+| [deliver-change](../skills/wcygan-mode/references/methods/deliver-change.md) | method | `skills/poteto-mode/playbooks/opening-a-pr.md`, `skills/poteto-mode/playbooks/shipping.md`, `skills/poteto-mode/playbooks/babysit.md` |
 | [write-clearly](../skills/write-clearly/SKILL.md) | component | `skills/unslop`, `skills/technical-writing`, `skills/bro` |
-| [wcygan-investigate](../skills/wcygan-investigate/SKILL.md) | procedure | `skills/how`, `skills/why`, `skills/recall` |
-| [wcygan-design](../skills/wcygan-design/SKILL.md) | procedure | `skills/architect`, `skills/arena`, `skills/interrogate` |
-| [wcygan-review](../skills/wcygan-review/SKILL.md) | procedure | `skills/interrogate`, `skills/blast-radius` |
 | [wcygan-experiment](../skills/wcygan-experiment/SKILL.md) | procedure | `skills/benchmark-checklist`, `skills/arena`, `skills/figure-it-out` |
-| [wcygan-coordinate](../skills/wcygan-coordinate/SKILL.md) | procedure | `skills/swarm`, `skills/figure-it-out`, `skills/poteto-mode/playbooks/orchestrate.md` |
-| [wcygan-record](../skills/wcygan-record/SKILL.md) | procedure | `skills/show-me-your-work`, `skills/recall`, `skills/reflect`, `skills/automate-me`, `skills/ketchup` |
-| [wcygan-deliver](../skills/wcygan-deliver/SKILL.md) | procedure | `skills/poteto-mode/playbooks/opening-a-pr.md`, `skills/poteto-mode/playbooks/shipping.md` |
 
 ## Scope of this adaptation
 
-The first four local names were replaced, not retained as duplicate skills:
-`how` → `explain-code`, `architect` → `design-options`, `arena` →
-`compare-solutions`, and `interrogate` → `review-changes`.
+The first four local names changed from `how` to `explain-code`, `architect` to
+`design-options`, `arena` to `compare-solutions`, and `interrogate` to
+`review-changes`.
 
 Other source names become plain descriptions: `why` → `explain-history`,
 `correct` → `prevent-recurrence`, `automate-me` → `personalize-workflow`,
@@ -96,27 +85,25 @@ The source's setup/help configuration, bot UI and
 Benny automation integration, strict comment-sicko persona, TypeScript reference,
 and dedicated teaching workflow are not imported. The local no-comments adaptation
 preserves schema and contract documentation and has no named-agent requirement.
-The dedicated in-your-own-words adaptation retains the upstream restatement task
-and adds write-clearly guidance. This catalog
-covers core engineering work; it does not promise those additional capabilities.
+The restatement branch of `clarify-task` retains the upstream restatement task.
+The retired workflow wrappers combined the same pstack methods listed above.
+Their local provenance is retained in [Git history](https://github.com/wcygan/agent-skills/tree/71b741ce640e0275929fe55f03f059970a82477f/skills). Current destinations are
+listed in the [migration table](../README.md#replacements-for-retired-skill-names).
 
 Historical provenance and licenses for the retired catalog remain preserved in
 [the dated archive](../archive/2026-10-14/README.md).
 
 ## Formal verification
 
-[create-formal-verification-skill](../skills/create-formal-verification-skill/SKILL.md)
-is a locally maintained adaptation of Lauren Tan's pstack
-`skills/create-formal-verification-skill`, added in
+[Formal verification](../skills/verification-skill/references/formal.md)
+adapts Lauren Tan's pstack `skills/create-formal-verification-skill`, added in
 <https://github.com/cursor/plugins/pull/709> and pinned at merge commit
-`4382e687a50b8d2c5ce4d141d001186589cff8d5`. It includes the upstream MIT notice in
-`references/LICENSE.txt`, and its frontmatter records that revision and path.
+`4382e687a50b8d2c5ce4d141d001186589cff8d5`. It ships in `verification-skill`
+with that skill's upstream MIT notice in `references/LICENSE.txt`.
 
-The body keeps the upstream text. Changes: the Claude Code and Cursor-specific
-`disable-model-invocation` setting is omitted and the description asks for explicit
-requests instead of naming a slash command; one sentence places the generated skill
-in the project's existing skill location, or `.agents/skills/` by default; and the
-attribution footer is added. It has no `.vendored` marker or synchronization lock entry.
+The reference retains the formal workflow. The local routing requires an
+explicit request and places generated skills in the project's existing skill
+location, or `.agents/skills/` by default.
 
 ## Statechart
 
@@ -125,37 +112,29 @@ Lauren Tan's pstack `skills/statechart`, pstack 0.15.46, pinned at revision
 `0b46ec399d55f2829e88822998f53b84944837d3`. It includes the upstream MIT notice in
 `references/LICENSE.txt`, and its frontmatter records that revision and path.
 
-The body, references, scripts, and tests keep the upstream content. Changes: the
-`disable-model-invocation` setting and the slash-command trigger are omitted from the
-description; a `compatibility` field states the runtime and mise requirements; the
-script package name drops its Cursor scope; the run command calls the launcher
-with `sh`, because installed copies can lose the executable bit; one aside about a
-previous skill's colors is removed; and the attribution footer is added. It has no `.vendored`
-marker or synchronization lock entry.
+The local entrypoint summarizes the modeling and handoff instructions and
+links to the [view projection](../skills/statechart/references/view.md) and
+[TLC reporting](../skills/statechart/references/tlc.md) details adapted from the
+upstream entrypoint. The local package documents runtime requirements, invokes
+the launcher with `sh` for installed copies, and omits Cursor-specific names and
+settings. The model checker and its tests retain the pinned implementation.
 
 ## Engineering principles
 
-All 24 standalone `principle-*` skills are locally maintained adaptations of
-Lauren Tan's Pstack at `afd51cf66a3100a95f878d6c4b93a01f6508e3b0` in
-<https://github.com/cursor/plugins>. Names and source paths are unchanged:
-`skills/principle-<name>` maps to `pstack/skills/principle-<name>`.
-Each skill records that exact revision, author, and path in its metadata and
-includes the upstream MIT notice in `references/LICENSE.txt`.
+The 24 [engineering principles](../skills/wcygan-mode/references/principles.md)
+are locally maintained adaptations of Lauren Tan's Pstack at
+`afd51cf66a3100a95f878d6c4b93a01f6508e3b0` in
+<https://github.com/cursor/plugins>. Each `principle-<name>.md` under
+`wcygan-mode/references/principles/` maps to `pstack/skills/principle-<name>`.
+Each rule links to its exact source and to the shared upstream MIT notice.
 
-The [complete mapping](../docs/pstack-principles.md) enumerates every leaf.
-All 24 bodies are locally revised. Portable frontmatter and an attribution
-footer are added to all leaves. The [principle parity matrix](../docs/pstack-parity.md#principle-catalog)
-records the revisions; [the catalog test](../tests/test_principle_catalog.py)
-verifies each leaf's name, source metadata, and footer.
-These skills have no `.vendored` markers or synchronization-lock entries.
-
-Wcygan-mode and its nine procedures load one shared index and name principles
-only when they changed a specific choice. These routing additions are local;
-the original procedure, playbook, and tool source revisions remain unchanged.
+The rule bodies are locally revised. Wcygan-mode's routes select relevant rules
+and report a principle when it changed a specific choice. The playbooks and
+tools retain their own recorded source revision.
 
 ## Orchestrator and Python tools
 
-`wcygan-mode` adapts the source entrypoint and all 23 playbooks. Its two Python
+`wcygan-mode` adapts the source entrypoint and playbooks. Its two Python
 entrypoints and shared modules adapt the upstream PR watcher, worktree audit, and
 their tests at the same pinned revision.
 The upstream MIT notice is included in the skill and applies to these adaptations.
@@ -169,26 +148,28 @@ transcript discovery are not required. This remains locally maintained work.
 
 ## Original communication components
 
-`slice-changes` and `prepare-pull-request` are original local
-components by William Cygan, licensed MIT. No retired example code or upstream
-teaching workflow was copied. The existing pstack-derived `write-clearly` retains its attribution and
-license, with new local examples for concise prose, labels, captions, and evidence.
-Local routing additions connect these components to wcygan-mode and its procedures.
+[Slice changes](../skills/wcygan-mode/references/methods/slice-changes.md) and
+[prepare-pull-request](../skills/prepare-pull-request/SKILL.md) are original local
+work by William Cygan, licensed MIT. The Pstack-derived `write-clearly` retains
+its attribution and license with local examples for prose, labels, and evidence.
 
-`draw-diagram` is an original local component by William Cygan, licensed MIT. It
-is written in the short single-file shape pstack uses for focused skills. Its rule
-to build a larger picture as a series that adds one part at a time restates an
-idea from pstack's `teach` skill; no upstream text is copied.
+William Cygan wrote the [Mermaid diagram reference](../skills/visual-explainer/references/mermaid.md)
+under the [MIT license](../skills/visual-explainer/references/LOCAL-LICENSE.txt).
+Its rule to build a larger picture as a series that adds one part at a time
+restates an idea from Pstack's `teach` skill.
 
-`review-report` is an original local component by William Cygan, licensed MIT. It
-renders the Act on and Consider findings of a `review-changes` review as one
-evidence page; no upstream text or code is copied.
+William Cygan wrote the [HTML review report reference and renderer](../skills/review-changes/references/html-report.md)
+under the [MIT license](../skills/review-changes/references/LOCAL-LICENSE.txt).
+They turn the Act on and Consider findings of a `review-changes` review
+into one evidence page.
 
 
 ## Original ambition workflows
 
-`discover-ambitious-goals`, `prepare-agent-objective`, and `maintain-outcome` are
-original local components by William Cygan, licensed MIT. The ambition routing in
+[Discover ambitious goals](../skills/wcygan-mode/references/methods/discover-ambitious-goals.md),
+[prepare an agent objective](../skills/wcygan-mode/references/methods/prepare-agent-objective.md),
+and [maintain an outcome](../skills/wcygan-mode/references/methods/maintain-outcome.md)
+are original local work by William Cygan, licensed MIT. The ambition routing in
 wcygan-mode and stretch-target guidance in wcygan-experiment are local extensions;
 the existing Pstack adaptations retain their source attribution and MIT notices.
 

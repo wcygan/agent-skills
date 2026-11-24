@@ -56,8 +56,9 @@ its `skills/` component, so the same tree can be packaged as an Agent Plugin
    disclosure — agents load instructions on activation and resources only
    when needed).
 6. Optional frontmatter: `license`, `compatibility`, `metadata`, `allowed-tools`.
-7. Use relative paths for all file references from `SKILL.md` (e.g.
-   `references/REFERENCE.md`, `scripts/extract.py`), kept one level deep.
+7. Use relative paths for file references from `SKILL.md`. Link from the
+   entrypoint to the relevant index, playbook, or reference and put further
+   reading where it is first needed.
 
 ## Authoring and ownership
 
@@ -65,6 +66,14 @@ Keep the capability and distinguishing trigger early, retain essential knowledge
 and decision criteria, and load branch-specific resources only when their stated
 conditions apply. A phase
 boundary must not discard authorization for the rest of the requested work.
+
+Use [wcygan-mode](skills/wcygan-mode/SKILL.md) for substantive engineering work
+on this catalog. Its playbooks route to workflow methods under
+`references/methods/` and to the [engineering principle index](skills/wcygan-mode/references/principles.md).
+When the user names a method or principle, open the matching reference for
+steering. Former `$principle-*` mentions identify those references within
+wcygan-mode. Keep an independently useful public entrypoint in `skills/` and
+put conditional guidance with the skill that owns it.
 
 Archive retired catalogs as compressed bundles with the date, source commit,
 content hash, inventory and original attribution. Never leave an extracted
@@ -77,6 +86,10 @@ path, attribution, and license in metadata and `vendor/LOCAL-ATTRIBUTIONS.md`,
 and regenerate the remaining vendored listing from the lock. Do not fetch a
 newer revision as part of that conversion. Include attribution resources in
 `catalog-projection.json` and refresh the snapshot after distributable changes.
+
+For a method that moves under another skill, retain its pinned source and
+license at the new location. Update its route and attribution entry, then
+document the replacement for callers that use the old name.
 
 ## Validation before merging/committing skills
 

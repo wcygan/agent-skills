@@ -2,6 +2,10 @@
 default:
     @just --list
 
+# List the discoverable skill entrypoints.
+skills:
+    @printf '%s\n' skills/*/SKILL.md
+
 # Adopt the configured parent. Optional values override catalog-seed.json.
 catalog-adopt $CATALOG_REPOSITORY="" $CATALOG_REVISION="" $CATALOG_TRACKING_REF="":
     uv run --locked tools/catalog.py adopt

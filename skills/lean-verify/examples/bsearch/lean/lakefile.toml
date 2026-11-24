@@ -1,9 +1,0 @@
-name = "bsearch"
-defaultTargets = ["Bsearch", "model"]
-
-[[lean_lib]]
-name = "Bsearch"
-
-[[lean_exe]]
-name = "model"
-root = "Main"

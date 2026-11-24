@@ -9,10 +9,8 @@ Prepare a reviewable proposal for an implemented change.
 3. Use `prepare-pull-request` for the title,
    concise problem/result, useful visual, and current verification evidence. Respect
    the repository template and omit decoration for a trivial change.
-4. With the go-ahead to open the pull request, use the available publication
-   mechanism and read back the created proposal, current revision, and target.
-   Leave unrelated work in place rather than resetting it for a clean branch,
-   because that would discard the user's edits.
+4. For a draft-only request, return the local package. When the user asks to
+   open the PR, use [deliver-change](../references/methods/deliver-change.md) with the prepared package. Preserve the
+   requested draft status and report any missing approval.
 
-Complete with the confirmed proposal and its evidence, or a local prepared handoff
-when opening the pull request had no go-ahead.
+Complete at the requested local or published destination.

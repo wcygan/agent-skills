@@ -17,10 +17,10 @@ because a change without its tests is harder to review.
 GitHub Markdown supports Mermaid; other destinations may require an exported image.
 Use repository conventions for assets. Do not put a local absolute path in a remote
 PR body, because reviewers cannot open it. Prefer durable repository or hosted
-assets the user has approved, and inspect the actual rendering and access after
-publication. Avoid temporary preview URLs that expire before review. If hosting is
-unavailable, prepare the asset locally and report the remaining publishing step
-instead of claiming the image is visible remotely.
+assets the user has approved. Avoid temporary preview URLs that expire before
+review. Keep assets local when hosting is unavailable and flag any asset that
+still needs publication. The delivery workflow checks remote rendering and access
+when publishing is authorized.
 
 A screenshot of an HTML explanation is a legitimate illustration. Label it as an
 illustration unless it depicts the actual application under test, because a

@@ -1,6 +1,6 @@
 ---
 name: verify-behavior
-description: "Check actual results against acceptance criteria on the real artifact and keep the evidence. Use to verify a completed change, confirm a fix works, or before claiming that a feature, refactor, or other artifact works; for a smoke test, QA pass, or end-to-end check of an application journey."
+description: "Verify acceptance criteria on the real artifact. Use for smoke tests, QA, end-to-end journeys, fix confirmation, or evidence that a completed change works."
 license: MIT
 metadata:
   kind: procedure
@@ -13,39 +13,23 @@ metadata:
 
 # Verify behavior
 
-Read the [principle index](../wcygan-mode/references/principles.md) first. Load a
-component named below only when its condition applies.
+Match each acceptance criterion to an observable result on the exact artifact
+or revision. Use the project's normal entry points and established verification
+guidance. Exercise relevant success and failure paths and inspect outputs and
+side effects directly. A build, readiness check, or secondhand report gives
+supporting context. Claim verification for the behavior actually exercised.
 
-Instance ownership means what this run started and may therefore stop: the
-process, port, test data, or environment it launched. A shared instance that
-someone else started is theirs; use it, but leave it running and its data in place.
+Confirm prerequisites and ownership before running checks. Use shared resources
+within their intended scope and leave their processes and data in place. Clean up
+resources this run created, including after failure, and preserve the evidence.
 
-1. List the acceptance criteria and identify the exact artifact or revision under
-   test. Match each criterion to an observable result on the relevant surface.
-2. Use the project's established checks and real entry points, including any
-   project verification skill that covers the journey. When repeated work needs
-   reusable guidance, use `create-verification-skill` if none exists and
-   `maintain-verification-skill` if it is stale; a one-off check needs neither.
-   When a property must hold for every case in a stated scope and formal
-   verification is requested, use `create-formal-verification-skill`. Check
-   prerequisites, instance ownership, and readiness before exercising behavior.
-3. Exercise representative success and failure paths, including the consequential
-   boundaries the change touches. Check resulting side effects as well as output.
-4. Retain the actions, results, and artifact identity as evidence. Inspect artifacts
-   directly, because a successful build, a healthy process, or another worker's
-   summary shows that something ran, not that the user-visible behavior is right.
-5. Report each criterion as verified, failed, or inconclusive. Identify simulated
-   boundaries, unavailable environments, and missing coverage. A changed artifact
-   needs renewed evidence for the affected criteria, because earlier evidence
-   describes a different revision.
-6. Clean up resources the run owns, including after failure, and leave shared
-   resources alone since other work may depend on them. Confirm the proof
-   artifacts survive cleanup.
+Finish with an evidenced disposition for each criterion: **verified**, **failed**,
+or **inconclusive**. Keep the artifact identity, actions, and observed results.
+Name simulated boundaries, missing prerequisites, and gaps. Continue with
+independent criteria when one is blocked and renew affected evidence after a
+revision changes.
 
-Continue unless a criterion cannot be exercised at all; report that blocker (the
-missing environment, prerequisite, or access) when it stops you. A verification
-skill counts as proof only for the journeys run in this check.
+For reusable project verification guidance or a requested proof or model check
+over a defined scope, use the appropriate workflow in `verification-skill`.
 
-Done when every acceptance criterion has an evidenced disposition.
-
-Adapted from pstack; [license and attribution](references/LICENSE.txt).
+[Pstack license and attribution](references/LICENSE.txt)

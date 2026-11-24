@@ -188,15 +188,20 @@ Synchronization never moves the locked commit.
 
 ### Catalog retirement and the 2026-10-14 reset
 
-The active parent catalog now contains only `uv-python`, `just`, and
-`design-loop`. The complete prior catalog is preserved in
+On 2026-10-14 the reset retained `uv-python`, `just`, and `design-loop`.
+Later updates consolidated the catalog into 15 public entrypoints. The
+consolidated workflow methods and principles travel in `wcygan-mode`'s
+reference tree. Other folded capabilities travel with their public skill.
+Update hard-coded invocations of retired names when upgrading those catalogs.
+
+The complete pre-reset catalog is preserved in
 `archive/2026-10-14/catalog.tar.gz`, alongside its inventory and provenance.
 Archive bundles have no discoverable skill entrypoints and are not installed.
 
 For an adopted fork, preview and apply the new parent commit with
 `just parent-upgrade-preview` and `just parent-upgrade`. The manifest identifies
-previously inherited skills: an upgrade removes names retired by the parent and
-updates the three surviving skills. The dated archive is included in the parent
+previously inherited skills: upgrades remove retired entries and update surviving
+entries to the selected parent revision. The dated archive is included in the parent
 projection so descendants retain the historical material too.
 
 Independently added child skills and `blocked_skills` remain child-owned.

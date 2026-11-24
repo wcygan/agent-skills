@@ -1,6 +1,6 @@
 ---
 name: prepare-pull-request
-description: "Prepare a concise, visual, evidence-backed pull request from the actual diff. Use when drafting or updating a PR title and body, writing a PR description, assembling review assets, or preparing a change for review. Opening the PR needs an explicit go-ahead."
+description: "Draft or revise a local PR title, body, and review assets from the actual diff and verification evidence. Use the delivery workflow in wcygan-mode for authorized publication."
 license: MIT
 metadata:
   author: William Cygan
@@ -10,54 +10,26 @@ metadata:
 
 # Prepare a pull request
 
-Help a reviewer understand the problem, the resulting behavior, and the evidence
-without reconstructing the conversation. Prefer a small change with one useful
-overview visual and a few precise sentences. Follow the repository's PR template and
-title conventions. Brevity must not erase required information or material risks,
-because a reviewer who misses a risk approves blind.
+Leave a local review package that lets a reviewer understand the problem, the
+resulting behavior, and the evidence. Verify the title and body against the target
+base, final diff, and checks run on the current revision. If independent changes
+obscure the review, propose a split. Keep history and scope changes within the
+user's authorization.
 
-Use the named skills when they are installed; the criteria here remain the fallback
-when this skill is installed alone. Report missing rendering or publication
-capabilities.
+Follow the repository's title and template conventions, including markers for
+automation. Check a box only when it is true. Keep failed checks, verification
+gaps, and material compatibility, rollout, or rollback concerns visible. Renew
+affected evidence after changes to the revision.
 
-1. Inspect the target base, current revision, final diff, and actual validation.
-   Separate unrelated work and distinguish tests run from suggested commands.
-   Read the commit messages for intent, and check each claim you reuse against
-   the code, because a message can describe an earlier state of the branch.
-   If the change has several independent purposes, use the slice-changes skill to
-   propose a coherent boundary; rewriting history or expanding the task to improve
-   the description changes what the reviewer is reviewing.
-2. Write the problem and before/after behavior first. Use the write-clearly skill
-   for prose and captions. Explain a concrete trigger when useful; omit the
-   transcript, abandoned attempts, and file-by-file narration unless they explain
-   a material tradeoff.
-3. Synthesize the code into the smallest useful model of actors, state, and
-   outcomes; mirroring the call graph or listing changed files repeats the diff.
-   Select one overview visual that answers the main reviewer question. Default
-   to 2D; use 3D only when requested. For format and evidence choices, read
-   [review package](references/review-package.md).
-4. Lay out the body with a short visible overview and the full description in a
-   collapsed section, following the exact headings, disclosure rules, and
-   scenario-diagram rules in [review package](references/review-package.md).
-   In a repository template, tick a checkbox only when it is true and keep the
-   markers that automation reads. Scale the body to the change: a small one
-   needs a sentence or two and one validation line, with no collapsed section.
-   State verification for the current revision, reproducible commands when useful,
-   and material compatibility, rollout, or rollback concerns, keeping uncertainty
-   and failures visible above the fold.
-5. Inspect the completed description and rendered assets as a reviewer. Confirm
-   links, readable labels, accessible captions, revision consistency, and removal
-   of temporary paths or sensitive data. Refresh stale visuals after scope changes.
-6. Opening a pull request posts in the user's name, so it needs an explicit
-   go-ahead. Before publishing, read back the title, base, head, the evidence the
-   body cites, and what was not verified. With the go-ahead, use the available
-   publication mechanism or the deliver-change skill, preserving requested draft
-   status, and confirm the published title, body, base, head, and asset access.
-   Without it, deliver the reviewable local title, body, and assets.
+For a substantial description or a useful visual, use the
+[review package guidance](references/review-package.md) for disclosure headings,
+scenario diagrams, and asset choices. A small change may need only a sentence or
+two and a validation line. Prefer one useful 2D visual unless the user requests
+3D. Use actual screenshots for claims about the rendered UI and measured results
+for performance claims. Label conceptual illustrations.
 
-A trivial typo or obvious dependency pin may need no visual; omit decorative
-figures. More than one visual is justified when it answers distinct necessary
-questions. No fixed word count outranks correctness or the repository template.
-
-Done when the review package matches the actual change and evidence, and the
-requested local or published destination is confirmed.
+The package is ready when it matches the diff and the evidence, its links and
+rendered assets are usable by the intended reviewer, and any unpublished assets
+or rendering gaps are identified. Remove sensitive data from the copy and assets.
+Get a go-ahead before opening or updating a remote PR and use the delivery
+workflow for that action.

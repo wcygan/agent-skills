@@ -45,7 +45,7 @@ installed skill, and the scripts now run with plain `python3 -B`.
 | Default base and fetch | Same | Base SHA is reported; fetch is opt-in through `--fetch`, so default audit does not update refs. |
 | Workspace transcript search | Same | Replaced with explicitly supplied activity/ownership JSON; no harness path assumptions. |
 | Cleanup buckets | Same | Generalized conservatively. Untracked work, unknown ownership, closed PRs, or age do not imply safety; squash equivalence needs review. |
-| `bootstrap.ts`, Bun launcher, package manifest and lock | Python uv project and `uv.lock` | Replaced with dependency-free uv execution and an external environment. No runtime installation into the skill directory. |
+| `bootstrap.ts`, Bun launcher, package manifest and lock | `python3 -B` | The initial port used a dependency-free uv project. The remaining tools now use the standard library directly. |
 | TypeScript interfaces and compile-only assertions | Python validation boundaries and tests | Replaced with runtime input checks and behavioral tests. No TypeScript compiler dependency. |
 | Upstream unit tests and fake clock/reader helpers | `scripts/tests/` | Adapted to standard-library unittest, controlled readers/clocks, subprocess locking checks, and temporary Git repositories. |
 
@@ -55,7 +55,8 @@ using capabilities actually available to the executing environment.
 
 ## Playbook mapping
 
-All 23 source playbooks have Markdown equivalents. Unlisted names are preserved.
+The source playbooks have Markdown routes. The investigation playbook also
+covers live symptoms and supplied traces.
 
 | Upstream filename | Generic filename |
 | --- | --- |
@@ -69,29 +70,26 @@ All 23 source playbooks have Markdown equivalents. Unlisted names are preserved.
 Read-only diagnosis, planning-only requests, explicit pause, preparation for a
 separate landing owner, and actual publication are distinct contracts. Fixed
 model rosters, cloud-machine assumptions, blind hard resets, implicit external
-messages, and automatic PR creation are removed. The existing procedures supply
-reusable phase logic; playbooks supply task-specific order and completion gates.
+messages, and automatic PR creation are removed. The methods supply reusable
+phase logic. Playbooks supply task-specific order and completion gates.
 
 ## Principle catalog
 
-The 24 standalone `principle-*` skills preserve Lauren Tan's Pstack names,
-descriptions, and rules at revision `afd51cf66a3100a95f878d6c4b93a01f6508e3b0`.
-This later source applies to the principles only; the playbooks and tools retain
-their original revision. Each leaf records its own source and MIT notice.
+The 24 `principle-*` references under `wcygan-mode/references/principles/`
+preserve Lauren Tan's Pstack names and rules at revision
+`afd51cf66a3100a95f878d6c4b93a01f6508e3b0`. The playbooks and tools retain their
+original revision. Each rule links to its pinned source and the shared MIT notice.
 
 All 24 principles are locally revised. Each body states the rule and the test
 that decides a case, following upstream's later shortening
 (cursor/plugins#1249). Attack the Premise, Fix Root Causes, and Test Behavior Not
 Implementation follow upstream's restatement of bans as reasoning
-(cursor/plugins#633). `tests/test_principle_catalog.py` verifies each leaf's
-name, upstream provenance, and attribution footer.
+(cursor/plugins#633). `tests/test_principle_catalog.py` verifies each rule's
+discovery through the index, upstream provenance, and license link.
 
-All leaves use portable Agent Skills frontmatter with source metadata, omitting
-Pstack's host-specific `disable-model-invocation` field. No aliases or synchronization
-lock entries are added. Individual principles are usable without invoking a workflow;
-cross-principle links supply optional context rather than missing implementation steps.
+Each principle name remains available for explicit steering through wcygan-mode.
+The rule files are ordinary Markdown references inside that skill.
 
-The [shared index](../skills/wcygan-mode/references/principles.md) is read by wcygan-mode and all nine procedural
-entrypoints. It selects relevant leaves, preserves project contracts, and requires
-each applied principle to be named together with the specific decision it changed.
-The existing playbooks and components supply methods without duplicating the rules.
+The [shared index](../skills/wcygan-mode/references/principles.md) selects
+relevant rules within the project's contracts. Report the choice a principle
+changed. The playbooks and methods supply the task procedures.

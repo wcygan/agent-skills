@@ -39,7 +39,7 @@ The project's own design system overrides the register; a named palette → `the
 
 ## Figures
 
-- **Which figure:** the figure table in SKILL.md; a process or change of state is a stepper or replay (`motion.md`).
+- **Which figure:** draw the mechanism with `diagrams.md`, use the kit charts for quantities, and use `motion.md` for a process or change of state.
 - **Data-ink:** every mark carries data or guides the eye. No chart borders, plot backgrounds, heavy gridlines, or 3D bars. Gridlines in `--border`, only when values must be read.
 - **Layering:** ground < structure < data < signal (accent), each quieter than the one above. Two lines close together make a third shape: add space or merge them.
 - **Smallest difference:** each distinction as subtle as it can be while still clear. Two label levels: small and dim, larger and bright.
